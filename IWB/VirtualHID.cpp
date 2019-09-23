@@ -1112,10 +1112,6 @@ void CVirtualHID::UpdateAttachedMonitorInfo()
     }
 
 
-    
-
-
-
 }
 
 

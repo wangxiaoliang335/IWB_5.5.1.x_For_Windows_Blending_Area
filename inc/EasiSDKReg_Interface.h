@@ -108,18 +108,44 @@ EASISDKREG_INTERFACE_API HRESULT SDKREG_GetVersion(float* pVersion, UINT uUSBKey
 //@说明:白板定位软件类型,
 //      第一个字节定义
 //      bit0: 定位软件类型
-//            1:为手指触控
-//            0:为3DTouch
+//            0:笔触电子白板
+//            1:手触电子白板
+//            2:手指触控
+//            3:手掌互动
 //
 //      第二字节定义
 //      bit0:双屏拼接功能使能位
-//            0，无双屏拼接功能
-//            1，有双屏拼接功能
+//            0，无多双屏拼接功能
+//            1，有多屏拼接功能
+//      bit1:0:windows
+//           1:android
 //       其他位保留未用
 EASISDKREG_INTERFACE_API HRESULT SDKREG_GetAppType(int* pAppType, UINT uUSBKeyIndex = 0);
 
 
 //@功 能:返回USB Key的数目
 EASISDKREG_INTERFACE_API UINT SDKREG_GetUSBKeyCount();
+
+
+//@功  能:读取多屏拼接类型,和SDKREG_GetAppType返回的多屏拼接使能配合使用
+//@返回值:B0~31的定义如下
+//		 B0:双屏拼接
+//       B1:3屏拼接
+//       B2:4屏拼接
+//	  	 B3:5屏拼接
+//       B31~4:预留
+EASISDKREG_INTERFACE_API UINT SDKREG_GetMultiScreenMergeType(UINT uUSBKeyIndex = 0);
+
+
+//@功  能:返回应用参数类型
+//@返回值:
+//		 对手指触控:0:F0; 1:F1; 2:F2; 3:F3; 4:F4; 5:F5
+//       对手掌触控:0:P0; 1:P1; 2:P2; 3:P3; 4:P4; 5:P5
+//       
+//	  	 
+//       
+EASISDKREG_INTERFACE_API UINT SDKREG_GetParamType(UINT uUSBKeyIndex = 0);
+
+
 
 }
