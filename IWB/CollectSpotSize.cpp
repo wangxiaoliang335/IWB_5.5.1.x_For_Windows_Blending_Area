@@ -1,0 +1,939 @@
+#include "StdAfx.h"
+//#include "headers.h"
+#define YELLOW RGB(255,255,0)
+#define RED    RGB(255,0,0)
+#define GREEN  RGB(0  ,255,0)  
+#define BKGND_COLOR RGB(0,0,255)
+
+#define MARGIN_WIDTH 10
+#define SYMBOL_SIZE  20
+
+
+//采集光斑尺寸时, 允许光斑水平方向抖动的距离占水平宽度的百分比
+#define LIGHT_SPOT_DITHER_OFFSET_PERCENT_X 12
+
+//采集光斑尺寸时, 允许光斑垂直方向抖动的距离占垂直高度的百分比
+#define LIGHT_SPOT_DITHER_OFFSET_PERCENT_Y 12
+
+//采样位置最视频中的最小间距
+//#define SAMPLE_U_MINIMUM_INTERVAL 20
+//#define SAMPLE_V_MINIMUM_INTERVAL 20
+
+//#define SAMPLE_MINIMUM_RANGE2   (SAMPLE_U_MINIMUM_INTERVAL*SAMPLE_U_MINIMUM_INTERVAL +  SAMPLE_V_MINIMUM_INTERVAL * SAMPLE_V_MINIMUM_INTERVAL)
+
+CCollectSpotSize * g_pCollectSpotSize = NULL;
+//int CCollectSpotSize::s_nSpotSettingCount = 0;    //手动采集的参数
+SpotManualCollectInfoManager CCollectSpotSize::m_oSpotManualCollectInfoManager;
+
+CCollectSpotSize::CCollectSpotSize(E_COLLECTSPOT_MODE eCollectSpotMode, HWND hOwner)    //构造函数
+:
+m_szClassName(_T("PlayWnd Blob Setting ")),
+m_bFullScreen(FALSE),
+m_hWnd(NULL),
+m_hOwner(NULL),
+m_eSpotSamplingState(E_ALL_SPOT_SAMPLEING_END),
+m_nSampleTimes(0),
+m_nCurrentSampleNo(0),/*,
+m_eSpotSamplingMode(eCollectSpotMode)*/
+m_eSpotSamplePattern(E_SAMPLE_COLLECT_PATTERN_9_Points),
+m_nSymbolHorzInterval(50),
+m_nSymbolVertInterval(50)
+{
+    WNDCLASSEX wnd;
+    wnd.cbSize = sizeof wnd;
+    wnd.style = 0;
+    wnd.lpfnWndProc = WinProc;
+    wnd.cbClsExtra = 0;
+    wnd.cbWndExtra = 0;
+    m_hInstacne = wnd.hInstance = _AtlBaseModule.m_hInst;
+    wnd.hIcon = 0;
+    wnd.hCursor = 0;
+    wnd.hbrBackground = 0;
+    wnd.lpszMenuName = NULL;
+    wnd.lpszClassName = m_szClassName;
+    wnd.hIconSm = 0;
+    ATOM atom = RegisterClassEx(&wnd);
+
+    m_nCxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    m_nCyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    //if (theApp.GetDoubleScreenMerge())
+    //{
+    //	DoubleScreenMergeCount =  MAX_COLLECT_NUMBER_DOUBLE;
+    //}
+    //else
+    //{
+    //	DoubleScreenMergeCount = MAX_SAMPLE_NUMBER;
+    //}
+
+
+    //m_vecSampleSymbols.resize(DoubleScreenMergeCount);
+    //m_vecStandardCross.resize(DoubleScreenMergeCount);
+    //m_vecMaxSpot.resize(DoubleScreenMergeCount);
+
+    //m_vecSampleSymbols.resize(MAX_SAMPLE_NUMBER);
+    m_vecSampleData.resize   (MAX_SPOT_SAMPLING_TIMES);
+
+    //InitSamplePosition();
+    ASSERT(g_pCollectSpotSize == NULL);
+    g_pCollectSpotSize =this;
+
+    //m_ptLastSamplePointInScreen.x = 0;
+    //m_ptLastSamplePointInScreen.y = 0;
+
+    SIZE sizeScreen = ::GetActualScreenControlSize();
+    OnDisplayChange(sizeScreen.cx, sizeScreen.cy);
+
+}
+
+CCollectSpotSize::~CCollectSpotSize(void)      //析构函数
+{
+    DestroyWindow(m_hWnd); 
+    UnregisterClass(m_szClassName,m_hInstacne);
+}
+
+//////////////////////////////窗体的创建
+BOOL CCollectSpotSize::Create()
+{
+    m_hWnd = ::CreateWindowEx(
+        WS_EX_TOOLWINDOW,
+        m_szClassName,
+        m_szClassName,
+        WS_POPUP,
+        0,0,0,0,
+        NULL,
+        0,
+        _AtlBaseModule.m_hInst,
+        0);
+    
+    GetWindowPlacement(m_hWnd,&m_OldWndPlacement);
+    return (m_hWnd != NULL);
+}
+
+/////////////////////////窗体全屏化
+void CCollectSpotSize::FullScreen(BOOL bFull)
+{
+    if (bFull)
+    {
+        GetWindowPlacement(m_hWnd,&m_OldWndPlacement);
+        RECT rcPosition;
+        rcPosition.left = 0;
+        rcPosition.top  = 0;
+        rcPosition.right = m_nCxVScreen;
+        rcPosition.bottom= m_nCyVScreen;
+
+        SetWindowPos(
+            m_hWnd,
+            HWND_TOPMOST,
+            rcPosition.left,
+            rcPosition.top,
+            rcPosition.right,
+            rcPosition.bottom,
+            SWP_SHOWWINDOW);
+
+        m_bFullScreen = TRUE;
+        SetFocus(m_hWnd);
+    }
+    else
+    {
+        SetWindowPlacement(m_hWnd,&m_OldWndPlacement);
+        ShowWindow(m_hWnd,SW_HIDE);
+
+        m_bFullScreen = FALSE;
+    }
+
+}
+
+HWND CCollectSpotSize::GetOwnerWnd() const
+{
+    return m_hOwner;
+}
+
+void CCollectSpotSize::SetOwnerWnd(HWND hWnd)
+{
+    m_hOwner = hWnd;
+}
+
+//参数:rcMonitor:显示器矩形区域坐标
+void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
+{
+
+    int nSymbolIndex = 0;
+    int nX = 0;
+    int nY = 0;
+
+
+    m_nCxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    m_nCyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+    m_rcCurrentMonitor = rcMonitor;
+
+
+    //if (theApp.GetDoubleScreenMerge())
+    //{
+    //	//DoubleScreenMergeCount =  MAX_COLLECT_NUMBER_DOUBLE;
+    //	m_nSampleNumEachRow = 3;
+    //	m_nSampleNumEachCol = 5;
+    //}
+    //else
+    //{
+    //	DoubleScreenMergeCount = MAX_SAMPLE_NUMBER;
+
+    m_nSampleNumEachCol = 3;
+    switch(m_eSpotSamplePattern)
+    {
+    case E_SAMPLE_COLLECT_PATTERN_9_Points:
+        m_nSampleNumEachRow = 3;
+        
+        break;
+
+    case E_SAMPLE_COLLECT_PATTERN_15_Points:
+        m_nSampleNumEachRow = 5;
+        break;
+
+    default:
+        m_nSampleNumEachRow = 3;
+    }
+
+    int nSampleCount = m_nSampleNumEachCol * m_nSampleNumEachRow;
+    m_vecSampleSymbols.resize(nSampleCount);
+
+    for(size_t i=0; i< m_allLightSpotSampleSize.size(); i++)
+    {
+        m_allLightSpotSampleSize[i].vecSampleSize.resize(nSampleCount);
+    }
+    
+    //}
+
+    //第一行的采样符号
+    //for(int col = 0; col <m_nSampleNumEachCol;col++)
+    //{
+    //	NY = SYMBOL_SIZE;
+    //	TSampleSymbol& cross = m_vecSampleSymbols[CrossIndex];
+    //	cross.clrAdjustBefore = RED;
+    //	cross.clrAdjustAfter = GREEN;
+    //	cross.bAdjusted = FALSE;
+    //	cross.size.cx = SYMBOL_SIZE*2;
+    //	cross.size.cy = SYMBOL_SIZE*2;
+    //	NX = SYMBOL_SIZE  + (m_nCxScreen - SYMBOL_SIZE*2)*(col)/(m_nSampleNumEachCol -1);
+    //	cross.ptCenter.x = NX;
+    //	cross.ptCenter.y = NY;
+    //	CrossIndex++;
+    //}
+
+    int nMonitorWidth  = rcMonitor.right  - rcMonitor.left;
+    int nMonitorHeight = rcMonitor.bottom - rcMonitor.top ;
+    int nMonitorLeft   = rcMonitor.left;
+    int nMonitorTop    = rcMonitor.top ;
+    int nTopMargin     = MARGIN_WIDTH    ;//第一行采样符号与上边界的距离
+    int nBottomMargin  = MARGIN_WIDTH    ;//最后一行采样符号与下边界的距离
+    int nLeftMargin    = MARGIN_WIDTH    ;//第一列采样符号与左边界的距离
+    int nRightmMargin  = MARGIN_WIDTH    ;//最后一列采样符号与右边界的距离
+
+
+    //采样符号水平间隔
+    m_nSymbolHorzInterval = (nMonitorWidth - nLeftMargin - nRightmMargin)/(m_nSampleNumEachRow - 1);
+
+    //采样符号的垂直间隔
+    m_nSymbolVertInterval = ( nMonitorHeight - nTopMargin - nBottomMargin)/(m_nSampleNumEachCol - 1);
+
+
+    //以列优先，从上到下排列采样点
+    for(int col = 0; col < m_nSampleNumEachRow;col++)
+    {
+        nX = nMonitorLeft + nLeftMargin + (nMonitorWidth - nLeftMargin - nRightmMargin)*(col)/(m_nSampleNumEachRow - 1);
+
+        for (int row = 0; row < m_nSampleNumEachCol;row++)
+        {
+            nY = nMonitorTop + nTopMargin + ( nMonitorHeight - nTopMargin - nBottomMargin)*(row)/(m_nSampleNumEachCol - 1);
+
+            TSampleSymbol& symbol   = m_vecSampleSymbols[nSymbolIndex];
+
+            symbol.clrSampleBefore = RED;
+            symbol.clrSampleAfter  = GREEN;
+            symbol.bSampled        = FALSE;
+            symbol.size.cx         = SYMBOL_SIZE;
+            symbol.size.cy         = SYMBOL_SIZE;
+            symbol.ptDisplay.x     = nX;
+            symbol.ptDisplay.y     = nY;
+
+            nSymbolIndex++;
+
+        }
+    }
+
+
+    nSymbolIndex = 0;
+
+    for(int col = 0 ; col < m_nSampleNumEachRow;col++)
+    {
+         nX = nMonitorLeft + (nMonitorWidth * col) / (m_nSampleNumEachRow - 1);
+
+        for(int row = 0; row < m_nSampleNumEachCol ;row++ )
+        {
+            nY = nMonitorTop + (nMonitorHeight * row)/(m_nSampleNumEachCol - 1);
+
+            TSampleSymbol& symbol   = m_vecSampleSymbols[nSymbolIndex];
+
+            //设置采样点中心位置到屏幕边界处，便于实现双线性插值操作
+            symbol.ptCenter.x = nX;
+            symbol.ptCenter.y = nY;
+
+            nSymbolIndex++;
+        }
+    }
+
+
+    
+
+    //激光器底下的采样点向下偏移1/3间隔距离
+    int nOffsetY =  nMonitorHeight/(m_nSampleNumEachCol - 1);
+    nOffsetY = nOffsetY * 1/4;
+
+    switch(m_eSpotSamplePattern)
+    {
+    case E_SAMPLE_COLLECT_PATTERN_9_Points:
+        m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
+        break;
+
+    case E_SAMPLE_COLLECT_PATTERN_15_Points:
+        m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
+        m_vecSampleSymbols[9].ptDisplay.y += nOffsetY;
+        break;
+
+    }
+
+}
+
+void CCollectSpotSize::DrawCross(HDC hDC, const POINT& ptSymbol, COLORREF color,  const SIZE& size)
+{
+    const int nLineWindth = 2;
+    HPEN hPen        = ::CreatePen(PS_SOLID,nLineWindth,color);
+    HPEN hPenold     = (HPEN)::SelectObject(hDC,hPen);
+
+    HBRUSH hBrush    = (HBRUSH)::GetStockObject(NULL_BRUSH);   //创建空画刷
+    HBRUSH hBrushOld = (HBRUSH)::SelectObject(hDC,hBrush);
+
+    Rectangle(
+        hDC,
+        ptSymbol.x -size.cx/2,
+        ptSymbol.y - size.cy/2,
+        ptSymbol.x + size.cx/2,
+        ptSymbol.y + size.cy/2);
+
+    FillRect(
+        hDC,
+        CRect(ptSymbol.x -size.cx/2 ,ptSymbol.y - size.cy/2,ptSymbol.x + size.cx/2,ptSymbol.y + size.cy/2),
+        hBrush);
+
+    ::SelectObject(hDC, hBrushOld);
+    ::SelectObject(hDC, hPenold);
+    DeleteObject(hPen);
+
+}
+
+
+LRESULT CALLBACK CCollectSpotSize::WinProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
+{
+    if (g_pCollectSpotSize)
+    {
+        return g_pCollectSpotSize->InternalWndProc(hWnd,uMsg,wParam,lParam);
+    }
+
+    return FALSE;
+}
+
+
+LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if(uMsg == WM_ACTIVATEAPP)
+    {
+        AtlTrace("WM_ACTIVATEAPP,wParam = 0x%x\n",wParam);
+    }
+
+    else if (uMsg == WM_ACTIVATE)
+    {
+        AtlTrace("WM_ACTIVATE,wParam = 0x%x\n",wParam);
+    }
+
+    else if (uMsg == WM_PAINT)
+    {
+        ///////////////////首先画出所有需要设置的位置框
+        PAINTSTRUCT ps;
+        BeginPaint(hWnd,&ps);
+        CAtlString str;
+
+        RECT rcClient;
+        GetClientRect(hWnd,&rcClient);
+        SetBkMode(ps.hdc,TRANSPARENT);
+        SetTextColor(ps.hdc,RGB(255,255,255));
+
+        //if (g_oMouseEventGen.GetCollectSpotMode() == COLLECTSPOT_MODE_COLLECT)
+        //if(m_eSpotSamplingMode == COLLECTSPOT_MODE_COLLECT)
+        {
+            for (int i =0; i <= m_nCurrentSampleNo; i++)
+            {
+                DrawCross(ps.hdc,
+                    m_vecSampleSymbols[i].ptDisplay,
+                    m_vecSampleSymbols[i].bSampled ? m_vecSampleSymbols[i].clrSampleAfter : m_vecSampleSymbols[i].clrSampleBefore,
+                    m_vecSampleSymbols[i].size);
+            }
+            
+            DrawText(ps.hdc,g_oResStr[IDS_STRING432],_tcslen(g_oResStr[IDS_STRING432]),&this->m_rcCurrentMonitor, DT_CENTER|DT_TOP);
+
+        }
+        //else
+        //{
+        //for(int i =0;i<DoubleScreenMergeCount;i++)
+        //{
+        //	DrawCross(ps.hdc,
+        //		m_vecSampleSymbols[i].ptCenter,
+        //		m_vecSampleSymbols[i].bAdjusted ? m_vecSampleSymbols[i].clrAdjustAfter:m_vecSampleSymbols[i].clrAdjustBefore,
+        //		m_vecSampleSymbols[i].size);
+        //}
+
+        //DrawText(ps.hdc,g_oResStr[IDS_STRING433],_tcslen(g_oResStr[IDS_STRING433]),&rcClient,DT_CENTER|DT_TOP);
+
+
+        ////////////////////////////////////////////把得到的坐标需要显示在窗口
+        //for(unsigned int i =0; i<m_vecMaxSpot.size();i++)
+        //{
+        //	if (m_vecMaxSpot[i].lSize !=0)
+        //	{
+        //		CAtlString m_pointshow;
+        //		int print_x = m_vecMaxSpot[i].ptCenter.x;
+        //		int print_y = m_vecMaxSpot[i].ptCenter.y;
+        //		long print_s = m_vecMaxSpot[i].lSize;
+        //		m_pointshow.Format(_T("X坐标=%d, Y坐标=%d, 最大光斑面积= %ld"),print_x,print_y,print_s);
+        //		RECT rcRect;
+
+        //		if ((m_vecMaxSpot[i].ptCenter.x > m_nCxScreen - 80)&&(m_vecMaxSpot[i].ptCenter.y > m_nCyScreen-100))
+        //		{
+        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x-80;
+        //			rcRect.top = m_vecMaxSpot[i].ptCenter.y-100;
+        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x ;
+        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y -10; 
+        //		}
+        //		else if (m_vecMaxSpot[i].ptCenter.x > m_nCxScreen - 80)
+        //		{
+        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x-80;
+        //			rcRect.top = m_vecMaxSpot[i].ptCenter.y+10 ;
+        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x ;
+        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y +100; 
+        //		}
+        //		else if (m_vecMaxSpot[i].ptCenter.y > m_nCyScreen-100)
+        //		{
+        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x;
+        //			rcRect.top =m_vecMaxSpot[i].ptCenter.y-100  ;
+        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x + 80;
+        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y -10; 
+        //		}
+        //		else
+        //		{
+        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x;
+        //			rcRect.top =  m_vecMaxSpot[i].ptCenter.y +10;
+        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x + 80;
+        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y +100; 
+        //		}
+
+        //		DrawText(ps.hdc,m_pointshow,m_pointshow.GetLength(),&rcRect,DT_WORDBREAK);
+        //	}
+        //}
+        //}
+        EndPaint(hWnd,&ps);
+    }
+
+    else if (uMsg == WM_COLLECT_SPOT_DATA)//光斑采集消息响应
+    {
+        POINT pt;
+        pt.x = LOWORD(lParam);
+        pt.y = HIWORD(lParam);
+        LONG nArea = (LONG)(wParam);
+
+		SpotManualCollectInfo  Info;
+		CCollectSpotSize::m_oSpotManualCollectInfoManager.Fetch(&Info);
+
+        switch(m_eSpotSamplingState)
+        {
+        case E_ALL_SPOT_SAMPLING_START://开始所有光斑的采集
+            m_nCurrentSampleNo   = 0;
+            m_eSpotSamplingState = E_CURRENT_SYMBOL_SAMPLING_START;
+
+            break;
+
+        case E_CURRENT_SYMBOL_SAMPLING_START://当前符号处的光斑采样开始
+            {
+                const POINT& ptSymbolPos =  m_vecSampleSymbols[m_nCurrentSampleNo].ptDisplay;
+				//delete by vera_zhao 2018.12.10
+//                int nOffsetX = pt.x  - ptSymbolPos.x;
+//                int nOffsetY = pt.y  - ptSymbolPos.y;
+				int nOffsetX = (int)Info.ptPos.d[0] - ptSymbolPos.x;
+				int nOffsetY = (int)Info.ptPos.d[1] - ptSymbolPos.y;
+                if(abs(nOffsetX) > m_nLightSpotDitherOffsetX || abs(nOffsetY) > m_nLightSpotDitherOffsetY)
+                {
+                    break;
+                }
+                else
+                {
+                    m_nSampleTimes = 0;
+                    m_eSpotSamplingState  = E_CURRENT_SYMBOL_CONTINUE_SAMPLING;
+                }
+            }
+
+            break;
+
+
+        case E_CURRENT_SYMBOL_CONTINUE_SAMPLING://当前符号处的光斑采样进行中
+            {
+                const POINT& ptSymbolPos =  m_vecSampleSymbols[m_nCurrentSampleNo].ptDisplay;
+				//delete by vera_zhao 2018.12.10
+//                int nOffsetX = pt.x  - ptSymbolPos.x;
+//                int nOffsetY = pt.y  - ptSymbolPos.y;
+
+				int nOffsetX = (int)Info.ptPos.d[0] - ptSymbolPos.x;
+				int nOffsetY = (int)Info.ptPos.d[1] - ptSymbolPos.y;
+
+                if(abs(nOffsetX) > m_nLightSpotDitherOffsetX || abs(nOffsetY) > m_nLightSpotDitherOffsetY)
+                {//与采样符号的屏幕位置相差过大,重新开始开始采样
+                    m_eSpotSamplingState = E_CURRENT_SYMBOL_SAMPLING_START;
+                    break;
+                }
+                else
+                {
+                    m_vecSampleData[m_nSampleTimes].Area= Info.rcArea;
+					m_vecSampleData[m_nSampleTimes].mass = Info.mass;
+                    m_nSampleTimes++;
+
+
+                    if (m_nSampleTimes == MAX_SPOT_SAMPLING_TIMES)  
+                    {//采集了30次都是在一个点上，说明这个点是要取得的点
+
+                        m_vecSampleSymbols[m_nCurrentSampleNo].bSampled = TRUE;
+                        m_allLightSpotSampleSize[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].ptCenter = m_vecSampleSymbols[m_nCurrentSampleNo].ptCenter;
+                        
+                        int nCalcuteSum = 0;
+						int nActiveSum = 0;
+                        //多次采样,取平均数值
+                        //前一半数据，认为处于暂态，舍弃不用
+                        for(int i = MAX_SPOT_SAMPLING_TIMES/2 ; i < MAX_SPOT_SAMPLING_TIMES ; i++)
+                        {
+							nCalcuteSum += (m_vecSampleData[i].Area.right- m_vecSampleData[i].Area.left)*(m_vecSampleData[i].Area.bottom - m_vecSampleData[i].Area.top);
+							nActiveSum += m_vecSampleData[i].mass;
+                        }
+                        
+                        float nCalArea = (float)nCalcuteSum * 2/ MAX_SPOT_SAMPLING_TIMES;
+						float nActiveArea = (float)nActiveSum * 2 / MAX_SPOT_SAMPLING_TIMES;
+						float  percentageArea = 0.0;
+						if (nCalArea !=0) {
+							percentageArea = nActiveArea / nCalArea;
+						}
+	
+                        m_allLightSpotSampleSize[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].lSize = (LONG)nActiveArea;
+						m_allLightSpotSampleSize[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].fPercentage = percentageArea;
+                        
+                        m_eSpotSamplingState = E_CURRENT_SYMBOL_SAMPLING_END;
+
+                    }//if
+
+                }//else
+
+            }//case E_CURRENT_SYMBOL_CONTINUE_SAMPLING
+            break;
+
+
+        case E_CURRENT_SYMBOL_SAMPLING_END://当前符号处的光斑采集结束
+            //这是最后一个点的信息加进在数组中。
+            if (m_nCurrentSampleNo == m_vecSampleSymbols.size() -1)
+            {
+                if(m_nCurMonitorAreaId < (int)m_vecMonitorAreas.size() -1 )
+                {//还未采样到最后一个屏幕, 继续采样下一个屏幕
+
+					m_nCurMonitorAreaId++;
+                   InitSamplePosition(m_vecMonitorAreas[m_nCurMonitorAreaId]);
+                   InvalidateRect(m_hWnd,NULL,TRUE);
+                   m_nCurrentSampleNo = 0;
+                   m_nSampleTimes = 0;
+
+                   m_eSpotSamplingState = E_CURRENT_SYMBOL_SAMPLING_START;
+                }
+                else
+                {//全部采样完毕则退出
+
+                    InvalidateRect(m_hWnd,NULL,TRUE);
+
+                    //通知消息给消息响应窗体，结束采样
+                    if (m_hOwner)
+                    {
+                        //结束光斑采集
+                        PostMessage(m_hOwner,WM_FINISH_COLLECTSPOT, m_allLightSpotSampleSize.size(), 0);
+
+                        //关闭全屏显示
+                        //FullScreen(FALSE);
+						ShowWindow(m_hWnd, SW_HIDE);
+
+                        if(m_hOwner) EnableWindow(m_hOwner, TRUE);
+                    }
+
+                    m_eSpotSamplingState = E_ALL_SPOT_SAMPLEING_END;
+                }
+            }
+            else//继续进行下一个点的采集
+            {
+                m_nCurrentSampleNo ++ ;
+
+                InvalidateRect(m_hWnd,NULL,TRUE);
+
+                m_eSpotSamplingState = E_CURRENT_SYMBOL_SAMPLING_START;
+
+                m_nSampleTimes = 0;
+
+            }
+            break;
+
+
+        case E_ALL_SPOT_SAMPLEING_END://所有光斑的采集结束
+
+            return 0;//
+
+        default:
+            break;
+        }//switch
+
+ 
+
+    }//else if
+    else if (uMsg == WM_LBUTTONDOWN)//单击鼠标左键
+    {
+        //BOOL f = KillTimer(m_hWnd,1);//删除定时器（鼠标的实时坐标）
+
+        //if (g_oMouseEventGen.GetCollectSpotMode() == COLLECTSPOT_MODE_MANUAL)
+        //{
+        //	POINT PtPosition;
+        //	PtPosition.x = LOWORD(lParam);
+        //	PtPosition.y = HIWORD(lParam);
+
+        //	BOOL bFlag = FALSE;
+
+        //	CSpotSettingDlg dlg(CWnd::FromHandle(m_hWnd));
+
+        //	for(unsigned int i =0; i< m_vecSampleSymbols.size();i++)
+        //	{
+        //		if ((PtPosition.x < m_vecSampleSymbols[i].ptCenter.x + SYMBOL_SIZE && PtPosition.x > m_vecSampleSymbols[i].ptCenter.x - SYMBOL_SIZE)
+        //			&& PtPosition.y < m_vecSampleSymbols[i].ptCenter.y + SYMBOL_SIZE && PtPosition.y > m_vecSampleSymbols[i].ptCenter.y - SYMBOL_SIZE)
+        //		{
+        //			dlg.m_x_Spot = m_vecSampleSymbols[i].ptCenter.x;
+        //			dlg.m_y_Spot = m_vecSampleSymbols[i].ptCenter.y;
+
+        //			bFlag = TRUE;
+        //			break;
+        //		}
+        //	}
+
+        //	if (!bFlag)
+        //	{
+        //		MessageBox(m_hWnd,g_oResStr[IDS_STRING431],g_oResStr[IDS_STRING103],MB_ICONINFORMATION|MB_OKCANCEL);
+        //		return 1;
+        //	}
+
+        //	///////////////////////////////判断如果是重复点击一个点时需要进行判断
+
+        //	for(unsigned int i =0; i<m_vecMaxSpot.size();i++)
+        //	{
+        //		if ((PtPosition.x< m_vecMaxSpot[i].ptCenter.x + SYMBOL_SIZE && PtPosition.x > m_vecMaxSpot[i].ptCenter.x - SYMBOL_SIZE)
+        //			&&(PtPosition.y< m_vecMaxSpot[i].ptCenter.y + SYMBOL_SIZE && PtPosition.y> m_vecMaxSpot[i].ptCenter.y - SYMBOL_SIZE))
+        //		{
+        //			if (MessageBox(m_hWnd,g_oResStr[IDS_STRING430],g_oResStr[IDS_STRING105],MB_ICONINFORMATION|MB_OKCANCEL) == IDOK)
+        //			{
+        //				s_nSpotSettingCount--;
+        //				break;
+        //			}
+        //			else
+        //			{
+        //				return 1;
+        //			}
+        //		}
+        //	}
+
+        //	//////////////然后弹出对话框，对话框中的X、Y的坐标已经给出了，只要输入面积就可以了，或者修改X、Y的坐标值
+        //	if (dlg.DoModal() == IDOK)
+        //	{
+        //		if (dlg.m_x_Spot == 0 || dlg.m_y_Spot == 0 || dlg.m_s_Spot == 0)
+        //		{
+        //			MessageBox(m_hWnd,g_oResStr[IDS_STRING429],g_oResStr[IDS_STRING103],MB_OK |MB_ICONERROR);
+        //			return 1;
+        //		}
+
+        //		int Spot_X_Position = dlg.m_x_Spot;
+        //		int Spot_Y_Position = dlg.m_y_Spot;
+        //		long Spot_S_Area    = dlg.m_s_Spot;
+
+        //		for (unsigned int i =0; i< m_vecSampleSymbols.size();i++)
+        //		{
+        //			if ( (Spot_X_Position<m_vecSampleSymbols[i].ptCenter.x + SYMBOL_SIZE && Spot_X_Position > m_vecSampleSymbols[i].ptCenter.x - SYMBOL_SIZE)
+        //				&& (Spot_Y_Position < m_vecSampleSymbols[i].ptCenter.y +SYMBOL_SIZE && Spot_Y_Position > m_vecSampleSymbols[i].ptCenter.y - SYMBOL_SIZE))
+        //			{
+        //				m_vecMaxSpot[i].ptCenter.x = Spot_X_Position;
+        //				m_vecMaxSpot[i].ptCenter.y = Spot_Y_Position;
+        //				m_vecMaxSpot[i].lSize      = Spot_S_Area;
+
+        //				m_vecSampleSymbols[i].bAdjusted = TRUE;
+        //				s_nSpotSettingCount++;
+        //				break;
+
+        //			}
+        //		}
+        //	}
+        //}
+        //::SetTimer(m_hWnd,1,100,NULL);
+    }
+
+
+    else if(uMsg == WM_RBUTTONDOWN)        //单击鼠标右键
+    {
+        //::KillTimer(m_hWnd,1);
+
+        POINT pt;
+        pt.x = LOWORD(lParam);
+        pt.y = HIWORD(lParam);
+
+        HMENU hMenu = ::LoadMenu(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDR_MENU_CTXMENU));
+        HMENU hCtxMenu = ::GetSubMenu(hMenu,2);
+
+        if (hCtxMenu)
+        {
+            TrackPopupMenu(hCtxMenu,
+                TPM_RIGHTALIGN|TPM_BOTTOMALIGN,
+                pt.x,
+                pt.y,
+                0,
+                m_hWnd,
+                NULL);
+        }
+
+        DestroyMenu(hMenu);
+    }
+
+    else if(uMsg == WM_COMMAND)
+    {
+        if (wParam == ID_EXIT_BLOBSETING)
+        {
+/*            if (m_nCurMonitorId == m_oMonitorFinder.GetMonitorCount() )
+            {
+                if (m_hOwner)
+                {
+                    PostMessage(m_hOwner,WM_FINISH_COLLECTSPOT,0,0);
+                    FullScreen(FALSE);
+                    if (m_hOwner)
+                    {
+                        EnableWindow(m_hOwner,TRUE);
+                    }
+                }
+            }
+            else*/ if (AbortCollectSpotSize())
+            {
+                SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+            }
+        }
+    }
+
+    else if(uMsg == WM_ERASEBKGND)
+    {
+        HDC hDC = (HDC)wParam;
+        RECT rcClient;
+        GetClientRect(hWnd,&rcClient);
+        HBRUSH hBBrush = ::CreateSolidBrush(BKGND_COLOR);
+
+        FillRect(hDC,&rcClient,hBBrush);
+        DeleteObject(hBBrush);
+
+        return 1;
+    }
+
+    else if(uMsg == WM_CLOSE)                   //结束
+    {
+        if (AbortCollectSpotSize())
+        {
+            SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+        }
+
+    }
+    else if(uMsg == WM_TIMER)                                  //定时器
+    {
+        //if (g_oMouseEventGen.GetCollectSpotMode() == COLLECTSPOT_MODE_MANUAL)
+        //{
+        //	CAtlString  m_Point;
+        //	POINT CursorPoint;
+        //	GetCursorPos(&CursorPoint);
+        //	int print_x = CursorPoint.x;
+        //	int print_y = CursorPoint.y;
+        //	m_Point.Format( _T("%d,%d"),print_x,print_y);
+
+        //	HDC hDC = ::GetDC(m_hWnd);
+        //	RECT rcRect;
+        //	rcRect.left   = CursorPoint.x ;
+        //	rcRect.top    = CursorPoint.y;
+        //	rcRect.right  = CursorPoint.x+ 70;
+        //	rcRect.bottom = CursorPoint.y + 30;
+
+        //	SetBkMode(hDC,TRANSPARENT);
+        //	SetTextColor(hDC,RGB(255,255,255));
+        //	DrawText(hDC,m_Point,m_Point.GetLength(),&rcRect,NULL);
+
+        //	ReleaseDC(m_hWnd,hDC);
+        //}
+
+    }
+    else if(uMsg == WM_MOUSEMOVE)                              //鼠标移动
+    {
+        //if(g_oMouseEventGen.GetCollectSpotMode() == COLLECTSPOT_MODE_MANUAL)
+        //{
+        //          InvalidateRect(m_hWnd,NULL,TRUE);
+        //}
+    }
+    else if(uMsg == WM_KEYDOWN)
+    {
+        if(wParam == VK_ESCAPE)
+        {   //ESC按下键中途退出
+            if (AbortCollectSpotSize())
+            {
+                SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+            }
+        }
+    }
+
+    return DefWindowProc(hWnd,uMsg,wParam,lParam);
+
+}
+
+//@功能:开始光斑采样
+//@参数:pMonitorInfo, 屏幕信息数组
+//      nMonitorCount, 屏幕个数
+//BOOL  CCollectSpotSize::StartCollectSpotSize(const MonitorInfo* pMonitorInfo, int nMonitorCount, HWND hNotifyWnd, ESampleCollectPattern ePattern)
+BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, ESampleCollectPattern ePattern)
+{
+	//一个显示设备都未找到，则立即返回
+	if (nAreaCount == 0) return FALSE;
+	//>>
+
+    if(this->m_hWnd == NULL)
+    {
+        if(!Create())
+        {
+            return FALSE;
+        }
+
+        m_hOwner = hNotifyWnd;//通知窗体
+        
+    }
+
+    //采样样式
+    m_eSpotSamplePattern = ePattern;
+    
+    //复制屏幕信息
+	m_vecMonitorAreas.resize(nAreaCount);
+    m_allLightSpotSampleSize.resize(nAreaCount);
+
+
+	RECT rcBoundary;
+	rcBoundary.left   = 0;
+	rcBoundary.top    = 0;
+	rcBoundary.right  = 0;
+	rcBoundary.bottom = 0;
+
+
+    for(int i=0; i< nAreaCount; i++)
+    {
+		m_vecMonitorAreas[i] = pMonitorAreas[i];
+        m_allLightSpotSampleSize[i].rcMonitor = pMonitorAreas[i];
+
+		RECT rcArea = pMonitorAreas[i];
+		if (rcArea.left  < rcBoundary.left ) rcBoundary.left   = rcArea.left;
+		if (rcArea.right > rcBoundary.right) rcBoundary.right  = rcArea.right;
+		if (rcArea.top   < rcBoundary.top  ) rcBoundary.top    = rcArea.top;
+		if (rcArea.bottom > rcBoundary.top ) rcBoundary.bottom = rcArea.bottom;
+    }
+
+    
+    //初始化
+    m_nCurrentSampleNo =0;
+    m_eSpotSamplingState = E_ALL_SPOT_SAMPLING_START;
+
+	m_nCurMonitorAreaId = 0;
+
+    InitSamplePosition(m_vecMonitorAreas[m_nCurMonitorAreaId]);
+
+	SetWindowPos(
+		m_hWnd,
+		HWND_TOPMOST,
+		//HWND_TOP, 
+		rcBoundary.left,
+		rcBoundary.top,
+		rcBoundary.right,
+		rcBoundary.bottom,
+		SWP_SHOWWINDOW);
+	SetFocus(m_hWnd);
+	
+
+	
+    //FullScreen(TRUE);
+
+
+    InvalidateRect(m_hWnd,NULL,FALSE);
+    if (m_hOwner)
+    {
+        EnableWindow(m_hOwner,FALSE);
+    }
+
+
+    return TRUE;
+}
+
+BOOL CCollectSpotSize::AbortCollectSpotSize()
+{
+    if (MessageBox(m_hWnd,g_oResStr[IDS_STRING428],g_oResStr[IDS_STRING105],MB_ICONINFORMATION|MB_OKCANCEL) == IDOK)
+    {
+        //FullScreen(FALSE);
+		ShowWindow(m_hWnd, SW_HIDE);
+        if (m_hOwner)
+        {
+            EnableWindow(m_hOwner,TRUE);
+        }
+        return TRUE;
+    }
+    else
+    {
+        m_nCurrentSampleNo = 0;
+		m_nCurMonitorAreaId = 0;
+        InitSamplePosition(m_vecMonitorAreas[m_nCurMonitorAreaId]);
+        InvalidateRect(m_hWnd,NULL,TRUE);
+    }
+    return FALSE;
+}
+
+
+
+//@功能:屏幕分辨率变化事件响应函数
+//@参数:nScreenWidth, 新的屏幕宽度
+//      nScreenHeight,新的屏幕高度
+void CCollectSpotSize::OnDisplayChange(int nScreenWidth, int nScreenHeight)
+{
+    m_nLightSpotDitherOffsetX = (int)((double)nScreenWidth  * LIGHT_SPOT_DITHER_OFFSET_PERCENT_X/100.0);
+    m_nLightSpotDitherOffsetY = (int)((double)nScreenHeight * LIGHT_SPOT_DITHER_OFFSET_PERCENT_Y/100.0);
+}
+
+
+//@功能:设备丢失时的事件响应函数
+void CCollectSpotSize::OnDeviceMissing()
+{
+    //
+    MessageBox(this->m_hWnd, g_oResStr[IDS_STRING454], g_oResStr[IDS_STRING109], MB_ICONERROR|MB_OK);
+
+    //FullScreen(FALSE);
+	ShowWindow(m_hWnd, SW_HIDE);
+
+    if (m_hOwner)
+    {
+        SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+        EnableWindow(m_hOwner,TRUE);
+    }
+
+}

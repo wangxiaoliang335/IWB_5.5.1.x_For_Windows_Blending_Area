@@ -1,0 +1,14 @@
+<WGRSetting>
+    <PERSetting>
+        <Exceptions count="2">
+            <E_1 procName="mspaint.exe" appName="windows painter" permission="462848" />
+            <E_2 procName="drawview.exe" appName="drawview" permission="0" />
+        </Exceptions>
+        <General permission="0" />
+    </PERSetting>
+    <LOGSETTING logPermission="0" />
+    <MULTIPLESETTING value="5" />
+    <WEIGHTCONF k0="1" k1="4" />
+    <GLBGRPERMIT value="0" />
+    <ERASERMULTIPLE value="4" />
+</WGRSetting>

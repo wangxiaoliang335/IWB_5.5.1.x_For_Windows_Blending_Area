@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ArrayInfomation>
+    <Array0 X0="0.00" Y0="0.00" S0="42" />
+    <Array1 X1="0.50" Y1="0.00" S1="550" />
+    <Array2 X2="1.00" Y2="0.00" S2="42" />
+    <Array3 X3="0.00" Y3="0.50" S3="90" />
+    <Array4 X4="0.50" Y4="0.50" S4="156" />
+    <Array5 X5="1.00" Y5="0.50" S5="90" />
+    <Array6 X6="0.00" Y6="1.00" S6="40" />
+    <Array7 X7="0.50" Y7="1.00" S7="40" />
+    <Array8 X8="1.00" Y8="1.00" S8="40" />
+</ArrayInfomation>
