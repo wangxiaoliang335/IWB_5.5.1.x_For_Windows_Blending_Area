@@ -362,20 +362,20 @@ void CInterceptFilter::CaptureImage()
 // Transform place holder - should never be called
 HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 {
-//	if (g_bFirstTime)
-//	{
-//		g_oFpsDetector.Reset();
-//		g_bFirstTime = FALSE;
-//	}
-//	g_oFpsDetector.Trigger();
+    //	if (g_bFirstTime)
+    //	{
+    //		g_oFpsDetector.Reset();
+    //		g_bFirstTime = FALSE;
+    //	}
+    //	g_oFpsDetector.Trigger();
 
-//	static int debug = 0;
-//	if (debug % 500 == 0)
-//	{
-//		AtlTrace("========FPS = %f=======\n", g_oFpsDetector.GetCurrentFps());
-//	}
-//
-//	return S_OK;
+    //	static int debug = 0;
+    //	if (debug % 500 == 0)
+    //	{
+    //		AtlTrace("========FPS = %f=======\n", g_oFpsDetector.GetCurrentFps());
+    //	}
+    //
+    //	return S_OK;
 
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
@@ -385,13 +385,13 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     BYTE* pSrcBuf;
     HRESULT hr = S_OK;
     hr = pOut->GetPointer(&pDestBuf);
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         return hr;
     }
 
     hr = pIn->GetPointer(&pSrcBuf);
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         return hr;
     }
@@ -401,70 +401,70 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     CMediaType mt(m_pInput->CurrentMediaType());
 
     int nMJPGDataLength = 0;
-	int nImageDataLength = 0;
+    int nImageDataLength = 0;
 
     //模拟输入
-    if(m_bSrcFromAVI)
+    if (m_bSrcFromAVI)
     {
         const BITMAPINFOHEADER* bmpInfoHeader = m_oAviInput.GetAVIFormat();
 
-        if(bmpInfoHeader)
+        if (bmpInfoHeader)
         {
-            m_MJPGFrame.SetSize(bmpInfoHeader->biHeight, bmpInfoHeader->biWidth, bmpInfoHeader->biBitCount/8);
+            m_MJPGFrame.SetSize(bmpInfoHeader->biHeight, bmpInfoHeader->biWidth, bmpInfoHeader->biBitCount / 8);
 
-            LONG lBytes,lSamples;
-           if(!m_oAviInput.Read((BYTE*)m_MJPGFrame.GetData(), m_MJPGFrame.Size(), &lBytes,  &lSamples))
+            LONG lBytes, lSamples;
+            if (!m_oAviInput.Read((BYTE*)m_MJPGFrame.GetData(), m_MJPGFrame.Size(), &lBytes, &lSamples))
             {
                 m_oAviInput.Close();
                 m_bSrcFromAVI = FALSE;
             }
-		   if (bmpInfoHeader->biCompression== MJPG )
-		   {
-              m_oMJPGDecoder.ProcessData(m_MJPGFrame.GetData(), lBytes,(BYTE *)m_GraySrcFrame.GetData(), &nMJPGDataLength);
-              pSrcBuf = m_MJPGFrame.GetData();
-		   }
-		   else if (bmpInfoHeader->biCompression == YUY2)
-		   {
-			   YUY2ToGray(m_MJPGFrame.GetData(), bmpInfoHeader->biHeight * bmpInfoHeader->biWidth, m_GraySrcFrame.GetData());
-			   pSrcBuf = m_MJPGFrame.GetData();
-		   }
-		   else 
-		   {
-			   return E_FAIL;//不支持
-		   }
+            if (bmpInfoHeader->biCompression == MJPG)
+            {
+                m_oMJPGDecoder.ProcessData(m_MJPGFrame.GetData(), lBytes, (BYTE *)m_GraySrcFrame.GetData(), &nMJPGDataLength);
+                pSrcBuf = m_MJPGFrame.GetData();
+            }
+            else if (bmpInfoHeader->biCompression == YUY2)
+            {
+                YUY2ToGray(m_MJPGFrame.GetData(), bmpInfoHeader->biHeight * bmpInfoHeader->biWidth, m_GraySrcFrame.GetData());
+                pSrcBuf = m_MJPGFrame.GetData();
+            }
+            else
+            {
+                return E_FAIL;//不支持
+            }
         }
     }
     else
     {
-        if(FORMAT_VideoInfo2 == mt.formattype)
+        if (FORMAT_VideoInfo2 == mt.formattype)
         {
             VIDEOINFOHEADER2* pVideoInfoHeader2 = reinterpret_cast<VIDEOINFOHEADER2*>(mt.pbFormat);
 
-            m_nRawImageWidth  = pVideoInfoHeader2->bmiHeader.biWidth ;
+            m_nRawImageWidth = pVideoInfoHeader2->bmiHeader.biWidth;
             m_nRawImageHeight = pVideoInfoHeader2->bmiHeader.biHeight;
-			m_dwImageType = pVideoInfoHeader2->bmiHeader.biCompression;
-			nImageDataLength = pVideoInfoHeader2->bmiHeader.biSizeImage;
+            m_dwImageType = pVideoInfoHeader2->bmiHeader.biCompression;
+            nImageDataLength = pVideoInfoHeader2->bmiHeader.biSizeImage;
 
-			m_pPenPosDetector->SetSrcImageSize(m_nRawImageWidth, m_nRawImageHeight);
+            m_pPenPosDetector->SetSrcImageSize(m_nRawImageWidth, m_nRawImageHeight);
 
             m_GraySrcFrame.SetSize(m_nRawImageWidth, m_nRawImageHeight, 1);
 
-            if(pVideoInfoHeader2->bmiHeader.biCompression == MJPG/*MJPG*/)
+            if (pVideoInfoHeader2->bmiHeader.biCompression == MJPG/*MJPG*/)
             {
-             //   m_dwImageType= MJPG;
+                //   m_dwImageType= MJPG;
 
-                if(pSrcBuf[0] != 0xFF || pSrcBuf[1] != 0xd8 || pSrcBuf[2] != 0xFF || pSrcBuf[3] != 0xdb)
+                if (pSrcBuf[0] != 0xFF || pSrcBuf[1] != 0xd8 || pSrcBuf[2] != 0xFF || pSrcBuf[3] != 0xdb)
                 {
                     AtlTrace(_T("Invalid JPEG Frame\r\n"));
                     return E_FAIL;
                 }
 
                 //将MJPG图片帧解码为灰度图像。
-                m_oMJPGDecoder.ProcessData(pSrcBuf, pIn->GetSize(),(BYTE *)m_GraySrcFrame.GetData(), &nMJPGDataLength);
-				nImageDataLength = nMJPGDataLength;
+                m_oMJPGDecoder.ProcessData(pSrcBuf, pIn->GetSize(), (BYTE *)m_GraySrcFrame.GetData(), &nMJPGDataLength);
+                nImageDataLength = nMJPGDataLength;
             }
 
-            else if(pVideoInfoHeader2->bmiHeader.biCompression == YUY2)
+            else if (pVideoInfoHeader2->bmiHeader.biCompression == YUY2)
             {
                 //m_dwImageType= YUY2;
                 YUY2ToGray(pSrcBuf, m_nRawImageWidth*m_nRawImageHeight, m_GraySrcFrame.GetData());
@@ -472,22 +472,22 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
             else
             {
                 return E_FAIL;//不支持
-            }      
+            }
         }
-        else if(FORMAT_VideoInfo == mt.formattype)
+        else if (FORMAT_VideoInfo == mt.formattype)
         {
             VIDEOINFOHEADER* pVideoInfoHeader = reinterpret_cast<VIDEOINFOHEADER*>(mt.pbFormat);
 
-            m_nRawImageWidth  = pVideoInfoHeader->bmiHeader.biWidth ;
+            m_nRawImageWidth = pVideoInfoHeader->bmiHeader.biWidth;
             m_nRawImageHeight = pVideoInfoHeader->bmiHeader.biHeight;
-			m_dwImageType     = pVideoInfoHeader->bmiHeader.biCompression;
-			nImageDataLength  = pVideoInfoHeader->bmiHeader.biSizeImage;
+            m_dwImageType = pVideoInfoHeader->bmiHeader.biCompression;
+            nImageDataLength = pVideoInfoHeader->bmiHeader.biSizeImage;
 
-			m_pPenPosDetector->SetSrcImageSize(m_nRawImageWidth, m_nRawImageHeight);
+            m_pPenPosDetector->SetSrcImageSize(m_nRawImageWidth, m_nRawImageHeight);
 
             m_GraySrcFrame.SetSize(m_nRawImageWidth, m_nRawImageHeight, 1);
 
-            if(pVideoInfoHeader->bmiHeader.biCompression == MJPG/*MJPG*/)
+            if (pVideoInfoHeader->bmiHeader.biCompression == MJPG/*MJPG*/)
             {
                 //	CPerfDetector pfer(_T("CPerfDetector:: MJPG"));
                 //0xd8:M_SOI, Start of Image
@@ -495,45 +495,45 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
                 //0xdb:M_DQT
                 //0xE0:M_APP0, Application-specific marker, type N
                 //if(pSrcBuf[0] != 0xFF || pSrcBuf[1] != 0xd8 || pSrcBuf[2] != 0xFF || pSrcBuf[3] != 0xdb)
-                if(pSrcBuf[0] != 0xFF || pSrcBuf[1] != 0xd8 || pSrcBuf[2] != 0xFF )
+                if (pSrcBuf[0] != 0xFF || pSrcBuf[1] != 0xd8 || pSrcBuf[2] != 0xFF)
                 {
                     AtlTrace(_T("Invalid JPEG Frame\r\n"));
                 }
 
-//				static bool bDebug = false;
-//				if (bDebug)
-//				{
-//					std::fstream dbgFile;
-//					static int debug_count = 0;
-//					char szFileName[MAX_PATH];
-//					sprintf_s(szFileName, _countof(szFileName), "k:\\temp\\debug_%d.jpg", debug_count++);
-//					dbgFile.open(szFileName, std::ios_base::binary | std::ios_base::out);
-//
-//					dbgFile.write((const char*)pSrcBuf, pIn->GetSize());
-//
-//					dbgFile.close();
-//				}
+                //				static bool bDebug = false;
+                //				if (bDebug)
+                //				{
+                //					std::fstream dbgFile;
+                //					static int debug_count = 0;
+                //					char szFileName[MAX_PATH];
+                //					sprintf_s(szFileName, _countof(szFileName), "k:\\temp\\debug_%d.jpg", debug_count++);
+                //					dbgFile.open(szFileName, std::ios_base::binary | std::ios_base::out);
+                //
+                //					dbgFile.write((const char*)pSrcBuf, pIn->GetSize());
+                //
+                //					dbgFile.close();
+                //				}
 
-                //将MJPG图片帧解码为灰度图像。
-                m_oMJPGDecoder.ProcessData(pSrcBuf, pIn->GetSize(),(BYTE* )m_GraySrcFrame.GetData(), &nMJPGDataLength);
-				//这个数据会压缩，因此会变小。
-				nImageDataLength = nMJPGDataLength;
-//				if (bDebug)
-//				{
-//					std::fstream dbgFile;
-//					static int debug_count = 0;
-//					char szFileName[MAX_PATH];
-//					sprintf_s(szFileName, _countof(szFileName), "k:\\temp\\debug2_%d.jpg", debug_count++);
-//					dbgFile.open(szFileName, std::ios_base::binary | std::ios_base::out);
-//
-//					dbgFile.write((const char*)pSrcBuf, nMJPGDataLength);
-//
-//					dbgFile.close();
-//				}
+                                //将MJPG图片帧解码为灰度图像。
+                m_oMJPGDecoder.ProcessData(pSrcBuf, pIn->GetSize(), (BYTE*)m_GraySrcFrame.GetData(), &nMJPGDataLength);
+                //这个数据会压缩，因此会变小。
+                nImageDataLength = nMJPGDataLength;
+                //				if (bDebug)
+                //				{
+                //					std::fstream dbgFile;
+                //					static int debug_count = 0;
+                //					char szFileName[MAX_PATH];
+                //					sprintf_s(szFileName, _countof(szFileName), "k:\\temp\\debug2_%d.jpg", debug_count++);
+                //					dbgFile.open(szFileName, std::ios_base::binary | std::ios_base::out);
+                //
+                //					dbgFile.write((const char*)pSrcBuf, nMJPGDataLength);
+                //
+                //					dbgFile.close();
+                //				}
 
             }
 
-            else if(pVideoInfoHeader->bmiHeader.biCompression == YUY2)   //说明图像的格式是YUY2
+            else if (pVideoInfoHeader->bmiHeader.biCompression == YUY2)   //说明图像的格式是YUY2
             {
                 YUY2ToGray(pSrcBuf, m_nRawImageWidth*m_nRawImageHeight, m_GraySrcFrame.GetData());
 
@@ -563,12 +563,12 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     //<<2015-08-18
     //画面自动亮度控制
 
-    if(m_bEnableBrightnessAutoRegulating)
+    if (m_bEnableBrightnessAutoRegulating)
     {
         //static unsigned int  s_AutoControlCount = 0;
         //if(s_AutoControlCount % 6== 0)
         {
-        //    DoAutoBrightnessControl((const BYTE*)m_GraySrcFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
+            //    DoAutoBrightnessControl((const BYTE*)m_GraySrcFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
         }
         //s_AutoControlCount ++;
     }
@@ -576,69 +576,69 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
 
     //录制视频
-    if(IsRecording())
+    if (IsRecording())
     {
         //m_oAviRecorder.Write((const BYTE*)m_YUY2SrcFrame.GetData(), m_YUY2SrcFrame.Size());
        // m_oAviRecorder.Write((const BYTE*)pSrcBuf, nMJPGDataLength);
-		m_oAviRecorder.Write((const BYTE*)pSrcBuf, nImageDataLength);   //支持YUV2录制模式
+        m_oAviRecorder.Write((const BYTE*)pSrcBuf, nImageDataLength);   //支持YUV2录制模式
     }
 
     //调试,查找图片中像素的最大值和最小值
     //static BYTE MaxY = 0, MinY = 255, MaxU = 0, MinU= 255, MaxV = 0, MinV = 255;
     //FindMaxValue(pIn,MaxY, MinY, MaxU, MinU, MaxV, MinV);
 
-	////如果是摄像头模式的话就不需要做光斑的处理，只需要显示即可
-	////正常使用模式的话需要做光斑处理的
+    ////如果是摄像头模式的话就不需要做光斑的处理，只需要显示即可
+    ////正常使用模式的话需要做光斑处理的
 
     //使用静态屏蔽图进行屏蔽
-    if(this->m_pPenPosDetector->GetManualScreenAreaMode() == E_ManualScreenAreaNormalMode &&  m_pPenPosDetector->IsStaticMasking())
+    if (this->m_pPenPosDetector->GetManualScreenAreaMode() == E_ManualScreenAreaNormalMode &&  m_pPenPosDetector->IsStaticMasking())
     {
-         //	CPerfDetector perf(_T("CInterceptFilter::static"));
-         //对数据源进行静态屏蔽
-		 //说明屏蔽图的尺寸与实际的图的尺寸不相符。
-		 MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetStaticMaskFrame());
+        //	CPerfDetector perf(_T("CInterceptFilter::static"));
+        //对数据源进行静态屏蔽
+        //说明屏蔽图的尺寸与实际的图的尺寸不相符。
+        MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetStaticMaskFrame());
     }
 
-	if (m_nFrameSkipCount > 0)
-	{
-		m_nFrameSkipCount--;
-		return S_OK;
-	}
+    if (m_nFrameSkipCount > 0)
+    {
+        m_nFrameSkipCount--;
+        return S_OK;
+    }
     //通知需要帧数据的事件槽
-	NotifySink(&m_GraySrcFrame);
-	////如果是摄像头模式的话不做光斑检测工作。
+    NotifySink(&m_GraySrcFrame);
+    ////如果是摄像头模式的话不做光斑检测工作。
     m_pPenPosDetector->DoDetect(&m_GraySrcFrame, m_pSensor->GetLensMode());
 
-    if(this->m_pVideoPlayer)
+    if (this->m_pVideoPlayer)
     {
         HWND hWnd = m_pVideoPlayer->GetPlayWnd();
 
         //播放窗体不可见,所有关于显示的操作跳过，以节约宝贵的CPU资源。
-        if(!IsWindowVisible(hWnd))
+        if (!IsWindowVisible(hWnd))
         {
             return S_OK;
         }
 
-        m_nDisplayCounter ++;
+        m_nDisplayCounter++;
 
-        if(m_nDisplayCounter % 4 != 0)//减半显示,减少CPU资源消耗  //m_nDisplayCounter % 2 == 0
+        if (m_nDisplayCounter % 4 != 0)//减半显示,减少CPU资源消耗  //m_nDisplayCounter % 2 == 0
         {
             return S_OK;
         }
 
-		m_pVideoPlayer->ShowCameraInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType);
+        m_pVideoPlayer->ShowCameraInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType);
 
     }
 
-    if(m_pPenPosDetector->IsStaticMasking())
+    if (m_pPenPosDetector->IsStaticMasking())
     {
-		if (m_nRawImageWidth != m_pPenPosDetector->GetStaticMaskFrame().Width() || m_nRawImageHeight != m_pPenPosDetector->GetStaticMaskFrame().Height()) 
-		{
-			UpdateARGBFrameWithoutMask();
-		}
-		else {
-			UpdateARGBFrameWithMask();//更新屏蔽图信息和图片信息到ARGB图片帧中。
-		}   
+        if (m_nRawImageWidth != m_pPenPosDetector->GetStaticMaskFrame().Width() || m_nRawImageHeight != m_pPenPosDetector->GetStaticMaskFrame().Height())
+        {
+            UpdateARGBFrameWithoutMask();
+        }
+        else {
+            UpdateARGBFrameWithMask();//更新屏蔽图信息和图片信息到ARGB图片帧中。
+        }
     }
     else
     {
@@ -647,69 +647,66 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
     //绘制上一次检测到的目标外接矩形
     int nObjCount = m_pPenPosDetector->GetObjCount();
-//    const RECT* pBounds   = m_pPenPosDetector->GetLightSpotBounds();
+    //    const RECT* pBounds   = m_pPenPosDetector->GetLightSpotBounds();
 
-	const DarwaryLightSpotBounds* LightspotInfo = m_pPenPosDetector->GetLightSpotInfo();
+    const DarwaryLightSpotBounds* LightspotInfo = m_pPenPosDetector->GetLightSpotInfo();
 
     //const POINT (&aryContourCrossPoints)[MAX_OBJ_NUMBER][4]  = m_pPenPosDetector->GetContourCrossPoints();
 
-    char szSize[256]="" ;
-    for(int i=0; i < nObjCount; i++)
+    char szSize[256] = "";
+    for (int i = 0; i < nObjCount; i++)
     {
-        if(m_pPenPosDetector->IsSpotRectVisible())
+        if (m_pPenPosDetector->IsSpotRectVisible())
         {
             //DrawRectBound(pDestBuf,pBounds[i], YUV_BLUE);
-			if (LightspotInfo[i].valid)
-			{
+            if (LightspotInfo[i].valid)
+            {
                 m_BGRAFrame.DrawRectange(LightspotInfo[i].m_aryLightSpotBounds, ARGB_BLUE);
-			}
-			else {
-				m_BGRAFrame.DrawRectange(LightspotInfo[i].m_aryLightSpotBounds, ARGB_PURPLE);
-			}
+            }
+            else {
+                m_BGRAFrame.DrawRectange(LightspotInfo[i].m_aryLightSpotBounds, ARGB_PURPLE);
+            }
 
         }
 
-        if(m_pPenPosDetector->IsSpotSizeInfoVisible())
+        if (m_pPenPosDetector->IsSpotSizeInfoVisible())
         {
-            int x = LightspotInfo[i].m_aryLightSpotBounds.right - LightspotInfo[i].m_aryLightSpotBounds.left ;
-            int y = LightspotInfo[i].m_aryLightSpotBounds.bottom - LightspotInfo[i].m_aryLightSpotBounds.top ;
-			if (x>0 && y>0)
-			{
-                  sprintf_s(szSize,_countof(szSize),"<%d*%d>",x,y);
-				  m_BGRAFrame.PutStr(LightspotInfo[i].m_aryLightSpotBounds.right, LightspotInfo[i].m_aryLightSpotBounds.bottom, szSize, ARGB_YELLOW, 16);
-			}
+            int x = LightspotInfo[i].m_aryLightSpotBounds.right - LightspotInfo[i].m_aryLightSpotBounds.left;
+            int y = LightspotInfo[i].m_aryLightSpotBounds.bottom - LightspotInfo[i].m_aryLightSpotBounds.top;
+            if (x > 0 && y > 0)
+            {
+                sprintf_s(szSize, _countof(szSize), "<%d*%d>", x, y);
+                m_BGRAFrame.PutStr(LightspotInfo[i].m_aryLightSpotBounds.right, LightspotInfo[i].m_aryLightSpotBounds.bottom, szSize, ARGB_YELLOW, 16);
+            }
         }
-
         //<<debug
-        /*m_BGRAFrame.Line(
-        aryContourCrossPoints[i][0],
-        aryContourCrossPoints[i][1],
-        ARGB_RED);*/
+            /*m_BGRAFrame.Line(
+            aryContourCrossPoints[i][0],
+            aryContourCrossPoints[i][1],
+            ARGB_RED);*/
 
-        //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][0], ARGB_CYAN );
-        //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][1], ARGB_CYAN );
-        //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][2], ARGB_RED  );
-        //重心
-        //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][3], ARGB_PURPLE);
-        //debug>>
-
-
+            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][0], ARGB_CYAN );
+            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][1], ARGB_CYAN );
+            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][2], ARGB_RED  );
+            //重心
+            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][3], ARGB_PURPLE);
+            //debug>>
     }
 
-    if(m_pPenPosDetector->IsGuideRectangleVisible())
+    if (m_pPenPosDetector->IsGuideRectangleVisible())
     {
-		////////先进行调整再进行得到操作。
-		m_pPenPosDetector->RegulateGuideRectangle(m_pSensor,m_nRawImageWidth, m_nRawImageHeight);
+        ////////先进行调整再进行得到操作。
+        m_pPenPosDetector->RegulateGuideRectangle(m_pSensor, m_nRawImageWidth, m_nRawImageHeight);
 
         RECT rcGuideRectangle;
         DWORD dwRGBColor;
         m_pPenPosDetector->GetGuideRectangle(&rcGuideRectangle, &dwRGBColor);
 
-		//LOG_INF("left=%d ，right=%d,top=%d,bottom=%d...", rcGuideRectangle.left, rcGuideRectangle.right, rcGuideRectangle.top, rcGuideRectangle.bottom);
+        //LOG_INF("left=%d ，right=%d,top=%d,bottom=%d...", rcGuideRectangle.left, rcGuideRectangle.right, rcGuideRectangle.top, rcGuideRectangle.bottom);
         //YUVColor yuv;
 
         BYTE R = (dwRGBColor >> 16) & 0xFF;
-        BYTE G = (dwRGBColor >>  8) & 0xFF;
+        BYTE G = (dwRGBColor >> 8) & 0xFF;
         BYTE B = dwRGBColor & 0xFF;
         //RgbToYuv(R,G,B, &yuv.Y, &yuv.U, &yuv.V);
         DWORD dwColor = (0xFF << 24) | (R << 16) | (G << 8) | B;
@@ -719,48 +716,61 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     }
 
 
-	if(m_pPenPosDetector->IsShowingCalibratePoints())
-	{
-		const TCalibData& calibData = m_pPenPosDetector->GetVideoToScreenMap().GetCalibrateData();
+    if (m_pPenPosDetector->IsShowingCalibratePoints())
+    {
+        const TCalibData& calibData = m_pPenPosDetector->GetVideoToScreenMap().GetCalibrateData();
 
-		for (size_t index = 0; index < calibData.allMonitorCalibData.size(); index++)
-		{
-			const std::vector<TCalibCoordPair>& data = calibData.allMonitorCalibData[index].calibData;
+        for (size_t index = 0; index < calibData.allMonitorCalibData.size(); index++)
+        {
+            const std::vector<TCalibCoordPair>& data = calibData.allMonitorCalibData[index].calibData;
 
-			for (size_t i = 0; i < data.size(); i++)
-			{
+            for (size_t i = 0; i < data.size(); i++)
+            {
 
-				POINT ptPixel;
-				ptPixel.x = (int)(data[i].pt2DImageCoord.d[0] + .5);
-				ptPixel.y = (int)(data[i].pt2DImageCoord.d[1] + .5);
+                POINT ptPixel;
+                ptPixel.x = (int)(data[i].pt2DImageCoord.d[0] + .5);
+                ptPixel.y = (int)(data[i].pt2DImageCoord.d[1] + .5);
 
-				m_BGRAFrame.SetPixel(
-					ptPixel,
-					ARGB_YELLOW);
+                m_BGRAFrame.SetPixel(
+                    ptPixel,
+                    ARGB_YELLOW);
 
-			}//for-each(i)
+            }//for-each(i)
 
-		}
+        }
 
-		const TCameraDebugData* pCameraDebugData = m_pPenPosDetector->GetCameraDebugData();
-		for (int i = 0; i < nObjCount; i++)
-		{
-			POINT ptPixel;
-			ptPixel.x = int(pCameraDebugData[i].pt2DContactInImage.d[0] + .5);
-			ptPixel.y = int(pCameraDebugData[i].pt2DContactInImage.d[1] + .5);
-			m_BGRAFrame.SetPixel(
-				ptPixel,
-				ARGB_CYAN);
+        const TCameraDebugData* pCameraDebugData = m_pPenPosDetector->GetCameraDebugData();
+        for (int i = 0; i < nObjCount; i++)
+        {
+            POINT ptPixel;
+            ptPixel.x = int(pCameraDebugData[i].pt2DContactInImage.d[0] + .5);
+            ptPixel.y = int(pCameraDebugData[i].pt2DContactInImage.d[1] + .5);
+            m_BGRAFrame.SetPixel(
+                ptPixel,
+                ARGB_CYAN);
 
 
-			ptPixel.x = int(pCameraDebugData[i].pt2DCentroid.d[0] + .5);
-			ptPixel.y = int(pCameraDebugData[i].pt2DCentroid.d[1] + .5);
-			m_BGRAFrame.SetPixel(
-				ptPixel,
-				ARGB_RED);
+            ptPixel.x = int(pCameraDebugData[i].pt2DCentroid.d[0] + .5);
+            ptPixel.y = int(pCameraDebugData[i].pt2DCentroid.d[1] + .5);
+            m_BGRAFrame.SetPixel(
+                ptPixel,
+                ARGB_RED);
 
-		}	
-	}
+        }
+    }
+
+    //显示"手势触发事件文字"
+    if (m_pPenPosDetector->IsTriggeringGuesture())
+    {
+        m_BGRAFrame.PutStr(
+            10, 
+            10,
+            "Triggering Guesture",
+            ARGB_RED, 
+            16);
+
+    }
+
 
 #ifdef _DEBUG
     //在视频中显示校正点

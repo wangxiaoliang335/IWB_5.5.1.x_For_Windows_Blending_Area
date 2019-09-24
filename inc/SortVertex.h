@@ -85,7 +85,7 @@ public:
                 neighbours[I].distance = (std::numeric_limits<long>::max)();
                 neighbours[I].nVertex  = -1;
             }
-			neighbourCount = 0;
+            neighbourCount = 0;
 
             for(int L = 0; L < n;  L++)
             {
@@ -151,7 +151,7 @@ public:
             for(int I = 0; I < neighbourCount - 1; I++)
             {
                 //long norm_vector_I_square = neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy;
-				double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy));
+                double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy));
 
                 int J = I +1;
                 while(J < neighbourCount)
@@ -159,23 +159,25 @@ public:
                     //计算矢量I,J的点积和叉积,
                     long dotProduct   = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
                     long crossProduct = neighbours[I].Vx*neighbours[J].Vy - neighbours[I].Vy*neighbours[J].Vx;
-					
-					/*
+                    
+                    /*
                     long crossProduct_square = crossProduct*crossProduct;
 
                     long norm_vector_J_square =  neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy;
 
 
                     if(dotProduct > 0 &&  __int64(crossProduct_square)*__int64(norm_square_product_threshold) < __int64(cross_product_square_threshold) * __int64(norm_vector_I_square) * __int64(norm_vector_J_square))
-					*/
-					double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy);
-					
-					//sin(theta) > sin_theta_threshold
-					//crossProdut=|Vi||Vj|sin(theta);
-					//
-					//sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
-					//
-					if(dotProduct > 0 && crossProduct < sin_theta_threshold*norm_vector_I*norm_vector_J)
+                    */
+                    double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy);
+                    
+                    //sin(theta) > sin_theta_threshold
+                    //crossProdut=|Vi||Vj|sin(theta);
+                    //
+                    //sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
+                    //用dotProduct的符号>0来限定两矢量夹角属于[-pi/2, pi/2]
+                    //用crossProduct的绝对值来判定是否两矢量的夹角来判定夹角小于设定的门限角
+                    //当然也可以用dotProduct的值来判定， dotProduct值越大，则意味着两矢量夹角越大。
+                    if(dotProduct > 0 && abs(crossProduct) < sin_theta_threshold*norm_vector_I*norm_vector_J)
                     {//位于同一方向，即夹角<15度
                         //移除J
                         for(int pos = J; pos < neighbourCount - 1; pos ++)
@@ -239,7 +241,7 @@ public:
                 for(int I = 0; I <= neighbourCount - 1; I++)
                 {
                     /*
-					__int64 norm_vector_I_square = neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy;
+                    __int64 norm_vector_I_square = neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy;
 
                     int J = I + 1;//方位邻结点索引
                     if( J == neighbourCount)
@@ -247,10 +249,10 @@ public:
                         J = 0;
                     }
 
-					__int64 norm_vector_J_square =  neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy;
-					__int64 dotProduct   = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
+                    __int64 norm_vector_J_square =  neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy;
+                    __int64 dotProduct   = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
 
-					__int64 dotProduct_Sign_Square = dotProduct*dotProduct*((dotProduct > 0)?1:-1);
+                    __int64 dotProduct_Sign_Square = dotProduct*dotProduct*((dotProduct > 0)?1:-1);
 
                     //在12800*720P情形下,容易造成溢出
                     //if( (__int64(dotProduct_Sign_Square) * __int64(norm_square_product_candidate)) < __int64(dotProduct_Sign_Square_candidate) * __int64(norm_vector_I_square) * __int64(norm_vector_J_square))

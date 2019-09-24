@@ -20,7 +20,8 @@ m_hProcessThread(NULL),
 m_uCameraCount(CSpotListProcessor::CAMERA_NUMBER),
 m_bLastHIDOwnnerAfterGR(true),
 m_bIsSmartPenReset(true),
-m_bSimulateMode(FALSE)
+m_bSimulateMode(FALSE),
+m_bIsTriggeringGuesture(FALSE)
 {
     Reset();
     m_hWriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -468,6 +469,9 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         m_oSpotMerger.DoMerge(pLightSpots, &nLightSpotCount);
     }
 
+    //复位手势触发标志
+    m_bIsTriggeringGuesture = FALSE;
+
     bool bHandHID2Me = DoGLBoardGestureRecognition(pLightSpots, nLightSpotCount);
 
 #ifdef _DEBUG
@@ -514,7 +518,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
     //debug>>
 #endif
-
 
 
     if (bHandHID2Me)
@@ -586,13 +589,15 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         }
         else
         {
-
+            //置位手势触发标志
+            m_bIsTriggeringGuesture = TRUE;
             bDebug = TRUE;
         }
     }
-
     else
     {
+        //置位手势触发标志
+        m_bIsTriggeringGuesture = TRUE;
         if (!m_bIsSmartPenReset)
         {
             m_oSmartPenMatch.Reset();
@@ -954,4 +959,11 @@ void CSpotListProcessor::OnDisplayChange(int nScreenWidth, int nScreenHeight)
     //给GLBoard手势和笔迹设置屏幕物理尺寸和屏幕分辨率
     g_oGLBoardGR.OnSetTouchScreenDimension(nDiagonalPhysicalLength, sizeScreen);
 
+}
+
+
+//@功能:判断是否正在触发手势
+BOOL CSpotListProcessor::IsTriggeringGuesture()const
+{
+    return m_bIsTriggeringGuesture;
 }

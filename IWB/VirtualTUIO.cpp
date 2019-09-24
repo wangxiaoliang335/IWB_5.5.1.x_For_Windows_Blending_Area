@@ -139,11 +139,11 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 	{
 		if ((*iter).bInvalid)
 		{
-			it = iter;
-			it++;
+			//it = iter;
+			//it++;
 			
-			ActiveCursorList.erase(iter);
-			iter = it;
+			iter  = ActiveCursorList.erase(iter);
+			//iter = it;
 		}
 		else
 		{

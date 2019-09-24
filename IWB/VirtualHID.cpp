@@ -441,7 +441,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
 
        }   
 
-	   /////////////////模拟虚拟的TUIO
+	   //模拟虚拟的TUIO
 	   m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
 	   
        return bRet;

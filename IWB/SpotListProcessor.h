@@ -19,6 +19,9 @@ public:
     //@参数:nScreenWidth, 新的屏幕宽度
     //      nScreenHeight,新的屏幕高度
     virtual void OnDisplayChange(int nScreenWidth, int nScreenHeight)=0;
+
+    //@功能:判断是否正在触发手势
+    virtual BOOL IsTriggeringGuesture()const = 0;
 };
 
 
@@ -63,6 +66,8 @@ public:
     //      nScreenHeight,新的屏幕高度
     virtual void OnDisplayChange(int nScreenWidth, int nScreenHeight);
 
+    //@功能:判断是否正在触发手势
+    virtual BOOL IsTriggeringGuesture()const;
 protected:
     //@功能:启动处理线程
     BOOL StartProcessThread();
@@ -172,6 +177,9 @@ protected:
 
     CStrokeFilter<PEN_NUM>  m_oStrokFilter;//笔迹过滤器
 	CBezierInterpolator<PEN_NUM> m_oBezierInterpolator;//
+
+    //正在触发手势标志
+    BOOL m_bIsTriggeringGuesture;
 };
 
 ///////////////////////////////////////////////////////////////////////////

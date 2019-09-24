@@ -546,6 +546,16 @@ public:
 	 {
 		 return &m_vecDebugData[0];
 	 }
+
+     BOOL IsTriggeringGuesture()const
+     {
+         if (m_pSpotListProcessor)
+         {
+
+             return m_pSpotListProcessor->IsTriggeringGuesture();
+         }
+         return FALSE;
+     }
 		 
 protected:
 
