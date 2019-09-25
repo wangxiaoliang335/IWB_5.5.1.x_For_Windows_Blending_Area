@@ -437,9 +437,9 @@ struct  TInvalidSpotList
 struct TBlobObject
 {
 	//int nObjectId      ;//目标Id
-	int mass           ;//质量
-	int mx             ;//对x轴的力矩
-	int my             ;//对y轴的力矩
+	unsigned int mass    ;//质量
+    unsigned int mx      ;//对x轴的力矩
+    unsigned int my      ;//对y轴的力矩
 
 	POINT GPos         ;//重心坐标
 	RECT rcArea        ;//区域

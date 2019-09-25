@@ -20,7 +20,7 @@ public:
     //@功能:返回大于制定质量门限的目标的数目
     //@参数:nMassThreshold, 指定的质量门限, 缺省门限为0
     //@说明:如果质量门限设为0,则返回所有目标。
-	UINT GetObjCount(int nMassThreshold =0) const
+	UINT GetObjCount(unsigned int nMassThreshold =0) const
 	{
         int nObjCount = m_nObjectCount;
         if(nMassThreshold != 0)
@@ -679,19 +679,21 @@ public:
 			{
 				if(pInternalObj->bIsValid)
 				{
-						if(m_nObjectCount < _countof(m_aryObjInfo))
-						{
-							TBlobObject* pObjInfo = &m_aryObjInfo[m_nObjectCount];
+						//if(m_nObjectCount < _countof(m_aryObjInfo))
+						//{
+						//	TBlobObject* pObjInfo = &m_aryObjInfo[m_nObjectCount];
 
-							pObjInfo->mass       = pInternalObj->m0;
-							pObjInfo->mx         = pInternalObj->mx;
-							pObjInfo->my         = pInternalObj->my;
-							pObjInfo->rcArea     = pInternalObj->rcBound;
+						//	pObjInfo->mass       = pInternalObj->m0;
+						//	pObjInfo->mx         = pInternalObj->mx;
+						//	pObjInfo->my         = pInternalObj->my;
+						//	pObjInfo->rcArea     = pInternalObj->rcBound;
 
-							RecycleInternalObjMem(pInternalObj);
+						//	RecycleInternalObjMem(pInternalObj);
 
-							m_nObjectCount ++;
-						}
+						//	m_nObjectCount ++;
+						//}
+                    StoreAsObject(*pInternalObj);
+                    RecycleInternalObjMem(pInternalObj);
 
 					nObjCount--;
 				}
@@ -711,7 +713,7 @@ public:
         }
 
 
-        Sort(FALSE);//降序排列
+        //Sort(FALSE);//降序排列
 
 		return TRUE;
 	}//function ProcessImage
@@ -1016,6 +1018,7 @@ protected:
 			{
 				if(pInternalObj->bIsSeperated)//分裂成独立的目标了，
 				{
+                    /*
 					if(m_nObjectCount < _countof(m_aryObjInfo))
 					{
 						TBlobObject* pObjInfo = &m_aryObjInfo[m_nObjectCount];
@@ -1035,6 +1038,9 @@ protected:
 					{
 						return FALSE;
 					}
+                    */
+                    StoreAsObject(*pInternalObj);
+                    RecycleInternalObjMem(pInternalObj);
 				}
 				else
 				{
@@ -1084,7 +1090,78 @@ protected:
 	}
 
 
+    //@功能:将新找到的目标的质量插入排序到数组m_aryObjInfo中去
+    //      数组的元素按照目标质量大小降序排列。
+    //@说明:如果图片中有很多个小目标, 使得目标总数大于MAX_OBJECT_COUNT, 
+    //      插入排序的最终效果是只保留质量最大的MAX_OBJECT_COUNT个目标
+    void StoreAsObject(const TInternalObject& internalObject)
+    {
+        UINT nInsertPos = 0;
+        
+        //从前往后搜索插入位置, 直到新目标的质量大于元素的质量
+        for (nInsertPos = 0; nInsertPos < m_nObjectCount; nInsertPos++)
+        {
+            const TBlobObject &obj =  m_aryObjInfo[nInsertPos];
+            if (internalObject.m0 > obj.mass)
+            {
+                break;
+            }
+            else
+            {
+                continue;
+            }
 
+        }//for
+
+        if (nInsertPos == m_nObjectCount)
+        {//最为最末一个元素插入
+
+            if (m_nObjectCount < MAX_OBJECT_COUNT)
+            {
+                TBlobObject& objInfo = m_aryObjInfo[m_nObjectCount];
+                objInfo.mass     = internalObject.m0;
+                objInfo.mx       = internalObject.mx;
+                objInfo.my       = internalObject.my;
+                objInfo.rcArea   = internalObject.rcBound;
+                objInfo.bIsValid = TRUE;
+                m_nObjectCount ++;
+            }
+
+
+        }//if
+        else
+        {//
+            int nLastPos = m_nObjectCount;
+
+            if (nLastPos >= MAX_OBJECT_COUNT)
+            {
+                nLastPos = MAX_OBJECT_COUNT - 1;
+            }
+            else
+            {
+                m_nObjectCount++;
+            }
+
+            //m_aryObjInfo[InsertPos .. m_nObjectCount-1]之间的元素往后挪动一个位置
+            for (unsigned int pos = nLastPos; pos > nInsertPos; pos--)
+            {
+                m_aryObjInfo[pos] = m_aryObjInfo[pos - 1];
+            }
+
+
+            TBlobObject& objInfo = m_aryObjInfo[nInsertPos];
+            objInfo.mass     = internalObject.m0;
+            objInfo.mx       = internalObject.mx;
+            objInfo.my       = internalObject.my;
+            objInfo.rcArea   = internalObject.rcBound;
+            objInfo.bIsValid = TRUE;
+            
+
+        }//else
+
+
+
+    }
 
 
 };
