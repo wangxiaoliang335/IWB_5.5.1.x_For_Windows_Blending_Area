@@ -4,6 +4,12 @@
 
 TSysConfigData g_tSysCfgData;
 
+//@功能:保存屏幕布局数据
+BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& allScreenLayouts);
+
+//@功能:载入所有的视频布局
+BOOL LoadConfig(LPCTSTR lpszConfigFilePath, std::vector<TScreenLayout>& allScreenLayouts);
+
 //@功能:载入相机参数
 //@参数:pNode, 指向配置文件中<CameraParams>节点的指针
 //      cameraParams, 输出参数， 相机参数
@@ -635,6 +641,10 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
         }
     }while(pChild);
 
+
+
+
+
     return TRUE;
 }
 
@@ -804,6 +814,9 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
 
     //保存CMOS芯片
     SaveConfig(pElement, globalSettings.CMOSChipSpecification);
+
+
+
 
     return TRUE;
 }
@@ -2631,53 +2644,71 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 	SaveConfig(pElement, sensorModeCfg.calibParam);
 
 	//保存各种镜头的配置参数
-//	AtlTrace(_T("eCameraType55555555====%d\r\n"), g_tSysCfgData.globalSettings.eCameraType);
-	char szPath[MAX_PATH];
-	if (nModeIndex==0)
-	{
-		switch (g_tSysCfgData.globalSettings.eCameraType)
-		{
-		    case E_CAMERA_TR_0:
-				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-				break;
-			case  E_CAMERA_TR_1:
-				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-				break;
-			case  E_CAMERA_TR_2:
-				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-				break;
-			default:
-				break;
-		}
-	}
-	else {
-		switch (g_tSysCfgData.globalSettings.eCameraType)
-		{
-		     case E_CAMERA_TR_0:
-				 sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-				 break;
-			 case  E_CAMERA_TR_1:
-				 sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-				 break;
-			case E_CAMERA_TR_2:
-				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-				break;
-			default:
-				break;
+	TCHAR szPath[MAX_PATH];
+    
+    _stprintf_s(
+        szPath,
+        _countof(szPath), 
+        _T("%s\\Sensor%02d\\%s\\%s"), 
+        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, 
+        nSensorId,
+        GetProjectModeString(EProjectionMode(nModeIndex)),
+        GetCameraTypeString(g_tSysCfgData.globalSettings.eCameraType));
 
-		}
-	}
-	CreateFullDirectory(CA2CT(szPath));
+
+	//if (nModeIndex==0)
+	//{
+	//	switch (g_tSysCfgData.globalSettings.eCameraType)
+	//	{
+	//	    case E_CAMERA_MODEL_0:
+	//			_stprintf_s(szPath, _countof(szPath), _T("%s\\Sensor%02d\\DesktopMode\\OV7725"), (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
+	//			break;
+
+	//		case  E_CAMERA_MODEL_1:
+ //               _stprintf_s(szPath, _countof(szPath), _T("%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
+	//			break;
+
+	//		case  E_CAMERA_MODEL_3:
+ //               _stprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
+	//			break;
+	//		default:
+	//			break;
+	//	}
+	//}
+	//else {
+	//	switch (g_tSysCfgData.globalSettings.eCameraType)
+	//	{
+	//	     case E_CAMERA_MODEL_0:
+	//			 sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
+	//			 break;
+	//		 case  E_CAMERA_MODEL_1:
+	//			 sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
+	//			 break;
+	//		case E_CAMERA_MODEL_3:
+	//			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
+	//			break;
+	//		default:
+	//			break;
+
+	//	}
+	//}
+
+    //递归创建子目录
+	//CreateFullDirectory(CA2CT(szPath));
+    CreateFullDirectory(szPath);
+
 	for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
 	{
-		//载入各种镜头的配置参数
-		char szPathRatio[MAX_PATH];
+		//保存各种镜头的配置参数
+		TCHAR szPathRatio[MAX_PATH];
 		memset(szPathRatio, 0, sizeof(szPathRatio));
-		sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
-		if (PathFileExists(CA2CT(szPathRatio)))
-		{
-		     SaveConfig(CA2CT(szPathRatio), sensorModeCfg.lensConfigs[i]);
-		}
+		_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
+
+
+		//if (PathFileExists(szPathRatio)
+		//{
+        SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[i]);
+		//}
 	}
 	return TRUE;
 }
@@ -2712,19 +2743,21 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 	//////////////////////////////////
 	///保存各种镜头的配置参数
 //	AtlTrace(_T("eCameraType444444====%d\r\n"), g_tSysCfgData.globalSettings.eCameraType);
+    /*
 	char szPath[MAX_PATH];
+
 	if (nModeIndex == 0)
 	{   ////说明是桌面模式
 		////高清摄像头PID=0x9230,VID=0x05a3
 		switch (g_tSysCfgData.globalSettings.eCameraType)
 		{
-		   case E_CAMERA_TR_0:
+		   case E_CAMERA_MODEL_0:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			    break;
-		   case E_CAMERA_TR_1:
+		   case E_CAMERA_MODEL_1:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
-		   case E_CAMERA_TR_2:
+		   case E_CAMERA_MODEL_3:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
 		   default:
@@ -2735,31 +2768,48 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 	{
 		switch (g_tSysCfgData.globalSettings.eCameraType)
 		{
-			case E_CAMERA_TR_0:
+			case E_CAMERA_MODEL_0:
 				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
-			case E_CAMERA_TR_1:
+			case E_CAMERA_MODEL_1:
 				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
-			case E_CAMERA_TR_2:
+			case E_CAMERA_MODEL_3:
 				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
 			default:
 				break;
 		}
 	}
+    */
 
-	CreateFullDirectory(CA2CT(szPath));
+    TCHAR szPath[MAX_PATH];
+    _stprintf_s(
+        szPath,
+        _countof(szPath),
+        _T("%s\\Sensor%02d\\%s\\%s"),
+        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+        nSensorId,
+        GetProjectModeString(EProjectionMode(nModeIndex)),
+        GetCameraTypeString(g_tSysCfgData.globalSettings.eCameraType));
+
+
+	//CreateFullDirectory(CA2CT(szPath));
+    CreateFullDirectory(szPath);
 	for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
 	{
 		//载入各种镜头的配置参数
-		char szPathRatio[MAX_PATH];
+		//char szPathRatio[MAX_PATH];
+        TCHAR szPathRatio[MAX_PATH];
 		memset(szPathRatio, 0, sizeof(szPathRatio));
-		sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
+		//sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
+        _stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
 
-		if (PathFileExists(CA2CT(szPathRatio)))
+		//if (PathFileExists(CA2CT(szPathRatio)))
+        if(PathFileExists(szPathRatio))
 		{
-			LoadConfig(CA2CT(szPathRatio), sensorModeCfg.lensConfigs[i]);
+			//LoadConfig(CA2CT(szPathRatio), sensorModeCfg.lensConfigs[i]);
+            LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[i]);
 		}
 	}
 
@@ -2827,11 +2877,11 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
 			}
 			else if (paramName && paramValue && _stricmp(paramName, "AttachedMonitorAreaType") == 0)
 			{
-				if(stricmp(paramValue, "Left Half") == 0)
+				if(_stricmp(paramValue, "Left Half") == 0)
 				{
 					sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_LEFT_HALF;
 				}
-				else if (stricmp(paramValue, "Right Half") == 0)
+				else if (_stricmp(paramValue, "Right Half") == 0)
 				{
 					sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_RIGHT_HALF;
 				}
@@ -3087,14 +3137,14 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,
 {
 	if (PID == 13200 && VID == 6380)
 	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_TR_1;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
 	}
 	else if (PID == 37424 && VID == 1443)
 	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_TR_2;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_3;
 	}
 	else {
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_TR_0;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
 	}
 
 //	AtlTrace(_T("eCameraType3333333====%d,%d,%d\r\n"), g_tSysCfgData.globalSettings.eCameraType,PID,VID);
@@ -3131,6 +3181,14 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,
 			LoadConfig(pNode, sysCfgData.vecSensorConfig);
 		}
     }while(pNode);
+
+
+    //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
+    TCHAR szPath[MAX_PATH];
+    _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), PROFILE::SETTINGS_BASE_DIRECTORY, PROFILE::SCREEN_LAYOUT_FILE_NAME);
+    LoadConfig(szPath, sysCfgData.vecScreenLayouts);
+
+
 
     return TRUE;
 }
@@ -3169,6 +3227,15 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
 	pSettings->LinkEndChild(pIWBSensors);
 
 	SaveConfig(pIWBSensors, sysCfgData.vecSensorConfig);
+
+
+
+
+    //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
+    TCHAR szPath[MAX_PATH];
+    _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), PROFILE::SETTINGS_BASE_DIRECTORY, PROFILE::SCREEN_LAYOUT_FILE_NAME);
+    SaveConfig(szPath, sysCfgData.vecScreenLayouts);
+
 
     //以UTF-8编码格式保存
     TiXmlPrinter  printer;
@@ -3232,19 +3299,20 @@ BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSenso
 {
 	///保存各种镜头的配置参数
 //	AtlTrace(_T("eCameraType2222222====%d\r\n"), g_tSysCfgData.globalSettings.eCameraType);
+    /*
 	char szPath[MAX_PATH];
 	if (nModeIndex == 0)
 	{   ////说明是桌面模式
 		////高清摄像头PID=0x9230,VID=0x05a3
 		switch (g_tSysCfgData.globalSettings.eCameraType)
 		{
-		   case E_CAMERA_TR_0:
+		   case E_CAMERA_MODEL_0:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			  break;
-		   case E_CAMERA_TR_1:
+		   case E_CAMERA_MODEL_1:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			  break;
-		   case E_CAMERA_TR_2:
+		   case E_CAMERA_MODEL_3:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			  break;
 		   default:
@@ -3255,31 +3323,48 @@ BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSenso
 	{
 		switch (g_tSysCfgData.globalSettings.eCameraType)
 		{
-		case E_CAMERA_TR_0:
+		case E_CAMERA_MODEL_0:
 			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			break;
-		case E_CAMERA_TR_1:
+		case E_CAMERA_MODEL_1:
 			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			break;
-		case E_CAMERA_TR_2:
+		case E_CAMERA_MODEL_3:
 			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			break;
 		default:
 			break;
 		}
 	}
+    */
+    TCHAR szPath[MAX_PATH];
+    _stprintf_s(
+        szPath,
+        _countof(szPath),
+        _T("%s\\Sensor%02d\\%s\\%s"),
+        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+        nSensorId,
+        GetProjectModeString(EProjectionMode(nModeIndex)),
+        GetCameraTypeString(g_tSysCfgData.globalSettings.eCameraType));
 
-	CreateFullDirectory(CA2CT(szPath));
+	//CreateFullDirectory(CA2CT(szPath));
+
+    CreateFullDirectory(szPath);
+
 	for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
 	{
 		//载入各种镜头的配置参数
-		char szPathRatio[MAX_PATH];
+		//char szPathRatio[MAX_PATH];
+        TCHAR szPathRatio[MAX_PATH];
 		memset(szPathRatio, 0, sizeof(szPathRatio));
-		sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
-
-		if (PathFileExists(CA2CT(szPathRatio)))
+		//sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
+        _stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
+        
+		//if (PathFileExists(CA2CT(szPathRatio)))
+        if (PathFileExists(szPathRatio))
 		{
-			LoadConfig(CA2CT(szPathRatio), sensorModeCfg.lensConfigs[i]);
+			//LoadConfig(CA2CT(szPathRatio), sensorModeCfg.lensConfigs[i]);
+            LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[i]);
 		}
 	}
 	return true;
@@ -3321,14 +3406,14 @@ BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PI
 {
 	if (PID ==13200 && VID == 6380)
 	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_TR_1;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
 	}
 	else if (PID == 37424 && VID == 1443)
 	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_TR_2;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_3;
 	}
 	else {
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_TR_0;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
 	}
 
 	TiXmlDocument oXMLDoc;
@@ -3382,4 +3467,249 @@ BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PI
 
 	return TRUE;
 
+}
+
+
+//@功能:保存屏幕布局数据
+BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& allScreenLayouts)
+{
+    TiXmlDocument oXMLDoc;
+    TiXmlDeclaration Declaration("1.0", "UTF-8", "no");
+    oXMLDoc.InsertEndChild(Declaration);
+
+    TiXmlComment*  pXmlComment = new TiXmlComment("所有布局");
+    oXMLDoc.LinkEndChild(pXmlComment);
+
+    TiXmlElement * pAllLayouts = new TiXmlElement("AllScreenLayouts");
+    oXMLDoc.LinkEndChild(pAllLayouts);
+
+
+    for (UINT uLayoutIndex = 0; uLayoutIndex < allScreenLayouts.size(); uLayoutIndex++)
+    {
+        TiXmlElement * pScreenLayout = new TiXmlElement("ScreenLayout");
+
+        const TScreenLayout& layout = allScreenLayouts[uLayoutIndex];
+
+        const std::vector<RectF>& screens    = layout.vecScreens;
+        const std::vector<RectF>& mergeAreas = layout.vecMergeAreas;
+
+        //设置屏幕尺寸
+        pScreenLayout->SetAttribute("ScreenCount", screens.size());
+
+        for (UINT uScreenIndex = 0; uScreenIndex < screens.size(); uScreenIndex++)
+        {
+            char szText[32];
+
+            sprintf_s(szText, _countof(szText), "%d#屏幕", uScreenIndex + 1);
+            TiXmlComment*  pXmlComment = new TiXmlComment(szText);
+            pScreenLayout->LinkEndChild(pXmlComment);
+
+            TiXmlElement * pScreen = new TiXmlElement("Screen");
+            pScreen->SetDoubleAttribute("left", (double)screens[uScreenIndex].left);
+            pScreen->SetDoubleAttribute("top", (double)screens[uScreenIndex].top );
+            pScreen->SetDoubleAttribute("right", (double)screens[uScreenIndex].right);
+            pScreen->SetDoubleAttribute("bottom", (double)screens[uScreenIndex].bottom);
+            pScreenLayout->LinkEndChild(pScreen);
+
+            if (uScreenIndex < mergeAreas.size())
+            {
+                TiXmlComment*  pXmlComment = new TiXmlComment("融合区");
+                pScreenLayout->LinkEndChild(pXmlComment);
+
+                TiXmlElement * pMergeArea = new TiXmlElement("MergeArea");
+
+                pMergeArea->SetDoubleAttribute("left" , (double)mergeAreas[uScreenIndex].left);
+                pMergeArea->SetDoubleAttribute("top"  , (double)mergeAreas[uScreenIndex].top);
+                pMergeArea->SetDoubleAttribute("right", (double)mergeAreas[uScreenIndex].right);
+                pMergeArea->SetDoubleAttribute("bottom", (double)mergeAreas[uScreenIndex].bottom);
+
+                pScreenLayout->LinkEndChild(pMergeArea);
+            }
+        }
+
+        pAllLayouts->LinkEndChild(pScreenLayout);
+
+    }//for
+
+
+    //以UTF-8编码格式保存
+    TiXmlPrinter  printer;
+    oXMLDoc.Accept(&printer);
+
+    char UTF8BOM[3] = { '\xEF','\xBB','\xBF' };
+
+    std::ofstream theFile;
+    //注意:
+    //代码若为:theFile.open(CT2A(lpszConfigFilePath) , ios_base::out) ;
+    //则路径中若有中文字符，
+    //mbstowc_s(NULL,wc_Name, FILENAME_MAX,fileName,FILENAMEMAX-1)
+    //返回的wc_name中为乱码
+    //
+    theFile.open(CT2W(lpszConfigFilePath), ios_base::out | ios_base::trunc);
+
+    if (theFile.is_open())
+    {
+        theFile.write(UTF8BOM, 3);
+
+        //中文GB2312编码页号
+        UINT CP_GB2312 = 936;
+
+        //MBCS 转 Unicode
+        CA2W wcharContent(printer.CStr(), CP_GB2312);
+
+        //计算UTF8编码的长度
+        int utf8_length =
+            WideCharToMultiByte(
+                CP_UTF8,
+                0,
+                wcharContent,
+                -1,
+                NULL,
+                0,
+                NULL,
+                NULL);
+
+        char* utf_8_buf = (char*)malloc(utf8_length);
+
+        //Unicode转为UTF8编码
+        WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            wcharContent,
+            -1,
+            utf_8_buf,
+            utf8_length,
+            NULL,
+            NULL);
+
+        theFile.write(utf_8_buf, strlen(utf_8_buf));
+
+        theFile.close();
+        free(utf_8_buf);
+    }
+    return TRUE;
+
+
+
+}
+
+//@功能:载入所有的视频布局
+BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScreenLayouts)
+{
+
+    TiXmlDocument oXMLDoc;
+    if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
+    {
+        return FALSE;
+    }
+    TiXmlElement *pRootElement = oXMLDoc.RootElement();
+    if (pRootElement == NULL)
+    {
+        return FALSE;
+    }
+
+    allScreenLayouts.clear();
+
+    TiXmlNode* pChild_L1 = NULL;
+    do
+    {
+        pChild_L1 = pRootElement->IterateChildren(pChild_L1);
+        if (NULL == pChild_L1) break;
+
+        const char* lpszElementName = pChild_L1->Value();
+        if (_stricmp(lpszElementName, "ScreenLayout") == 0)
+        {
+            TScreenLayout layout;
+
+            TiXmlNode* pChild_L2 = NULL;
+
+
+
+
+            do
+            {
+                pChild_L2 = pChild_L1->IterateChildren(pChild_L2);
+
+                if (NULL == pChild_L2) break;
+
+                const char* lpszElementName = pChild_L2->Value();
+
+                if (_stricmp(lpszElementName, "Screen") == 0)
+                {
+                    RectF screenArea;
+                    memset(&screenArea, 0, sizeof(screenArea));
+
+                    const char* paramValue = ((TiXmlElement*)pChild_L2)->Attribute("left");
+                    if (paramValue)
+                    {
+                        screenArea.left = atof(paramValue);
+                    }
+
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("top");
+                    if (paramValue)
+                    {
+                        screenArea.top = atof(paramValue);
+                    }
+
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("right");
+                    if (paramValue)
+                    {
+                        screenArea.right = atof(paramValue);
+                    }
+
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("bottom");
+                    if (paramValue)
+                    {
+                        screenArea.bottom = atof(paramValue);
+                    }
+                    layout.vecScreens.push_back(screenArea);
+
+                }
+                else if (_stricmp(lpszElementName, "MergeArea") == 0)
+                {
+
+                    RectF mergeArea;
+                    memset(&mergeArea, 0, sizeof(mergeArea));
+
+                    const char* paramValue = ((TiXmlElement*)pChild_L2)->Attribute("left");
+                    if (paramValue)
+                    {
+                        mergeArea.left = atof(paramValue);
+                    }
+
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("top");
+                    if (paramValue)
+                    {
+                        mergeArea.top = atof(paramValue);
+                    }
+
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("right");
+                    if (paramValue)
+                    {
+                        mergeArea.right = atof(paramValue);
+                    }
+
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("bottom");
+                    if (paramValue)
+                    {
+                        mergeArea.bottom = atof(paramValue);
+                    }
+
+                    layout.vecMergeAreas.push_back(mergeArea);
+                    
+                }
+
+
+
+            } while (pChild_L2);
+
+
+
+            allScreenLayouts.push_back(layout);
+        }//if
+
+
+    } while (pChild_L1);
+
+    return TRUE;
 }

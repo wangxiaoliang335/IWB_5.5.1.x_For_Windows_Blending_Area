@@ -20,18 +20,18 @@ CBitAnswer  g_bitanswer;//比特安索在线注册对象。
 //@功能:返回实际的触控类型
 EDeviceTouchType GetActualTouchType()
 {
-    if(theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH)
+    if (theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH)
     {//加密狗为笔触模式, 强制工作模式为笔触模式
         return E_DEVICE_PEN_TOUCH;
     }
     else
-    { 
-		//加密狗为手触模式, 选用用户选择的触控模式
-		if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-		{
-           return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType;
-		}
-		return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType;
+    {
+        //加密狗为手触模式, 选用用户选择的触控模式
+        if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+        {
+            return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType;
+        }
+        return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType;
     }
 }
 
@@ -42,15 +42,15 @@ SIZE GetActualScreenControlSize()
 {
     SIZE szScreen;
 
-    if(theApp.GetScreenType() == EDoubleScreenMode)
+    if (theApp.GetScreenMode() >= EScreenModeDouble)
     {
-		//<<temp, 2017/08/22
+        //<<temp, 2017/08/22
         //szScreen.cx = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
         //szScreen.cy = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-		szScreen.cx = ::GetSystemMetrics(SM_CXSCREEN);
-		szScreen.cy = ::GetSystemMetrics(SM_CYSCREEN);
-		//temp, 2017/08/22>>
+        szScreen.cx = ::GetSystemMetrics(SM_CXSCREEN);
+        szScreen.cy = ::GetSystemMetrics(SM_CYSCREEN);
+        //temp, 2017/08/22>>
     }
     else
     {
@@ -73,14 +73,15 @@ END_MESSAGE_MAP()
 // CIWBApp construction
 
 CIWBApp::CIWBApp()
-:
-m_hMutex(NULL),
-m_bAutoRunMode(FALSE),
-m_bForAllUser(FALSE),
-m_eUSBKeyTouchType(E_DEVICE_PEN_TOUCH),
-m_eScreenType(ESingleScreenMode),
-m_bFoundHardwareUSBKey(FALSE),
-m_bIsOnlineRegistered(FALSE)
+    :
+    m_hMutex(NULL),
+    m_bAutoRunMode(FALSE),
+    m_bForAllUser(FALSE),
+    m_eUSBKeyTouchType(E_DEVICE_PEN_TOUCH),
+    //m_eScreenType(ESingleScreenMode),
+    m_eScreenMode(EScreenModeSingle),
+    m_bFoundHardwareUSBKey(FALSE),
+    m_bIsOnlineRegistered(FALSE)
 {
     // TODO: add construction code here,
     // Place all significant initialization in InitInstance
@@ -91,7 +92,7 @@ m_bIsOnlineRegistered(FALSE)
 
 CIWBApp::~CIWBApp()
 {
-    if(m_hMutex)
+    if (m_hMutex)
     {
         //Use the CloseHandle function to close the handle. The system closes the handle automatically when the process terminates. 
         //The mutex object is destroyed when its last handle has been closed.
@@ -108,25 +109,25 @@ CIWBApp theApp;
 
 DWORD g_dwBeginTime;
 bool  g_bAlertDlgShowing = false;
-VOID CALLBACK  timerProc( 
-                         _In_ HWND     hwnd,
-                         _In_ UINT     uMsg,
-                         _In_ UINT_PTR idEvent,
-                         _In_ DWORD    dwTime)
+VOID CALLBACK  timerProc(
+    _In_ HWND     hwnd,
+    _In_ UINT     uMsg,
+    _In_ UINT_PTR idEvent,
+    _In_ DWORD    dwTime)
 {
 
 
     DWORD dwElapseTime = dwTime - g_dwBeginTime;
 
-    if(dwElapseTime > EVALUATION_USE_TIME)
+    if (dwElapseTime > EVALUATION_USE_TIME)
     {
 
-        if(!g_bAlertDlgShowing)
+        if (!g_bAlertDlgShowing)
         {
             g_bAlertDlgShowing = true;
             //MessageBox(NULL, _T("很抱歉,软件试用时间到, 请重新启动应用程序"), _T("通知"), MB_OK);
             MessageBox(NULL, g_oResStr[IDS_STRING478], g_oResStr[IDS_STRING479], MB_OK);
-			PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CLOSE, 0, 0);
+            PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CLOSE, 0, 0);
         }
     }
 
@@ -140,7 +141,7 @@ VOID CALLBACK  timerProc(
 
 BOOL CIWBApp::InitInstance()
 {
-	SKDREG_Init();
+    SKDREG_Init();
 
     //初始化目录信息
     InitDirectoryInformation();
@@ -148,7 +149,7 @@ BOOL CIWBApp::InitInstance()
     //载入配置信息
     ::LoadConfig(PROFILE::CONFIG_FILE_NAME, g_tSysCfgData);
 
-    m_strLanguageCode =  g_tSysCfgData.globalSettings.langCode;
+    m_strLanguageCode = g_tSysCfgData.globalSettings.langCode;
 
     //事先载入语言资源，因为如果有多个实例时需要给出提示信息
     //查找OEM_RES.dll文件, 如果有则载入, 否则载入
@@ -156,7 +157,7 @@ BOOL CIWBApp::InitInstance()
     hResource = LoadOEMResource();
 
 
-    if(!hResource)//载入OEM资源失败,则依照
+    if (!hResource)//载入OEM资源失败,则依照
     {
 
         //从配置文件中读取配置的语言
@@ -171,7 +172,7 @@ BOOL CIWBApp::InitInstance()
         //>
     }
 
-    if(hResource == NULL)
+    if (hResource == NULL)
     {
         //载入失败则缺省载入英文资源
         m_strLanguageCode = _T("EN");
@@ -189,12 +190,12 @@ BOOL CIWBApp::InitInstance()
 
 
     m_hMutex = CreateMutex(NULL, TRUE, _T("Global\\OpticalPen_20140630"));
-    if(m_hMutex != NULL)
+    if (m_hMutex != NULL)
     {
 
-        if(GetLastError() == ERROR_ALREADY_EXISTS)
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
         {
-            MessageBox(NULL,g_oResStr[IDS_STRING106], g_oResStr[IDS_STRING107], MB_ICONINFORMATION);
+            MessageBox(NULL, g_oResStr[IDS_STRING106], g_oResStr[IDS_STRING107], MB_ICONINFORMATION);
             return FALSE;
         }
     }
@@ -233,193 +234,204 @@ BOOL CIWBApp::InitInstance()
     // TODO: You should modify this string to be something appropriate
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
-	
-	//Sleep(5000);//延迟启动5秒中
-	m_oUSBCameraList.UpdateDeviceList();
 
-	int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
+    //Sleep(5000);//延迟启动5秒中
+    m_oUSBCameraList.UpdateDeviceList();
 
-    BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
+    int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
+
+
+    ReadUSBKey(TRUE);
+
+    //BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
     //#ifndef _DEBUG
 
-    DWORD dwStartTick = GetTickCount();
-    BOOL bFoundUSBKey = FALSE;
+    //DWORD dwStartTick = GetTickCount();
+    //BOOL bFoundUSBKey = FALSE;
 
-//#ifdef NDEBUG
+    //#ifdef NDEBUG
 
-    do
-    {
-        UINT uKeyNum = SDKREG_GetUSBKeyCount();
+    //do
+    //{
+    //    UINT uKeyNum = SDKREG_GetUSBKeyCount();
 
-		LOG_DBG("uKeyNum=%d", uKeyNum);
+    //    LOG_DBG("uKeyNum=%d", uKeyNum);
 
-        int nAppType = 0;
-        float fVersion = 0.0f;
+    //    int nAppType = 0;
+    //    float fVersion = 0.0f;
 
-        for(UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
-        {
+    //    for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
+    //    {
 
-            if(SDKREG_GetVersion(&fVersion,uKeyIndex) != S_OK)
-            {
-                continue;
-            }
+    //        if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
+    //        {
+    //            continue;
+    //        }
 
-            if(fVersion < 0.20111018f)
-            {
-                continue;
-            }
+    //        if (fVersion < 0.20111018f)
+    //        {
+    //            continue;
+    //        }
 
-            //AppType各位描述
-            //
-            //bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
-            //      │                                      │
-            //      │                                      └─0:3D Touch；1:手指触控
-            //      └─1:使能双屏拼接功能                                                 
-            //
-            //
+    //        AppType各位描述
+    //        
+    //        bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
+    //              │                                      │
+    //              │                                      └─0:3D Touch；1:手指触控
+    //              └─1:使能双屏拼接功能                                                 
+    //        
+    //        
 
-            if(SDKREG_GetAppType(&nAppType, uKeyIndex) != S_OK)
-            {
-                if((nAppType & 0x00000FF) != 0  && (nAppType & 0x0000FF) != 1)
-                {
-                    //nAppType
-                    //1:为手指触控
-                    //0:为3DTouch
-                    //既不为手指触控也不为3D-Touch,则继续搜索下一个加密狗。
-                    continue;
-                }
+    //        if (SDKREG_GetAppType(&nAppType, uKeyIndex) != S_OK)
+    //        {
+    //            if ((nAppType & 0x00000FF) != 0 && (nAppType & 0x0000FF) != 1)
+    //            {
+    //                nAppType
+    //                1:为手指触控
+    //                0:为3DTouch
+    //                既不为手指触控也不为3D-Touch,则继续搜索下一个加密狗。
+    //                continue;
+    //            }
 
-            }
+    //        }
 
-            bDoubleScreenTouchMerge = (nAppType >> 8) & 0x00000001;
-            bFoundUSBKey = TRUE;//找到加密狗退出
-            break;
-        }//for
+    //        bDoubleScreenTouchMerge = (nAppType >> 8) & 0x00000001;
 
 
-        if(!bFoundUSBKey  || SDKREG_IsBasicFunctionEnabled(14) != S_OK)
-        {
-
-			LOG_DBG("bFoundUSBKey=%s,SDKREG_IsBasicFunctionEnabled=%d\n", 
-				bFoundUSBKey ? "TRUE" : "FALSE",
-				SDKREG_IsBasicFunctionEnabled(14)
-			);
-            DWORD dwNow   = GetTickCount();
-            DWORD dwElapse =  dwNow - dwStartTick;
-
-            if(dwElapse <g_tSysCfgData.globalSettings.nMaxTimeInSearchDevice)
-            {
-				LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse/1000.0);
-                Sleep(1000);//延迟等待1秒钟
-
-                continue;
-            }
-			else if(g_tSysCfgData.globalSettings.bEnableOnlineRegister)
-            {   
-				//如果使能了在线注册
-                //判断是否已经在线注册过了。
-				if (nDeviceCount > 0)///说明发现摄像头设备
-				{					
-                    BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
-                    if(status != BIT_SUCCESS)
-                    {
-				    	LOG_ERR("bitAnswer login in returns 0x%x\n", status);
-                        COnlineRegisterDlg onlineRegisterDlg;
-                        onlineRegisterDlg.DoModal();
-
-                        if(onlineRegisterDlg.IsRegisteredOk())
-                        {
-                            m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
-                            bDoubleScreenTouchMerge =onlineRegisterDlg.GetScreenType() == EDoubleScreenMode?TRUE:FALSE;
-                            break;
-                        }
-                     }
-                     else
-                     {    //成功了
-                          //Read Features
-                          BIT_UINT32 value;
-                          BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE,&value);
-                          if(status == BIT_SUCCESS)
-                          {
-                              m_eUSBKeyTouchType = (value == 0)?E_DEVICE_PEN_TOUCH:E_DEVICE_FINGER_TOUCH;
-                          }
-
-                          status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE,&value);
-                          if(status == BIT_SUCCESS)
-                          {
-                               bDoubleScreenTouchMerge = (value == 1)?TRUE:FALSE;
-                          }
-
-					      m_bIsOnlineRegistered = TRUE;
-                          break;
-                    }					
-				}
-
-                //开启试用版超时检测器。
-                SetTimer(NULL, 0, 1000, timerProc);
-                g_dwBeginTime = GetTickCount();
-                m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
-
-				LOG_INF("Start Evaluation Timer\n");
-                break;
-
-                
-            }
-			else
-			{//
-				MessageBox(NULL, g_oResStr[IDS_STRING125], g_oResStr[IDS_STRING103], MB_ICONERROR | MB_OK);
-				return FALSE;
-			}
-            
-        }
-        else
-        {
-			LOG_INF("find USBKey\n");
-            m_eUSBKeyTouchType = (nAppType & 0x00000001)?E_DEVICE_FINGER_TOUCH:E_DEVICE_PEN_TOUCH;
-            m_bFoundHardwareUSBKey = TRUE;
-
-        }
 
 
-    }while(!bFoundUSBKey);
+
+    //        bFoundUSBKey = TRUE;//找到加密狗退出
+    //        break;
+    //    }//for
 
 
-//#endif
+    //    if (!bFoundUSBKey || SDKREG_IsBasicFunctionEnabled(14) != S_OK)
+    //    {
+
+    //        LOG_DBG("bFoundUSBKey=%s,SDKREG_IsBasicFunctionEnabled=%d\n",
+    //            bFoundUSBKey ? "TRUE" : "FALSE",
+    //            SDKREG_IsBasicFunctionEnabled(14)
+    //        );
+    //        DWORD dwNow = GetTickCount();
+    //        DWORD dwElapse = dwNow - dwStartTick;
+
+    //        if (dwElapse < g_tSysCfgData.globalSettings.nMaxTimeInSearchDevice)
+    //        {
+    //            LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse / 1000.0);
+    //            Sleep(1000);//延迟等待1秒钟
+
+    //            continue;
+    //        }
+    //        else if (g_tSysCfgData.globalSettings.bEnableOnlineRegister)
+    //        {
+    //            如果使能了在线注册
+    //            判断是否已经在线注册过了。
+    //            if (nDeviceCount > 0)///说明发现摄像头设备
+    //            {
+    //                BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
+    //                if (status != BIT_SUCCESS)
+    //                {
+    //                    LOG_ERR("bitAnswer login in returns 0x%x\n", status);
+    //                    COnlineRegisterDlg onlineRegisterDlg;
+    //                    onlineRegisterDlg.DoModal();
+
+    //                    if (onlineRegisterDlg.IsRegisteredOk())
+    //                    {
+    //                        m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
+    //                        bDoubleScreenTouchMerge = onlineRegisterDlg.GetScreenType() == EDoubleScreenMode ? TRUE : FALSE;
+    //                        break;
+    //                    }
+    //                }
+    //                else
+    //                {    //成功了
+    //                     Read Features
+    //                    BIT_UINT32 value;
+    //                    BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE, &value);
+    //                    if (status == BIT_SUCCESS)
+    //                    {
+    //                        m_eUSBKeyTouchType = (value == 0) ? E_DEVICE_PEN_TOUCH : E_DEVICE_FINGER_TOUCH;
+    //                    }
+
+    //                    status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE, &value);
+    //                    if (status == BIT_SUCCESS)
+    //                    {
+    //                        bDoubleScreenTouchMerge = (value == 1) ? TRUE : FALSE;
+    //                    }
+
+    //                    m_bIsOnlineRegistered = TRUE;
+    //                    break;
+    //                }
+    //            }
+
+    //            开启试用版超时检测器。
+    //            SetTimer(NULL, 0, 1000, timerProc);
+    //            g_dwBeginTime = GetTickCount();
+    //            m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
+
+    //            LOG_INF("Start Evaluation Timer\n");
+    //            break;
+
+
+    //        }
+    //        else
+    //        {//
+    //            MessageBox(NULL, g_oResStr[IDS_STRING125], g_oResStr[IDS_STRING103], MB_ICONERROR | MB_OK);
+    //            return FALSE;
+    //        }
+
+    //    }
+    //    else
+    //    {
+    //        LOG_INF("find USBKey\n");
+    //        m_eUSBKeyTouchType = (nAppType & 0x00000001) ? E_DEVICE_FINGER_TOUCH : E_DEVICE_PEN_TOUCH;
+    //        m_bFoundHardwareUSBKey = TRUE;
+
+    //    }
+
+
+    //} while (!bFoundUSBKey);
 
 
     //#endif
-    m_eScreenType = bDoubleScreenTouchMerge?EDoubleScreenMode:ESingleScreenMode;
 
+
+    //#endif
+    //m_eScreenType = bDoubleScreenTouchMerge ? EDoubleScreenMode : ESingleScreenMode;
+
+    //<<debug
     //m_eScreenType = EDoubleScreenMode;
+    //debug>>
 
 
 
 
-    LOG_INF("Usb Key Support Screen Merge:%s\n", bDoubleScreenTouchMerge?"Yes":"No");
+    //LOG_INF("Usb Key Support Screen Merge:%s\n", bDoubleScreenTouchMerge ? "Yes" : "No");
 
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
     //del>>
 
-    int nCxScreen   = GetSystemMetrics(SM_CXSCREEN       )  ;
-    int nCyScreen   = GetSystemMetrics(SM_CYSCREEN       )  ;
+    int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
+    int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
 
 
-    int nCxVScreen   = GetSystemMetrics(SM_CXVIRTUALSCREEN) ;
-    int nCyVScreen   = GetSystemMetrics(SM_CYVIRTUALSCREEN) ;
-    int nVScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN ) ;
-    int nVScreenTop  = GetSystemMetrics(SM_YVIRTUALSCREEN ) ;
+    int nCxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    int nCyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    int nVScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    int nVScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
-    LOG_INF("Screen Size = %d X %d, Virtual Screen Size = %d X %d, <Left,Top>=<%d,%d>,  Double Screen Merge Eabled:%s\n", 
-        nCxScreen, 
-        nCyScreen, 
+    LOG_INF("Screen Size = %d X %d, Virtual Screen Size = %d X %d, <Left,Top>=<%d,%d>,  Double Screen Merge Eabled:%s\n",
+        nCxScreen,
+        nCyScreen,
         nCxVScreen,
         nCyVScreen,
         nVScreenLeft,
         nVScreenTop,
-        (EDoubleScreenMode==m_eScreenType)?"Yes":"No");
+        (EScreenModeDouble == m_eScreenMode) ? "Yes" : "No");
 
     ParseCmdLine(this->m_lpCmdLine);
+
     CIWBDlg dlg;
     m_pMainWnd = &dlg;
     INT_PTR nResponse = dlg.DoModal();
@@ -434,13 +446,14 @@ BOOL CIWBApp::InitInstance()
         //  dismissed with Cancel
     }
 
+
     //AsyncLogUninit();
 
     // Since the dialog has been closed, return FALSE so that we exit the
     //  application, rather than start the application's message pump.
     LOG_INF("Exit CIWBApp::InitInstance()");
 
-	SKDREG_Uninit();
+    SKDREG_Uninit();
     return FALSE;
 }
 
@@ -452,33 +465,33 @@ BOOL CIWBApp::ParseCmdLine(LPCTSTR lpCmdLine)
     //将空格或者Tab符看作分隔符,解析命令行参数中的参数,每个参数放在字符串列表中
     std::list<CAtlString> lstParam;
     //
-    if(lpCmdLine == NULL) return FALSE;
+    if (lpCmdLine == NULL) return FALSE;
 
     //Step1:分割参数
-    const TCHAR* pChar    = lpCmdLine;//字符串中指向某位置字符的指针
+    const TCHAR* pChar = lpCmdLine;//字符串中指向某位置字符的指针
     const TCHAR* pFirstPos = lpCmdLine;//解析的参数字串的第一个字符
 
     do
     {
         //过滤空格和TAB分隔符
-        while(*pChar != _T('\0') && (*pChar ==  _T(' ')|| *pChar == _T('\t')))
+        while (*pChar != _T('\0') && (*pChar == _T(' ') || *pChar == _T('\t')))
         {
             pChar++;
             pFirstPos++;
         }
-        if(*pChar != _T('\0'))
+        if (*pChar != _T('\0'))
         {
 
-            while(*pChar != _T('\0'))
+            while (*pChar != _T('\0'))
             {
-                if(*pChar == _T(' ') || *pChar == _T('\t') )//出现了分隔符
+                if (*pChar == _T(' ') || *pChar == _T('\t'))//出现了分隔符
                 {
-                    if(*pFirstPos != _T(' ') && *pFirstPos != _T('\t'))
+                    if (*pFirstPos != _T(' ') && *pFirstPos != _T('\t'))
                     {
                         //std::string str;
                         //str.resize(pChar - pFirstPos + 1/*结尾NULL*/);
                         CAtlString str;
-                        int strLength = pChar - pFirstPos ;
+                        int strLength = pChar - pFirstPos;
                         TCHAR* pBuf = str.GetBuffer(strLength + 1/*结尾NULL*/);
                         _tcsncpy_s(pBuf, strLength + 1, pFirstPos, strLength);
 
@@ -501,13 +514,13 @@ BOOL CIWBApp::ParseCmdLine(LPCTSTR lpCmdLine)
         }//if
 
 
-    }while(*pChar != _T('\0'));
+    } while (*pChar != _T('\0'));
 
-    if((pChar-pFirstPos)>0)
+    if ((pChar - pFirstPos) > 0)
     {
 
         CAtlString str;
-        int strLength = pChar - pFirstPos ;
+        int strLength = pChar - pFirstPos;
         TCHAR* pBuf = str.GetBuffer(strLength + 1/*结尾NULL*/);
         _tcsncpy_s(pBuf, strLength + 1, pFirstPos, strLength);
 
@@ -520,13 +533,13 @@ BOOL CIWBApp::ParseCmdLine(LPCTSTR lpCmdLine)
 
     }
 
-    for(std::list<CAtlString>::const_iterator it = lstParam.begin(); it != lstParam.end(); it++)
+    for (std::list<CAtlString>::const_iterator it = lstParam.begin(); it != lstParam.end(); it++)
     {
-        if(_tcsicmp(*it,_T("-autorun")) == 0)
+        if (_tcsicmp(*it, _T("-autorun")) == 0)
         {
             m_bAutoRunMode = TRUE;
         }
-        if(_tcsicmp(*it, _T("-allusers")) == 0)
+        if (_tcsicmp(*it, _T("-allusers")) == 0)
         {
             m_bForAllUser = TRUE;
         }
@@ -549,14 +562,14 @@ HINSTANCE CIWBApp::LoadOEMResource()
     LPTSTR pszFileName = NULL;
 
     int ret = ::GetModuleFileName(this->m_hInstance, szFullFileName, MAX_PATH);
-    if(ret == 0 || ret == MAX_PATH)
+    if (ret == 0 || ret == MAX_PATH)
     {
         ASSERT(FALSE);
         return NULL;
     }
-    pszFileName = :: PathFindFileName(szFullFileName);
+    pszFileName = ::PathFindFileName(szFullFileName);
 
-    if(pszFileName)
+    if (pszFileName)
     {
         *pszFileName = _T('\0');
         _tcscat_s(szFullFileName, _countof(szFullFileName), _T("OEM_RES.dll"));
@@ -576,7 +589,7 @@ void CIWBApp::InitDirectoryInformation()
     //获取当前工作路径
     TCHAR szPath[MAX_PATH];
     TCHAR* pcwd = _tgetcwd(szPath, _countof(szPath));
-    if(!pcwd)
+    if (!pcwd)
     {
         //致命错误
         assert(FALSE);
@@ -590,13 +603,13 @@ void CIWBApp::InitDirectoryInformation()
     BOOL bIntermediatOutputInSystemTempDir = FALSE;//调试目录在系统临时目录下标志
     TCHAR szDrive[4];
 
-    if(iDrive !=-1)
+    if (iDrive != -1)
     {
         memset(szDrive, 0, sizeof(szDrive));
         PathBuildRoot(szDrive, iDrive);
         UINT uType = GetDriveType(szDrive);
 
-        switch(uType)
+        switch (uType)
         {
         case DRIVE_UNKNOWN:
             //The drive type cannot be determined.
@@ -611,7 +624,7 @@ void CIWBApp::InitDirectoryInformation()
 
         case DRIVE_REMOVABLE:
             //The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
-            bIntermediatOutputInSystemTempDir = TRUE;    
+            bIntermediatOutputInSystemTempDir = TRUE;
             break;
 
         case DRIVE_FIXED:
@@ -639,13 +652,13 @@ void CIWBApp::InitDirectoryInformation()
     }
 
     //
-    if(bIntermediatOutputInSystemTempDir)
+    if (bIntermediatOutputInSystemTempDir)
     {
         TCHAR szTmpPath[MAX_PATH];
         memset(szTmpPath, 0, _countof(szTmpPath));
 
         //在系统临时目录中创建输出目录
-        GetTempPath(_countof(szTmpPath),szTmpPath);//D:\Users\k.xu\AppData\Local\Temp\
+        GetTempPath(_countof(szTmpPath), szTmpPath);//D:\Users\k.xu\AppData\Local\Temp\
 
         m_strIntermediatOutputDir = szTmpPath;
         m_strIntermediatOutputDir += _T("Intermediate(EASI Gloview)");
@@ -673,16 +686,16 @@ void CIWBApp::InitDirectoryInformation()
     //枚举所有逻辑盘
     DWORD dwMaskBits = GetLogicalDrives();
     iDrive = 0;
-    while(dwMaskBits)
+    while (dwMaskBits)
     {
-        if(dwMaskBits & 0x00000001)
+        if (dwMaskBits & 0x00000001)
         {
             memset(szDrive, 0, sizeof(szDrive));
             PathBuildRoot(szDrive, iDrive);
             UINT uType = GetDriveType(szDrive);
-            if(uType == DRIVE_REMOVABLE)
+            if (uType == DRIVE_REMOVABLE)
             {
-                TCHAR szVolumeName[MAX_PATH+1];
+                TCHAR szVolumeName[MAX_PATH + 1];
                 memset(szVolumeName, 0, sizeof(szVolumeName));
 
                 TCHAR szFileSystemNameBuffer[MAX_PATH + 1];
@@ -692,23 +705,23 @@ void CIWBApp::InitDirectoryInformation()
                 DWORD dwFileSystemFlags = 0;
 
 
-                BOOL bRet = 
+                BOOL bRet =
                     GetVolumeInformation(
-                    szDrive,                  //lpRootPathName
-                    szVolumeName,             //lpVolumeNameBuffer
-                    _countof(szVolumeName),   //nVoumeNameSize
-                    NULL,                     //lpVolumeSerialNumber
-                    &dwMaximumComponentLength,//lpMaximumComponentLength 
-                    &dwFileSystemFlags       ,//lpFileSystemFlags
-                    szFileSystemNameBuffer   ,//lpFileSystemNameBuffer,
-                    _countof(szFileSystemNameBuffer)//
+                        szDrive,                  //lpRootPathName
+                        szVolumeName,             //lpVolumeNameBuffer
+                        _countof(szVolumeName),   //nVoumeNameSize
+                        NULL,                     //lpVolumeSerialNumber
+                        &dwMaximumComponentLength,//lpMaximumComponentLength 
+                        &dwFileSystemFlags,//lpFileSystemFlags
+                        szFileSystemNameBuffer,//lpFileSystemNameBuffer,
+                        _countof(szFileSystemNameBuffer)//
                     );
 
 
-                if(bRet)
+                if (bRet)
                 {
 
-                    if(_tcsicmp(szConfigUSBDiskVolumeName, szVolumeName) == 0)
+                    if (_tcsicmp(szConfigUSBDiskVolumeName, szVolumeName) == 0)
                     {
                         bConfigUSBDiskFound = TRUE;
                         break;
@@ -717,12 +730,12 @@ void CIWBApp::InitDirectoryInformation()
             }
 
         }
-        iDrive ++;
+        iDrive++;
         dwMaskBits >>= 1;
     }//while
 
 
-    if(bConfigUSBDiskFound)
+    if (bConfigUSBDiskFound)
     {
         m_strSettingsDir = szDrive;
     }
@@ -731,15 +744,15 @@ void CIWBApp::InitDirectoryInformation()
         m_strSettingsDir = pcwd;
     }
 
-    m_strSystemDir = pcwd ;
+    m_strSystemDir = pcwd;
     //设置
-    ALGOAPI_SetIntermediateDir(m_strIntermediatOutputDir);  
+    ALGOAPI_SetIntermediateDir(m_strIntermediatOutputDir);
     //设置配置路径
-    PROFILE::CONFIG_FILE_NAME       = m_strSettingsDir+_T("\\Video.dll");
+    PROFILE::CONFIG_FILE_NAME = m_strSettingsDir + _T("\\Video.dll");
     //配置信息保存的根目录
-    PROFILE::SETTINGS_BASE_DIRECTORY  = m_strSettingsDir;
+    PROFILE::SETTINGS_BASE_DIRECTORY = m_strSettingsDir;
 
-	m_strFirmwareDirectory = m_strSettingsDir + _T("\\firmware");
+    m_strFirmwareDirectory = m_strSettingsDir + _T("\\firmware");
 }
 
 EDeviceTouchType  CIWBApp::GetUSBKeyTouchType()const
@@ -749,88 +762,206 @@ EDeviceTouchType  CIWBApp::GetUSBKeyTouchType()const
 
 
 
-//从USBKey中读取信息
-void CIWBApp::ReadUSBKey()
+//@功能:从USBKey中读取信息
+//@参数:bFirstTime, 第一次检测UsbKey的存在
+//@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
+//      第二次及以后则不再弹出兑换框。
+void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 {
-    BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
-    BOOL bFoundUSBKey = FALSE;
 
-    UINT uKeyNum = SDKREG_GetUSBKeyCount();
+    //屏幕模式缺省为单屏模式
+    m_eScreenMode      = EScreenModeSingle;
 
-    int nAppType = 0;
-    float fVersion = 0.0f;
+    //手触/笔触模式
+    m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH;
 
-    for(UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
+    //BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
+
+    DWORD dwStartTick = GetTickCount();
+    BOOL bFoundUSBKey = FALSE;   
+    do
     {
 
-        if(SDKREG_GetVersion(&fVersion,uKeyIndex) != S_OK)
-        {
-            continue;
-        }
+        int nAppType = 0;
 
-        if(fVersion < 0.20111018f)
-        {
-            continue;
-        }
+        float fVersion = 0.0f;
 
-        //AppType各位描述
-        //
-        //bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
-        //      │                                      │
-        //      │                                      └─0:3D Touch；1:手指触控
-        //      └─1:使能双屏拼接功能                                                 
-        //
-        //
+        UINT uKeyNum = SDKREG_GetUSBKeyCount();
 
-        if(SDKREG_GetAppType(&nAppType, uKeyIndex) != S_OK)
+        for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
         {
-            if((nAppType & 0x00000FF) != 0  && (nAppType & 0x0000FF) != 1)
+
+            if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
             {
-                //nAppType
-                //1:为手指触控
-                //0:为3DTouch
-                //既不为手指触控也不为3D-Touch,则继续搜索下一个加密狗。
                 continue;
             }
 
-        }
+            if (fVersion < 0.20111018f)
+            {
+                continue;
+            }
 
-        bDoubleScreenTouchMerge = (nAppType >> 8) & 0x00000001;
-        bFoundUSBKey = TRUE;//找到加密狗退出
-        break;
-    }//for
+            //AppType各位描述
+            //
+            //bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
+            //      │                                      │
+            //      │                                      └─0:3D Touch；1:手指触控
+            //      └─1:使能双屏拼接功能                                                 
+            //
+            //
+
+            if (SDKREG_GetAppType(&nAppType, uKeyIndex) == S_OK)
+            {
+                //if ((nAppType & 0x00000FF) != 0 && (nAppType & 0x0000FF) != 1)
+                //{
+                //    //nAppType
+                //    //1:为手指触控
+                //    //0:为3DTouch
+                //    //既不为手指触控也不为3D-Touch,则继续搜索下一个加密狗。
+                //   
+                //}
+                if ((nAppType & 0x0000FF) == 0x01)
+                {
+                    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
+                }
+
+            }
+
+            BOOL bMultipleScreenMode = (nAppType >> 8) & 0x00000001;
+
+            //bDoubleScreenTouchMerge = (nAppType >> 8) & 0x00000001;
+
+            if (bMultipleScreenMode)
+            {//多屏屏接模式
+                EScreenMode eScreenMode = EScreenModeDouble;
+
+                //获得多屏融合类型
+                UINT dwScreenMergeType = SDKREG_GetMultiScreenMergeType(uKeyIndex);
+
+                switch (dwScreenMergeType & 0x00000001F)
+                {
+                case 1://双屏拼接
+                    eScreenMode = EScreenModeDouble;
+                    break;
+
+                case 2://三屏拼接
+                    eScreenMode = EScreenModeTriple;
+                    break;
+
+                case 4://四屏拼接
+                    eScreenMode = EScreenModeQuad;
+                    break;
+
+                case 8://五屏拼接
+                    eScreenMode = EScreenModeQuint;
+                    break;
+
+                case 0x10://六屏拼接
+                    eScreenMode = EScreenModeHexa;
+                    break;
+
+                }//switch
+                
+                 //选择最多的凭借模式
+                if (eScreenMode > m_eScreenMode) m_eScreenMode = eScreenMode;
+            }
+
+            bFoundUSBKey = TRUE;//找到加密狗后继续循环查找，
+
+        }//for
 
 
-    //if(bFoundUSBKey && m_eScreenType != EDoubleScreenMode)//双屏模式使用外置加密锁
-	if (bFoundUSBKey)
-    {
-        m_eUSBKeyTouchType = (nAppType & 0x00000001)?E_DEVICE_FINGER_TOUCH:E_DEVICE_PEN_TOUCH;       
-        m_eScreenType = bDoubleScreenTouchMerge?EDoubleScreenMode:ESingleScreenMode;
 
-    }
-	else
-	{
-		BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
-		if (status == BIT_SUCCESS)
-		{//成功了
-			bFoundUSBKey = TRUE;
-		   //Read Features
-			BIT_UINT32 value;
-			BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE, &value);
-			if (status == BIT_SUCCESS)
-			{
-				m_eUSBKeyTouchType = (value == 0) ? E_DEVICE_PEN_TOUCH : E_DEVICE_FINGER_TOUCH;
-			}
+        if(!bFoundUSBKey)
+        {//未找到USBKey, 尝试读取在线注册信息
 
-			status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE, &value);
-			if (status == BIT_SUCCESS)
-			{
-				bDoubleScreenTouchMerge = (value == 1) ? TRUE : FALSE;
-			}
+            if (bFirstTime)
+            {
+                LOG_DBG("bFoundUSBKey=%s,SDKREG_IsBasicFunctionEnabled=%d\n",
+                    bFoundUSBKey ? "TRUE" : "FALSE",
+                    SDKREG_IsBasicFunctionEnabled(14)
+                );
+                DWORD dwNow = GetTickCount();
+                DWORD dwElapse = dwNow - dwStartTick;
 
-		}
+                if (dwElapse < g_tSysCfgData.globalSettings.nMaxTimeInSearchDevice)
+                {
+                    LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse / 1000.0);
+                    Sleep(1000);//延迟等待1秒钟
 
-	}
+                    bFirstTime = FALSE;
+                    continue;
+                }
 
-	m_bFoundHardwareUSBKey = bFoundUSBKey;
+            }
+            
+
+            BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
+            if (status == BIT_SUCCESS)
+            {//成功了
+                bFoundUSBKey = TRUE;
+                //Read Features
+                BIT_UINT32 value;
+                BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE, &value);
+                if (status == BIT_SUCCESS)
+                {
+                    m_eUSBKeyTouchType = (value == 0) ? E_DEVICE_PEN_TOUCH : E_DEVICE_FINGER_TOUCH;
+                }
+
+                status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE, &value);
+                
+                //在线注册的信息读取的屏幕类型就是EScreenMode枚举值
+                if (status == BIT_SUCCESS)
+                {
+                    if(EScreenModeSingle <= (EScreenMode)value && (EScreenMode)value <= EScreenModeHexa)
+                    {
+                        if (m_eScreenMode < (EScreenMode)value)
+                        {
+                            m_eScreenMode = (EScreenMode)value;
+                        }
+
+                    }
+
+                }
+
+            }
+            else 
+            {
+                if (bFirstTime)
+                {
+                    LOG_ERR("bitAnswer login in returns 0x%x\n", status);
+                    COnlineRegisterDlg onlineRegisterDlg;
+                    onlineRegisterDlg.DoModal();
+
+                    if (onlineRegisterDlg.IsRegisteredOk())
+                    {
+                        m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
+
+                        //bDoubleScreenTouchMerge = onlineRegisterDlg.GetScreenType() == EDoubleScreenMode ? TRUE : FALSE;
+                        if (m_eScreenMode < onlineRegisterDlg.GetScreenMode())
+                        {
+                            m_eScreenMode = onlineRegisterDlg.GetScreenMode();
+                        }
+
+                        break;
+                    }
+
+                    //开启试用版超时检测器。
+                    SetTimer(NULL, 0, 1000, timerProc);
+                    g_dwBeginTime = GetTickCount();
+                    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
+
+                    LOG_INF("Start Evaluation Timer\n");
+                }
+
+            }//else
+
+
+            break;//跳出大循环
+        }//if(!bFoundUSBKey)
+
+
+    } while (!bFoundUSBKey);
+
+    m_bFoundHardwareUSBKey = bFoundUSBKey;
 }

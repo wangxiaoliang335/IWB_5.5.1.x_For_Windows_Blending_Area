@@ -478,7 +478,7 @@ struct TBlobObject
 
 #define MAX_OBJ_NUMBER 256
 
-template<int MAX_OBJECT_COUNT=256,int MAX_IMAGE_WIDTH = 1920, int MAX_IMAGE_HEIGHT = 1080>
+template<int MAX_OBJECT_COUNT= MAX_OBJ_NUMBER,int MAX_IMAGE_WIDTH = 1920, int MAX_IMAGE_HEIGHT = 1080>
 class CConnectedComponentScanlineAlogrithm;
 class m_pBitFrame;
 class m_YUY2Frame;

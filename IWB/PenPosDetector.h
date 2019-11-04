@@ -717,7 +717,7 @@ protected:
 	//2010-12-18 21:00 增加视频窗口的剪切区域
 	RECT         m_rcVideoClipArea;
 
-	CFPSDetector m_oFpsDetector;
+	//CFPSDetector m_oFpsDetector;
 		
 
 	int m_nSrcImageWidth;

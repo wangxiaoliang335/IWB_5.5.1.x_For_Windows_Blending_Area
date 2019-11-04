@@ -179,11 +179,11 @@ static BOOL GenMaskFrame(const CWordFrame& refBkgndFrame, const CWordFrame& refS
         //由于摄像头的自动增益, 同一个背景处的像素在“背景图”中的亮度要大于其在“白屏图”中的亮度，
         //因此需要适当减弱背景图中像素的亮度
         //
-        //这里衰减系数取2/3
-
-        #define ATTENUATION_COEFFICIENT  3/4
+        //这里衰减系数取3/4
+        //#define ATTENUATION_COEFFICIENT  3/4
         //#define ATTENUATION_COEFFICIENT  1
-        WORD wBkgndValue   = (*pBkgndValue) * ATTENUATION_COEFFICIENT;
+        //WORD wBkgndValue   = (*pBkgndValue) * ATTENUATION_COEFFICIENT;
+        WORD wBkgndValue = (*pBkgndValue);
 
         WORD wDiffValue = 0;
         if(wSampleValue > wBkgndValue)
@@ -285,7 +285,6 @@ BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
             {
                 Debug_SaveImageFrame(m_oBlackBoardAccFrame, _T("BkgndFrame.jpg"));
             }
-
 
             //转入搜索子区域屏蔽图阶段
             m_nSubAreaId = 0;
@@ -667,7 +666,9 @@ m_hDispWnd(NULL),
 m_MarkerDiameter(INITIAL_MARKER_DIAMETER),
 //m_eScreenPart(E_SEARCH_SCREEN_UPPER),
 //m_bIsSimulateInput(FALSE),
-m_bDone(FALSE)
+m_bDone(FALSE),
+m_nHorzSideMarkerNumber(MINIMUM_SIDE_MARKER_NUMBER),
+m_nVertSideMarkerNumber(MINIMUM_SIDE_MARKER_NUMBER)
 {
 
 }
@@ -697,21 +698,73 @@ void CMonitorBoundaryFinder::Reset(const CImageFrame& frameInitalScreenMask, HWN
 
 	int nMonitorWidth  = rcMonitor.right - m_rcMonitor.left;
 	int nMonitorHeight = rcMonitor.bottom - m_rcMonitor.top;
-	int nMarkDiaMeter = INITIAL_MARKER_DIAMETER;
-	if (nMonitorWidth > nMonitorHeight)
-	{
-		nMarkDiaMeter = nMonitorWidth >> 4;
+	int nMarkDiameter = INITIAL_MARKER_DIAMETER;
+
+    //m_nHorzSideMarkerNumber  = HORZ_SIDE_MARKER_NUMBER;
+    //m_nVertSideMarkkerNumber = VERT_SIDE_MARKER_NUMBER;
+
+    
+
+	if (nMonitorWidth >= nMonitorHeight)
+	{//宽大于高
+        m_nVertSideMarkerNumber = MINIMUM_SIDE_MARKER_NUMBER;
+
+        nMarkDiameter = nMonitorHeight / (2*m_nVertSideMarkerNumber -1);
+        
+        //nMonitorWidth = (2n-1)*nMarkDiameter
+        m_nHorzSideMarkerNumber = (nMonitorWidth / nMarkDiameter + 1) >> 1;
+
+        if (m_nHorzSideMarkerNumber % 2 == 0)
+        {//如果水平方向的边界点数目为偶数，则修正为奇数
+            m_nHorzSideMarkerNumber -- ;
+        }
+
+
 	}
 	else
-	{
-		nMarkDiaMeter = nMonitorHeight >> 4;
+	{//高大于宽
+        m_nHorzSideMarkerNumber = MINIMUM_SIDE_MARKER_NUMBER;
+
+        nMarkDiameter = nMonitorWidth / (2*m_nHorzSideMarkerNumber - 1);
+
+        //nMonitorHeight = (2n-1)*nMarkDiameter
+        m_nVertSideMarkerNumber = (nMonitorHeight / nMarkDiameter + 1) >> 1;
+
+        if (m_nVertSideMarkerNumber % 2 == 0)
+        {//如果水平方向的边界点数目为偶数，则修正为奇数
+            m_nVertSideMarkerNumber--;
+        }
 	}
-	if (nMarkDiaMeter < INITIAL_MARKER_DIAMETER)
-	{
-		nMarkDiaMeter = INITIAL_MARKER_DIAMETER;
-	}
-	m_MarkerDiameter = nMarkDiaMeter;
-    InitBoundaryMarkerPositions(HORZ_SIDE_MARKER_NUMBER, VERT_SIDE_MARKER_NUMBER, m_MarkerDiameter);
+
+
+    InitBoundaryMarkerPositions(m_nHorzSideMarkerNumber, m_nVertSideMarkerNumber, nMarkDiameter);
+
+    //if (nMonitorWidth > nMonitorHeight)
+    //{
+    //    //在宽高比>3时会造成nMarkDiaMeter取值过大，造成排在一列中的校正圆相互重叠。
+    //    //因此从列的角度来确定校正圆的直径。
+    //    if (nMarkDiaMeter*(VERT_SIDE_MARKER_NUMBER * 2 - 1) > nMonitorHeight)
+    //    {
+    //        nMarkDiaMeter = nMonitorHeight / (VERT_SIDE_MARKER_NUMBER * 2 - 1);
+    //    }
+
+
+    //    InitBoundaryMarkerPositions(HORZ_SIDE_MARKER_NUMBER, VERT_SIDE_MARKER_NUMBER, nMarkDiaMeter);
+    //}
+    //else
+    //{
+
+    //    //在宽高比<1/3时会造成nMarkDiaMeter取值过大，造成排在一行中的校正圆相互重叠。
+    //    //因此从列的角度来确定校正圆的直径。
+    //    if (nMarkDiaMeter*(VERT_SIDE_MARKER_NUMBER * 2 - 1) > nMonitorWidth)
+    //    {
+    //        nMarkDiaMeter = nMonitorHeight / (VERT_SIDE_MARKER_NUMBER * 2 - 1);
+    //    }
+
+
+    //    InitBoundaryMarkerPositions(VERT_SIDE_MARKER_NUMBER, HORZ_SIDE_MARKER_NUMBER, nMarkDiaMeter);
+    //}
+
 
     m_nRunTimes   = 0;
     m_nFlashTimes = 0;
@@ -740,7 +793,7 @@ void CMonitorBoundaryFinder::Reset(const CImageFrame& frameInitalScreenMask, HWN
 //      VertSideSquareNumber, 垂直方向白色小方块的个数。
 //      nSquareWidth, 实心圆的直径。
 //@说明:注意:如果垂直方向的白色实心圆的数目为奇数，则上下两部分有两个点是重合的。
-void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumber, int nVertSideSquareNumber, int nSquareWidth)
+void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumber, int nVertSideSquareNumber, int nDiameter)
 {
     //从计算机屏幕的左上角开始，按顺时针方向依次对各个白色小方块编号
     //例如:
@@ -763,17 +816,17 @@ void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumb
 
     int  nHorzIntervalNum = nHorzSideSquareNumber - 1;
     int nVertIntervalNum  = nVertSideSquareNumber - 1;
-    int _HorzInterval_Integer  = (W - nSquareWidth)/nHorzIntervalNum;//每个方块的水平间距数值的整数部分
-    int _HorzInterval_Fraction = (W - nSquareWidth)%nHorzIntervalNum;//每个方块的水平间距数值的余数部分
+    int _HorzInterval_Integer  = (W - nDiameter)/nHorzIntervalNum;//每个方块的水平间距数值的整数部分
+    int _HorzInterval_Fraction = (W - nDiameter)%nHorzIntervalNum;//每个方块的水平间距数值的余数部分
 
-    int _VertInterval_Integer  = (H - nSquareWidth)/nVertIntervalNum;//每个方块的水平间距数值的整数部分
-    int _VertInterval_Fraction = (H - nSquareWidth)%nVertIntervalNum;//每个方块的水平间距数值的余数部分
+    int _VertInterval_Integer  = (H - nDiameter)/nVertIntervalNum;//每个方块的水平间距数值的整数部分
+    int _VertInterval_Fraction = (H - nDiameter)%nVertIntervalNum;//每个方块的水平间距数值的余数部分
 
     RECT rcSquare;
     rcSquare.left   = m_rcMonitor.left;
     rcSquare.top    = m_rcMonitor.top ;
-    rcSquare.right  = rcSquare.left + nSquareWidth;
-    rcSquare.bottom = rcSquare.top  + nSquareWidth;
+    rcSquare.right  = rcSquare.left + nDiameter;
+    rcSquare.bottom = rcSquare.top  + nDiameter;
 
     int _FractionCount = 0;
 
@@ -796,11 +849,12 @@ void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumb
             _FractionCount -= nHorzIntervalNum;
         }
 
-        rcSquare.right = rcSquare.left + nSquareWidth;
+        rcSquare.right = rcSquare.left + nDiameter;
     }
-
-
+    
     _FractionCount = 0;
+
+
     //右边
     for(i=0; i < nVertIntervalNum; i++)
     {
@@ -813,7 +867,7 @@ void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumb
             _FractionCount -= nVertIntervalNum;
         }
 
-        rcSquare.bottom = rcSquare.top + nSquareWidth;
+        rcSquare.bottom = rcSquare.top + nDiameter;
     }
 
     _FractionCount = 0;
@@ -829,7 +883,7 @@ void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumb
             _FractionCount += nHorzIntervalNum;
         }
 
-        rcSquare.right = rcSquare.left + nSquareWidth;
+        rcSquare.right = rcSquare.left + nDiameter;
     }
 
 
@@ -845,7 +899,7 @@ void CMonitorBoundaryFinder::InitBoundaryMarkerPositions(int nHorzSideSquareNumb
             rcSquare.top --;
             _FractionCount += nHorzIntervalNum;
         }
-        rcSquare.bottom = rcSquare.top + nSquareWidth;
+        rcSquare.bottom = rcSquare.top + nDiameter;
     }
 
 
@@ -1379,6 +1433,12 @@ BOOL CMonitorBoundaryFinder::ProcessDiffImage(const CWordFrame& diffImage)
     return TRUE;
 }
 
+int CMonitorBoundaryFinder::GetMarkerCount()const
+{
+    int BORDER_MARKER_NUMBER = (m_nHorzSideMarkerNumber - 1) * 2 + (m_nVertSideMarkerNumber - 1) * 2;
+
+    return BORDER_MARKER_NUMBER;
+}
 
 
 //===============================
@@ -1580,13 +1640,13 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
     rcVirtualScreen.bottom = rcVirtualScreen.top  + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
 
-	//<temp,2017/08/22
-	rcVirtualScreen.left = 0;
-	rcVirtualScreen.top = 0;
+	////<temp,2017/08/22
+	//rcVirtualScreen.left = 0;
+	//rcVirtualScreen.top = 0;
 
-	rcVirtualScreen.right = rcVirtualScreen.left + GetSystemMetrics(SM_CXSCREEN);
-	rcVirtualScreen.bottom = rcVirtualScreen.top + GetSystemMetrics(SM_CYSCREEN);
-	//temp,2017/08/22
+	//rcVirtualScreen.right = rcVirtualScreen.left + GetSystemMetrics(SM_CXSCREEN);
+	//rcVirtualScreen.bottom = rcVirtualScreen.top + GetSystemMetrics(SM_CYSCREEN);
+	////temp,2017/08/22
 
 
     //生成校正窗体，尺寸为包含所有屏幕的虚拟屏幕的尺寸
@@ -2333,7 +2393,8 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
 
     int mx = 0;
     int my = 0;
-    for(size_t i=0; i < CMonitorBoundaryFinder::BORDER_MARKER_NUMBER; i++)
+    //for(size_t i=0; i < CMonitorBoundaryFinder::BORDER_MARKER_NUMBER; i++)
+    for (int i = 0; i < m_oMonitorBoundaryFinder.GetMarkerCount(); i++)
     {
         mx += m_vecBorderCalibratePts[i].ptCentroid.x;
         my += m_vecBorderCalibratePts[i].ptCentroid.y;
@@ -2391,13 +2452,16 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
 
 
     //
-    m_vecBorderCalibMap.resize(CMonitorBoundaryFinder::BORDER_MARKER_NUMBER);
+    //m_vecBorderCalibMap.resize(CMonitorBoundaryFinder::BORDER_MARKER_NUMBER);
+    m_vecBorderCalibMap.resize(m_oMonitorBoundaryFinder.GetMarkerCount());
+    
 
     int nImagePtIndex = turnPts[nLeftTopIndex].nLayerPtIndex;
 
     const std::vector<RECT>& borderMarkers = this->m_oMonitorBoundaryFinder.GetBorderMarkerPositions();
 
-    for(size_t nScreenPtIndex=0; nScreenPtIndex < CMonitorBoundaryFinder::BORDER_MARKER_NUMBER; nScreenPtIndex++)
+    //for(size_t nScreenPtIndex=0; nScreenPtIndex < CMonitorBoundaryFinder::BORDER_MARKER_NUMBER; nScreenPtIndex++)
+    for (int nScreenPtIndex = 0; nScreenPtIndex < m_oMonitorBoundaryFinder.GetMarkerCount(); nScreenPtIndex++)
     {
 
         //边界点的图像坐标
@@ -2470,7 +2534,9 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
         }
 
         nImagePtIndex ++;
-        if(nImagePtIndex == CMonitorBoundaryFinder::BORDER_MARKER_NUMBER)
+        //if(nImagePtIndex == CMonitorBoundaryFinder::BORDER_MARKER_NUMBER)
+
+        if(nImagePtIndex == m_oMonitorBoundaryFinder.GetMarkerCount())
         {
             nImagePtIndex = 0;
         }
@@ -3689,14 +3755,21 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
                     m_liImageGrdientEnergy = 0;
 
                     //初始化校正图案
-                    int nScreenWidth = this->m_CurrentMonitorInfo.rcArea.right - this->m_CurrentMonitorInfo.rcArea.left;
-                    int Radius = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, nScreenWidth);
+                    int nScreenWidth  = this->m_CurrentMonitorInfo.rcArea.right  - this->m_CurrentMonitorInfo.rcArea.left;
+                    int nScreenHeight = this->m_CurrentMonitorInfo.rcArea.bottom - this->m_CurrentMonitorInfo.rcArea.top;
+
+
+                    int Radius_A = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, nScreenWidth);
+                    int Radius_B = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, nScreenHeight);
+
+                    int Radius = Radius_A > Radius_B ? Radius_A : Radius_B;
 
                     m_oCalibratePattern.InitPattern(Radius, this->m_CurrentMonitorInfo.rcArea);
 
                     //显示校正图案
                     m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, m_clrGridHighlight, BACKGROUND_COLOR);
-					//m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, RED, BACKGROUND_COLOR);
+
+                    //m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, RED, BACKGROUND_COLOR);
 
 
                     //设置图像中的校正点数组尺寸
@@ -4727,7 +4800,7 @@ BOOL CAutoCalibratorImpl2::DoCornerMatch(const std::vector<TImageCalibPoint>& co
                         itMatch = it;
                     }
                 }
-                vecImage2ScreenMap[itMatch->nAryIndex] = rectLayer.m_vecScreenMarkNo[nMatchCount];
+                vecImage2ScreenMap[itMatch->nAryIndex] = rectLayer.m_vecScreenMarkNo[nMatchCount ++];
 
                 vecVertex.erase(itMatch);
 
@@ -4761,7 +4834,7 @@ BOOL CAutoCalibratorImpl2::DoCornerMatch(const std::vector<TImageCalibPoint>& co
                         itMatch = it;
                     }
                 }
-                vecImage2ScreenMap[itMatch->nAryIndex] = rectLayer.m_vecScreenMarkNo[nMatchCount++];
+                vecImage2ScreenMap[itMatch->nAryIndex] = rectLayer.m_vecScreenMarkNo[nMatchCount ++];
 
                 vecVertex.erase(itMatch);
 

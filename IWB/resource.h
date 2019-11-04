@@ -35,6 +35,9 @@
 #define IDD_DIALOG_ATTACH_SCREEN        156
 #define IDD_DIALOG_UPDATE_FIRMWARE      159
 #define IDD_CAMERA_FMT_DIALOG           161
+#define IDC_CURSOR_SPLIT_HORZ           164
+#define IDC_CURSOR2                     165
+#define IDC_CURSOR_HAND                 165
 #define IDS_ABOUTBOX                    400
 #define IDS_STRING102                   401
 #define IDS_STRING103                   402
@@ -117,6 +120,7 @@
 #define IDS_STRING479                   479
 #define IDS_STRING480                   480
 #define IDS_STRING481                   481
+#define IDS_STRING482                   482
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000
@@ -371,7 +375,6 @@
 #define ID_OPERATION_MANUALMASKAREA     32876
 #define ID_OPERATION_MANUALMASKAREA32877 32877
 #define ID_MANUALMASKAREA_ENDEDITING    32878
-#define ID_SWAMP_SENSOR_IMAGE           32879
 #define ID_SENSORCTXMENU_32880          32880
 #define ID_SENSORCTXMENU_GUESTURE_SETTINGS 32881
 #define ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS 32882
@@ -387,12 +390,15 @@
 #define ID_TRAYCTXMENU_MANUALCALIBRATION 32895
 #define ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE 32896
 #define ID_MENU_VIDEOFORMAT             32897
+#define ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER 32900
+#define ID_SWAP_SENSOR_IMAGE            33000
+#define ID_SWAP_WITH_SENSOR             33001
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        164
+#define _APS_NEXT_RESOURCE_VALUE        166
 #define _APS_NEXT_COMMAND_VALUE         32900
 #define _APS_NEXT_CONTROL_VALUE         1127
 #define _APS_NEXT_SYMED_VALUE           101

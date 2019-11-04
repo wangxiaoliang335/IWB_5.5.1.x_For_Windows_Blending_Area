@@ -33,6 +33,9 @@ public:
 
     ~CSpotListProcessor();
 
+    //@功能:初始化
+    void Init(UINT nSensorCount);
+
     //@功能:启动处理
     //@说明:引用计数为0时启动处理线程, 否则,引用计数+1,
     virtual void StartProcess();
@@ -105,27 +108,54 @@ protected:
           nLightSpotCount, 光斑个数
     @返回值：根据返回值决定是否继续传递触屏或者鼠标事件
     */
-    bool DoWindowsGestureRecognition(const TLightSpot* pLightSpots, int nLightSpotCount, TContactInfo *penInfo, int &nPenCount);    
+    bool DoWindowsGestureRecognition(const TLightSpot* pLightSpots, int nLightSpotCount, TContactInfo *penInfo, int &nPenCount);
 
+    //@功 能:判断光斑是否出现在触控融合区内
+    //@参 数:lightSpot, 光斑数据。
+    //       CameraIndex, 看到光斑的镜头的ID号。
+    //       pMergeAreaIndex, 指向保存融合区索引的内存的指针，在该触控融合区发现了要判断的光斑。
+    //@返回值:TRUE, 在融合区内出现。
+    //       FALSE, 未在融合区内出现
+    BOOL AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, UINT* pMergeAreaIndex = NULL);
+
+
+
+    //@功 能:判断光斑是否被相邻的兄弟摄像头在融合区内看到
+    //@参 数:lightSpot, 光斑数据。
+    //       CameraIndex, 看到光斑的镜头的ID号。
+    //@返回值:TRUE, 否被相邻的兄弟摄像头看到。
+    //       FALSE, 兄弟相机未看到
+    BOOL SeenInMergeAreaByBuddyCamera(const TLightSpot& lightSpot, UINT CameraIndex);
+
+    //@功  能:判断兄弟相机是否在融合区内看到了光斑
+    //@参  数:当前相机的Id, 由它来确定兄弟相机的id。
+    //@返回值: 
+    //         TRUE, 兄弟相机是在融合区内看到了光斑
+    //        FALSE, 兄弟相机是在融合区内没有发现光斑
+    BOOL BuddyCameraFoundSpotInMergeArea(UINT CameraIndex);
+
+    
 protected:
     HANDLE m_hProcessThread;
    
-    BOOL HasNeignborInSpotList(const POINT& ptPos, const TLightSpot* pSpotList, int nSpotCount);
+    //BOOL HasNeignborInSpotList(const POINT& ptPos, const TLightSpot* pSpotList, int nSpotCount);
 
     static ULONG _stdcall ProcessThreadProc(LPVOID lpCtx);
 
     //FIFO元素数据状态常量
-    static const int CAMERA_NUMBER = 2;
+    static const int MAX_CAMERA_NUMBER = 6;
 
-    static const int STATUS_DATA_ALL_INVALID = 0x00;//数据无效标志    
-    static const int STATUS_DATA_ALL_VALID   = (1<< CAMERA_NUMBER) - 1;//数据全有效标志
+
+    //static const int STATUS_DATA_ALL_INVALID = 0x00;//数据无效标志    
+    //static const int STATUS_DATA_ALL_VALID   = (1<< CAMERA_NUMBER) - 1;//数据全有效标志
     
+    UINT m_uCameraCount;//摄像头个数
 
     //FIFO元素结构
     struct TSpotListGroup
     {
-        TLightSpot aryLightSpots     [CAMERA_NUMBER][MAX_OBJ_NUMBER];//[摄像头][光斑列表]二维数组
-        int        aryLightSpotsCount[CAMERA_NUMBER]                ;//每个摄像头传感器捕捉到的光斑个数
+        TLightSpot aryLightSpots     [MAX_CAMERA_NUMBER][MAX_OBJ_NUMBER];//[摄像头][光斑列表]二维数组
+        int        aryLightSpotsCount[MAX_CAMERA_NUMBER]                ;//每个摄像头传感器捕捉到的光斑个数
     };
 
 
@@ -135,7 +165,7 @@ protected:
 
 
     //有效的光斑列表数据
-    TSpotListGroup    m_ValidSpotListGroup;
+    //TSpotListGroup    m_ValidSpotListGroup;
 
     //<<added by toxuke@gmail.cim ,2014/12/25
     CRoundRobinQueue<TSpotListGroup, 16>  m_SpotListGroupFIFO;//
@@ -152,7 +182,7 @@ protected:
 
     static const int SAMPLE_CORRELATION_INTERVAL = 48 ;//摄像头采样相关最大允许间隔, 单位:ms
 
-    UINT m_uCameraCount;//摄像头个数
+
 
 
     //融合区域内的光斑合并器

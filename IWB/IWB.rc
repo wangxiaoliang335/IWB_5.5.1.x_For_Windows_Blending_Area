@@ -219,11 +219,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "FileDescription", "Interactive Whiteboard Calibration System "
-            VALUE "FileVersion", "5.3.0.1"
+            VALUE "FileVersion", "5.3.0.3"
             VALUE "InternalName", "Optical Pen"
             VALUE "OriginalFilename", "OpticalPen.exe"
             VALUE "ProductName", "Interactive Whiteboard  Calibration System"
-            VALUE "ProductVersion", "5.3.0.1"
+            VALUE "ProductVersion", "5.3.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -239,6 +239,10 @@ END
 //
 
 IDC_CURSOR_DRAW_SCREEN_AREA CURSOR                  "res\\cursor_DrawScreenArea.cur"
+
+IDC_CURSOR_SPLIT_HORZ   CURSOR                  "res\\Cursor_SplitHorz.cur"
+
+IDC_CURSOR_HAND         CURSOR                  "res\\hand.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -379,6 +383,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING480           "Auto Calibration Failed!"
     IDS_STRING481           "Auto Calibration Succeeded."
+    IDS_STRING482           "Touch Screen Layout Designer ..."
 END
 
 #endif    // Chinese (Simplified, PRC) resources
@@ -400,7 +405,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
 IDD_OPTICALPEN_DIALOG DIALOGEX 0, 0, 528, 350
 STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Interactive Whiteboard Calibration Program (Version 5.3.0.1)"
+CAPTION "Interactive Whiteboard Calibration Program (Version 5.3.0.3)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 END
@@ -700,7 +705,7 @@ CAPTION "Gloview WhiteBoard Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,211,10,20,20
-    LTEXT           "Gloview Whiteboard Calibration System 5.3.0.1",IDC_STATIC,8,10,148,8,SS_NOPREFIX
+    LTEXT           "Gloview Whiteboard Calibration System 5.3.0.3",IDC_STATIC,8,10,148,8,SS_NOPREFIX
     LTEXT           "EASI Tech Ltd. Copyright (C) 2017/07/25--2018/07/25",IDC_STATIC,8,21,200,8
     DEFPUSHBUTTON   "Ok",IDOK,171,72,50,16,WS_GROUP
     LTEXT           "Shanghai Easi Computer Technology Co.Ltd.",IDC_STATIC,8,32,140,8
@@ -717,7 +722,7 @@ CAPTION "Interactive WhiteBoard Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,217,2,18,18
-    LTEXT           "Interactive Whiteboard Calibration System 5.3.0.1",IDC_STATIC,8,10,158,8,SS_NOPREFIX
+    LTEXT           "Interactive Whiteboard Calibration System 5.3.0.3",IDC_STATIC,8,10,158,8,SS_NOPREFIX
     DEFPUSHBUTTON   "Ok",IDOK,77,64,50,16,WS_GROUP
     LTEXT           "Copyright (C) 2017/07/25 --- 2018/07/25",IDC_STATIC,9,27,225,8
 END
@@ -940,6 +945,11 @@ BEGIN
 END
 
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_OPTICALPEN_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

@@ -104,7 +104,7 @@ private:
     CWinShellUtility        m_shellUtility;  
 
     static const int MAXMATCH_NUM = 10;
-    static const int CAMERA_NUMBER = 2;
+    static const int MAX_CAMERA_NUMBER = 6;
     //CSmartMatch<MAXMATCH_NUM, 50> m_oSmartMatch;//
     CSmartMatch<MAXMATCH_NUM> m_oSmartMatch;//
 

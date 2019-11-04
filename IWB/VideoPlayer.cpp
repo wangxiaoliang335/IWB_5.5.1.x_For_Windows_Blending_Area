@@ -65,7 +65,6 @@ CVideoPlayer::~CVideoPlayer()
 void CVideoPlayer::SetInterceptFilter(CInterceptFilter* pFilter)
 {
     m_pInterceptFilter = pFilter;
-
 }
 
 
@@ -635,9 +634,6 @@ HRESULT CVideoPlayer::BuildGraph()
         return hr;
     }
 
-
-
-
     //added by toxuke@gmail.com, 2013/03/19
     //Create Smart Teee filter
     CComPtr<IBaseFilter> ptrSmartTee;
@@ -876,6 +872,7 @@ HRESULT CVideoPlayer::BuildGraph()
     return hr;
 
 }
+
 ////@功能:开始侦测
 ////@参数:hPlayWnd, 播放窗体句柄
 ////      lpszDeviceName, 设备名称
@@ -1311,6 +1308,76 @@ BOOL CVideoPlayer::SetImageFormat(const VIDEOINFOHEADER& vih)
 
     return bRet;
 }
+
+
+BOOL CVideoPlayer::GetVideoSize(SIZE&  size)
+{
+    if (m_pCaptureFilter == NULL) return FALSE;
+
+    HRESULT hr = S_OK;
+    BOOL    bRet = FALSE;
+
+    CComPtr<IAMStreamConfig>  ptrConfig = NULL;
+    CComPtr<IPin> ptrCaptureOutputPin;
+    hr = FindPin(m_pCaptureFilter, PINDIR_OUTPUT, NULL, &ptrCaptureOutputPin);
+
+    if (FAILED(hr))
+    {
+        return FALSE;
+    }
+
+    hr = ptrCaptureOutputPin->QueryInterface(IID_IAMStreamConfig, (void**)&ptrConfig);
+    if (FAILED(hr))
+    {
+        return FALSE;
+    }
+
+
+     AM_MEDIA_TYPE*   pmt = NULL;
+    
+     hr = ptrConfig->GetFormat(&pmt);
+
+     if (FAILED(hr)) return FALSE;
+
+     if (pmt->formattype == FORMAT_VideoInfo)
+     {
+
+         VIDEOINFOHEADER   *pvi = (VIDEOINFOHEADER *)pmt->pbFormat;
+
+         if (pmt->cbFormat == sizeof(VIDEOINFOHEADER))
+         {
+             size.cx = pvi->bmiHeader.biWidth;
+             size.cy = pvi->bmiHeader.biHeight;
+         }
+         else
+         {
+             return FALSE;
+         }
+
+
+     }
+     else if (pmt->formattype == FORMAT_VideoInfo2)
+     {
+         VIDEOINFOHEADER2   *pvi = (VIDEOINFOHEADER2 *)pmt->pbFormat;
+
+         if (pmt->cbFormat == sizeof(VIDEOINFOHEADER2))
+         {
+             size.cx = pvi->bmiHeader.biWidth;
+             size.cy = pvi->bmiHeader.biHeight;
+         }
+         else
+         {
+             return FALSE;
+         }
+     }
+     else
+     {
+         return FALSE;
+     }
+
+    return TRUE;
+}
+
 
 HRESULT CVideoPlayer::ShowPropertyPage(HWND hwndParent)
 {	
@@ -2355,7 +2422,10 @@ void CVideoPlayer::SetDisplayInfo(LPCTSTR lpszInfo)
     //m_strDisplayText       = lpszInfo;
     //m_nDisplayTimesCounter = 0;
     //m_bTextIsValidate      = TRUE;
-	CRect  rcDisplayArea(0, 0, m_oRealFrameARGB.GetWidth(), m_oRealFrameARGB.GetHeight());
+	//CRect  rcDisplayArea(0, 0, m_oRealFrameARGB.GetWidth(), m_oRealFrameARGB.GetHeight());
+
+    //TOSDText::RectF rcDisplayArea = { 0.0, 0.0, 1.0, 1.0 };
+    RectF rcDisplayArea = { 0.0, 0.0, 1.0, 1.0 };
 	AddOSDText(
 		E_OSDTEXT_TYPE_ERROR_INFO,
 		lpszInfo,
@@ -2371,7 +2441,8 @@ void CVideoPlayer::SetDisplayInfo(LPCTSTR lpszInfo)
 BOOL CVideoPlayer::AddOSDText(
 	EOSDTextType eOSDTextType,
 	const TCHAR* szText,
-	const RECT&  rcDisplayArea,
+	//const TOSDText::RectF&  rcDisplayArea,
+    const RectF&  rcDisplayArea,
 	UINT dwDrawTextFormat,
 	LONG lFontSize,
 	const TCHAR* lpszFontFaceName,
@@ -2418,20 +2489,22 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 
 		if (0 == _tcsclen(osd.GetText())) continue;
 		HFONT hFontOld = (HFONT)SelectObject(hDC, osd.GetFont());
-		RECT rcTextArea = osd.GetDisplayArea();
+        //TOSDText::RectF normalized_text_area  = osd.GetDisplayArea();
+        RectF normalized_text_area = osd.GetDisplayArea();
+
 		//int nTextWidthInImageFrame  = rcTextArea.right  - rcTextArea.left;
 		//int nTextHeightInImageFrame = rcTextArea.bottom - rcTextArea.top ;
 
+        int nDispAreaWidth  = m_rcDispArea.right  - m_rcDispArea.left;
+        int nDispAreaHeight = m_rcDispArea.bottom - m_rcDispArea.top ;
 
-		//将图像坐标, 转为DC坐标
-		int nWidthInDC  = this->m_rcDispArea.right - this->m_rcDispArea.left;
-		int nHeightInDC = this->m_rcDispArea.bottom - this->m_rcDispArea.top;
+        //将归一化矩形区域转化为实际的显示区域
+        RECT rcTextArea;
+        rcTextArea.left   = /*m_rcDispArea.left +*/ normalized_text_area.left     * nDispAreaWidth ;
+        rcTextArea.right  = /*m_rcDispArea.left +*/ normalized_text_area.right    * nDispAreaWidth ;
+        rcTextArea.top    = /*m_rcDispArea.top  +*/ normalized_text_area.top      * nDispAreaHeight;
+        rcTextArea.bottom = /*m_rcDispArea.top  +*/ normalized_text_area.bottom   * nDispAreaHeight;
 
-
-		rcTextArea.left   = rcTextArea.left    * nWidthInDC  / nImageWidth;
-		rcTextArea.right  = rcTextArea.right   * nWidthInDC  / nImageWidth;
-		rcTextArea.top    = rcTextArea.top     * nHeightInDC / nImageHeight;
-		rcTextArea.bottom = rcTextArea.bottom  * nHeightInDC / nImageHeight;
 
 		UINT dwFormat = osd.GetDrawTextFormat();
 		
@@ -2450,6 +2523,9 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 
 		DrawText(hDC, (LPCTSTR)osd.GetText(), _tcsclen(osd.GetText()), &rcTextArea, dwFormat);
 		
+        CBrush brush;
+        brush.CreateSolidBrush(RGB(255,0,0));
+        FrameRect(hDC, &rcTextArea, brush);
 		SelectObject(hDC, hFontOld);
 
 		if (osd.GetDisplayTimesCounter() != -1)
@@ -2461,23 +2537,49 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
     
 }
 
-void CVideoPlayer::ShowCameraInfo(int nImageWidth,int nImageHeight, DWORD ImageType)
+void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps)
 {
-	//通知正在播放状态
-	CString  Compress;
-	Compress.Format(_T("%c%c%c%c"), ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF);
+	////视频压缩格式
+	//CString  Compress;
+	//Compress.Format(_T("%c%c%c%c"), ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF);
 
-	CString  FpsText;
-	FpsText.Format(_T("(%d*%d-%s)"), nImageWidth, nImageHeight, Compress);
-	CString strStatusText;
-	strStatusText.Format(_T("%s:%s"), g_oResStr[IDS_STRING442], FpsText);
+ //   //
+	//CString  FpsText;
+	//FpsText.Format(_T("(%d*%d-%s)"), nImageWidth, nImageHeight, Compress);
+	//
+ //   CString strStatusText;
+	//strStatusText.Format(_T("%s:%s"), g_oResStr[IDS_STRING442], FpsText);
 
-	m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
+	//m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
 
-	SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+	////SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+
+    CString strVideoInfo;
+
+    strVideoInfo.Format(
+        _T("#%d %c%c%c%c %d*%d@%.0f"),
+        m_nID+1,
+        ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF,
+        nImageWidth,
+        nImageHeight,
+        fps);
+
+    //TOSDText::RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
+    RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
+    AddOSDText(
+        E_OSDTEXT_TYPE_FORMAT_INFO,
+        (LPCTSTR)strVideoInfo,
+        textArea,
+        DT_TOP | DT_LEFT | DT_SINGLELINE,
+        10L,
+        _T("Times New Roman"),
+        -1 );
+
 }
 
 CString CVideoPlayer::CurrentCameraResolution()
 {
 	return m_sCurrentCameraResolution;
 }
+
+

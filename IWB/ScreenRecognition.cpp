@@ -32,10 +32,7 @@ CScreenRecognition::CScreenRecognition(COLORREF clrText)
 	///m_uNotifyMsg = uNotifyMsg;
 
 	static int s_InstanceCount = 1;
-
-
 	CAtlString strClassName;
-
 	strClassName.Format(_T("Countdown Timer Window %d"), s_InstanceCount++);
 
 	//m_hbrBackground = ::CreateSolidBrush(RGB(0,0,0));
@@ -67,6 +64,16 @@ CScreenRecognition::CScreenRecognition(COLORREF clrText)
 	m_hBitmapOld = (HBITMAP)::SelectObject(m_hMemDC, m_hBitmap);
 	m_hFontOld = (HFONT)::SelectObject(m_hMemDC, m_hFont);
 
+    LOGPEN logPen;
+    
+    logPen.lopnStyle = PS_DASHDOTDOT;
+//  logPen.lopnStyle = PS_DASH;
+    logPen.lopnWidth = {DEFAULT_PEN_WIDTH, 0 };
+    logPen.lopnColor = m_clrText;
+    m_hPen = ::CreatePenIndirect(&logPen);
+
+    m_hPenOld = (HPEN)::SelectObject(m_hMemDC, m_hPen);
+
 	m_hWnd = ::CreateWindowEx(
 		WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_LAYERED,//分层窗体。
 		strClassName,
@@ -89,6 +96,9 @@ CScreenRecognition::CScreenRecognition(COLORREF clrText)
 		LWA_COLORKEY  //se crKey as the transparency color
 	);
 
+
+
+
 	//搜索收集屏幕信息
 	//m_oDispMonitorFinder.SearchDisplayDev();
 	theApp.GetMonitorFinder().SearchDisplayDev();
@@ -100,9 +110,11 @@ CScreenRecognition::~CScreenRecognition()
 	::DestroyWindow(m_hWnd);//销毁
 	FreeThunk(&CScreenRecognition::WndProc, this);
 
-
+    ::SelectObject(m_hMemDC, m_hPenOld);
 	::SelectObject(m_hMemDC, m_hBitmapOld);
 	::SelectObject(m_hMemDC, m_hFontOld);
+    
+    ::DeleteObject(m_hPen);
 	::DeleteObject(m_hFont);
 	::DeleteDC(m_hMemDC);
 	::DeleteObject(m_hbrBackground);
@@ -180,6 +192,7 @@ LRESULT  CScreenRecognition::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 	case WM_LBUTTONDOWN:
 		//ShowWindow(this->m_hWnd, SW_HIDE);
+
 		break;
 
 	}
@@ -210,8 +223,12 @@ void CScreenRecognition::DoRecoginition(const CIWBSensorManager* pIWBSensorManag
 
 	ShowWindow(this->m_hWnd, SW_SHOW);
 
-	//for(int i=0; i < m_oDispMonitorFinder.GetDisplayDevCount(); i++)	
-	for (int i = 0; i < pIWBSensorManager->GetSensorCount();i++)
+	//for(int i=0; i < m_oDispMonitorFinder.GetDisplayDevCount(); i++)
+    //
+    int nSensorCount = pIWBSensorManager->GetSensorCount();
+
+
+	for (int i = 0; i < nSensorCount;i++)
 	{
 		const CIWBSensor* pSensor = pIWBSensorManager->GetSensor(i);
 		TSensorConfig sensorCfg = pSensor->GetCfgData();
@@ -234,12 +251,19 @@ void CScreenRecognition::DoRecoginition(const CIWBSensorManager* pIWBSensorManag
 			&rcMonitor,
 			DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
+        //用虚线绘制屏幕分割线
+        if (i != nSensorCount-1)
+        {
+            int nMonitorWidth  = rcMonitor.right  - rcMonitor.left;
+            int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
+            
+            ::MoveToEx(m_hMemDC, rcMonitor.right - DEFAULT_PEN_WIDTH, rcMonitor.top, NULL);
+            ::LineTo(m_hMemDC, rcMonitor.right - DEFAULT_PEN_WIDTH, rcMonitor.bottom);
+        }
 
 	}//for
 
 
 	UpdateWindow(this->m_hWnd);
-
-
 
 }

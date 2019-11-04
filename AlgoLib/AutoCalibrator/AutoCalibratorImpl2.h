@@ -415,7 +415,10 @@ protected:
     int         m_nStageWaitCount     ;//阶段计数
 
     //static const int STAGE_MINIMUM_WAIT_COUNT = 3;//对高亮度投影机没有问题,但对低亮度投影机会出现
-    static const int STAGE_MINIMUM_WAIT_COUNT = 5;//投射比0.25
+    //<<temp
+    //static const int STAGE_MINIMUM_WAIT_COUNT = 5;//投射比0.25
+    static const int STAGE_MINIMUM_WAIT_COUNT = 20;//投射比0.25
+    //>>
 
 
     static const int WHITE_BOARD_SAMPLE_START_COUNT = STAGE_MINIMUM_WAIT_COUNT*2;//开始采样白板时的帧计数值
@@ -425,7 +428,6 @@ protected:
     static const int BLACK_BOARD_SAMPLE_END_COUNT   = STAGE_MINIMUM_WAIT_COUNT*3;//结束采样时的帧计数值
 
     ECalibDebugLevel m_eDebugLevel;//调试级别
-
     
 };
 
@@ -458,6 +460,7 @@ inline void AccumulateImageFrame(const CImageFrame& srcFrame, const CImageFrame&
         POINT ptCentroid;//质心
         RECT  rcBound   ;//包围边界目标的矩形区域
     };
+
 //==========================
 //功能:屏幕边界查找器
 class CMonitorBoundaryFinder
@@ -505,8 +508,9 @@ public:
         {
             m_vecSubAreaPolygons[i] = pPolygons[i];
         }
-        
     }
+
+    int GetMarkerCount()const;
 protected:
     //@功能:初始化边界标记位置坐标
     void InitBoundaryMarkerPositions(int nHorzSideSquareNumber, int nVertSideSquareNumber, int nSquareWidth);
@@ -585,19 +589,31 @@ protected:
 
     RECT                   m_rcMonitor       ;//屏幕矩形区域
     ECalibDebugLevel       m_eDebugLevel     ;//调试级别
-    //BOOL                   m_bIsSimulateInput;//模拟输入标志
+//  BOOL                   m_bIsSimulateInput;//模拟输入标志
     HWND                   m_hDispWnd        ;//显示窗体
     BOOL                   m_bDone           ;//搜索结束标志
 
+
+    //<<temp
     static const int WAIT_STEADY_SAMPLE_COUNT     = 10;//等待稳定采样时的计数值
+    //static const int WAIT_STEADY_SAMPLE_COUNT = 30;//等待稳定采样时的计数值
+    //temp>>
     static const int WAIT_SAMPLE_END_STAGE_COUNT  = WAIT_STEADY_SAMPLE_COUNT + 5;//
 
-public:
-    //每条边上的边界符号的数目。
-    static const int HORZ_SIDE_MARKER_NUMBER  = 7;
-    static const int VERT_SIDE_MARKER_NUMBER  = 5;
-    static const int BORDER_MARKER_NUMBER = (HORZ_SIDE_MARKER_NUMBER  - 1)*2 + (VERT_SIDE_MARKER_NUMBER - 1)*2;
+    //水平方向的边界点个数
+    int m_nHorzSideMarkerNumber;
 
+    //垂直方向的边界点个数
+    int m_nVertSideMarkerNumber;
+
+//public:
+    //每条边上的边界符号的数目。
+    //static const int HORZ_SIDE_MARKER_NUMBER  = 7;
+    //static const int VERT_SIDE_MARKER_NUMBER  = 5;
+
+    //static const int BORDER_MARKER_NUMBER = (HORZ_SIDE_MARKER_NUMBER  - 1)*2 + (VERT_SIDE_MARKER_NUMBER - 1)*2;
+
+    static const int MINIMUM_SIDE_MARKER_NUMBER = 5;
     
 };
 
@@ -1356,6 +1372,7 @@ protected:
     //int m_nStageTryTimes ;//阶段尝试次数
 
     static const int MAX_STAGE_WAIT_COUNT = 15                       ;//每个阶段的最大等待帧数
+    //static const int MAX_STAGE_WAIT_COUNT = 45;//每个阶段的最大等待帧数
     static const int SAMPLE_START_COUNT   = MAX_STAGE_WAIT_COUNT     ;//开始采样时的帧计数值
     static const int SAMPLE_END_COUNT     = MAX_STAGE_WAIT_COUNT << 1;//结束采样时的帧计数值
     

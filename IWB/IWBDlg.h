@@ -34,14 +34,10 @@ public:
 		int cxMenuCheck = GetSystemMetrics(SM_CXMENUCHECK);
 		int cyMenuCheck = GetSystemMetrics(SM_CYMENUCHECK);
 
-		
-
-
 		rcText.left   = lpDrawItem->rcItem.left    + cxMenuCheck;
 		rcText.top    = lpDrawItem->rcItem.top     + (nItemHeight - sizeText.cy)/2;
 		rcText.right  = rcText.left + sizeText.cx;
 		rcText.bottom = lpDrawItem->rcItem.bottom  - (nItemHeight - sizeText.cy)/2;
-
 
 
 		rcImage.right = lpDrawItem->rcItem.right;
@@ -384,7 +380,7 @@ protected:
 	afx_msg void OnMaskAreaEditActionUndo();
 	afx_msg LRESULT OnKickIdle(WPARAM wParam, LPARAM lParam);
 
-    afx_msg void OnVideoTunningMode();
+    afx_msg void OnVideoTuningMode();
     afx_msg void OnNormalUsageMode();
 //	afx_msg void OnAutoMaskClutterTest();
 	afx_msg void OnControlOn();
@@ -415,6 +411,7 @@ protected:
 	afx_msg void OnClearMaskArea();
 	afx_msg void OnCtxmenuAutoCalibrate();
     afx_msg void OnSwapSensorImage();
+    afx_msg void OnSwapImageWithSensor(UINT uID);
 
 	afx_msg void OnChangeTouchScreenAspectRatio(UINT uID);
 
@@ -435,18 +432,7 @@ protected:
 
 	afx_msg void OnBnClickedCheckMouseControl();
 
-	 //CManualCalibrateWnd m_oManualCalibrateWnd;
-	 
-     //CVideoPlayer m_oFilterGraphBuilder;
 
-     /*
-	 CCollectSpotSize m_oCollectSpotWnd;                                ///zhown
-     */
-
-
-	 //TCalibrateData          m_tCalibrateData;
-
-	//afx_msg void OnBnClickedButtonCoordAdjust();
 
 //	afx_msg void OnBnClickedButtonStartStop();
 	HRESULT OnFpsNotify         (WPARAM wParam,LPARAM lParam);
@@ -552,6 +538,10 @@ protected:
 
 	//@功能:应用传感器的配置
 	HRESULT OnApplySensorConfig(WPARAM wParam, LPARAM lParam);
+
+
+    //@功能:结束屏幕布局设计
+    HRESULT OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam);
 
 //====变量===========
 
@@ -781,9 +771,11 @@ protected:
 	//>>
 
 protected:
+    void InitMenu();
     void InsertMenuItem2TheMenu(CMenu *pMenu, const int &nInsertIndex, const DWORD &dwIMenuItemID, LPTSTR lpszMenuItemName);
     void InsertParamSettingMenuItem(CMenu *pMenu, const int &nInsertIndex);
     void InitDeviceUseModeMenuItemWithMenu(CMenu *pMenu);
+    
 
 public:
     //<<aded by toxuke@gmail.com, 2013/05/06
@@ -832,4 +824,7 @@ public:
 	//
     afx_msg void OnInstallationanddebuggingEnableinterpolate();
 	afx_msg void OnMenuVideoformat();
+
+    //触屏布局编辑工具
+    afx_msg void OnMenuTouchScreenLayoutDesigner();
 };

@@ -18,7 +18,7 @@ public:
     BOOL IsRegisteredOk() const { return m_bRegisteredOk;}
 
     EDeviceTouchType GetTouchType() const { return m_eTouchType;}
-    EScreenType GetScreenType() const { return m_eScreenType;}
+    EScreenMode GetScreenMode() const { return m_eScreenMode;}
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -33,6 +33,6 @@ protected:
     CString m_strSN;
     CString m_strText;
     EDeviceTouchType m_eTouchType;
-    EScreenType      m_eScreenType;
+    EScreenMode      m_eScreenMode;
 	virtual void OnCancel();
 };

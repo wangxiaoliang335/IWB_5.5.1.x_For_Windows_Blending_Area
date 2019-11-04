@@ -143,6 +143,10 @@ protected:
     //丢失帧检测对象
     CLostFrameCountDetector m_oLostFrameDetector;
 
+    //帧率侦测器
+    CFPSDetector m_oFpsDetector;
+
+
     //录像调试工具, 2012-06-20, by toxuke@gmail.com
     BOOL       m_bIsRecording;//正在录像标志
     CAviWriter m_oAviRecorder;//录像录制器
@@ -174,12 +178,9 @@ protected:
 
 
     BOOL m_bCaptureImage;
-	////////跳过的帧率
+	
+    //跳过的帧率
 	int m_nFrameSkipCount;
-
-
-
-
 
 
 };

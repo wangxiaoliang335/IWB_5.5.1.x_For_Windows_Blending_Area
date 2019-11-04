@@ -13,8 +13,9 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-
 #include <atlbase.h>
+
+#include "../inc/RectF.h"
 #include "../inc/MultiDimensionPoint.h"
 #include "../inc/LightSpot.h"
 #include "../inc/MsgDefine.h"
@@ -139,6 +140,11 @@
 
 #include "ManualCalibrationWnd.h"
 
+//屏幕布局编辑工具
+#include "ScreenLayoutDesigner.h"
+
+
+
 #include "SensorTimerAction.h"
 #include "IWBSensor.h"
 #include "IWBSensorManager.h"
@@ -151,6 +157,8 @@
 #include "SimulateCalibarationParamDlg.h"
 #include "HyperLinkWnd.h"
 #include "ScreenRecognition.h"
+
+
 #include "AdvancedSettingsDlg.h"
 
 #include "GestureSettingDlg.h"

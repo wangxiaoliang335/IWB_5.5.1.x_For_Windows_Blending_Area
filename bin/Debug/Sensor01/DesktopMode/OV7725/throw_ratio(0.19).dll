@@ -35,6 +35,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-FingerTouch>
     <!--笔触控模式下的正常使用参数-->
@@ -69,6 +71,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-PenTouch>
     <!--安装调试模式参数-->
@@ -95,6 +99,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="13226" default="13226" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </InstallTunning>
     <!--激光器调试模式参数-->
@@ -121,6 +127,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning>
     <!--自动校正参数-->
@@ -171,6 +179,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="13226" default="13226" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </AutoCalibrate>
     <!--自动屏蔽参数-->

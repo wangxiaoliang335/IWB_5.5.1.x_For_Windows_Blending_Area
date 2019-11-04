@@ -16,6 +16,7 @@ struct TDownEvent
     DWORD dwDownTime  ;//第一次按下时间
     BOOL  bAlreadyDown;//已经按下标志
 };
+
 //template<int MaxNum>
 //class CTouchScreenSingleClickChecker
 //{

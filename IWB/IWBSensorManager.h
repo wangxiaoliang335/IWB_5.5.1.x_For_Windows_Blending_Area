@@ -75,7 +75,7 @@ public:
     //@窗体:hWnd, 窗体句柄
     void DrawLayoutFrame(HWND hWnd = NULL);
 
-    int GetSensorCount()const
+    UINT GetSensorCount()const
     {
         return m_vecSensors.size();
     }
@@ -139,10 +139,6 @@ public:
     void OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCtxData);
 
 
-
-
-
-
     //@功能:判断校正是否成功
     BOOL IsCalibarateOk();
 
@@ -175,7 +171,7 @@ public:
 
 
     //@功能:返回光斑列表处理器
-    CSpotListProcessor& GetSpotListProcessor(){return m_oSpotListProcessor;}
+    CSpotListProcessor& GetSpotListProcessor(){return *m_pSpotListProcessor;}
 
 
     //@功能:判断传感器设备是否在运行
@@ -205,6 +201,12 @@ public:
 
     //@功能:交换两个图像传感器的显示画面
     void SwapSensorImage();
+
+
+    //@功能:交换两个图像传感器的显示画面
+    //@参数:第一个图像传感器的Id
+    //      第二个图像传感器的id
+    void SwapSensorImage(UINT firstSensorId, UINT secondSensorId);
 
     //@功能:通过读取录像文件再现自动校正过程
     //@参数:nSensorId, 传感器Id
@@ -254,11 +256,18 @@ public:
 
 
 	void OnTimer(LPVOID lpCtx);
+
+    CScreenLayoutDesigner& GetScreenLayoutDesigner() {return m_oScreenLayoutDesigner;}
+
+
+    void ApplyScreenLayout();
+
 protected:
     void UpdateVideoLayout(const RECT& rcDisplayArea);
 
-    std::vector<CIWBSensor*> m_vecSensors;
 
+    std::vector<CIWBSensor*> m_vecSensors;
+    
     //显示其查找类实例
     //CDispDevFinder      m_oDispMonitorFinder;
 
@@ -267,7 +276,10 @@ protected:
 
     
     //光斑处理器,负责产生手势、鼠标、触屏事件
-    CSpotListProcessor      m_oSpotListProcessor;
+    //<<避免耗尽1M左右的堆栈区域, 改为在堆(heap)中生成CSpotListProcessor对象
+    //CSpotListProcessor      m_oSpotListProcessor;
+    CSpotListProcessor*       m_pSpotListProcessor;
+    //>>
 
 
     //光斑采集对象
@@ -275,9 +287,15 @@ protected:
 
 
     static const int SPLITTER_WIDTH = 5;
-    
+
+    //相机画面显示窗体的布局
     std::vector<RECT> m_vecVideoLayout;//视频布局
     std::vector<RECT> m_vecSplitter   ;//分割条数组
+
+
+    //屏幕布局设计工具, 允许每个屏幕大小不一致
+     CScreenLayoutDesigner m_oScreenLayoutDesigner;
+
 
     HWND m_hVideoDispWnd;//视频显示窗体
 
@@ -300,7 +318,7 @@ protected:
     static const int MAX_AUTOCALIBRATE_TRY_TIMES = 1;//自动校正尝试次数。
     std::vector<BOOL> m_vecCalibrateResults         ;//保存每个传感器校正结果的数组,说明需要预先保存每个传感器的校正结果。因为传感器滤光片需要
                                                      //在所有传感器都校正完成后才能够一齐合上。
-
+    //BOOL m_bAllScreenMergedOnOnePlane               ;//所有屏幕融合在一块平面上的标志
 
 
 

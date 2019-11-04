@@ -205,7 +205,8 @@ m_pSensor(pSensor),
 m_oAutoBrightnessRegulator(50, BrightnessControl, pSensor),
 m_bEnableBrightnessAutoRegulating(FALSE),
 m_bCaptureImage(FALSE),
-m_nFrameSkipCount(0)
+m_nFrameSkipCount(0),
+m_oFpsDetector(60)
 {
 
 
@@ -357,8 +358,8 @@ void CInterceptFilter::CaptureImage()
 
     this->m_bCaptureImage = TRUE;
 }
-//CFPSDetector g_oFpsDetector;
-//BOOL g_bFirstTime = TRUE;
+
+
 // Transform place holder - should never be called
 HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 {
@@ -381,6 +382,9 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
     m_oLostFrameDetector.DoDetect();
 
+    //帧率触发
+    m_oFpsDetector.Trigger();
+
     BYTE* pDestBuf;
     BYTE* pSrcBuf;
     HRESULT hr = S_OK;
@@ -398,6 +402,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
     //判断视频格式
     unsigned int bytesPerPixel = 2;
+
     CMediaType mt(m_pInput->CurrentMediaType());
 
     int nMJPGDataLength = 0;
@@ -547,22 +552,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     }//else
 
 
-//	BYTE*  pbGrayData = m_GraySrcFrame.GetData();
-//	pbGrayData = pbGrayData + 360 * m_nRawImageWidth;
-//
-//	for (int h = 360; h < 400; h++)
-//	{
-//		for (int i = 0; i <m_nRawImageWidth; i++)
-//		{
-//			*pbGrayData = (h-360)*4;
-//			pbGrayData++;
-//		}
-//	}
-
-
     //<<2015-08-18
     //画面自动亮度控制
-
     if (m_bEnableBrightnessAutoRegulating)
     {
         //static unsigned int  s_AutoControlCount = 0;
@@ -626,7 +617,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
             return S_OK;
         }
 
-        m_pVideoPlayer->ShowCameraInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType);
+        m_pVideoPlayer->UpdateVideoStreamForamtInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType, m_oFpsDetector.GetCurrentFps());
 
     }
 
@@ -636,7 +627,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         {
             UpdateARGBFrameWithoutMask();
         }
-        else {
+        else
+        {
             UpdateARGBFrameWithMask();//更新屏蔽图信息和图片信息到ARGB图片帧中。
         }
     }
@@ -679,18 +671,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
                 m_BGRAFrame.PutStr(LightspotInfo[i].m_aryLightSpotBounds.right, LightspotInfo[i].m_aryLightSpotBounds.bottom, szSize, ARGB_YELLOW, 16);
             }
         }
-        //<<debug
-            /*m_BGRAFrame.Line(
-            aryContourCrossPoints[i][0],
-            aryContourCrossPoints[i][1],
-            ARGB_RED);*/
-
-            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][0], ARGB_CYAN );
-            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][1], ARGB_CYAN );
-            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][2], ARGB_RED  );
-            //重心
-            //m_BGRAFrame.SetPixel(aryContourCrossPoints[i][3], ARGB_PURPLE);
-            //debug>>
+ 
     }
 
     if (m_pPenPosDetector->IsGuideRectangleVisible())
@@ -788,16 +769,12 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     //<<aded by toxuke@gmail.com, 2013/05/17
     if(m_pVideoPlayer)
     {
-        //char szText[256];
-        //sprintf(szText, "%x", m_pVideoPlayer);
-        //PrintYUY2Str(pDestBuf, 320, 240, YUV_YELLOW, szText);
         m_pVideoPlayer->DisplayFrame((const BYTE*)m_BGRAFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
     }
     //>>
 
     if(m_bCaptureImage)
     {
-
         SaveBGRAFrame(m_BGRAFrame);
         m_bCaptureImage = FALSE;
     }
@@ -816,6 +793,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 BOOL CInterceptFilter::StartDetect(HWND hDisplayWnd, int nSrcImageWidth, int nSrcImageHeight)
 {
     m_oLostFrameDetector.Reset(30);
+
+    m_oFpsDetector.Reset();
 
     return m_pPenPosDetector->StartDetect(hDisplayWnd, nSrcImageWidth, nSrcImageHeight);
 

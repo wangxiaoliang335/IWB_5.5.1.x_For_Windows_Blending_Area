@@ -444,114 +444,149 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_WM_SHOWWINDOW()
     ON_WM_WINDOWPOSCHANGING()
     ON_WM_INITMENUPOPUP()
-ON_WM_CONTEXTMENU()
-//ON_COMMAND(ID_SCREEN_AREA_SPECIFY, &CIWBDlg::OnMaskAreaSpecify)
-//ON_COMMAND(ID_DISABLE_MANUAL_SREEN_AREA, &CIWBDlg::OnDisableManualSreenArea)
-ON_WM_CAPTURECHANGED()
-ON_WM_LBUTTONDOWN()
-ON_WM_LBUTTONUP()
-ON_WM_MOUSEMOVE()
-ON_WM_SETCURSOR()
-ON_WM_KEYDOWN()
+    ON_WM_CONTEXTMENU()
+    //ON_COMMAND(ID_SCREEN_AREA_SPECIFY, &CIWBDlg::OnMaskAreaSpecify)
+    //ON_COMMAND(ID_DISABLE_MANUAL_SREEN_AREA, &CIWBDlg::OnDisableManualSreenArea)
+    ON_WM_CAPTURECHANGED()
+    ON_WM_LBUTTONDOWN()
+    ON_WM_LBUTTONUP()
+    ON_WM_MOUSEMOVE()
+    ON_WM_SETCURSOR()
+    ON_WM_KEYDOWN()
 
-//ON_COMMAND_RANGE(ID_AUTOCALIBRATION_13X13GRIDS,ID_AUTOCALIBRATION_17X17GRIDS, &CIWBDlg::OnMenuAutoCalibrate)
-ON_COMMAND(ID_MENU_AUTO_CALIBRATE, &CIWBDlg::OnStartMenuAutoCalibrate)
-ON_COMMAND_RANGE(ID_ADD_MASK_RECTANGLE_1X, ID_ADD_MASK_RECTANGLE_3X, &CIWBDlg::OnAddMaskArea)
-ON_COMMAND_RANGE(ID_ERASE_MASK_RECTANGLE_1X, ID_ERASE_MASK_RECTANGLE_3X, &CIWBDlg::OnEraseMaskArea)
+    //ON_COMMAND_RANGE(ID_AUTOCALIBRATION_13X13GRIDS,ID_AUTOCALIBRATION_17X17GRIDS, &CIWBDlg::OnMenuAutoCalibrate)
+    ON_COMMAND(ID_MENU_AUTO_CALIBRATE, &CIWBDlg::OnStartMenuAutoCalibrate)
+    ON_COMMAND_RANGE(ID_ADD_MASK_RECTANGLE_1X, ID_ADD_MASK_RECTANGLE_3X, &CIWBDlg::OnAddMaskArea)
+    ON_COMMAND_RANGE(ID_ERASE_MASK_RECTANGLE_1X, ID_ERASE_MASK_RECTANGLE_3X, &CIWBDlg::OnEraseMaskArea)
 
-ON_WM_DRAWITEM()
-ON_WM_MEASUREITEM()
-ON_COMMAND(ID_MANUALMASKAREA_ENDEDITING, &CIWBDlg::OnEndManualMaskAreaEdit)
-ON_COMMAND(ID_CLEAR_MASK_AREA, &CIWBDlg::OnClearMaskArea)
-ON_WM_DESTROY()
-ON_MESSAGE(WM_HOTKEY, OnHotKey)
-ON_COMMAND(ID_MASK_AREA_EDIT_ACTION_REDO, &CIWBDlg::OnMaskAreaEditActionRedo)
-ON_COMMAND(ID_MASK_AREA_EDIT_ACTION_UNDO, &CIWBDlg::OnMaskAreaEditActionUndo)
-ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+    ON_WM_DRAWITEM()
+    ON_WM_MEASUREITEM()
+    ON_COMMAND(ID_MANUALMASKAREA_ENDEDITING, &CIWBDlg::OnEndManualMaskAreaEdit)
+    ON_COMMAND(ID_CLEAR_MASK_AREA, &CIWBDlg::OnClearMaskArea)
+    ON_WM_DESTROY()
+    ON_MESSAGE(WM_HOTKEY, OnHotKey)
+    ON_COMMAND(ID_MASK_AREA_EDIT_ACTION_REDO, &CIWBDlg::OnMaskAreaEditActionRedo)
+    ON_COMMAND(ID_MASK_AREA_EDIT_ACTION_UNDO, &CIWBDlg::OnMaskAreaEditActionUndo)
+    ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
 
-ON_WM_INPUT()
-ON_COMMAND(ID_AUTO_ADD_MASK_AREA, &CIWBDlg::OnMenuAutoAddScreenMask)
-//ON_MESSAGE(CLUTTER_DETECTION_DONE_MSG, OnClutterDetectionDone)
+    ON_WM_INPUT()
+    ON_COMMAND(ID_AUTO_ADD_MASK_AREA, &CIWBDlg::OnMenuAutoAddScreenMask)
+    //ON_MESSAGE(CLUTTER_DETECTION_DONE_MSG, OnClutterDetectionDone)
 
-ON_MESSAGE(WM_INITIAL_STATGE_DISABLE_OPTICAL_PEN_FOR_CLUTTER, OnInitialStateDisableOpticalPenForClutter)
-ON_WM_NCDESTROY()
+    ON_MESSAGE(WM_INITIAL_STATGE_DISABLE_OPTICAL_PEN_FOR_CLUTTER, OnInitialStateDisableOpticalPenForClutter)
+    ON_WM_NCDESTROY()
 
-ON_MESSAGE(WM_STATGE_DISABLE_OPTICAL_PEN_FOR_CLUTTER, OnStateDisableOpticalPenForClutter)
+    ON_MESSAGE(WM_STATGE_DISABLE_OPTICAL_PEN_FOR_CLUTTER, OnStateDisableOpticalPenForClutter)
 
-ON_MESSAGE(WM_CHANGE_GUIDELINE_Y_POS, OnChangeGuidelineYPos)
-ON_MESSAGE(WM_SHOW_GUIDELINE, OnShowGuideline)
-ON_MESSAGE(WM_MANUAL_COLLECT_SPOT, OnSpotCollectionSetting_Par)
-ON_MESSAGE(WM_RECORD_VIDEO, OnRecordvideo)
-ON_MESSAGE(WM_CHANGE_DISPLAY_WINDOW, OnChangeDisplayWindow)
+    ON_MESSAGE(WM_CHANGE_GUIDELINE_Y_POS, OnChangeGuidelineYPos)
+    ON_MESSAGE(WM_SHOW_GUIDELINE, OnShowGuideline)
+    ON_MESSAGE(WM_MANUAL_COLLECT_SPOT, OnSpotCollectionSetting_Par)
+    ON_MESSAGE(WM_RECORD_VIDEO, OnRecordvideo)
+    ON_MESSAGE(WM_CHANGE_DISPLAY_WINDOW, OnChangeDisplayWindow)
 
-ON_MESSAGE(WM_PUT_DETECT_BACKSPLASH_DATA, OnProcessDetectBackSplashData)
-ON_MESSAGE(WM_START_DETECT_BACKSPLASH_VANISH, OnStartDetectBackSplashVanished)
-ON_MESSAGE(WM_STOP_DETECT_BACKSPLASH_VANISH, OnStopDetectBackSplashVanished)
+    ON_MESSAGE(WM_PUT_DETECT_BACKSPLASH_DATA, OnProcessDetectBackSplashData)
+    ON_MESSAGE(WM_START_DETECT_BACKSPLASH_VANISH, OnStartDetectBackSplashVanished)
+    ON_MESSAGE(WM_STOP_DETECT_BACKSPLASH_VANISH, OnStopDetectBackSplashVanished)
 
-ON_MESSAGE(WM_ENABLEORDISABLE_WINDOW, OnEnableOrDisableTheWindow)
+    ON_MESSAGE(WM_ENABLEORDISABLE_WINDOW, OnEnableOrDisableTheWindow)
 
-ON_COMMAND(ID_MENU_COLLECT_BOLBSETTING, &CIWBDlg::OnSpotCollectionSetting)
-ON_COMMAND(ID_MENU_SIMULATION_MANUAL_CALIBRATION, &CIWBDlg::OnSimulationManualCalibration)
-ON_COMMAND(ID_BOLB_CALIBRATION_SETTING, &CIWBDlg::OnSpotCalibrationSetting)
-//ON_COMMAND(ID_AUTO_SEARCH_SCREEN_AREA, &CIWBDlg::OnAutoSearchScreenArea)
+    ON_COMMAND(ID_MENU_COLLECT_BOLBSETTING, &CIWBDlg::OnSpotCollectionSetting)
+    ON_COMMAND(ID_MENU_SIMULATION_MANUAL_CALIBRATION, &CIWBDlg::OnSimulationManualCalibration)
+    ON_COMMAND(ID_BOLB_CALIBRATION_SETTING, &CIWBDlg::OnSpotCalibrationSetting)
+    //ON_COMMAND(ID_AUTO_SEARCH_SCREEN_AREA, &CIWBDlg::OnAutoSearchScreenArea)
 
-ON_MESSAGE(WM_SEARCH_SCREEN_AREA_DONE, OnSearchScreenAreaDone)
-ON_MESSAGE(WM_CHANGE_SPOTPROPORTION, OnChangeSpotProportion)
-ON_MESSAGE(WM_CHANGE_MULTERASER, OnChangeMultEraser)
-ON_MESSAGE(WM_CHANGE_FIXEDBOLBSETTIME, OnChangeFixedbolbsettime)
-ON_MESSAGE(WM_CHANGE_NORMALUSER_BRIGHTNESS, OnChangeNormalUserBrightness)
-ON_MESSAGE(WM_CHANGE_AUTOMASKDETECTTHRESHOLD, OnChangeAutoMaskDetectThreshold)
-ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS, OnChangeAutoCalibrateAveBrightness)
-ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY, OnChangeAutoCalibrateLightGray)
-ON_MESSAGE(WM_REAR_PROJECTION, OnRearProjection)
+    ON_MESSAGE(WM_SEARCH_SCREEN_AREA_DONE, OnSearchScreenAreaDone)
+    ON_MESSAGE(WM_CHANGE_SPOTPROPORTION, OnChangeSpotProportion)
+    ON_MESSAGE(WM_CHANGE_MULTERASER, OnChangeMultEraser)
+    ON_MESSAGE(WM_CHANGE_FIXEDBOLBSETTIME, OnChangeFixedbolbsettime)
+    ON_MESSAGE(WM_CHANGE_NORMALUSER_BRIGHTNESS, OnChangeNormalUserBrightness)
+    ON_MESSAGE(WM_CHANGE_AUTOMASKDETECTTHRESHOLD, OnChangeAutoMaskDetectThreshold)
+    ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS, OnChangeAutoCalibrateAveBrightness)
+    ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY, OnChangeAutoCalibrateLightGray)
+    ON_MESSAGE(WM_REAR_PROJECTION, OnRearProjection)
 
-//ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
-//ON_MESSAGE(WM_MANUAL_CORRECT_DONE, &CIWBDlg::OnManualCorrectDone)
-//ON_MESSAGE(WM_DISPLAYWINDOW,&CIWBDlg::OnDisPlayWindow)
+    //ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
+    //ON_MESSAGE(WM_MANUAL_CORRECT_DONE, &CIWBDlg::OnManualCorrectDone)
+    //ON_MESSAGE(WM_DISPLAYWINDOW,&CIWBDlg::OnDisPlayWindow)
 
 
-//    ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_RECOGNITION, OnChangeEnableGestrueRecognition)
-//ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_TOUCH, OnChangeEnableGestureTouch)
-//ON_MESSAGE(WM_CHANGE_ENABLE_PEN_TOUCH, OnChangeEnablePenTouch)
+    //    ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_RECOGNITION, OnChangeEnableGestrueRecognition)
+    //ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_TOUCH, OnChangeEnableGestureTouch)
+    //ON_MESSAGE(WM_CHANGE_ENABLE_PEN_TOUCH, OnChangeEnablePenTouch)
 
-ON_WM_QUERYENDSESSION()
+    ON_WM_QUERYENDSESSION()
 
-ON_MESSAGE(WM_GRAPHNOTIFY, OnGraphNotify)
+    ON_MESSAGE(WM_GRAPHNOTIFY, OnGraphNotify)
 
-ON_REGISTERED_MESSAGE(m_uTaskbarRestartMsg, OnTaskbarRestartMsg)
-ON_COMMAND(ID_WORKMODE_IMAGE_TUNNING, &CIWBDlg::OnVideoTunningMode)
-ON_COMMAND(ID_WORKMODE_NORMAL_USAGE, &CIWBDlg::OnNormalUsageMode)
-//	ON_COMMAND(ID_AUTO_MASK_CLUTTER_TEST, &CIWBDlg::OnAutoMaskClutterTest)
-ON_COMMAND(ID_CONTROL_ON, &CIWBDlg::OnControlOn)
-ON_COMMAND(ID_CONTROL_OFF, &CIWBDlg::OnControlOff)
-ON_COMMAND(ID_WORKMODE_LASER_TUNNING, &CIWBDlg::OnLaserTunningModel)
-//ON_COMMAND(ID_MENU_MANUAL_CALIBRATE25, &CIWBDlg::OnMenuManualCalibrate25)
-ON_COMMAND(ID_MENU_MANUAL_CALIBRATE, &CIWBDlg::OnMenuManualCalibrate)
-ON_COMMAND(ID_TRAYCTXMENU_MANUALCALIBRATION, &CIWBDlg::OnMenuManualCalibrate25)
-//ON_COMMAND(ID_MENU_MANUAL_CALIBRATE36, &CIWBDlg::OnMenuManualCalibrate36)
-ON_WM_NCLBUTTONDBLCLK()
-ON_WM_ERASEBKGND()
-ON_WM_LBUTTONDBLCLK()
-ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_INSTALL_TIP, OnSensorCtxMenu)
+    ON_REGISTERED_MESSAGE(m_uTaskbarRestartMsg, OnTaskbarRestartMsg)
+    ON_COMMAND(ID_WORKMODE_IMAGE_TUNNING, &CIWBDlg::OnVideoTuningMode)
+    ON_COMMAND(ID_WORKMODE_NORMAL_USAGE, &CIWBDlg::OnNormalUsageMode)
+    //	ON_COMMAND(ID_AUTO_MASK_CLUTTER_TEST, &CIWBDlg::OnAutoMaskClutterTest)
+    ON_COMMAND(ID_CONTROL_ON, &CIWBDlg::OnControlOn)
+    ON_COMMAND(ID_CONTROL_OFF, &CIWBDlg::OnControlOff)
+    ON_COMMAND(ID_WORKMODE_LASER_TUNNING, &CIWBDlg::OnLaserTunningModel)
+    //ON_COMMAND(ID_MENU_MANUAL_CALIBRATE25, &CIWBDlg::OnMenuManualCalibrate25)
+    ON_COMMAND(ID_MENU_MANUAL_CALIBRATE, &CIWBDlg::OnMenuManualCalibrate)
+    ON_COMMAND(ID_TRAYCTXMENU_MANUALCALIBRATION, &CIWBDlg::OnMenuManualCalibrate25)
+    //ON_COMMAND(ID_MENU_MANUAL_CALIBRATE36, &CIWBDlg::OnMenuManualCalibrate36)
+    ON_WM_NCLBUTTONDBLCLK()
+    ON_WM_ERASEBKGND()
+    ON_WM_LBUTTONDBLCLK()
+    ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_INSTALL_TIP, OnSensorCtxMenu)
 
-//ON_COMMAND_RANGE(ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS, ID_GUESTURESETTINGS_WINDOWSGESTURESETTINGS, OnGestureSettingMenu)
+    //ON_COMMAND_RANGE(ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS, ID_GUESTURESETTINGS_WINDOWSGESTURESETTINGS, OnGestureSettingMenu)
 
-ON_COMMAND(ID_OPERATION_LIGHTSPOTSAMPLING, &CIWBDlg::OnOperationLightspotsampling)
-ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_MOUSE, &CIWBDlg::OnInstallationanddebuggingMouse)
-ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, &CIWBDlg::OnInstallationanddebuggingTouchpad)
+    ON_COMMAND(ID_OPERATION_LIGHTSPOTSAMPLING, &CIWBDlg::OnOperationLightspotsampling)
+    ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_MOUSE, &CIWBDlg::OnInstallationanddebuggingMouse)
+    ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, &CIWBDlg::OnInstallationanddebuggingTouchpad)
 
-ON_COMMAND(ID_SWAMP_SENSOR_IMAGE, &CIWBDlg::OnSwapSensorImage)
-ON_COMMAND_RANGE(ID_TOUCHSCREENASPECTRATIO_AUTO, ID_TOUCHSCREENASPECTRATIO_4_3, &CIWBDlg::OnChangeTouchScreenAspectRatio)
+    ON_COMMAND(ID_SWAP_SENSOR_IMAGE, &CIWBDlg::OnSwapSensorImage)
+    ON_COMMAND_RANGE(ID_SWAP_WITH_SENSOR, ID_SWAP_WITH_SENSOR + (int)EScreenModeNumber, &CIWBDlg::OnSwapImageWithSensor)
+        
 
-ON_REGISTERED_MESSAGE(m_uAppCommMsg, OnAppCommMsg)
+    ON_COMMAND_RANGE(ID_TOUCHSCREENASPECTRATIO_AUTO, ID_TOUCHSCREENASPECTRATIO_4_3, &CIWBDlg::OnChangeTouchScreenAspectRatio)
 
-ON_MESSAGE(WM_APPLY_SENSOR_CONFIG, &CIWBDlg::OnApplySensorConfig)
-ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, &CIWBDlg::OnInstallationanddebuggingUpdatefirmware)
-ON_WM_ENDSESSION()
-ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, &CIWBDlg::OnInstallationanddebuggingEnableinterpolate)
-ON_COMMAND(ID_MENU_VIDEOFORMAT, &CIWBDlg::OnMenuVideoformat)
+    ON_REGISTERED_MESSAGE(m_uAppCommMsg, OnAppCommMsg)
+
+    ON_MESSAGE(WM_APPLY_SENSOR_CONFIG, &CIWBDlg::OnApplySensorConfig)
+    ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, &CIWBDlg::OnInstallationanddebuggingUpdatefirmware)
+    ON_WM_ENDSESSION()
+    ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, &CIWBDlg::OnInstallationanddebuggingEnableinterpolate)
+    ON_COMMAND(ID_MENU_VIDEOFORMAT, &CIWBDlg::OnMenuVideoformat)
+    ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
+
+
+    ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
 END_MESSAGE_MAP()
 
+void CIWBDlg::InitMenu()
+{
+    if(NULL == m_oMenu.GetSafeHmenu()) return;
+
+    if (theApp.GetScreenMode() >= EScreenModeDouble)
+    {
+        CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
+
+        if (pInstallMenu == NULL) return;
+
+        MENUITEMINFO mnuiteminfo;
+        memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
+        mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
+        mnuiteminfo.fMask = MIIM_FTYPE;
+        mnuiteminfo.fType = MFT_SEPARATOR;
+
+        //添加菜单分割条
+        pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+        //添加结束屏幕编辑菜单项
+        mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
+        mnuiteminfo.fType = MFT_STRING;
+        mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING482]);
+        mnuiteminfo.wID = ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER;
+        pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+    }
+
+}
 
 // CIWBDlg message handlers
 
@@ -650,6 +685,7 @@ BOOL CIWBDlg::OnInitDialog()
 
     m_oMenu.LoadMenu(IDR_MENU_MAIN);
     InsertParamSettingMenuItem(&m_oMenu, 3);
+    InitMenu();
     this->SetMenu(&m_oMenu);
 
     m_oOwnerDrawMenu.Attach(m_oMenu.GetSafeHmenu());
@@ -680,11 +716,13 @@ BOOL CIWBDlg::OnInitDialog()
 
     //安装提示处理模块
     m_tipProcServer.Attached2TheWnd(m_hWnd);
-    m_tipProcServer.SetSceenMode(theApp.GetScreenType() == EDoubleScreenMode ? E_SCREEN_Double : E_SCREEN_Single);
+    m_tipProcServer.SetSceenMode(theApp.GetScreenMode() == EScreenModeDouble? E_SCREEN_Double : E_SCREEN_Single);
     m_tipProcServer.SetCurrentLangCode(::g_tSysCfgData.globalSettings.langCode);
 
     //初始化
-    m_oIWBSensorManager.Init(theApp.GetScreenType() == EDoubleScreenMode?2:1);
+    //m_oIWBSensorManager.Init(theApp.GetScreenType() == EDoubleScreenMode?2:1);
+    //根据注册的信息决定
+    m_oIWBSensorManager.Init(theApp.GetScreenCount());
 
     //载入配置信息
     LoadConfig();
@@ -703,9 +741,10 @@ BOOL CIWBDlg::OnInitDialog()
     //CIWBSensor对象分配摄像头设备路径
     m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
 
+    
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
-
+    
 
     //KSCATEGORY_VIDEO     :{6994AD05-93EF-11D0-A3CC-00A0C9223196}
     //KSCATEGORY_CAPTURE   :{65E8773D-8F56-11D0-A3B9-00A0C9223196}
@@ -1054,7 +1093,8 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
 
 
 
-    for(int i=0; i < nSensorCount; i++)
+    //for(int i=0; i < nSensorCount; i++)
+    for (int i = 0; i < 1; i++)
     {
 		
         this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 0, indicators[i*StatusPaneCountEachSensor + 0], SBPS_NORMAL,    nPaneWidth_1);
@@ -2843,7 +2883,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //AtlTrace(_T("OnInitMenuPopup, MF_CHECKED\r\n"));
     }
 
-	if (g_tSysCfgData.globalSettings.eCameraType == E_CAMERA_TR_2)
+	if (g_tSysCfgData.globalSettings.eCameraType == E_CAMERA_MODEL_3)
 	{
 		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
 	}
@@ -2950,6 +2990,15 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	{
 		m_oMenu.RemoveMenu(ID_MENU_ONLINE_REGISTER, MF_BYCOMMAND);
 	}
+
+
+    //如果是多屏屏接, 添加"触屏布局设计工具"菜单项
+    if (theApp.GetScreenMode() >= EScreenModeDouble)
+    {
+        BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
+        m_oMenu.CheckMenuItem(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, MF_BYCOMMAND | bIsVisible?MF_CHECKED: MF_UNCHECKED);
+    }
+
 }
 
 void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
@@ -2972,7 +3021,7 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     if(NULL == pSensor) return;
 
     m_pSelectedSensor = pSensor;//更新选中的传感器指针
-
+    CMenu menuSwapTargets;
     CMenu mnuSensorCtx;
     mnuSensorCtx.LoadMenu(IDR_MENU_SENSOR_CTX);
     CMenu* pSubMenu = mnuSensorCtx.GetSubMenu(0);
@@ -3041,7 +3090,6 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                 pSubMenu->EnableMenuItem(
                     ID_SENSORCTXMENU_MANUAL_CALIBRATE,
                     MF_BYCOMMAND|MF_GRAYED);
-
             }
 
 
@@ -3092,29 +3140,71 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             pSubMenu->InsertMenuItem(0, &mnuiteminfo, TRUE);
         }
 
-        if(this->m_oIWBSensorManager.IsRunning()
+        if (this->m_oIWBSensorManager.IsRunning()
             &&
-            this->m_oIWBSensorManager.GetLensMode() == E_VIDEO_TUNING_MODE 
-            &&
-            theApp.GetScreenType() == EDoubleScreenMode)
-        {//在图像调试模式且为双屏拼接模式下,添加"图像左右交换"菜单项。
+            this->m_oIWBSensorManager.GetLensMode() == E_VIDEO_TUNING_MODE
+            )
+        {
 
-            MENUITEMINFO mnuiteminfo;
-            memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
-            mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
-            mnuiteminfo.fMask  = MIIM_FTYPE ;
-            mnuiteminfo.fType  = MFT_SEPARATOR;
-            pSubMenu->InsertMenuItem(
-                pSubMenu->GetMenuItemCount(),
-                &mnuiteminfo,
-                TRUE);
+            if(theApp.GetScreenMode() == EScreenModeDouble)
+            {//双屏拼接模式下,添加"图像交换"菜单项。
+           
+                MENUITEMINFO mnuiteminfo;
+                memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
+                mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
+                mnuiteminfo.fMask = MIIM_FTYPE;
+                mnuiteminfo.fType = MFT_SEPARATOR;
+                pSubMenu->InsertMenuItem(
+                    pSubMenu->GetMenuItemCount(),
+                    &mnuiteminfo,
+                    TRUE);
 
-            //"交换画面"菜单项。
-            mnuiteminfo.fMask      = MIIM_FTYPE | MIIM_STRING | MIIM_ID ;
-            mnuiteminfo.fType      = MFT_STRING;
-            mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING448]);
-            mnuiteminfo.wID        = ID_SWAMP_SENSOR_IMAGE;
-            pSubMenu->InsertMenuItem(pSubMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+                //"交换画面"菜单项。
+                mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
+                mnuiteminfo.fType = MFT_STRING;
+                mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING448]);
+                mnuiteminfo.wID = ID_SWAP_SENSOR_IMAGE;
+                pSubMenu->InsertMenuItem(pSubMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+            }
+            else if (theApp.GetScreenMode() >= EScreenModeTriple)
+            {
+                //多屏拼接模式下, 添加"图像交换"子菜单。
+                MENUITEMINFO mnuiteminfo;
+                memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
+                mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
+                mnuiteminfo.fMask = MIIM_FTYPE;
+                mnuiteminfo.fType = MFT_SEPARATOR;
+                pSubMenu->InsertMenuItem(
+                    pSubMenu->GetMenuItemCount(),
+                    &mnuiteminfo,
+                    TRUE);
+
+                menuSwapTargets.CreatePopupMenu();
+
+                //"交换画面"子菜单。
+                mnuiteminfo.fMask =  MIIM_SUBMENU | MIIM_ID| MIIM_STRING;
+                mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING448]);
+                mnuiteminfo.hSubMenu = menuSwapTargets.GetSafeHmenu();
+                mnuiteminfo.wID = ID_SWAP_SENSOR_IMAGE;
+                pSubMenu->InsertMenuItem(pSubMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+  
+                int nSensorCount     = m_oIWBSensorManager.GetSensorCount();
+                int nCurrentSensorId = pSensor->GetID();
+
+                for (int id = 0; id < nSensorCount; id++)
+                {
+                    if (id == nCurrentSensorId) continue;
+                    CString strID;
+                    strID.Format(_T("%d"), id+1);
+
+                    mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
+                    mnuiteminfo.fType = MFT_STRING;
+                    mnuiteminfo.dwTypeData = const_cast<LPTSTR>(strID.GetString());
+                    mnuiteminfo.wID = ID_SWAP_WITH_SENSOR + id;
+                    menuSwapTargets.InsertMenuItem(menuSwapTargets.GetMenuItemCount(), &mnuiteminfo, TRUE);
+                }
+
+            }
         }
 
 
@@ -3126,7 +3216,6 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             this,
             NULL);
     }
-
 
 }
 
@@ -4465,16 +4554,16 @@ LRESULT CIWBDlg::OnChangeAutoMaskDetectThreshold(WPARAM wParam, LPARAM lParam)
 }
 
 //@功能:图像调试模式
-void CIWBDlg::OnVideoTunningMode()
+void CIWBDlg::OnVideoTuningMode()
 {
     // TODO: Add your command handler code here
     this->m_oIWBSensorManager.SwitchToMode(E_VIDEO_TUNING_MODE);
 
     //如果处于双屏拼接模式，则开启屏幕识别显示
-    if(theApp.GetScreenType() == EDoubleScreenMode)
+    if(theApp.GetScreenMode() >= EScreenModeDouble)
     {
-        m_oScreenRecognition.DoRecoginition(&m_oIWBSensorManager);
-        m_uScreenRecognitionCloseTimer = SetTimer(TIMER_EVENT_SCREEN_RECOGNITION_CLOSE, SCREEN_RECOGNITION_CLOSE_TIMEOUT, NULL);
+        //m_oScreenRecognition.DoRecoginition(&m_oIWBSensorManager);
+        //m_uScreenRecognitionCloseTimer = SetTimer(TIMER_EVENT_SCREEN_RECOGNITION_CLOSE, SCREEN_RECOGNITION_CLOSE_TIMEOUT, NULL);
 
     }
 
@@ -4487,9 +4576,9 @@ void CIWBDlg::OnNormalUsageMode()
 
     this->m_oIWBSensorManager.SwitchToMode(E_NORMAL_USAGE_MODE);
     //如果处于双屏拼接模式，则开启屏幕识别显示
-    if(theApp.GetScreenType() == EDoubleScreenMode)
+    if(theApp.GetScreenMode() >= EScreenModeDouble)
     {
-        m_oScreenRecognition.StopRecognition();
+        //m_oScreenRecognition.StopRecognition();
     }
 
 }
@@ -4500,9 +4589,9 @@ void CIWBDlg::OnLaserTunningModel()
     // TODO: Add your command handler code here
     this->m_oIWBSensorManager.SwitchToMode(E_LASER_TUNING_MODE);
 
-    if(theApp.GetScreenType() == EDoubleScreenMode)
+    if(theApp.GetScreenMode() >= EScreenModeDouble)
     {
-        m_oScreenRecognition.StopRecognition();
+        //m_oScreenRecognition.StopRecognition();
     }
 }
 
@@ -4740,7 +4829,7 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
     strAdditionalCaption.Format(_T("%s%d"), g_oResStr[IDS_STRING446], pSensor->GetID() + 1);*/
     CParamsSettingPropertySheet paramsSettingSheet(const_cast<LPTSTR>(g_oResStr[IDS_STRING452]));
 
-    paramsSettingSheet.SetIWBSensorInfo(pSensor, 1, theApp.GetScreenType() == EDoubleScreenMode?BST_CHECKED:BST_UNCHECKED);
+    paramsSettingSheet.SetIWBSensorInfo(pSensor, 1, theApp.GetScreenMode() >= EScreenModeDouble ?BST_CHECKED:BST_UNCHECKED);
 
     paramsSettingSheet.SetGlobalSettingInfo(g_tSysCfgData.globalSettings);
 
@@ -4851,7 +4940,7 @@ void GetMaxAreaCenterRegionRatioBasedFromTheRegion(RECT &rcInOut, const int &wRa
         */
         if(nGivenRegionHeight < nGivenRegionWidth)
         {
-            nNewRegionWidth = (nNewRegionHeight * wRatio + hRatio - 1) / hRatio;            
+            nNewRegionWidth = (nNewRegionHeight * wRatio + hRatio - 1) / hRatio;
         }
         /*
         (2)给定区域的宽度大于其高度，则在nGivenRegionHeight找一个值nNewRegionHeight，使其满足：
@@ -4939,8 +5028,32 @@ HRESULT CIWBDlg::OnStopDetectBackSplashVanished(WPARAM wParam,LPARAM lParam)
 void CIWBDlg::OnSwapSensorImage()
 {
     this->m_oIWBSensorManager.SwapSensorImage();
-
 }
+
+
+void CIWBDlg::OnSwapImageWithSensor(UINT uID)
+{
+    POINT ptCursor;
+    GetCursorPos(&ptCursor);
+
+    ScreenToClient(&ptCursor);
+
+    CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(ptCursor);
+    if (pSensor == NULL) return;
+
+    UINT uSensorID = uID - ID_SWAP_WITH_SENSOR;
+    if (uSensorID < 0 || uSensorID >= m_oIWBSensorManager.GetSensorCount()) return;
+
+    UINT uCurrentSensorID = pSensor->GetID();
+    if (uCurrentSensorID != uSensorID)
+    {
+        this->m_oIWBSensorManager.SwapSensorImage(pSensor->GetID(), uSensorID);
+    }
+}
+
+
+
+
 void CIWBDlg::InsertMenuItem2TheMenu(CMenu *pMenu, const int &nInsertIndex, const DWORD &dwIMenuItemID, LPTSTR lpszMenuItemName)
 {
     if(NULL == pMenu || nInsertIndex < 0 || lpszMenuItemName == NULL) return;
@@ -4956,7 +5069,7 @@ void CIWBDlg::InsertMenuItem2TheMenu(CMenu *pMenu, const int &nInsertIndex, cons
 
 void CIWBDlg::InsertParamSettingMenuItem(CMenu *pMenu, const int &nInsertIndex)
 {
-    if (theApp.GetScreenType() != ESingleScreenMode) return;//只在单屏情况下主菜单加入“Parameter Settings ...”菜单项
+    if (theApp.GetScreenMode() != EScreenModeSingle) return;//只在单屏情况下主菜单加入“Parameter Settings ...”菜单项
     if(NULL == pMenu || nInsertIndex < 0) return;
     CMenu *pSubMenu = pMenu->GetSubMenu(0);
     DWORD dwItemID = ID_MENU_PARAMETER_SETTINGS;
@@ -5099,8 +5212,8 @@ void CIWBDlg::OnMenuVideoformat()
 	     for (size_t i = 0; i < devInfo.m_vecVideoFmt.size(); i++)
 	     {
 			 CAtlString strFormatName  = GetVideoFormatName(devInfo.m_vecVideoFmt[i]);
-			 int nIndex = strFormatName.Find(_T('MJPG'),0);
-			 int nIndex1 = strFormatName.Find(_T('YUY2'),0);
+			 int nIndex = strFormatName.Find(_T("MJPG"),0);
+			 int nIndex1 = strFormatName.Find(_T("YUY2"),0);
 			 if (nIndex >0 || nIndex1 >0 )
 			 {
 			      vecCameraInfo.push_back(strFormatName);
@@ -5139,4 +5252,75 @@ void CIWBDlg::OnMenuVideoformat()
 		     ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
 		}
 	}
+}
+
+
+void CIWBDlg::OnMenuTouchScreenLayoutDesigner()
+{
+    CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
+    if (NULL == pInstallMenu) return;
+    
+    BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
+    this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(!bIsVisible);
+
+    //UINT state = pInstallMenu->GetMenuState(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, MF_BYCOMMAND);
+    //ASSERT(state != 0xFFFFFFFF);
+
+    //if (state & MF_CHECKED)
+    //{//触屏布局编辑器可见，则隐藏之
+    //    
+    //}
+    //else
+    //{
+
+    //}
+
+}
+
+
+//@功能:结束屏幕布局设计
+HRESULT CIWBDlg::OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam)
+{
+    UINT uID = UINT(lParam);
+    
+
+
+    if (uID == BUTTON_ID_OK)
+    {//
+        //隐藏屏幕布局编辑工具
+        this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
+
+        this->m_oIWBSensorManager.ApplyScreenLayout();
+        SaveConfig();
+    }
+    else if (uID == BUTTON_ID_CANCEL)
+    {//
+        //隐藏屏幕布局编辑工具
+        this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
+
+        for (UINT uLayoutIndex = 0; uLayoutIndex < g_tSysCfgData.vecScreenLayouts.size(); uLayoutIndex++)
+        {
+            const TScreenLayout&layout = g_tSysCfgData.vecScreenLayouts[uLayoutIndex];
+
+            if (layout.vecScreens.size() == this->m_oIWBSensorManager.GetSensorCount())
+            {
+
+                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenRelativeLayouts(&layout.vecScreens[0], layout.vecScreens.size());
+                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetRelativeMergeAreas(&layout.vecMergeAreas[0], layout.vecMergeAreas.size());
+
+
+                break;
+            }
+
+        }
+    }
+    else if (uID == BUTTON_ID_RESET)
+    {
+
+        this->m_oIWBSensorManager.GetScreenLayoutDesigner().Reset();
+    }
+
+
+    return 0L;
+
 }

@@ -454,335 +454,227 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
 BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 {
 
-	if(nPenCount > _countof(m_TouchPoints))
-	{
-		nPenCount = _countof(m_TouchPoints);
-	}
+    if (nPenCount > _countof(m_TouchPoints))
+    {
+        nPenCount = _countof(m_TouchPoints);
+    }
 
-	if(nPenCount == 0) return FALSE;
+    if (nPenCount == 0) return FALSE;
 
-	if(m_hDev == INVALID_HANDLE_VALUE)
-	{
-		return FALSE;
+    if (m_hDev == INVALID_HANDLE_VALUE)
+    {
+        return FALSE;
 
-	}
+    }
 
-	TContactInfo aryContactInfos[MAX_TOUCH_POINT_COUNT];
+    TContactInfo aryContactInfos[MAX_TOUCH_POINT_COUNT];
 
-	if(nPenCount > _countof(aryContactInfos))
-	{
-		nPenCount = _countof(aryContactInfos);
-	}
-	memcpy(&aryContactInfos[0], pPenInfos, nPenCount * sizeof(TContactInfo));
+    if (nPenCount > _countof(aryContactInfos))
+    {
+        nPenCount = _countof(aryContactInfos);
+    }
+    memcpy(&aryContactInfos[0], pPenInfos, nPenCount * sizeof(TContactInfo));
 
-	//双击检测
+    //双击检测
     //<<2018/08/03
     //平滑滤波足够，无需双击检测.
     //双击检测的后果是，在画笔中近距离点两笔，两条笔画会连起来。
-	this->m_oDblClickChecker.DoChecker(aryContactInfos, nPenCount);
+    this->m_oDblClickChecker.DoChecker(aryContactInfos, nPenCount);
     //>>
 
-	//int nCxScreen      = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	//int nCyScreen      = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-	//int nScreenLeft    = GetSystemMetrics(SM_XVIRTUALSCREEN );
-	//int nScreenTop     = GetSystemMetrics(SM_YVIRTUALSCREEN );
+    int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
+    int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
+    int nScreenLeft = 0;
+    int nScreenTop = 0;
 
+    for (int i = 0; i < nPenCount; i++)
+    {
 
-	int nCxScreen      = GetSystemMetrics(SM_CXSCREEN);
-	int nCyScreen      = GetSystemMetrics(SM_CYSCREEN);
-	int nScreenLeft    = 0;//GetSystemMetrics(SM_XVIRTUALSCREEN );
-	int nScreenTop     = 0;//GetSystemMetrics(SM_YVIRTUALSCREEN );
+        m_TouchPoints[i].ContactId = aryContactInfos[i].uId;
+        m_TouchPoints[i].bStatus = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN ? TIP_DOWN : TIP_UP;
 
-
-	//for(int i=0; i < nPenCount; i++)
-	//{
-	//    m_TouchPoints[i].ContactId = pPenInfos[i].uId;
-	//    m_TouchPoints[i].bStatus   = pPenInfos[i].ePenState == E_PEN_STATE_DOWN?TIP_DOWN:TIP_UP;
-	//    m_TouchPoints[i].wXData    = USHORT((pPenInfos[i].pt.x - nScreenLeft) * EASI_TOUCH_MAXIMUM_X /nCxScreen);
-	//    m_TouchPoints[i].wYData    = USHORT((pPenInfos[i].pt.y - nScreenTop ) * EASI_TOUCH_MAXIMUM_Y /nCyScreen);
-	//}
-
-	for(int i=0; i < nPenCount; i++)
-	{
-
-		m_TouchPoints[i].ContactId = aryContactInfos[i].uId;
-		m_TouchPoints[i].bStatus   = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN?TIP_DOWN:TIP_UP;
-
-
-		const POINT& ptContact = aryContactInfos[i].pt;
+        const POINT& ptContact = aryContactInfos[i].pt;
 
         const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(ptContact.x, ptContact.y);
+        //POINTER_DEVICE_INFO* pPointerDeviceInfo = GetPointerDevice();
+        if (NULL == pDisplayDevInfo) return FALSE;
+        //if (NULL == pPointerDeviceInfo) return FALSE;
+
+        LONG nMonitorPixelLeft   = pDisplayDevInfo->rcMonitor.left;
+        LONG nMonitorPixelTop    = pDisplayDevInfo->rcMonitor.top;
+        LONG nMonitorPixelWidth  = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
+        LONG nMonitorPixelHeight = pDisplayDevInfo->rcMonitor.bottom - pDisplayDevInfo->rcMonitor.top;
+
+
+        //确定触屏的宽高比
+        int aspectRatioNominator   = 16;
+        int aspectRatioDenominator = 9;
+        ETouchScreenAspectRatio eRatio;
+
+        eRatio = g_tSysCfgData.globalSettings.eTouchScreenAspectRatio;
+
+        switch (eRatio)
+        {
+        case E_TOUCH_SCREEN_ASPECT_RATIO_AUTO:
+            aspectRatioNominator   = m_aspectRatioNominator;
+            aspectRatioDenominator = m_aspectRatioDenominator;
+            break;
+
+        case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
+            aspectRatioNominator   = 16;
+            aspectRatioDenominator = 9;
+
+            break;
+
+        case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
+            aspectRatioNominator   = 16;
+            aspectRatioDenominator = 10;
+
+            break;
+
+        case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
+            aspectRatioNominator   = 4;
+            aspectRatioDenominator = 3;
+            break;
+        }//switch
+
+
+
+        POINT contactPos = aryContactInfos[i].pt;
+
+        long x = contactPos.x;
+        long y = contactPos.y;
+        long temp = 0;
+
+
+        //如果屏幕发生旋转则将触控的屏幕坐标转换为未旋转时的屏幕坐标
+        //switch (pPointerDeviceInfo->displayOrientation)
+        switch(pDisplayDevInfo->targetInfo.rotation)
+        {
+        case DISPLAYCONFIG_ROTATION_IDENTITY:
+            //Keep No Change
+            break;
+
+        case DISPLAYCONFIG_ROTATION_ROTATE90:
+
+            temp = nMonitorPixelWidth;
+            nMonitorPixelWidth = nMonitorPixelHeight;
+            nMonitorPixelHeight = temp;
+
+            contactPos.x = y;
+            contactPos.y = nMonitorPixelHeight - x;
+
+            break;
+
+        case DISPLAYCONFIG_ROTATION_ROTATE180:
+            contactPos.x = nMonitorPixelWidth - x;
+            contactPos.y = nMonitorPixelHeight - y;
+            break;
+
+        case DISPLAYCONFIG_ROTATION_ROTATE270:
+            temp = nMonitorPixelWidth;
+            nMonitorPixelWidth = nMonitorPixelHeight;
+            nMonitorPixelHeight = temp;
+
+            contactPos.x = nMonitorPixelWidth - y;
+            contactPos.y = x;
+            break;
+
+        }//switch
+
 
         BOOL bDone = FALSE;
-        if (pDisplayDevInfo)
+
+
+        if (DISPLAYCONFIG_SCALING_ASPECTRATIOCENTEREDMAX == pDisplayDevInfo->targetInfo.scaling
+            ||
+            DISPLAYCONFIG_SCALING_IDENTITY == pDisplayDevInfo->targetInfo.scaling
+            ||
+            DISPLAYCONFIG_SCALING_CENTERED == pDisplayDevInfo->targetInfo.scaling)
         {
-            int nMonitorPixelLeft = pDisplayDevInfo->rcMonitor.left;
-            int nMonitorPixelTop = pDisplayDevInfo->rcMonitor.top;
-            int nMonitorPixelWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
-            int nMonitorPixelHeight = pDisplayDevInfo->rcMonitor.bottom - pDisplayDevInfo->rcMonitor.top;
-
-            //nMaxPixelWidth:nMaxPixelHeight认为就是屏幕的宽高比
-            //从EDID中读取的物理尺寸是不准确的，尤其对于投影机。
-            int nMaxPixelWidth = pDisplayDevInfo->MaxWidthInPixel;
-            int nMaxPixelHeight = pDisplayDevInfo->MaxHeightInPixel;
-
-
-            int nOptimalImageWidth = pDisplayDevInfo->OptimalWidthInPixel;
-            int nOptimalImageHeight = pDisplayDevInfo->OptimalHeightInPixel;
-
-            int aspectRatioNominator = 16;
-            int aspectRatioDenominator = 9;
-            ETouchScreenAspectRatio eRatio;
-
-           eRatio = g_tSysCfgData.globalSettings.eTouchScreenAspectRatio;
-  
-            switch (eRatio)
+            WORD wXData = 0, wYData = 0;
+            OSVERSIONINFOEX osvinfex;
+            if (IsWin10OrGreater())
             {
-            case E_TOUCH_SCREEN_ASPECT_RATIO_AUTO:
-                /*
-                if(nOptimalImageWidth != 0 && nOptimalImageHeight != 0)
+                if (RtlGetVersionWrapper(&osvinfex))
                 {
-                    aspectRatioNominator   = nOptimalImageWidth;
-                    aspectRatioDenominator = nOptimalImageHeight;
-                }
-                else if(nMaxPixelWidth != 0 && nMaxPixelHeight != 0)
-                {
-                    aspectRatioNominator   = nMaxPixelWidth;
-                    aspectRatioDenominator = nMaxPixelHeight;
-                }
-                */
-                aspectRatioNominator = m_aspectRatioNominator;
-                aspectRatioDenominator = m_aspectRatioDenominator;
-                break;
-
-			case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
-
-				aspectRatioNominator   = 16;
-				aspectRatioDenominator = 9;
-
-				break;
-
-			case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
-				aspectRatioNominator   = 16;
-				aspectRatioDenominator = 10;
-
-				break;
-
-			case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
-				aspectRatioNominator   = 4;
-				aspectRatioDenominator = 3;
-				break;
-
-
-			}//switch
-
-
-
-			//DEVMODE devMode;
-
-			//initialize the DEVMODE structure
-			//ZeroMemory(&devMode, sizeof(devMode));
-			//devMode.dmSize = sizeof(devMode);
-
-            //根据屏幕旋转方向调整触控数据
-            //BOOL bRet = EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devMode);			
-            //BOOL bRet = EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &devMode);
-            //BOOL bRet =  EnumDisplaySettingsEx(NULL, ENUM_CURRENT_SETTINGS, &devMode, EDS_RAWMODE);
-            //dmDisplayFixedOutput
-            //For fixed - resolution display devices only, how the display presents a low - resolution mode on a higher - resolution display.
-            //For example, if a display device's resolution is fixed at 1024 x 768 pixels but its mode is set to 640 x 480 pixels, 
-            //the device can either display a 640 x 480 image somewhere in the interior of the 1024 x 768 screen space or stretch the 640 x 480 image to fill the larger screen space. 
-            //If DM_DISPLAYFIXEDOUTPUT is not set, this member must be zero. 
-            //If DM_DISPLAYFIXEDOUTPUT is set, this member must be one of the following values.
-            //Value	Meaning
-            //	DMDFO_DEFAULT	The display's default setting.
-            //	DMDFO_CENTER	The low - resolution image is centered in the larger screen space.
-            //	DMDFO_STRETCH	The low - resolution image is stretched to fill the larger screen space.
-            //if(devMode.dmFields & DM_DISPLAYFIXEDOUTPUT)
-            //{
-
-                //switch(devMode.dmDisplayFixedOutput)
-
-
-            switch (pDisplayDevInfo->targetInfo.scaling)
-            {
-                //case DMDFO_DEFAULT://Aspect Ratio Preserving stretched.
-            case DISPLAYCONFIG_SCALING_ASPECTRATIOCENTEREDMAX:
-            case DISPLAYCONFIG_SCALING_IDENTITY:
-            case DISPLAYCONFIG_SCALING_CENTERED:
-            {
-                WORD wXData = 0, wYData = 0;
-                OSVERSIONINFOEX osvinfex;
-                if (IsWin10OrGreater())
-                {
-                    if (RtlGetVersionWrapper(&osvinfex))
+                    if (osvinfex.dwBuildNumber <= 16299)
+                    {//版本1709(OS内部版本 16299.125)
+                        m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+                    }
+                    else
                     {
-                        if (osvinfex.dwBuildNumber <= 16299)
-                        {//版本1709(OS内部版本 16299.125)
+                        if (pDisplayDevInfo->displayAdapterInfos.size() >= 2)
+                        {//屏幕复制模式
                             m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
                         }
                         else
-                        {
-                            if (pDisplayDevInfo->displayAdapterInfos.size() >= 2)
-                            {//屏幕复制模式
-                                m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
-                            }
-                            else
-                            {//屏幕嵌入在触屏内部的模型
-                                m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
-                            }
+                        {//屏幕嵌入在触屏内部的模型
+                            m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
                         }
                     }
                 }
-                else
-                {
-                    m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
-                }
+            }
+            else
+            {
+                m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+            }
 
-                switch (m_eTouchDataAdjustModel)
-                {
-                    case E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO:
-                    {//触屏按指定宽高比拉伸模型
-                        //Windows内部按照屏幕的物理宽高比对触控位置做了修正
-                        //屏幕虚拟像素宽度和像素高度就是按照指定的宽高比例计算出的虚拟宽度和高度，
-                        int nMonitorVirtualPixelWidth = nMonitorPixelWidth;
-                        int nMonitorVirtualPixelHeight = nMonitorPixelHeight;
+            switch (m_eTouchDataAdjustModel)
+            {
+                case E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO:
+                {//触屏按指定宽高比拉伸模型
+                 //Windows内部按照屏幕的物理宽高比对触控位置做了修正
+                 //屏幕虚拟像素宽度和像素高度就是按照指定的宽高比例计算出的虚拟宽度和高度，
+                    int nMonitorVirtualPixelWidth = nMonitorPixelWidth;
+                    int nMonitorVirtualPixelHeight = nMonitorPixelHeight;
 
-                        if (aspectRatioNominator * nMonitorPixelHeight > aspectRatioDenominator * nMonitorPixelWidth)
-                        { //物理宽高比大于实际像素的宽高比,垂直像素数目保持不变, 水平虚拟像素增加
-                            nMonitorVirtualPixelWidth = nMonitorVirtualPixelHeight * aspectRatioNominator / aspectRatioDenominator;
-                        }
-                        else if (aspectRatioNominator * nMonitorPixelHeight < aspectRatioDenominator * nMonitorPixelWidth)
-                        {//物理宽高比小于实际像素的宽高比, 水平像素数目保持不变，垂直虚拟像素增加
-                            nMonitorVirtualPixelHeight = nMonitorVirtualPixelWidth * aspectRatioDenominator / aspectRatioNominator;
-                        }
-
-                        wXData = USHORT((aryContactInfos[i].pt.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
-                        wYData = USHORT((aryContactInfos[i].pt.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
+                    if (aspectRatioNominator * nMonitorPixelHeight > aspectRatioDenominator * nMonitorPixelWidth)
+                    { //物理宽高比大于实际像素的宽高比,垂直像素数目保持不变, 水平虚拟像素增加
+                        nMonitorVirtualPixelWidth = nMonitorVirtualPixelHeight * aspectRatioNominator / aspectRatioDenominator;
                     }
-                    break;
-
-                    case E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL:
-                    {//显示器嵌入在触屏中央模型
-                        const int& nSourceWidth = pDisplayDevInfo->sourceMode.width;
-                        const int& nSourceHeight = pDisplayDevInfo->sourceMode.height;
-                        const int& nTargetWidth = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cx;
-                        const int& nTargetHeight = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cy;
-
-                        wXData = USHORT((aryContactInfos[i].pt.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
-                        wYData = USHORT((aryContactInfos[i].pt.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+                    else if (aspectRatioNominator * nMonitorPixelHeight < aspectRatioDenominator * nMonitorPixelWidth)
+                    {//物理宽高比小于实际像素的宽高比, 水平像素数目保持不变，垂直虚拟像素增加
+                        nMonitorVirtualPixelHeight = nMonitorVirtualPixelWidth * aspectRatioDenominator / aspectRatioNominator;
                     }
-                    break;
-                }//switch
 
-
-						POINTER_DEVICE_INFO* pPointerDeviceInfo = GetPointerDevice();
-						if(pPointerDeviceInfo)
-						{//如果有POINTER_DEVICE_INFO优先以该信息来判断显示器的旋转方向。
-							switch (pPointerDeviceInfo->displayOrientation)
-							{
-							case DISPLAYCONFIG_ROTATION_IDENTITY:
-								m_TouchPoints[i].wXData = wXData;
-								m_TouchPoints[i].wYData = wYData;
-								//OutputDebugString(_T("DMDO_DEFAULT\n"));
-								break;
-
-							case DISPLAYCONFIG_ROTATION_ROTATE90:
-								m_TouchPoints[i].wXData = wYData;
-								m_TouchPoints[i].wYData = EASI_TOUCH_MAXIMUM_X - wXData;
-								//OutputDebugString(_T("DMDO_90\n"));
-								break;
-
-							case DISPLAYCONFIG_ROTATION_ROTATE180:
-								m_TouchPoints[i].wXData = EASI_TOUCH_MAXIMUM_X - wXData;
-								m_TouchPoints[i].wYData = EASI_TOUCH_MAXIMUM_Y - wYData;
-
-								///OutputDebugString(_T("DMDO_180\n"));
-								break;
-
-							case DISPLAYCONFIG_ROTATION_ROTATE270:
-								m_TouchPoints[i].wXData = EASI_TOUCH_MAXIMUM_Y - wYData;
-								m_TouchPoints[i].wYData = wXData;
-								//OutputDebugString(_T("DMDO_270\n"));
-								break;
-
-                    }//switch
+                    wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
+                    wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
                 }
-                else
-                {//
-                    //switch (devMode.dmDisplayOrientation)
-                    switch (pDisplayDevInfo->targetInfo.rotation)
-                    {
-                        //case DMDO_DEFAULT:
-                    case DISPLAYCONFIG_ROTATION_IDENTITY:
-                        m_TouchPoints[i].wXData = wXData;
-                        m_TouchPoints[i].wYData = wYData;
-                        //OutputDebugString(_T("DMDO_DEFAULT\n"));
-                        break;
+                break;
 
-							//case DMDO_90:
-							case DISPLAYCONFIG_ROTATION_ROTATE90:
-								m_TouchPoints[i].wXData = wYData;
-								m_TouchPoints[i].wYData = EASI_TOUCH_MAXIMUM_X - wXData;
-								//OutputDebugString(_T("DMDO_90\n"));
-								break;
+                case E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL:
+                {//显示器内容嵌入在触屏中央模型
+                    const int& nSourceWidth = pDisplayDevInfo->sourceMode.width;
+                    const int& nSourceHeight = pDisplayDevInfo->sourceMode.height;
+                    const int& nTargetWidth = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cx;
+                    const int& nTargetHeight = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cy;
 
-							//case DMDO_180:
-							case DISPLAYCONFIG_ROTATION_ROTATE180:
-								m_TouchPoints[i].wXData = EASI_TOUCH_MAXIMUM_X - wXData;
-								m_TouchPoints[i].wYData = EASI_TOUCH_MAXIMUM_Y - wYData;
+                    wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
+                    wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+                }
+                break;
+            }//switch(m_eTouchDataAdjustModel)
 
-								///OutputDebugString(_T("DMDO_180\n"));
-								break;
+            m_TouchPoints[i].wXData = wXData;
+            m_TouchPoints[i].wYData = wYData;
+            bDone = TRUE;
+        }
 
-							//case DMDO_270:
-							case DISPLAYCONFIG_ROTATION_ROTATE270:
-								m_TouchPoints[i].wXData = EASI_TOUCH_MAXIMUM_Y - wYData;
-								m_TouchPoints[i].wYData = wXData;
-								//OutputDebugString(_T("DMDO_270\n"));
-								break;
-
-							}//switch
-						}
-
-						bDone = TRUE;
-					}
-					//AtlTrace(_T("DMDFO_DEFAULT\n"));
-					//AtlTrace(_T("DISPLAYCONFIG_SCALING_IDENTITY"));
-					break;
-
-            //case DMDFO_CENTER://The low-resolution image is centered in the larger screen space.
-            //case DISPLAYCONFIG_SCALING_CENTERED:
-            //	//NVIDIA或者Intel显卡控制面板中设置
-            //	//AtlTrace(_T("DMDFO_CENTER \n"));
-            //	AtlTrace(_T("DISPLAYCONFIG_SCALING_CENTERED \n"));
-            //	break;
-
-				//case DMDFO_STRETCH://The low-resolution image is stretched to fill the larger screen space.
-				case DISPLAYCONFIG_SCALING_STRETCHED:
-
-					//AtlTrace(_T("DMDFO_STRETCH \n"));
-					AtlTrace(_T("DISPLAYCONFIG_SCALING_STRETCHED \n"));
-					break;
-				}//switch
-
-			//}//if(dm.dmFields & DM_DISPLAYFIXEDOUTPUT)
+        if (!bDone)
+        {
+            m_TouchPoints[i].wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
+            m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop ) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
+        }
 
 
 
-        }//if（pDisplayDevInfo)
 
-		if(!bDone)
-		{
-			m_TouchPoints[i].wXData    = USHORT((aryContactInfos[i].pt.x - nScreenLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
-			m_TouchPoints[i].wYData    = USHORT((aryContactInfos[i].pt.y - nScreenTop ) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
-		}
+    }//for
 
-	}
+    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
 
-	BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
-
-	return bRet;
+    return bRet;
 }
 
 //@功能:判断虚拟驱动是否是打开的。
