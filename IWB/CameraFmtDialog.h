@@ -1,5 +1,6 @@
 #pragma once
 #include "afxwin.h"
+#include "afxcmn.h"
 
 
 // CameraFmtDialog dialog
@@ -14,7 +15,7 @@ public:
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_CAMERA_FMT_DIALOG };
+	enum { IDD = IDD_DIALOG_ADANCEDSETTINGS };
 #endif
 
 protected:
@@ -25,9 +26,20 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnCbnSelchangeCamerafmtCombo();
+	afx_msg void OnBnClickedCheckHid();
+	afx_msg void OnBnClickedCheckTuio();
+	afx_msg void OnIpnFieldchangedIpaddressIp(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnEnChangeEditPort();
 
 	void    SetCameraResolution(std::vector<CAtlString>& CameraInfo, CAtlString  CurrentCameraInfo);
 	CAtlString  GetSelectComboxvalue();
+	bool    GetTouchHIDMode();
+	bool    GetTouchTUIOMode();
+
+	void   SetIPadressAndPort(DWORD IP, int nPort);
+	DWORD  GetIPAddress();
+	int    GetPort();
+
 	DECLARE_MESSAGE_MAP()
 
 public:
@@ -35,4 +47,12 @@ public:
 	std::vector<CAtlString> CameraAllResution;
 	CAtlString   m_sCurrentCameraResution;
 	CString m_SelectedCameraFmtValue;
+
+	BOOL m_bHIDMode;
+	BOOL m_bTUIOMode;
+	DWORD m_IPAddress;
+	CString m_strPort;
+	CIPAddressCtrl CIPAddress;
+	CEdit CPortEdit;
+
 };

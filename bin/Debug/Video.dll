@@ -16,7 +16,7 @@
 		ITA:意大利语
 		RUS:俄语
 		PTG:葡萄牙语-->
-        <Param name="Language" value="CHS" />
+        <Param name="Language" value="EN" />
         <!--投影模式-->
         <Param name="ProjectionMode" value="Wall" />
         <!--调试模式-->
@@ -26,9 +26,13 @@
         <!--是否保存自动校正中间文件标志(Yes/No)-->
         <Param name="SaveIntermediateFile" value="No" />
         <!--启动时的工作模式。0:图像调试模式;1:激光器调试模式;2:正常使用模式-->
-        <Param name="LensMode" value="0" />
+        <Param name="LensMode" value="2" />
+        <!--是否打开TUIO触控方式-->
+        <Param name="TouchTUIOMode" value="No" />
+        <!--是否打开HID触控方式-->
+        <Param name="TouchHIDMode" value="Yes" />
         <!--HID工作方式(Mouse; Touch Screen)-->
-        <Param name="HID Mode" value="Mouse" />
+        <Param name="HID Mode" value="Touch Screen" />
         <!--使能在线注册功能(Yes/No)-->
         <Param name="EnableOnlineRegister" value="Yes" />
         <!--触屏宽高比:Auto, 16:9, 16:10, 4:3-->
@@ -44,7 +48,7 @@
         <!--CMOS芯片信息-->
         <CMOS_CHIP>
             <!--像素尺寸，单位:mm-->
-            <Param name="PixelSize" value="0.006" />
+            <Param name="PixelSize" value="0.003" />
             <!--CMOS传感器图像区域物理宽度, 单位:mm-->
             <Param name="WidthInMM" value="3.984" />
             <!--CMOS传感器图像区域物理高度, 单位:mm-->
@@ -60,7 +64,7 @@
         <!--摄像头传感器的配置参数-->
         <IWBSensor id="0">
             <!--设备路径-->
-            <Param name="DevicePath" value="\\?\usb#vid_05a3&amp;pid_9230&amp;mi_00#8&amp;1fc11c83&amp;0&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
+            <Param name="DevicePath" value="\\?\usb#vid_05a3&amp;pid_9230&amp;mi_00#7&amp;150cc73&amp;0&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
             <!--视频格式-->
             <Param name="VideoFormat" value="1280 X 720 MJPG" />
             <!--镜头类型)-->
@@ -75,10 +79,8 @@
             <IWBProjectionMode Mode="Desktop">
                 <!--高级设置参数-->
                 <AdvanceSettings>
-                    <!--使能笔迹插值(Yes/No)-->
-                    <Param name="EnableStrokeInterpolate" value="No" />
-                    <!--设备触控类型("Finger Touch":手触控; "Pen Touch":笔触控-->
-                    <Param name="DeviceTouchType" value="Pen Touch" />
+                    <!--设备触控类型("Finger_Touch_WhiteBoard":手触控电子白板; "Pen_Touch_WhiteBoard":笔触控电子白板; "Finger_Touch_Control":手指触控;"Palm_Touch_Control":手掌互动;-->
+                    <Param name="DeviceTouchType" value="Palm_Touch_Control" />
                     <!--是否是背投设备-->
                     <Param name="RearProjectionDevice" value="No" />
                     <!--干扰光斑屏蔽区膨胀半径-->
@@ -89,6 +91,14 @@
                     <Param name="EraserMultiples" value="3" />
                     <!--检测为固定光斑的时间-->
                     <Param name="SetFixedBlobTime" value="5" />
+                    <!--使能笔迹插值(Yes/No)-->
+                    <Param name="EnableStrokeInterpolate" value="No" />
+                    <!--是否打开动态屏蔽功能-->
+                    <Param name="DynamicMaskFrame" value="No" />
+                    <!--是否打开抗干扰功能-->
+                    <Param name="AntiJamming" value="Yes" />
+                    <!--是否启用手动绘制屏幕区域-->
+                    <Param name="OnLineScreenArea" value="No" />
                 </AdvanceSettings>
                 <!--手动校正参数-->
                 <ManualCalibrate>
@@ -111,10 +121,8 @@
             <IWBProjectionMode Mode="Wall">
                 <!--高级设置参数-->
                 <AdvanceSettings>
-                    <!--使能笔迹插值(Yes/No)-->
-                    <Param name="EnableStrokeInterpolate" value="No" />
-                    <!--设备触控类型("Finger Touch":手触控; "Pen Touch":笔触控-->
-                    <Param name="DeviceTouchType" value="Pen Touch" />
+                    <!--设备触控类型("Finger_Touch_WhiteBoard":手触控电子白板; "Pen_Touch_WhiteBoard":笔触控电子白板; "Finger_Touch_Control":手指触控;"Palm_Touch_Control":手掌互动;-->
+                    <Param name="DeviceTouchType" value="Palm_Touch_Control" />
                     <!--是否是背投设备-->
                     <Param name="RearProjectionDevice" value="No" />
                     <!--干扰光斑屏蔽区膨胀半径-->
@@ -125,6 +133,14 @@
                     <Param name="EraserMultiples" value="3" />
                     <!--检测为固定光斑的时间-->
                     <Param name="SetFixedBlobTime" value="5" />
+                    <!--使能笔迹插值(Yes/No)-->
+                    <Param name="EnableStrokeInterpolate" value="No" />
+                    <!--是否打开动态屏蔽功能-->
+                    <Param name="DynamicMaskFrame" value="Yes" />
+                    <!--是否打开抗干扰功能-->
+                    <Param name="AntiJamming" value="No" />
+                    <!--是否启用手动绘制屏幕区域-->
+                    <Param name="OnLineScreenArea" value="No" />
                 </AdvanceSettings>
                 <!--手动校正参数-->
                 <ManualCalibrate>

@@ -658,8 +658,6 @@ public:
 
 			}
 
-
-
 			//Step3.交换上一行线和当前行扫描线的指针
 			TScanLineResults*  pTemp = pLastScanLine;
 			pLastScanLine = pCurScanLine;
@@ -711,7 +709,6 @@ public:
            pObjInfo->GPos.y = (pObjInfo->mx + pObjInfo->mass/2) /pObjInfo->mass;
 
         }
-
 
         //Sort(FALSE);//降序排列
 
@@ -1127,7 +1124,6 @@ protected:
                 m_nObjectCount ++;
             }
 
-
         }//if
         else
         {//
@@ -1148,20 +1144,20 @@ protected:
                 m_aryObjInfo[pos] = m_aryObjInfo[pos - 1];
             }
 
-
             TBlobObject& objInfo = m_aryObjInfo[nInsertPos];
             objInfo.mass     = internalObject.m0;
             objInfo.mx       = internalObject.mx;
             objInfo.my       = internalObject.my;
             objInfo.rcArea   = internalObject.rcBound;
             objInfo.bIsValid = TRUE;
-            
-
         }//else
 
-
-
+		if (m_nObjectCount == 0)
+		{
+			int ddddd = 0;
+		}
     }
+
 
 
 };

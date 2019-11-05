@@ -12,9 +12,22 @@ enum ESensorLensMode
 //触控类型
 enum EDeviceTouchType
 {
-    E_DEVICE_PEN_TOUCH   ,//笔触控
-    E_DEVICE_FINGER_TOUCH,//手触控
-	E_DEVICE_NOFIND      ,//没发现加密狗
+    E_DEVICE_PEN_TOUCH_WHITEBOARD   , //笔触控电子白板（精准触控）
+    E_DEVICE_FINGER_TOUCH_WHITEBOARD, //手触控电子白板（精准触控）
+	E_DEVICE_FINGER_TOUCH_CONTROL   , //手指触控(大画面精准触控)
+	E_DEVICE_PALM_TOUCH_CONTROL     , //手掌互动(非精准触控并保证某一区域只能大光斑触发，激光器装在中间)
+	E_DEVICE_NOFIND                 , //没发现加密狗
+};
+
+/////手掌互动触控的类型
+enum EPalmTouchControlType
+{
+	E_PLAM_TOUCHCONTROL_P0,        //手掌互动触控的类型，激光器是放在中间位置的
+	E_PLAM_TOUCHCONTROL_P1,        //手掌互动触控的类型，激光器是放在左上角的位置的。
+	E_PLAM_TOUCHCONTROL_P2,        //保留
+	E_PLAM_TOUCHCONTROL_P3,        //保留
+	E_PLAM_TOUCHCONTROL_P4,        //保留
+	E_PLAM_TOUCHCONTROL_P5,        //保留
 };
 
 enum EHIDDeviceMode
@@ -33,7 +46,7 @@ enum ECameraType
 {
 	E_CAMERA_TR_0 = 0,   //PID=0x9186,VID=0x18ec  //正常摄像头
 	E_CAMERA_TR_1 = 1,   //PID=0x3390,VID=0x18ec  //1/6摄像头
-	E_CAMERA_TR_2 = 2,    //PID=0x9230,VID= 0x05a3;//高清摄像头
+	E_CAMERA_TR_2 = 2,   //PID=0x9230,VID= 0x05a3;//高清摄像头
 };
 
 enum ETouchScreenAspectRatio
@@ -54,8 +67,6 @@ enum ETouchScreenAspectRatio
 #define DEFAULT_SCREEN_DIAGONAL_LOGICAL_LENGTH (1270) //1024 * 768
 //>
 
-
-
 //全局设定
 struct GlobalSettings
 {
@@ -65,6 +76,8 @@ struct GlobalSettings
     int                     nDebugLevel          ;   //调试级别
     BOOL                    bSaveIntermediateFile;   //保存中间文件标志
     ESensorLensMode         eLensMode            ;   //镜头工作模式
+	BOOL                    bTouchTUIOMode       ;   //TUIO触控方式
+	BOOL                    bTouchHIDMode        ;   //HID触控方式
     EHIDDeviceMode          eHIDDeviceMode       ;   //鼠标/触屏模式
     ETouchScreenAspectRatio eTouchScreenAspectRatio; //触屏宽高比
     BOOL                    bEnableOnlineRegister;   //使能在线注册功能
@@ -138,7 +151,6 @@ struct NormalUsageSettings
     TVideoProcAmpProperty defaultParams;
     //>>
 
-
     NormalUsageSettings()
     {
         cYThreshold = 205;
@@ -178,8 +190,6 @@ struct NormalUsageSettings
 		defaultParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
     }
-
-
 };
 
 //安装调试时的摄像头参数
@@ -222,7 +232,6 @@ struct InstallTunningSettings
         defaultParams.Prop_VideoProcMap_Gain                 = 0x33AA ;//增益
 		defaultParams.Prop_CameraControl_Exposure = -7;
     }
-
 
 };
 
@@ -278,24 +287,20 @@ struct AutoCalibrateSettings
     //BYTE autoCalibrateHilightGray; //自动校正图案中高亮块的灰度值(0~255)
     //相机参数
     TVideoProcAmpProperty   cameraParams;
-
     //自动校正时的画面参数,每一组参数对应一次校正尝试的画面参数
-    AutoCalibrateImageParamsList  calibrateImageParamsList;//
-
+	AutoCalibrateImageParams   calibrateImageParams;
 
     //缺省参数
     //相机参数
     //<<added by 15077726@qq.com, 2015/11/6
     //<<
-    TVideoProcAmpProperty   defaultParams;
-    AutoCalibrateImageParamsList defaultCalibrateImageParamsList;
+    TVideoProcAmpProperty     defaultParams;
+	AutoCalibrateImageParams  defaultCalibrateImageParams;
     //>>
 
 
     AutoCalibrateSettings()
     {
-        //autoCalibrateExpectedBrightness = 150;//
-        //autoCalibrateHilightGray        = 200;//
 
         cameraParams.Prop_VideoProcAmp_Brightness           = 120    ;//亮度
         cameraParams.Prop_VideoProcAmp_Contrast             = 50     ;//对比度
@@ -309,21 +314,8 @@ struct AutoCalibrateSettings
         cameraParams.Prop_VideoProcMap_Gain                 = 0x33AA ;//增益
 		cameraParams.Prop_CameraControl_Exposure = -7;
 
-        //缺省的三组校正的画面参数
-        calibrateImageParamsList.resize(3);
-
-        //第一组,对应较亮的光线环境
-        calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-        //calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-        calibrateImageParamsList[0].autoCalibrateHilightGray        = 255;//940 nm 激光器
-
-        //第二组,对应适当的光线环境
-        calibrateImageParamsList[1].autoCalibrateExpectedBrightness =  70 ;
-        calibrateImageParamsList[1].autoCalibrateHilightGray        =  220;
-
-        //第三组, 对应较暗的光线环境
-        calibrateImageParamsList[2].autoCalibrateExpectedBrightness =  30;
-        calibrateImageParamsList[2].autoCalibrateHilightGray        =  255;
+		calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+		calibrateImageParams.autoCalibrateHilightGray        = 255;//940 nm 激光器
 
         //缺省参数
         defaultParams.Prop_VideoProcAmp_Brightness           = 120    ;//亮度
@@ -338,25 +330,14 @@ struct AutoCalibrateSettings
         defaultParams.Prop_VideoProcMap_Gain                 = 0x33AA ;//增益
 		defaultParams.Prop_CameraControl_Exposure = -7;
 
-        //缺省的三组校正的画面参数
-        defaultCalibrateImageParamsList.resize(3);
-
-
-        //第一组,对应较亮的光线环境
-        defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-        //calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-        defaultCalibrateImageParamsList[0].autoCalibrateHilightGray        = 255;//940 nm 激光?
-
-        //第二组,对应适当的光线环境
-        defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness =  70 ;
-        defaultCalibrateImageParamsList[1].autoCalibrateHilightGray        =  220;
-
-        //第三组, 对应较暗的光线环境
-        defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness =  30;
-        defaultCalibrateImageParamsList[2].autoCalibrateHilightGray        =  255;
+		defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+		defaultCalibrateImageParams.autoCalibrateHilightGray        = 255;//940 nm 激光?
     }
 
 };
+/////自动校正参数列表
+typedef std::vector<AutoCalibrateSettings> AutoCalibrateSettingsList;
+
 
 
 //自动屏蔽时的设定参数值
@@ -407,28 +388,30 @@ struct TAdvancedSettings
     int nMultEraser                ;//板擦的响应倍数
     int nFixedBlobSetTime          ;//定义为固定光斑的设置时间
 
-	BOOL  bEnableStrokeInterpolate;//使能插值标志
-	EDeviceTouchType m_eTouchType;//触控类型
-   //BOOL bGuestureRecognition          ;//手势识别检测功能使能标志
-	BOOL bIsRearProjection;//是否开启背投模式
+	BOOL  bEnableStrokeInterpolate; //使能插值标志
+	EDeviceTouchType m_eTouchType;  //触控类型
+   //BOOL bGuestureRecognition     ;//手势识别检测功能使能标志
+	BOOL bIsRearProjection;         //是否开启背投模式
+	BOOL bIsDynamicMaskFrame;      //是否开启动态屏蔽功能
+	BOOL bIsAntiJamming;           //是否开启抗干扰功能
+	BOOL bIsOnLineScreenArea; //是否开启手动绘制的静态屏蔽图
 
 
     TAdvancedSettings()
     {
-        nAutoMaskDilateRadius        = 1    ;
-        nXDeviationCompensationValue = 0    ;
-        nYDeviationCompensationValue = 0    ;
-        nSpotProportion              = 30   ;
-        nMultEraser                  = 3    ;
-        nFixedBlobSetTime            = 5    ;
-		bEnableStrokeInterpolate = 0        ;
-		m_eTouchType = E_DEVICE_PEN_TOUCH   ;
-		bIsRearProjection = 0               ;
-
+        nAutoMaskDilateRadius        = 1             ;
+        nXDeviationCompensationValue = 0             ;
+        nYDeviationCompensationValue = 0             ;
+        nSpotProportion              = 30            ;
+        nMultEraser                  = 3             ;
+        nFixedBlobSetTime            = 5             ;
+		bEnableStrokeInterpolate     = FALSE         ;
+		m_eTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD ;
+		bIsRearProjection = FALSE                    ;
+		bIsDynamicMaskFrame = FALSE;
+		bIsAntiJamming = FALSE;
+		bIsOnLineScreenArea = FALSE;
     }
-
-
-
 };
 
 
@@ -445,15 +428,22 @@ struct TAdvancedSettings
 struct TLensConfig
 {
     TInternalAndSymmetricDistortParams   lensInternalAndSymmetricDistortParams;//镜头内部和对称畸变参数
-    BOOL                    bInternalAndSymmetricDistortParamsIsValid;//镜头内部和对称畸变参数有效标志
-    TLensSpecification      lensSpecification              ;//镜头规格参数
-    TAutoCalibCompCoefs     autoCalibCompCoefs             ;//自动校正补偿系数
-    NormalUsageSettings     normalUsageSettings_FingerTouch;//手指触控模式下的正常使用时的参数设定
-    NormalUsageSettings     normalUsageSettings_PenTouch   ;//笔触控模式下的正常使用时的参数设定
-    InstallTunningSettings  installTunningSettings         ;//安装调试时的参数设定
-    LaserTunningSettings    laserTunningSettings           ;//激光器打板调试时的参数设定
-    AutoCalibrateSettings   autoCalibrateSettings          ;//自动校正时的参数设置
-    AutoMaskSettings        autoMaskSettings               ;//自动屏蔽时的参数设置
+    BOOL                    bInternalAndSymmetricDistortParamsIsValid;         //镜头内部和对称畸变参数有效标志
+    TLensSpecification      lensSpecification                        ;         //镜头规格参数
+    TAutoCalibCompCoefs     autoCalibCompCoefs                       ;         //自动校正补偿系数
+    NormalUsageSettings     normalUsageSettings_FingerTouchWhiteBoard;         //手指触控电子白板模式下的正常使用时的参数设定
+    NormalUsageSettings     normalUsageSettings_PenTouchWhiteBoard   ;         //笔触控电子白板模式下的正常使用时的参数设定
+	NormalUsageSettings     normalUsageSettings_FingerTouchControl   ;         //手指触控模式下的正常使用时的参数设定
+	NormalUsageSettings     normalUsageSettings_PalmTouchControl     ;         //手掌触控模式下的正常使用时的参数设定
+
+    InstallTunningSettings  installTunningSettings                   ;         //安装调试时的参数设定
+
+    LaserTunningSettings    laserTunningSettings_WhiteBoard          ;         //电子白板激光器打板调试时的参数设定
+	LaserTunningSettings    laserTunningSettings_FingerTouchControl  ;         //手指触控激光器打板调试时的参数设定
+	LaserTunningSettings    laserTunningSettings_PalmTouchControl    ;         //手掌互动激光器打板调试时的参数设定
+
+	AutoCalibrateSettingsList   autoCalibrateSettingsList            ;         //自动校正时的参数设置
+    AutoMaskSettings            autoMaskSettings                     ;         //自动屏蔽时的参数设置
 
 
     //引导框
@@ -463,23 +453,80 @@ struct TLensConfig
     DWORD dwGuideRectangleColor;//引导框颜色
     BOOL  bRectangleVisible    ;//引导框可见标志
 
-    TLensConfig()
-    {
-        bInternalAndSymmetricDistortParamsIsValid = FALSE;
+	TLensConfig()
+	{
+		bInternalAndSymmetricDistortParamsIsValid = FALSE;
 
-        //2017/11/16, 新增引导框信息
-        //<<
-        int image_Default_Width = 640;
-        int image_Default_Height = 480;
-        rcGuideRectangle.left = image_Default_Width / 8;
-        rcGuideRectangle.right = image_Default_Width - image_Default_Width / 8;
-        rcGuideRectangle.top = image_Default_Height / 8;
-        rcGuideRectangle.bottom = image_Default_Height - image_Default_Height / 8;
+		//2017/11/16, 新增引导框信息
+		//<<
+		int image_Default_Width = 640;
+		int image_Default_Height = 480;
+		rcGuideRectangle.left = image_Default_Width / 8;
+		rcGuideRectangle.right = image_Default_Width - image_Default_Width / 8;
+		rcGuideRectangle.top = image_Default_Height / 8;
+		rcGuideRectangle.bottom = image_Default_Height - image_Default_Height / 8;
 		Referwidth = image_Default_Width;
 		ReferHeight = image_Default_Height;
-        dwGuideRectangleColor = 0xFF0000;//RGB
-        bRectangleVisible = TRUE;
-        //>>
+		dwGuideRectangleColor = 0xFF0000;//RGB
+		bRectangleVisible = TRUE;
+		//>>
+		this->autoCalibrateSettingsList.resize(3);
+		
+		{
+			AutoCalibrateSettings &autocalibratesettings = autoCalibrateSettingsList[0];
+
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+			autocalibratesettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+			autocalibratesettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+			autocalibratesettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+			autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+			autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 255;//940 nm 激光器
+		}
+
+		{
+			AutoCalibrateSettings &autocalibratesettings = autoCalibrateSettingsList[1];
+
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+			autocalibratesettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+			autocalibratesettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+			autocalibratesettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+			autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+			autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 255;//940 nm 激光器
+		}
+		{
+			AutoCalibrateSettings &autocalibratesettings = autoCalibrateSettingsList[2];
+
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+			autocalibratesettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+			autocalibratesettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+			autocalibratesettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+			autocalibratesettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+			autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 30;
+			autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 255;//940 nm 激光器
+		}
     }
 };
 
@@ -538,9 +585,9 @@ struct TSensorModeConfig
 		//==================================
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_1_DOT_34];
-			//正常手指触控模式下的使用参数
+			//正常电子白板手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -574,9 +621,10 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 			}
-			//正常笔触触控模式下的使用参数
+
+			//正常电子白板笔触触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -609,6 +657,77 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光时间
 			}
+			////正常手指触控模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness =0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 100;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 100;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光时间
+			}
+			////正常手掌互动模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl   ;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+																					  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光时间
+			}
+
 			//安装调试模式下的参数
 			{
 				InstallTunningSettings& installTunningSettings = lens.installTunningSettings;
@@ -637,9 +756,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光时间
 			}
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 180;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -665,66 +784,177 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 			}
+			//手指触控激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+			}
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+			}
+
 			//自动校正参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+					AutoCalibrateSettings &autocalibratesettings = autoCalibrateSettingsList[0];
+                    //第一组自动校正参数
+				    autocalibratesettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autocalibratesettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autocalibratesettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autocalibratesettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				    //第一组,对应较亮的光线环境
+					autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
+				    //缺省参数
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autocalibratesettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autocalibratesettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autocalibratesettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+					//第一组,对应较亮的光线环境
+					autocalibratesettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autocalibratesettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					AutoCalibrateSettings &autocalibratesettings = autoCalibrateSettingsList[1];
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+					//第二组自动校正参数
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autocalibratesettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autocalibratesettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autocalibratesettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+																						   //第二组,对应适当的光线环境
+					autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 180;
 
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
+					//缺省参数
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autocalibratesettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autocalibratesettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autocalibratesettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
+					autocalibratesettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autocalibratesettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					AutoCalibrateSettings &autocalibratesettings = autoCalibrateSettingsList[2];
 
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+					//第三组自动校正参数
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autocalibratesettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autocalibratesettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autocalibratesettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autocalibratesettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+																						   //第三组, 对应较暗的光线环境
+					autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autocalibratesettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autocalibratesettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autocalibratesettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autocalibratesettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					//第三组, 对应较暗的光线环境
+					autocalibratesettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autocalibratesettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
 			}
+			
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -766,9 +996,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_86];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -803,10 +1033,10 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 			}
 
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
 
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -840,6 +1070,81 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 			}
+
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+			}
+
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+			}
+
 			//安装调试模式下的参数
 			{
 				InstallTunningSettings& installTunningSettings = lens.installTunningSettings;
@@ -869,9 +1174,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 180;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -898,66 +1203,180 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 			}
 
-			//自动校正参数
+			//手指触控激光器调试模式参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
-				//缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
-
-				//第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
-
-				//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
-
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
-
-				//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 			}
 
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+			}
+
+			//自动校正参数
+			{
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+				    //第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
+
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																					//第一组,对应较亮的光线环境
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
+
+																						  //缺省参数
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																					  //第一组,对应较亮的光线环境
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+				    //calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																					//第二组,对应适当的光线环境
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
+
+				    //缺省参数
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
+
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																					//第三组, 对应较暗的光线环境
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+				    //缺省参数
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																					  //第三组, 对应较暗的光线环境
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
+
+			}
+		
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -1010,9 +1429,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_55];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1048,12 +1467,10 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
 			}
 
-
-
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
 
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1069,9 +1486,7 @@ struct TSensorModeConfig
 				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
 				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
-
-
-																				 //缺省值初始化
+				//缺省值初始化
 				normalUsageSettings.cYThresholdDefault = 205;
 				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
 				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
@@ -1086,6 +1501,82 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+			}
+
+			//手指触控正常模式下的使用参数
+			{
+
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+			}
+
+			//手掌互动正常模式下的使用参数
+			{
+
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 46;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 
 			}
@@ -1119,9 +1610,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 180;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -1147,68 +1638,175 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
 			}
+			//手指触控激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
+			}
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
+			}
 
 			//自动校正参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+				   //第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
+																					//第一组,对应较亮的光线环境
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+				    autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
 
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+				    //缺省参数
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				    autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+				    autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+				    //第一组,对应较亮的光线环境
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+				    autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					//第二组自动校正参数	
+				    AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
 
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
+																						   //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+																							 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}	
 			}
 
 			//自动屏蔽参数
@@ -1254,9 +1852,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_70];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1273,8 +1871,7 @@ struct TSensorModeConfig
 				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
 
-
-																				 //缺省值初始化
+				//缺省值初始化
 				normalUsageSettings.cYThresholdDefault = 205;
 				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
 				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
@@ -1293,11 +1890,9 @@ struct TSensorModeConfig
 			}
 
 
-
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
-
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1314,8 +1909,7 @@ struct TSensorModeConfig
 				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
 
-
-																				 //缺省值初始化
+				//缺省值初始化
 				normalUsageSettings.cYThresholdDefault = 205;
 				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
 				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
@@ -1333,6 +1927,81 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 
 			}
+
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+			}
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+			}
+
 
 			//安装调试模式下的参数
 			{
@@ -1363,9 +2032,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 180;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -1392,69 +2061,180 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
 			}
 
+			//手指触控激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
+			}
+
+			//手掌触控激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
+			}
 
 			//自动校正参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+					//第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
 
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+																								 //缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+																							 //第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
 
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光時間
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
 
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
 
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
 
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
 			}
-
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -1494,9 +2274,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_34];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1533,11 +2313,9 @@ struct TSensorModeConfig
 			}
 
 
-
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
-
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1554,8 +2332,7 @@ struct TSensorModeConfig
 				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
 
-
-																				 //缺省值初始化
+				//缺省值初始化
 				normalUsageSettings.cYThresholdDefault = 205;
 				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
 				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
@@ -1571,7 +2348,80 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+			}
 
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+			}
+
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+
+																				  //缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 			}
 
 			//安装调试模式下的参数
@@ -1603,9 +2453,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 130;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -1632,69 +2482,181 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
 			}
 
+			//手指触控激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+			}
+
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7; //曝光時間
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+			}
 
 			//自动校正参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光時間
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+				    //第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光器
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
 
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+																								 //缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+																							 //第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
 
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;//曝光時間
+	               //第二组自动校正参数
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
 
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+				}
+				{
+				   //第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
 
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
 			}
-
+		
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -1791,9 +2753,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_28];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1828,12 +2790,9 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
-
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -1866,8 +2825,83 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
-
 			}
+
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
+
 			//安装调试模式下的参数
 			{
 				InstallTunningSettings& installTunningSettings = lens.installTunningSettings;
@@ -1897,9 +2931,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 130;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -1926,69 +2960,179 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-			//自动校正参数
+			//手指触控激光器调试模式参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
-				//缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光器
-
-				//第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;
-
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
-
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光
-
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
+			//第一组自动校正参数
+			{
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
+
+																								 //缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+					//第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
+			}
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -2136,9 +3280,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_25];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2174,10 +3318,10 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
 
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2214,6 +3358,82 @@ struct TSensorModeConfig
 
 			}
 
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
 			//安装调试模式下的参数
 			{
 				InstallTunningSettings& installTunningSettings = lens.installTunningSettings;
@@ -2243,9 +3463,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 130;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -2272,69 +3492,179 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-			//自动校正参数
+			//手指触控激光器调试模式参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光器
-
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;
-
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
-
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光
-
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
+			//第一组自动校正参数
+			{
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+					//第一组自动校正参数
+				    AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
+
+																								 //缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
+			}
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -2376,9 +3706,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_21];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2415,11 +3745,10 @@ struct TSensorModeConfig
 			}
 
 
-
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
 
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2437,7 +3766,7 @@ struct TSensorModeConfig
 				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
 
-																				 //缺省值初始化
+				//缺省值初始化
 				normalUsageSettings.cYThresholdDefault = 205;
 				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
 				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
@@ -2452,6 +3781,83 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+
+			}
+
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+
+			}
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 
 			}
@@ -2485,9 +3891,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 150;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -2514,67 +3920,176 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-			//自动校正参数
+			//手指触控激光器调试模式参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光器
-
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;
-
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
-
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光
-
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
-
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+			{
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+					//第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
+
+																								 //缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
+			}
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -2649,9 +4164,9 @@ struct TSensorModeConfig
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_19];
 
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2687,12 +4202,9 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
-
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2710,7 +4222,7 @@ struct TSensorModeConfig
 				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
 
-																				 //缺省值初始化
+				//缺省值初始化
 				normalUsageSettings.cYThresholdDefault = 205;
 				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
 				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
@@ -2725,6 +4237,84 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+
+			}
+
+			//手指触控正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+
+			}
+
+			//手掌互动正常模式下的使用参数
+			{
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 205;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 205;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 
 			}
@@ -2758,9 +4348,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 150;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -2788,65 +4378,177 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-			//自动校正参数
+			//手指触控激光器调试模式参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
-																				   //缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 0;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光器
 
-																								 //第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
 
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 0;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
-																					//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//940 nm 激光
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma    ★
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+			{
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+			        //第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
 
-																										//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
 
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
 
+																								 //缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				} 
+				{
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+																							 //第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
 			}
 
 			//自动屏蔽参数
@@ -2889,9 +4591,9 @@ struct TSensorModeConfig
 		 //==================================
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_0_DOT_15];
-			//正常手指触控模式下的使用参数
+			//电子白板正常手指触控模式下的使用参数
 			{
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 205;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2925,10 +4627,10 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
-			//正常笔触触控模式下的使用参数
+			//电子白板正常笔触触控模式下的使用参数
 			{
 
-				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouch;
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PenTouchWhiteBoard;
 				normalUsageSettings.cYThreshold = 225;
 				normalUsageSettings.nLightSpotMinimumWidth = 2;
 				normalUsageSettings.nLightSpotMinimumHeight = 2;
@@ -2962,6 +4664,81 @@ struct TSensorModeConfig
 				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
 				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
+			//手指触控正常模式下的使用参数
+			{
+
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_FingerTouchControl;
+				normalUsageSettings.cYThreshold = 225;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 225;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 46;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+			//手掌互动正常模式下的使用参数
+			{
+
+				NormalUsageSettings& normalUsageSettings = lens.normalUsageSettings_PalmTouchControl;
+				normalUsageSettings.cYThreshold = 225;
+				normalUsageSettings.nLightSpotMinimumWidth = 2;
+				normalUsageSettings.nLightSpotMinimumHeight = 2;
+
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				//缺省值初始化
+				normalUsageSettings.cYThresholdDefault = 225;
+				normalUsageSettings.nLightSpotMinimumWidthDefault = 2;
+				normalUsageSettings.nLightSpotMinimumHeightDefault = 2;
+
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Contrast = 46;//对比度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma    ★
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				normalUsageSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				normalUsageSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				normalUsageSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
 
 			//安装调试模式下的参数
 			{
@@ -2992,9 +4769,9 @@ struct TSensorModeConfig
 				installTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-			//激光器调试模式参数
+			//电子白板激光器调试模式参数
 			{
-				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_WhiteBoard;
 
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 150;//亮度
 				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
@@ -3021,68 +4798,178 @@ struct TSensorModeConfig
 				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
-
-			//自动校正参数
+			//手指触控激光器调试模式参数
 			{
-				AutoCalibrateSettings& autoCalibrateSettings = lens.autoCalibrateSettings;
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_FingerTouchControl;
 
-				//缺省的三组校正的画面参数
-				autoCalibrateSettings.calibrateImageParamsList.resize(3);
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
 
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;//    ★
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray = 255;//    ★
-
-				//第二组,对应适当的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;//    ★
-				autoCalibrateSettings.calibrateImageParamsList[1].autoCalibrateHilightGray = 180;//    ★
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;//    ★
-				autoCalibrateSettings.calibrateImageParamsList[2].autoCalibrateHilightGray = 120;//    ★
-
-				//缺省参数
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
-				autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
-				autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
-				autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7;
-
-				//缺省的三组校正的画面参数
-				autoCalibrateSettings.defaultCalibrateImageParamsList.resize(3);
-
-				//第一组,对应较亮的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateExpectedBrightness = 100;//    ★
-				//calibrateImageParamsList[0].autoCalibrateHilightGray        = 180;
-				autoCalibrateSettings.defaultCalibrateImageParamsList[0].autoCalibrateHilightGray = 255;//    ★
-
-				//第二组,对应适当的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateExpectedBrightness = 100;//    ★
-				autoCalibrateSettings.defaultCalibrateImageParamsList[1].autoCalibrateHilightGray = 180;//    ★
-
-				//第三组, 对应较暗的光线环境
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateExpectedBrightness = 70;//    ★
-				autoCalibrateSettings.defaultCalibrateImageParamsList[2].autoCalibrateHilightGray = 120;//    ★
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 0;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 38;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 4600;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
 			}
 
+			//手掌互动激光器调试模式参数
+			{
+				LaserTunningSettings& laserTunningSettings = lens.laserTunningSettings_PalmTouchControl;
+
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = 150;//亮度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Contrast = 150;//对比度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+				laserTunningSettings.cameraParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
+				laserTunningSettings.cameraParams.Prop_CameraControl_Exposure = -7;
+
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness = 150;//亮度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Contrast = 150;//对比度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma = 2;//Gamma
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+				laserTunningSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿 偿
+				laserTunningSettings.defaultParams.Prop_VideoProcMap_Gain = 0x44AA;//增益
+				laserTunningSettings.defaultParams.Prop_CameraControl_Exposure = -7;
+			}
+
+			//自动校正参数列表
+			{
+				AutoCalibrateSettingsList& autoCalibrateSettingsList = lens.autoCalibrateSettingsList;
+				{
+					//第一组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[0];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+																						   //第一组,对应较亮的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 255;//
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					//第一组,对应较亮的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 255;//
+				}
+				{
+					//第二组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[1];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+					//第二组,对应适当的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 180;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 180;
+				}
+				{
+					//第三组自动校正参数
+					AutoCalibrateSettings &autoCalibrateSettings = autoCalibrateSettingsList[2];
+
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.cameraParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.cameraParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.cameraParams.Prop_CameraControl_Exposure = -7;//曝光时间
+
+					//第三组, 对应较暗的光线环境
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.calibrateImageParams.autoCalibrateHilightGray = 120;
+
+					//缺省参数
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Brightness = 120;//亮度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Contrast = 50;//对比度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Hue = 0;//色调
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Satuation = 64;//饱和度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Sharpness = 1;//锐利度
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_Gamma = 1;//Gamma
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_ColorEnable = 0;//颜色
+					autoCalibrateSettings.defaultParams.Prop_VideoProcAmp_WhiteBalance = 5000;//白平衡
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_BacklightCompensation = 2;//背光补偿
+					autoCalibrateSettings.defaultParams.Prop_VideoProcMap_Gain = 0x33AA;//增益
+					autoCalibrateSettings.defaultParams.Prop_CameraControl_Exposure = -7; //曝光时间
+
+					//第三组, 对应较暗的光线环境
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 70;
+					autoCalibrateSettings.defaultCalibrateImageParams.autoCalibrateHilightGray = 120;
+				}
+			}
 			//自动屏蔽参数
 			{
 				AutoMaskSettings& autoMaskSettings = lens.autoMaskSettings;
@@ -3092,8 +4979,6 @@ struct TSensorModeConfig
 				autoMaskSettings.cAutoMaskDetectThresholdDefault = 180;
 				autoMaskSettings.nMaskAreaEroseSizeDefault = DEFAULT_MASK_AREA_EROSIE_SIZE;
 			}
-
-
 			//镜头规格
 			{
 				TLensSpecification& lensSpecification = lens.lensSpecification;
@@ -3302,8 +5187,8 @@ struct TSensorConfig
         strFavoriteMediaType  = _T("640 X 480 MJPG");
 
         //手触和笔触模式下的摄像头亮度系数是不同的.
-       // normalUsageSettings_FingerTouch.cameraParams.Prop_VideoProcAmp_Brightness = 150;
-        //normalUsageSettings_PenTouch   .cameraParams.Prop_VideoProcAmp_Brightness = 30 ;
+       // normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness = 150;
+        //normalUsageSettings_PenTouchWhiteBoard   .cameraParams.Prop_VideoProcAmp_Brightness = 30 ;
         //当前选中的镜头类型
         eSelectedLensType = E_LENS_TR_0_DOT_34;
         //自动关联屏幕标志
@@ -3364,9 +5249,7 @@ _declspec(selectany) extern const VideoMediaType DEFAULT_VIDEO_FORMAT
         }
 
     }
-
 };
-
 
 // \\?\USB#Vid_a088&Pid_082
 #define DEV_ID_LENGTH 25

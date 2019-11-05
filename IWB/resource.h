@@ -34,7 +34,7 @@
 #define IDD_DIALOG_ONLINE_REGISTER      155
 #define IDD_DIALOG_ATTACH_SCREEN        156
 #define IDD_DIALOG_UPDATE_FIRMWARE      159
-#define IDD_CAMERA_FMT_DIALOG           161
+#define IDD_DIALOG_ADANCEDSETTINGS      161
 #define IDS_ABOUTBOX                    400
 #define IDS_STRING102                   401
 #define IDS_STRING103                   402
@@ -206,6 +206,16 @@
 #define IDC_WALLMODE                    1123
 #define IDC_DESKTOPMODE                 1124
 #define IDC_CAMERAFMT_COMBO             1125
+#define IDC_CHECK_HID                   1127
+#define IDC_CHECK_TUIO                  1128
+#define IDC_IPADDRESS_IP                1130
+#define IDC_EDIT_PORT                   1131
+#define IDC_RADIO_FINGERTOUCHCONTROL    1132
+#define IDC_RADIO2                      1133
+#define IDC_RADIO_PALMTOUCHCONTROL      1133
+#define IDC_CHECK_DYNAMICMASKFRAMECONTROL 1134
+#define IDC_CHECK_ANTIJAMMINGCONTROL    1135
+
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
@@ -386,15 +396,18 @@
 #define ID_OPERATION_MANUALCALIBRATION  32894
 #define ID_TRAYCTXMENU_MANUALCALIBRATION 32895
 #define ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE 32896
-#define ID_MENU_VIDEOFORMAT             32897
+#define ID_MENU_ADVANCESSETTING         32898
+#define ID_MENU_DRAWMASKFRAME_START     32899
+#define ID_MENU_DRAWMASKFRAME_CLEAR     32900
+#define ID_MENU_DRAWMASKFRAME_DISABLE   32901
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        164
-#define _APS_NEXT_COMMAND_VALUE         32900
-#define _APS_NEXT_CONTROL_VALUE         1127
+#define _APS_NEXT_COMMAND_VALUE         32914
+#define _APS_NEXT_CONTROL_VALUE         1137
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -127,11 +127,11 @@ LRESULT   CManualCalibrateWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM 
     }
     else if(uMsg == WM_LBUTTONDOWN)
     {
-
+		int ddd = 0;
     }	
     else  if(uMsg == WM_LBUTTONUP )
     {
-
+		int  ii = 0;
     }
     else if(uMsg == WM_RBUTTONDOWN)
     {
@@ -486,62 +486,62 @@ void CManualCalibrateWnd::RunCalibStateMachineProc(const TStateMachineInputStimu
 {
     switch(m_ePtCalibState)
     {
-    case E_CURRENT_POINT_BEGIN_CALIBRATING://校正点坐标开始采集
-        if(E_STIMULUS_TYPE_SPOT_DATA ==  stimulus.eStimulusType)
-        {
-            m_ptFirstInputImageCoord   = stimulus.ptLightSpot;
-            m_nLightSpotDetectionCount = 0;
-            m_ePtCalibState = E_CURRENT_POINT_CALIBRATING;
-        }
-        break;
+       case E_CURRENT_POINT_BEGIN_CALIBRATING://校正点坐标开始采集
+           if(E_STIMULUS_TYPE_SPOT_DATA ==  stimulus.eStimulusType)
+           {
+               m_ptFirstInputImageCoord   = stimulus.ptLightSpot;
+               m_nLightSpotDetectionCount = 0;
+               m_ePtCalibState = E_CURRENT_POINT_CALIBRATING;
+           }
+           break;
 
-    case E_CURRENT_POINT_CALIBRATING://校正点坐标采集中
-        if(E_STIMULUS_TYPE_SPOT_DATA ==  stimulus.eStimulusType)
-        {
-            const POINT& ptInput = stimulus.ptLightSpot;
+      case E_CURRENT_POINT_CALIBRATING://校正点坐标采集中
 
-            int nDeltaU = ptInput.x - m_ptFirstInputImageCoord.x ;
-            int nDeltaV = ptInput.y - m_ptFirstInputImageCoord.y ;
-            if(abs(nDeltaU) < MAX_PERMIT_U_DITHER_DEVIATION && abs(nDeltaV) < MAX_PERMIT_V_DITHER_DEVIATION)
-            {
-                m_nLightSpotDetectionCount ++;
+          if(E_STIMULUS_TYPE_SPOT_DATA ==  stimulus.eStimulusType)
+          {
+              const POINT& ptInput = stimulus.ptLightSpot;
 
-                if(m_nLightSpotDetectionCount >= MAX_DETECT_COUNT)
-                {
-                    //记录采集到的校正点图像坐标
-                    TPoint2D pt2dInput;
-                    pt2dInput.d[0] = (double)ptInput.x/(double(1 << INT_SCALE_SHIFT_SIZE));
-                    pt2dInput.d[1] = (double)ptInput.y/(double(1 << INT_SCALE_SHIFT_SIZE));
+              int nDeltaU = ptInput.x - m_ptFirstInputImageCoord.x ;
+              int nDeltaV = ptInput.y - m_ptFirstInputImageCoord.y ;
+              if(abs(nDeltaU) < MAX_PERMIT_U_DITHER_DEVIATION && abs(nDeltaV) < MAX_PERMIT_V_DITHER_DEVIATION)
+              {
+                  m_nLightSpotDetectionCount ++;
 
-                    m_oAllCalibMap[m_nCurMonitorId].calibData[m_nCurrentCalibratePos].pt2DImageCoord = pt2dInput;
+                  if(m_nLightSpotDetectionCount >= MAX_DETECT_COUNT)
+                  {
+                      //记录采集到的校正点图像坐标
+                      TPoint2D pt2dInput;
+                      pt2dInput.d[0] = (double)ptInput.x/(double(1 << INT_SCALE_SHIFT_SIZE));
+                      pt2dInput.d[1] = (double)ptInput.y/(double(1 << INT_SCALE_SHIFT_SIZE));
 
-
-                    m_vecCrossSymbol[m_nCurrentCalibratePos].bAdjusted = TRUE;
-
-                    //重绘校正标记(采集完坐标的校正点颜色会发生变化)
-                    InvalidateRect(m_hWnd, NULL, TRUE);
+                      m_oAllCalibMap[m_nCurMonitorId].calibData[m_nCurrentCalibratePos].pt2DImageCoord = pt2dInput;
 
 
-                    //移动鼠标指针到完成坐标采集的校正符号处
-                    POINT ptCrossSymbol;
-                    ptCrossSymbol = m_vecCrossSymbol[m_nCurrentCalibratePos].ptCenter;
-                    SetCursorPos(ptCrossSymbol.x, ptCrossSymbol.y);
+                      m_vecCrossSymbol[m_nCurrentCalibratePos].bAdjusted = TRUE;
+
+                      //重绘校正标记(采集完坐标的校正点颜色会发生变化)
+                      InvalidateRect(m_hWnd, NULL, TRUE);
 
 
-                    //记录光斑最后显示的时刻
-                    m_dwLastSpotAppearTime = GetTickCount();
+                      //移动鼠标指针到完成坐标采集的校正符号处
+                      POINT ptCrossSymbol;
+                      ptCrossSymbol = m_vecCrossSymbol[m_nCurrentCalibratePos].ptCenter;
+                      SetCursorPos(ptCrossSymbol.x, ptCrossSymbol.y);
 
-                    //进入"等待校正坐标采集结束状态"
-                    m_ePtCalibState = E_WAIT_CURRENT_POINT_CALIBRATING_END;
-                }
 
-            }
-            else
-            {   //超过了允许的抖动引起的偏移量,重新开始采样。
-                m_ePtCalibState = E_CURRENT_POINT_BEGIN_CALIBRATING;
-            }
-        }
-        break;
+                      //记录光斑最后显示的时刻
+                      m_dwLastSpotAppearTime = GetTickCount();
+
+                      //进入"等待校正坐标采集结束状态"
+                      m_ePtCalibState = E_WAIT_CURRENT_POINT_CALIBRATING_END;
+                 }
+             }
+             else
+             {    //超过了允许的抖动引起的偏移量,重新开始采样。
+                  m_ePtCalibState = E_CURRENT_POINT_BEGIN_CALIBRATING;
+             }
+          }
+          break;
 
     case E_WAIT_CURRENT_POINT_CALIBRATING_END://校正点坐标采集结束
         {
@@ -647,7 +647,7 @@ void CManualCalibrateWnd::RunCalibStateMachineProc(const TStateMachineInputStimu
 //
 void CManualCalibrateWnd::OnDeviceMissing()
 {
-    MessageBox(this->m_hWnd, g_oResStr[IDS_STRING454], g_oResStr[IDS_STRING109], MB_ICONERROR|MB_OK);
+ //   MessageBox(this->m_hWnd, g_oResStr[IDS_STRING454], g_oResStr[IDS_STRING109], MB_ICONERROR|MB_OK);
 
     //FullScreen(FALSE);
 	ShowWindow(m_hWnd, SW_HIDE);

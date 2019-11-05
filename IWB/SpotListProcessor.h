@@ -158,7 +158,7 @@ protected:
     //融合区域内的光斑合并器
     CSpotMerger m_oSpotMerger;//
 
-    static const int PEN_NUM = 10;
+    static const int PEN_NUM = 30;
     //智能光笔匹配
     CSmartMatch<PEN_NUM> m_oSmartPenMatch;//
 

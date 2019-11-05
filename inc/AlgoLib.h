@@ -16,6 +16,7 @@
 #include <atlstr.H>
 #include "CameraSpecs.h"
 
+
 #define ERR_SOFTKEY_VERSION  (-8)
 
 #define ERR_SOFTKEY_APP_TYPE (-9)
@@ -202,7 +203,7 @@ enum EChangeCalibCameraParams
 
 
 //自动校正时,用来控制摄像头视频参数的回调函数
-typedef BOOL (*CHANGECAMERAPARAMSPROC)(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1);
+typedef BOOL (*CHANGECAMERAPARAMSPROC)(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1, BYTE param2);
 
 //静态屏蔽前的回调函数，校正模块可以通过它来控制相机的参数和滤光片的闭合。
 typedef BOOL   (CALLBACK *PRE_STATIC_MASKING_ROUTINE)(LPVOID lpCtx);
@@ -213,13 +214,20 @@ typedef BOOL   (CALLBACK *PRE_STATIC_MASKING_ROUTINE)(LPVOID lpCtx);
 struct AutoCalibrateImageParams
 {
     BYTE autoCalibrateExpectedBrightness; //自动校正亮度自动控制时期望的平均画面亮度(范围0~255)
-    BYTE autoCalibrateHilightGray       ; //自动校正图案中高亮块的灰度值(0~255)
+    BYTE autoCalibrateHilightGray       ; //自动校正图案中高亮块的灰度值(0~255)   	
+};
 
-    
+struct AutoCalibrateParams
+{
+	AutoCalibrateImageParams  autoCalibrateImageParams;
+	TVideoProcAmpProperty     videoprocampproperty;
 };
 
 //画面参数列表, 每一组参数对应一次校正尝试的画面参数
-typedef std::vector<AutoCalibrateImageParams> AutoCalibrateImageParamsList;
+//typedef std::vector<AutoCalibrateImageParams> AutoCalibrateImageParamsList;
+
+typedef std::vector<AutoCalibrateParams> AutoCalibrateParamsList;
+
 
 //@功能:屏幕信息
 struct TScreenInfo
@@ -244,7 +252,10 @@ struct TAutoCalibrateParams
     //BYTE cAvgBrightness                        ;//校正时的平均亮度
     //COLORREF clrGridHighlight                  ;//校正图案中高亮块的颜色值
 
-    AutoCalibrateImageParamsList imageParamsList ;//画面参数列表,
+//    AutoCalibrateImageParamsList imageParamsList ;//画面参数列表,
+
+	AutoCalibrateParamsList   autocalibrateparamslist;   //自动校正参数列表
+
 };
 
 
@@ -263,8 +274,12 @@ struct TAutoMaskingParams
 
     //BYTE cAvgBrightness                        ;//校正时的平均亮度
     //COLORREF clrGridHighlight                  ;//校正图案中高亮块的颜色值
-    AutoCalibrateImageParamsList imageParamsList ;//画面参数列表,
+
+//    AutoCalibrateImageParamsList imageParamsList ;//画面参数列表,
+	AutoCalibrateParamsList       autocalibrateparamslist;   //自动校正参数列表
+
     BOOL                    bDoStaticMaskingOnly ;//只作静态屏蔽标志
+
 };
 
 

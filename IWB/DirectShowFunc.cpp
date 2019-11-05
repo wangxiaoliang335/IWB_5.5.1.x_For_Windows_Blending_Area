@@ -8,6 +8,8 @@
 #include <Ksproxy.h>
 #pragma comment(lib,"Ksproxy.lib")
 
+#include <processthreadsapi.h>
+
 static const int SONIX_PID = 0x9230 ;
 static const int SONIX_VID = 0x05a3 ;
 HRESULT FindPin(IBaseFilter* pFilter, PIN_DIRECTION pindir, LPCWSTR pPinName, IPin** ppPin)
@@ -1191,7 +1193,7 @@ XU_Put_Property(
 
     HRESULT hr = S_OK;
     KSP_NODE ExtensionProp;
-    ULONG ulBytesReturned;
+    ULONG ulBytesReturned =0;
 
     ExtensionProp.Property.Set   = set;
     ExtensionProp.Property.Id    = PropertyId;
@@ -1224,82 +1226,124 @@ EXTERN_GUID(UVC_GUID_SONIX_USER_HW_CONTROL, 0x28f03370, 0x6311, 0x4a2e, 0xba, 0x
 //USB2.0 H.264 Video
 //Encoding Camera Controller SN9C291B
 
+struct TSONIXControl
+{
+	IBaseFilter *pCaptureFilter;
+	BOOL bOn;
+};
+
+DWORD _stdcall IRCUTSwitch_SONIX_ThreadProc(LPVOID lpCtx);
 BOOL IRCUTSwitch_SONIX(IBaseFilter *pCaptureFilter, BOOL bOn)
 {
-	BOOL bRet = TRUE;
-	//return bRet;
-	if (pCaptureFilter == NULL)
+	BOOL bRet = FALSE;
+
+	TSONIXControl sonixControl;
+
+	sonixControl.pCaptureFilter = pCaptureFilter;
+	sonixControl.bOn = bOn;
+
+	HANDLE hThread = CreateThread(NULL, 0, IRCUTSwitch_SONIX_ThreadProc, &sonixControl, 0, NULL);
+
+	DWORD dwResult = WaitForSingleObject(hThread, 1000);
+
+	DWORD dwExitCode = 0;
+	switch (dwResult)
 	{
-		return FALSE;
-	}
+	case WAIT_OBJECT_0:
+		GetExitCodeThread(hThread, &dwExitCode);		
+		bRet = (dwExitCode == 0)? TRUE:FALSE;
+		break;
 
-	CComPtr<IKsTopologyInfo> ptrKsTopologInfo;
+	case WAIT_TIMEOUT:
+		TerminateThread(hThread, dwExitCode);
+		break;
 
-	HRESULT hr = pCaptureFilter->QueryInterface(__uuidof(IKsTopologyInfo), (void**)& ptrKsTopologInfo);
-	if (FAILED(hr)) return FALSE;
+	}//switch
 
-	CComPtr<IKsControl> ptrKsControl;
-
-	hr = pCaptureFilter->QueryInterface(__uuidof(IKsControl), (void**)& ptrKsControl);
-	if (FAILED(hr)) return FALSE;
-
-
-	DWORD dwNode = (UINT)(-1);
-	//hr = FindExtensionNode(ptrKsTopologInfo, IID_VENDOR_EXTENSION_UINT, &dwNode);
-	hr = FindExtensionNode(ptrKsTopologInfo, &dwNode);
-
-	if (hr != S_OK)
-		return FALSE;
-
-	//ULONG lInfoSize = 0;
-	//hr = XU_Get_InfoSize(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, &lInfoSize);
-
-
-
-	BYTE aryData[4];
-
-
-	//1.设置GPIIO_0为输入/输出使能
-	//0x1007八位寄存器，
-	//  bit0 控制GPIO_0口的输入输出使能 （in:0    out:1  //输入输出控制 0：输入 1：输出）
-	//  bit1~7 控制GPIO_1~7口的输入输出使能
-	USHORT address = 0x1007;
-
-
-	aryData[0] = address & 0xFF;       // Tag
-	aryData[1] = (address & 0xFF00) >> 8;
-	aryData[2] = 0x01;
-	aryData[3] = 0x00;                  // Dummy   
-	hr = XU_Put_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
-	if (FAILED(hr)) return FALSE;
-
-
-	//aryData[0] = address & 0xFF;       // Tag
-	//aryData[1] = (address & 0xFF00)>>8;
-	//aryData[2] = 0x00;
-	//aryData[3] = 0x00;                  // Dummy   
-	//hr = XU_Get_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
-
-	//2.设置GPIO_0的输出
-	//0x1006 八位寄存器
-	//bit0   控制GPIO_0口的输出状态 ；输出高：1；输出低：0；
-	//bit1~7 控制GPIO_1~7口的输入状态
-	address = 0x1006;
-	aryData[0] = address & 0xFF;       // Tag
-	aryData[1] = (address & 0xFF00) >> 8;
-	aryData[2] = bOn ? 0x01 : 0x00;
-	aryData[3] = 0x0;                  // Dummy  
-
-	hr = XU_Put_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
-	if (FAILED(hr)) return FALSE;
-
-	//hr = XU_Get_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
-
-	//0x1005 八位寄存器 
-	//  bit0 控制GPIO_0口的输入状态 ；输入高：1；输入低：0；
-	//  bit1~7 控制GPIO_1~7口的输入状态
+	CloseHandle(hThread);
 
 	return bRet;
+}
+
+DWORD _stdcall IRCUTSwitch_SONIX_ThreadProc(LPVOID lpCtx)
+{
+	TSONIXControl* pSonixControl = reinterpret_cast<TSONIXControl*>(lpCtx);
+	IBaseFilter *pCaptureFilter = pSonixControl->pCaptureFilter;
+	BOOL bOn = pSonixControl->bOn;
+
+	DWORD ret = -1;
+	do
+	{
+		if (pCaptureFilter == NULL)    break;
+
+		CComPtr<IKsTopologyInfo> ptrKsTopologInfo;
+
+		HRESULT hr = pCaptureFilter->QueryInterface(__uuidof(IKsTopologyInfo), (void**)& ptrKsTopologInfo);
+		if (FAILED(hr))               break;
+
+		CComPtr<IKsControl> ptrKsControl;
+
+		hr = pCaptureFilter->QueryInterface(__uuidof(IKsControl), (void**)& ptrKsControl);
+		if (FAILED(hr))              break;
+
+
+		DWORD dwNode = (UINT)(-1);
+		//hr = FindExtensionNode(ptrKsTopologInfo, IID_VENDOR_EXTENSION_UINT, &dwNode);
+		hr = FindExtensionNode(ptrKsTopologInfo, &dwNode);
+
+		if (hr != S_OK)     		 break;
+
+		//ULONG lInfoSize = 0;
+		//hr = XU_Get_InfoSize(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, &lInfoSize);
+
+		BYTE aryData[4];
+
+		//1.设置GPIIO_0为输入/输出使能
+		//0x1007八位寄存器，
+		//  bit0 控制GPIO_0口的输入输出使能 （in:0    out:1  //输入输出控制 0：输入 1：输出）
+		//  bit1~7 控制GPIO_1~7口的输入输出使能
+		USHORT address = 0x1007;
+
+
+		aryData[0] = address & 0xFF;       // Tag
+		aryData[1] = (address & 0xFF00) >> 8;
+		aryData[2] = 0x01;
+		aryData[3] = 0x00;                  // Dummy   
+		hr = XU_Put_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
+		if (FAILED(hr))               break;
+
+
+		//aryData[0] = address & 0xFF;       // Tag
+		//aryData[1] = (address & 0xFF00)>>8;
+		//aryData[2] = 0x00;
+		//aryData[3] = 0x00;                  // Dummy   
+		//hr = XU_Get_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
+
+		Sleep(100);
+
+		//2.设置GPIO_0的输出
+		//0x1006 八位寄存器
+		//bit0   控制GPIO_0口的输出状态 ；输出高：1；输出低：0；
+		//bit1~7 控制GPIO_1~7口的输入状态
+		address = 0x1006;
+		aryData[0] = address & 0xFF;       // Tag
+		aryData[1] = (address & 0xFF00) >> 8;
+		aryData[2] = bOn ? 0x01 : 0x00;
+		aryData[3] = 0x0;                  // Dummy  
+
+		hr = XU_Put_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
+		if (FAILED(hr))             break;
+
+		//hr = XU_Get_Property(ptrKsControl, UVC_GUID_SONIX_USER_HW_CONTROL, dwNode, XU_SONIX_ASIC_CTRL, _countof(aryData), aryData);
+
+		//0x1005 八位寄存器 
+		//  bit0 控制GPIO_0口的输入状态 ；输入高：1；输入低：0；
+		//  bit1~7 控制GPIO_1~7口的输入状态
+		ret = 0;
+
+	} while (0);
+
+	return ret;
 }
 
 

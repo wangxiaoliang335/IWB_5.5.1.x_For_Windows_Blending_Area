@@ -446,11 +446,25 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
     }
 
     this->m_oSpotListProcessor.GetVirtualHID().SetHIDMode(sysCfgData.globalSettings.eHIDDeviceMode);
+	//////add by zhaown 2019.9.25
+	////如果两种模式都为false的话，那么强行HID模式响应
+
+	if ((!sysCfgData.globalSettings.bTouchHIDMode) && (!sysCfgData.globalSettings.bTouchTUIOMode))
+	{
+		this->m_oSpotListProcessor.GetVirtualHID().SetTouchHIDMode(true);
+		sysCfgData.globalSettings.bTouchHIDMode = true;
+	}
+	else
+	{
+    	this->m_oSpotListProcessor.GetVirtualHID().SetTouchHIDMode(sysCfgData.globalSettings.bTouchHIDMode);
+	}
+	this->m_oSpotListProcessor.GetVirtualHID().SetTouchTUIOMode(sysCfgData.globalSettings.bTouchTUIOMode);	
 
     //<Added by Jiqw 201412041914
     //<Added Reason: 解决触屏模式下，windows两触点手势与windows下手势的冲突问题/>
     g_oWGRConfig.SetHIDMode(E_DEV_MODE_TOUCHSCREEN == sysCfgData.globalSettings.eHIDDeviceMode);
     g_oGLBoardGR.SetIsTouchPadMode(E_DEV_MODE_TOUCHSCREEN == sysCfgData.globalSettings.eHIDDeviceMode);
+
     //Added by Jiqw 201412041914>    
 }
 
@@ -819,8 +833,6 @@ void CIWBSensorManager::OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCt
             m_vecSensors[i]->OnManualCalibrateDone(m_vecCalibrateResults[i]);
         }
     }
-
-
 }
 
 

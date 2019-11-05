@@ -15,6 +15,8 @@
 #include <time.h>
 
 #include <atlbase.h>
+
+#include "../inc/VideoProcAmpProperty.h"
 #include "../inc/MultiDimensionPoint.h"
 #include "../inc/LightSpot.h"
 #include "../inc/MsgDefine.h"
@@ -28,6 +30,7 @@
 
 #include "../inc/PerfDetector.h"
 #include "../inc/DispMonitorFinder.h"
+
 #include "../inc/Algolib.h"
 #include "../inc/Algorithm/HeapSort.h"
 #include "../inc/ImageDib.h"
@@ -65,7 +68,7 @@
 #include <ks.h>
 #include <d3d9.h>
 #include <vmr9.h>
-#include "VideoProcAmpProperty.h"
+
 #include "DirectShowFunc.h"
 
 #include "EnumDevices.h"

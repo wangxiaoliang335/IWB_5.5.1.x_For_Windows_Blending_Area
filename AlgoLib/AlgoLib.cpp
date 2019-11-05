@@ -316,26 +316,28 @@ CBlobDetector::~CBlobDetector()
 //@返回:检测到的目标的个数
 //@说明:
 
-UINT CBlobDetector::operator() (const CImageFrame& grayFrame, BYTE YThreshold, CImageFrame& StatisticalFrame, const CImageFrame& DynamicMaskFrame, int StatisticStep, BYTE YStatisicThreshold,bool bDesktopMode)
+UINT CBlobDetector::operator() (const CImageFrame& grayFrame, BYTE YThreshold, CImageFrame& StatisticalFrame, const CImageFrame& DynamicMaskFrame, int StatisticStep, BYTE YStatisicThreshold,bool bDynamicMasking)
 {
-    //CPerfDetector perf(_T("CBlobDetector::operator()"));
 
+    //CPerfDetector perf(_T("CBlobDetector::operator()"));
     int nWidth  = grayFrame.Width();
     int nHeight = grayFrame.Height();
 
     int nPixelCount = nWidth * nHeight;
 
+	//CPerfDetector perf(_T("YUY2ToBits"));
+	m_pBitFrame->SetSize(nWidth, nHeight);
+	*m_pGrayFrame = grayFrame;
+
     //统计自动屏蔽位图
-	//如果是墙面的话需要进行自动屏蔽功能
-	//如果是在桌面模式的话因为需要进行抗干扰处理，因此不需要进行动态屏蔽
-	if(!bDesktopMode)
+	//如果需要动态屏蔽的话，那么就进行动态屏蔽
+	if(bDynamicMasking)
     {
 		//static  unsigned int s_FrameCount = 0;
 		if (StatisticStep == 0)
 		{
 			StatisticStep = 1;
 		}
-
 		if (m_nFrameCount % StatisticStep == 0)
 		{
 			//CPerfDetector perf(_T("DynamicMaskStatistic_MMX"));
@@ -343,35 +345,25 @@ UINT CBlobDetector::operator() (const CImageFrame& grayFrame, BYTE YThreshold, C
 			{
 				YStatisicThreshold = YThreshold - 40;
 			}
-			///////先去掉用来测试
+			///////进行动态屏蔽状态图的统计功能
+			///////只是进行统计图的计算，不对grayFrame的数据进行改变。
 			DynamicMaskStatistic_Gray_MMX(grayFrame.GetData(), StatisticalFrame.GetData(), YStatisicThreshold, nPixelCount);
 
 			m_nFrameCount = 0;
 		}
-
 		m_nFrameCount++;
-	}
-	else {
-		StatisticalFrame.Clear(0x00);
-	}
-    //YUY2图片帧根据门限转为单位位图
-    {
-        //CPerfDetector perf(_T("YUY2ToBits"));
-        m_pBitFrame->SetSize(nWidth, nHeight);
-
-        *m_pGrayFrame = grayFrame;
-
 
         //先用动态屏蔽图屏蔽源数据
         //YUY2FrameMask_MMX(m_pYUY2Frame->GetData(),DynamicMaskFrame.GetData(), nPixelCount);
         GrayFrameMask_MMX(m_pGrayFrame->GetData(), DynamicMaskFrame.GetData(),nPixelCount);
-        
+	}
+
+    //YUY2图片帧根据门限转为单位位图
+    {    
         //转化为单位位图
         //YUY2ToBitFrame_SSE(m_pYUY2Frame->GetData(), (BYTE*)m_pBitFrame->GetData(),YThreshold, nPixelCount);
         //GrayToBitFrame_SSE2(m_pGrayFrame->GetData(), (BYTE*)m_pBitFrame->GetData(),YThreshold, nPixelCount);
-
         BinarizeGrayToBitFrame_SSE2(m_pGrayFrame->GetData(), (BYTE*)m_pBitFrame->GetData(),YThreshold, nPixelCount);
-
         BitToGrayFrame_MMX((BYTE*)m_pBitFrame->GetData(), m_pGrayFrame->GetData(), nPixelCount);
 
     }
@@ -379,7 +371,6 @@ UINT CBlobDetector::operator() (const CImageFrame& grayFrame, BYTE YThreshold, C
     {
         m_pBlobScanAlgo->ProcessImage((const BYTE*)m_pBitFrame->GetData(), m_pBitFrame->Width(), m_pBitFrame->Height());
     }
-
     UINT nObjCount = m_pBlobScanAlgo->GetObjCount();
     return nObjCount;
 }

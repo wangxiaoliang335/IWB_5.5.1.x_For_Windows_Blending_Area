@@ -368,7 +368,6 @@ public:
     //        FALSE,处理错误。
      BOOL Process(const CImageFrame& srcFrame, BOOL bSimulate = FALSE);
 
-
      //@功能:获取屏蔽图
      const CImageFrame& GetMaskFrame(){return m_oMaskFrame;}
 
@@ -636,7 +635,7 @@ public:
         m_fpChangeCameraParams(NULL),
         m_lpCtx(NULL),
         m_bTestAutoBrightnessCtrlMode(FALSE),
-        m_AutoBrightnessRegulator(100, BrightnessCtrlCallback, (LPVOID)this),
+        m_AutoBrightnessRegulator(100,BrightnessCtrlCallback, (LPVOID)this),
         //SQUARE_SIZE(25),
         m_nCalibratePtNumber(0),
         m_hNotifyWnd(NULL),
@@ -1148,10 +1147,6 @@ public:
         grayFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, bmpinfoHeader->biBitCount >> 3);
 
 
-
-
-
-
          CMJPG_Decoder m_oMJPGDecoder;//MJPG解码器
 
 
@@ -1270,6 +1265,7 @@ protected:
     //@功能:将屏幕区域划分为多个多边形区域
     void PartitionScreenArea();
 
+
     //@功能:屏幕区域搜索结束后的后处理函数。主要有计算屏幕的完整屏蔽图、计算旋转矩阵。
     //@参数:nImageWidth, 视频图像宽度
     //      nImageHeight,视频图像高度
@@ -1327,10 +1323,9 @@ protected:
 
     //    CImageFrame m_oLowerSrcFrame                       ;//下部校正图案
     CImageFrame   m_oPatternFrame                         ;//校正图案黑白图片
-    CImageFrame   m_oRawPatternFrame                       ;//原始校正图案黑白图片备份
-
+    CImageFrame   m_oRawPatternFrame                      ;//原始校正图案黑白图片备份
+     
     __int64     m_liImageGrdientEnergy                 ;//图片的能量梯度
-
 
 
     std::vector<TImageCalibPoint> m_vecInteriorCalibPoint ;//在视频中看到的内部校正点数组
@@ -1405,8 +1400,6 @@ protected:
     };
 
 
-
-
     E_CalibrateStage m_eCalibrateStage ;//自动校正阶段步骤
     //E_SubAreaCalibrateStage m_eSubareaCalibrateStage;//子区域校正阶段步骤
 
@@ -1476,7 +1469,7 @@ protected:
     //@参数:bInc, TRUE:增加亮度，FALSE:减少亮度
     //      absDiff, 亮度差值绝对值
     //      lpCtxData,上下文数据
-    static bool BrightnessCtrlCallback(bool bInc, BYTE absDiff, LPVOID lpCtxData);
+    static bool BrightnessCtrlCallback(bool bInc, BYTE absDiff, BYTE nIndex, LPVOID lpCtxData);
 
     CAutoBrightnessRegulator<BYTE> m_AutoBrightnessRegulator;//自动亮度调节器
 
@@ -1528,10 +1521,15 @@ protected:
     CStaticMaskFinder    m_oStaticMaskFinder   ;//静态查找器
     //>>
     //<<added by toxuke@gmail.com, 2014/12/16
-    AutoCalibrateImageParamsList m_oImageParamsList      ;//自动定位参数列表
-    CMonitorAreaLocator          m_oMonitorAreaLocator   ;//屏幕区域定位器
-    CMonitorBoundaryFinder       m_oMonitorBoundaryFinder;//屏幕边界查找器
-    CAreaSplitter                m_oAreaSplitter         ;//画面区域划分器。
+
+
+//    AutoCalibrateImageParamsList m_oImageParamsList        ;//自动定位参数列表
+
+	AutoCalibrateParamsList      m_oautocalibrateparamslist; //自动校正参数列表
+
+    CMonitorAreaLocator          m_oMonitorAreaLocator     ;//屏幕区域定位器
+    CMonitorBoundaryFinder       m_oMonitorBoundaryFinder  ;//屏幕边界查找器
+    CAreaSplitter                m_oAreaSplitter           ;//画面区域划分器。
     int m_nTryTimes   ;//校正次数,从1开始计数
     int m_nMaxTryTimes;//最大尝试次数
     static const int MAX_TRY_TIMES = 4;
@@ -1581,6 +1579,7 @@ public:
    BOOL m_bRestoreLanguageBar;//是否恢复语言栏标志
 
    BOOL m_bRestoreTaskbar;//是否恢复状态栏标志
+
 
 
    //调试工具，2017/04/11

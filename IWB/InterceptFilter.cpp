@@ -88,7 +88,7 @@ BOOL SaveBGRAFrame(const CBRGAFrame& frame)
 //@参数:bInc, 
 //      absDiff,
 //      lpCtxData, 上下文数据
-bool CInterceptFilter::BrightnessControl(bool bInc, BYTE absDiff, LPVOID lpCtxData)
+bool CInterceptFilter::BrightnessControl(bool bInc, BYTE absDiff,BYTE nIndex, LPVOID lpCtxData)
 {
 #ifdef _DEBUG
     //CPerfDetector perf(_T("BrightnessControl"));
@@ -96,7 +96,7 @@ bool CInterceptFilter::BrightnessControl(bool bInc, BYTE absDiff, LPVOID lpCtxDa
 
     CIWBSensor* lpSensor = reinterpret_cast<CIWBSensor*>(lpCtxData);
     if(lpSensor == NULL) return false;
-    BOOL bRet = CIWBSensor::OnAutoCalibChangeCameraParams(bInc?E_CAMERA_BRIGHTNESS_INCREASE:E_CAMERA_BRIGHTNESS_DECREASE, (LPVOID)lpSensor , absDiff);
+    BOOL bRet = CIWBSensor::OnAutoCalibChangeCameraParams(bInc?E_CAMERA_BRIGHTNESS_INCREASE:E_CAMERA_BRIGHTNESS_DECREASE, (LPVOID)lpSensor , absDiff,nIndex);
     return bRet?true:false;
 }
 
@@ -171,6 +171,7 @@ static YUVColor  YUV_PURPLE =  {105, 212, 234};
 #define ARGB_BLUE   0xFF0000FF
 #define ARGB_PURPLE 0xFFFF00FF
 #define ARGB_CYAN   0xFF00FFFF
+#define ARGB_GREEN  0xFF00FF00
 /*
 CInterceptFilter::CInterceptFilter(CPenPosDetector* pPenPosDetector,CVideoPlayer* pVideoPlayer)
 :
@@ -202,10 +203,11 @@ m_pVideoPlayer(pSensor->GetVideoPlayer()),
 m_nDisplayCounter(0),
 m_dwImageType(MJPG),
 m_pSensor(pSensor),
-m_oAutoBrightnessRegulator(50, BrightnessControl, pSensor),
+m_oAutoBrightnessRegulator(50,BrightnessControl, pSensor),
 m_bEnableBrightnessAutoRegulating(FALSE),
 m_bCaptureImage(FALSE),
-m_nFrameSkipCount(0)
+m_nFrameSkipCount(0),
+m_bStartDrawMaskFrame(false)
 {
 
 
@@ -599,6 +601,18 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetStaticMaskFrame());
     }
 
+	if(m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+	{
+		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
+	}
+
+	//如果是在手动校正并且要求使用绘制的屏蔽图，那么就需要用绘制的屏蔽图进行与运算
+	if ((this->m_pPenPosDetector->IsManualCalibrating()|| this->m_pPenPosDetector->IsAutoCalibrating()) && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+	{
+		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
+	}
+
+
     if (m_nFrameSkipCount > 0)
     {
         m_nFrameSkipCount--;
@@ -625,7 +639,6 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         {
             return S_OK;
         }
-
         m_pVideoPlayer->ShowCameraInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType);
 
     }
@@ -636,7 +649,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         {
             UpdateARGBFrameWithoutMask();
         }
-        else {
+        else 
+		{
             UpdateARGBFrameWithMask();//更新屏蔽图信息和图片信息到ARGB图片帧中。
         }
     }
@@ -759,6 +773,43 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         }
     }
 
+	if (m_bStartDrawMaskFrame)
+	{
+	     std::vector<CPoint> vecpt;
+	     m_pPenPosDetector->GetOnLineScreenAreaPt(vecpt);
+	     int nCount = vecpt.size();
+	     for (int Index = 0; Index < nCount-1; Index++ )
+	     {
+		     m_BGRAFrame.Line(vecpt[Index],vecpt[Index+1], ARGB_RED);
+	     }
+	     if (nCount > 0)
+	     {
+		     m_BGRAFrame.Line(vecpt[nCount-1], m_PtMove, ARGB_RED);
+	     }
+	}
+	else
+	{
+		if (m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+		{
+			std::vector<CPoint> vecFinishpt;
+			m_pPenPosDetector->GetOnLineScreenAreaPt(vecFinishpt);
+			int nCount = vecFinishpt.size();
+			for (int Index = 0; Index < nCount; Index++)
+			{
+				if (Index == nCount-1)
+				{
+					m_BGRAFrame.Line(vecFinishpt[Index], vecFinishpt[0], ARGB_GREEN);
+				}
+				else
+				{
+                     m_BGRAFrame.Line(vecFinishpt[Index], vecFinishpt[Index + 1], ARGB_GREEN);
+				}
+
+			}
+		}
+
+	}
+
     //显示"手势触发事件文字"
     if (m_pPenPosDetector->IsTriggeringGuesture())
     {
@@ -797,7 +848,6 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
     if(m_bCaptureImage)
     {
-
         SaveBGRAFrame(m_BGRAFrame);
         m_bCaptureImage = FALSE;
     }
@@ -945,12 +995,12 @@ _next_16_pixles:
         movapd xmm0,[esi];
         add esi,16
 
-            movapd xmm4,[edi];
+        movapd xmm4,[edi];
         andpd xmm4,xmm0
-            movapd [edi],xmm4;
+        movapd [edi],xmm4;
 
         add edi,16
-            sub ecx,16 ;
+        sub ecx,16 ;
 
         jnz _next_16_pixles;
         emms
@@ -1089,8 +1139,6 @@ void CInterceptFilter::EnableBrightnessAutoRegulating(BOOL bEnable)
     this->m_bEnableBrightnessAutoRegulating = bEnable;
 }
 
-
-
 //@功能:设置画面的平均亮度
 //@参数:brightness:亮度值
 void CInterceptFilter::SetImageAverageBrightness(BYTE brightness)
@@ -1098,6 +1146,14 @@ void CInterceptFilter::SetImageAverageBrightness(BYTE brightness)
     this->m_oAutoBrightnessRegulator.SetExpectedBrightness(brightness);
 }
 //
+
+void CInterceptFilter::SetAutoCalibrateParamsIndex(BYTE nIndex)
+{
+	this->m_oAutoBrightnessRegulator.SetAutoCalibrateParamsIndex(nIndex);
+}
+
+
+//////
 
 //@功能:更新ARGB图片帧,不使用屏蔽图
 void CInterceptFilter::UpdateARGBFrameWithoutMask()
@@ -1425,5 +1481,4 @@ _next_16_pixles:
             popad
 
     }
-
 }

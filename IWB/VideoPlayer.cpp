@@ -29,7 +29,7 @@ m_sCurrentCameraResolution("")
     DbgSetModuleLevel(LOG_TRACE, 5);
     InitializeVideo();
 
-
+	memset(m_szStatusText, sizeof(m_szStatusText), 0);
     //HDC hdcDesktop = GetDC(GetDesktopWindow());
     //LONG PointSize = 40;
 
@@ -1891,7 +1891,7 @@ BOOL CVideoPlayer::GetCameraParams(TVideoProcAmpProperty& saveParams)
     {
         hr = 
             ptrAMVideoProcAmp->Get(
-            VideoProcAmp_Brightness,
+			VideoProcAmp_Contrast,
             &saveParams.Prop_VideoProcAmp_Contrast,
             &lCapsFlags);
 
@@ -2097,7 +2097,6 @@ BOOL CVideoPlayer::GetCameraBrightness(long & lValue, long& lMax, long& lMin, lo
     {
         return FALSE;
     }
-
 
     hr = ptrAMVideoProcAmp->Get(
         VideoProcAmp_Brightness, 
@@ -2466,15 +2465,22 @@ void CVideoPlayer::ShowCameraInfo(int nImageWidth,int nImageHeight, DWORD ImageT
 	//通知正在播放状态
 	CString  Compress;
 	Compress.Format(_T("%c%c%c%c"), ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF);
-
-	CString  FpsText;
-	FpsText.Format(_T("(%d*%d-%s)"), nImageWidth, nImageHeight, Compress);
-	CString strStatusText;
-	strStatusText.Format(_T("%s:%s"), g_oResStr[IDS_STRING442], FpsText);
-
 	m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
 
-	SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+	_stprintf_s(
+		m_szStatusText,
+		_countof(m_szStatusText),
+		_T("(%d*%d-%c%c%c%c)"),
+		nImageWidth,
+		nImageHeight,
+		ImageType & 0xFF, 
+		(ImageType >> 8) & 0xFF, 
+		(ImageType >> 16) & 0xFF, 
+		(ImageType >> 24) & 0xFF
+		);
+
+	PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)m_szStatusText, (LPARAM)m_nID);
+	
 }
 
 CString CVideoPlayer::CurrentCameraResolution()

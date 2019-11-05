@@ -321,6 +321,7 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
     memcpy(&m_InputSpotListGroup.aryLightSpots[dwCameraId], pLightSpots, nLightSpotCount*sizeof(TLightSpot));
     m_InputSpotListGroup.aryLightSpotsCount[dwCameraId] = nLightSpotCount;
 
+
     if(bNeedSkip)
     {//需要跳帧
         return FALSE;
@@ -355,17 +356,16 @@ void CSpotListProcessor::ProcessLightSpots()
         //所有光斑个数
         int nAllLightSpotCount = 0;
 		BOOL bDoubleScreenTouchMergeTemp = g_tSysCfgData.globalSettings.bDoubleScreenTouchMerge;
+
         //#0号传感器(位于拼接屏的左边)的光斑
         for(int i=0; i<  pSpotListGroup->aryLightSpotsCount[0]; i++)
         {
             const TLightSpot& spot = pSpotListGroup->aryLightSpots[0][i];
-		//	bDoubleScreenTouchMergeTemp = g_tSysCfgData.globalSettings.bDoubleScreenTouchMerge;
 
             if(theApp.GetScreenType() == EDoubleScreenMode && bDoubleScreenTouchMergeTemp  && spot.ptPosInScreen.x > this->GetSpotMerger().GetMergeAreaRightBorder())
             {//光斑位于融合区右边界以外, 则略过。
                 continue;
             }
-
 
             allLightSpots[nAllLightSpotCount] = spot;
             nAllLightSpotCount ++;
@@ -385,7 +385,6 @@ void CSpotListProcessor::ProcessLightSpots()
 
         //所有光斑的后续处理
         OnPostProcess(&allLightSpots[0], nAllLightSpotCount);
-
     }
 }
 
@@ -462,7 +461,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
     //debug>>
 #endif    
 
-
     //双屏拼接时，融合区内的光斑合并。
     if(theApp.GetScreenType() == EDoubleScreenMode )
     {
@@ -471,7 +469,45 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
     //复位手势触发标志
     m_bIsTriggeringGuesture = FALSE;
+    TContactInfo penInfo[PEN_NUM];
+    int penCount = PEN_NUM;
+	/////add by zhaown 2019.10.09
+	if(GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+	{
+		/////如果是手掌互动时，那么就不做平滑处理和插值处理。直接是原始的光斑值进行触控
+		int  nScreenX = GetSystemMetrics(SM_CXSCREEN);
+		int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
+		POINT pts[CAMERA_NUMBER*MAX_OBJ_NUMBER];
 
+		for (int i = 0; i< nLightSpotCount; i++)
+		{
+			pts[i] = pLightSpots[i].ptPosInScreen;
+			if ( (pts[i].x > nScreenX/8 && pts[i].x < nScreenX*7/8)||(pts[i].y > nScreenY/8 && pts[i].y < nScreenY*7 / 8) )
+			{
+				pts[i].x  = pts[i].x + 5 ;
+				pts[i].y  = pts[i].y - 5 ;
+			}
+		}
+		m_oSmartPenMatch.DoMatch(pts, nLightSpotCount);
+
+		int nElementCount = 0;
+		const TMatchInfo* pMatchInfo = m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
+
+		penCount = nElementCount;
+
+		for (int i = 0 ; i < penCount; i++ )
+		{
+			const TMatchInfo &refMInfo = pMatchInfo[i];
+			penInfo[i].ePenState = (refMInfo.eMatchState == E_MISMATCHED) ? E_PEN_STATE_UP : E_PEN_STATE_DOWN;
+			penInfo[i].uId = refMInfo.uId;
+			penInfo[i].pt = refMInfo.ptPos;
+		}
+		m_oVirtualHID.InputPoints(penInfo, penCount);
+
+		return;
+	}
+
+	//////检测GLBoard白板是否是打开的
     bool bHandHID2Me = DoGLBoardGestureRecognition(pLightSpots, nLightSpotCount);
 
 #ifdef _DEBUG
@@ -513,7 +549,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
             fwrite(szData,1,strlen(szData),g_hDebugSampleFile2);
         }
-
     }
 
     //debug>>
@@ -527,10 +562,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             //m_oVirtualHID.Reset();
             g_oGLBoardGR.ResetSmartMathch();
         }
-
-        TContactInfo penInfo[PEN_NUM];
-        int penCount = PEN_NUM;
-
         //<<debug
         BOOL bDebug = FALSE;
         //debug>>
@@ -539,7 +570,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
         if (!DoWindowsGestureRecognition(pLightSpots, nLightSpotCount, penInfo, penCount))
         {
-
            //平滑笔迹
             m_oStrokFilter.DoFilter(penInfo, penCount);
 
@@ -585,7 +615,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
                 }//for
             }
-
         }
         else
         {
@@ -614,7 +643,7 @@ bool CSpotListProcessor::DoGLBoardGestureRecognition(TLightSpot* pLightSpots, in
 
     //<<commented by Jiqw : 2015/04/20
     //<<commented reason : 笔触控模式下支持多笔
-    //if (GetActualTouchType() == E_DEVICE_PEN_TOUCH)
+    //if (GetActualTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
     //{//笔触控模式下不支持手势识别
     //    return true;
     //}
@@ -624,15 +653,38 @@ bool CSpotListProcessor::DoGLBoardGestureRecognition(TLightSpot* pLightSpots, in
     {
         //g_oGLBoardGR.SetIsTouchPadMode(m_oVirtualHID.GetHIDMode() == E_DEV_MODE_TOUCHSCREEN);
         bool isMultiPenMode = g_oGLBoardGR.IsMultiPenMode();
-        if (GetActualTouchType() == E_DEVICE_PEN_TOUCH)
-        {//笔触控模式下不支持手势识别
-            if (isMultiPenMode == false) return true;
-            g_oGLBoardGR.SetIsPenTouchDevice(true);
-        }
-        else
-        {
-            g_oGLBoardGR.SetIsPenTouchDevice(false);
-        }
+		switch (GetActualTouchType())
+		{
+		   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+			   //笔触控模式下不支持手势识别
+			   if (isMultiPenMode == false) return true;
+			   g_oGLBoardGR.SetIsPenTouchDevice(true);
+
+			   break; 
+		   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+
+			   g_oGLBoardGR.SetIsPenTouchDevice(false);
+			   break;
+		   case E_DEVICE_FINGER_TOUCH_CONTROL:
+
+			   g_oGLBoardGR.SetIsPenTouchDevice(true);
+			   break;
+		   case E_DEVICE_PALM_TOUCH_CONTROL:
+
+			   g_oGLBoardGR.SetIsPenTouchDevice(true);
+			   break;
+		   default:
+			  break;
+		}
+//        if (GetActualTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//        {//笔触控模式下不支持手势识别
+//            if (isMultiPenMode == false) return true;
+//            g_oGLBoardGR.SetIsPenTouchDevice(true);
+//        }
+//        else
+//        {
+//            g_oGLBoardGR.SetIsPenTouchDevice(false);
+//        }
 
         bHandHID2Me = g_oGLBoardGR.DoDetection(pLightSpots, nLightSpotCount);
     }    
@@ -655,22 +707,16 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
         pts[i] = pLightSpots[i].ptPosInScreen;
     }
 
-    /*if (nLightSpotCount >= 3)
-    {
-    int a = 0;
-    a = 10;
-    }*/
-
-    //<<debug
-
-    //>>
     m_oSmartPenMatch.DoMatch(pts, nLightSpotCount);
 
     int nElementCount = 0;
     const TMatchInfo* pMatchInfo =  m_oSmartPenMatch.GetAllMatchInfo(&nElementCount); 
-
-
-    bool toBeContinued = (GetActualTouchType() != E_DEVICE_PEN_TOUCH && !g_oGLBoardGR.IsInputInGLBorad()) ? g_oWinGR.DetermineWhethertoEnterWGR(pLightSpots, nLightSpotCount) : false;
+	bool bContinedType = false ;
+	if (GetActualTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || GetActualTouchType() == E_DEVICE_FINGER_TOUCH_CONTROL)
+	{
+		bContinedType = true;
+	}
+    bool toBeContinued = (bContinedType && !g_oGLBoardGR.IsInputInGLBorad()) ? g_oWinGR.DetermineWhethertoEnterWGR(pLightSpots, nLightSpotCount) : false;
 
     if (toBeContinued)
     {    

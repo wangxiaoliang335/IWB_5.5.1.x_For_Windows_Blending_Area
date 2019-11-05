@@ -429,4 +429,6 @@ protected:
 	TOSDText m_osdtext[E_OSDTEXT_TYPE_COUNT];
 
 	CString    m_sCurrentCameraResolution;
+
+	TCHAR m_szStatusText[256];
 };

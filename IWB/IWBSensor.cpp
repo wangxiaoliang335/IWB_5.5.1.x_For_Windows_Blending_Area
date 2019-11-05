@@ -35,24 +35,43 @@ BOOL  CALLBACK CIWBSensor::OnPreStaticMasking(LPVOID lpCtx)
 	}
 
 	eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+    TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
+	switch(eTouchType)
+	{
+		case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 
-    if(eTouchType == E_DEVICE_PEN_TOUCH)
-    {
-        TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
-        lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouch.cameraParams);
-    }
-    else
-    {
-        TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
-        lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouch.cameraParams);
-    }  
+			lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams);
+			break;
+		case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+			lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams);
+			break;
+		case E_DEVICE_FINGER_TOUCH_CONTROL:
+			lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchControl.cameraParams);
+			break;
+		case E_DEVICE_PALM_TOUCH_CONTROL:
+			lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PalmTouchControl.cameraParams);
+			break;
+		default:
+			break;
+
+	}
+//    if(eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//    {
+//		TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
+//        lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams);
+//    }
+//    else
+//    {
+//        TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
+//        lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams);
+//    }  
 	return TRUE;
 }
 
 
 //静态函数
 //自动校正过程中变更摄像头参数的回调函数
-BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1)
+BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1, BYTE param2)
 {
 
     CIWBSensor* lpThis = reinterpret_cast<CIWBSensor*>(lpCtx);
@@ -85,10 +104,10 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
     case E_CAMERA_SHARPNESS_MIN://显示校正图案阶段
         //PROFILE::CameraParametersForAutoCalibration(cameraParams);
-        cameraParams = lensCfg.autoCalibrateSettings.cameraParams;
+
+        cameraParams = lensCfg.autoCalibrateSettingsList[param2].cameraParams;
 
 		IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
-//        cameraParams.Prop_VideoProcMap_Gain     = IRCUT_OFF  ;//保持滤光片打开
 
         return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
         break;
@@ -210,7 +229,7 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
     case E_CAMERA_AUTO_CALIBRATE:
 
-        cameraParams = lensCfg.autoCalibrateSettings.cameraParams;
+        cameraParams = lensCfg.autoCalibrateSettingsList[param2].cameraParams;
 
 		IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(),FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
 
@@ -222,16 +241,34 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
 		EDeviceTouchType eTouchType;
 		eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+		switch (eTouchType)
+		{
+		   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 
-        if(eTouchType == E_DEVICE_PEN_TOUCH)
-        {
-            cameraParams = lensCfg.normalUsageSettings_PenTouch.cameraParams;
-        }
-        else
-        {
-            cameraParams = lensCfg.normalUsageSettings_FingerTouch.cameraParams;
-        }
+			  cameraParams = lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams;
+			  break;
+		   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
 
+			   cameraParams = lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams;
+			   break;
+		   case E_DEVICE_FINGER_TOUCH_CONTROL:
+			   cameraParams = lensCfg.normalUsageSettings_FingerTouchControl.cameraParams;
+			   break;
+		   case E_DEVICE_PALM_TOUCH_CONTROL:
+			   cameraParams = lensCfg.normalUsageSettings_PalmTouchControl.cameraParams;
+			   break;
+		   default:
+			   break;
+		}
+
+//        if(eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//        {
+//            cameraParams = lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams;
+//        }
+//        else
+//        {
+//            cameraParams = lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams;
+//        }
 
 		//合上滤光片 
 		IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), TRUE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
@@ -323,7 +360,7 @@ BOOL CIWBSensor::Run()
     //测试发现，不延迟500ms，则SwitchLensMode函数中设置相机参数虽然返回TRUE但实际并未起作用。
     //延时500ms
     Sleep(500);
-    //end>>
+    //end>
 
 
     //来回推拉IRCut一次确保IRCut正常工作
@@ -339,6 +376,7 @@ BOOL CIWBSensor::Run()
     IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), FALSE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
     //等待300ms
+	//1280*720sleep(300)的时候会出现设置参数卡死的情况出现
     Sleep(300);
 
     //合上滤光片 
@@ -421,6 +459,9 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
         //停止"动态屏蔽"操作
         m_oPenPosDetector.EnableDynamicMasking(FALSE);
 
+		//停止“抗干扰”操作
+		m_oPenPosDetector.EnableAntiJamming(FALSE);
+
         //不显示光斑外接矩形
         m_oPenPosDetector.ShowSpotRect(FALSE);
 
@@ -433,9 +474,20 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
         break;
 
     case E_LASER_TUNING_MODE:
-
         //载入激光调试时的相机参数
-        m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings.cameraParams);
+		switch (GetActualTouchType())
+		{
+		   case E_DEVICE_FINGER_TOUCH_CONTROL:
+			   m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_FingerTouchControl.cameraParams);
+			    break;
+		  case E_DEVICE_PALM_TOUCH_CONTROL:
+			   m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_PalmTouchControl.cameraParams);
+			   break;
+		  default:
+              m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_WhiteBoard.cameraParams);
+			  break;
+		}
+
 
 		m_oVideoPlayer.ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
         //使能光笔
@@ -451,6 +503,8 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
         //停止动态屏蔽操作
         m_oPenPosDetector.EnableDynamicMasking(FALSE);
 
+		//停止“抗干扰”操作
+		m_oPenPosDetector.EnableAntiJamming(FALSE);
 
         //显示光斑外接矩形
         m_oPenPosDetector.ShowSpotRect(TRUE);
@@ -470,14 +524,34 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
 		EDeviceTouchType eTouchType;
 		eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
 
-        if(eTouchType == E_DEVICE_PEN_TOUCH)
-        {
-            m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouch.cameraParams);
-        }
-        else
-        {
-            m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouch.cameraParams);
-        }
+		switch (eTouchType)
+		{
+		   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+
+			   m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams);
+			   break;
+		   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+
+			   m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams);
+			   break;
+		   case E_DEVICE_FINGER_TOUCH_CONTROL:
+
+			   m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchControl.cameraParams);
+			   break;
+		   case E_DEVICE_PALM_TOUCH_CONTROL:
+			   m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PalmTouchControl.cameraParams);
+			   break;
+		   default:
+			   break;
+		}
+//      if(eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//      {
+//          m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams);
+//      }
+//      else
+//      {
+//          m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams);
+//      }
 
 		m_oVideoPlayer.ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
 
@@ -491,9 +565,18 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
         //开启"静态屏蔽"操作
         m_oPenPosDetector.EnableStaticMasking(TRUE);
 
-        //停止动态屏蔽操作
-        m_oPenPosDetector.EnableDynamicMasking(TRUE);
-
+		///如果是正常模式的话那么就根据设置来判断是否需要开启动态屏蔽
+		/////////MODIFY BY  VERA_ZHAO 2019.10.24
+		if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
+		{
+			//开启动态屏蔽操作
+			m_oPenPosDetector.EnableDynamicMasking(TRUE);
+		}
+		else
+		{
+            //停止动态屏蔽操作
+            m_oPenPosDetector.EnableDynamicMasking(FALSE);
+		}
 
         //显示光斑外接矩形
         m_oPenPosDetector.ShowSpotRect(TRUE);
@@ -581,31 +664,72 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
-    this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateExpectedBrightness);
+    this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
 
     const NormalUsageSettings* pNormalUsageSettings = NULL;
     //全局配置信息
     if(pGlobalSettings)
     {
-        if(theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH)
-        {  //加密狗为笔触模式, 强制工作模式为笔触模式
-            m_oPenPosDetector.SetTouchType(E_DEVICE_PEN_TOUCH);
-            pNormalUsageSettings  = &lensCfg.normalUsageSettings_PenTouch;
-        }
-        else
-        {//加密狗为手触模式, 选用用户选择的触控模式
-            m_oPenPosDetector.SetTouchType(TSensorModeConfig->advanceSettings.m_eTouchType);
+		switch (theApp.GetUSBKeyTouchType())
+		{
+		   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 
-            if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH)
-            {
-                pNormalUsageSettings = &lensCfg.normalUsageSettings_PenTouch;
-            }
-            else
-            {
-                pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouch; 
-            }
+			   //加密狗为笔触模式, 强制工作模式为笔触模式
+			   m_oPenPosDetector.SetTouchType(E_DEVICE_PEN_TOUCH_WHITEBOARD);
+			   pNormalUsageSettings = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
 
-        }
+			    break;
+		   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+
+			   //加密狗为手触模式, 选用用户选择的触控模式
+			   m_oPenPosDetector.SetTouchType(TSensorModeConfig->advanceSettings.m_eTouchType);
+
+			   if (TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+			   {
+				   pNormalUsageSettings = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
+			   }
+			   else
+			   {
+				   pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouchWhiteBoard;
+			   }
+			   break;
+		   case E_DEVICE_FINGER_TOUCH_CONTROL:
+
+			   //加密狗为手指触控模式, 强制工作模式为手指触控模式
+			   m_oPenPosDetector.SetTouchType(E_DEVICE_FINGER_TOUCH_CONTROL);
+			   pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouchControl;
+
+			    break;
+		   case E_DEVICE_PALM_TOUCH_CONTROL:
+
+			   //加密狗为手掌互动模式, 强制工作模式为手掌互动模式
+			   m_oPenPosDetector.SetTouchType(E_DEVICE_PALM_TOUCH_CONTROL);
+			   pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouchControl;
+			    break;
+		   default:
+			   break;
+
+		}
+
+//        if(theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//        {  //加密狗为笔触模式, 强制工作模式为笔触模式
+//            m_oPenPosDetector.SetTouchType(E_DEVICE_PEN_TOUCH_WHITEBOARD);
+//            pNormalUsageSettings  = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
+//        }
+//        else
+//        {//加密狗为手触模式, 选用用户选择的触控模式
+//            m_oPenPosDetector.SetTouchType(TSensorModeConfig->advanceSettings.m_eTouchType);
+//
+//            if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//            {
+//                pNormalUsageSettings = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
+//            }
+//            else
+//            {
+//                pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouchWhiteBoard;
+//            }
+//
+//        }
 
         //设置光斑检测门限
         m_oPenPosDetector.SetYThreshold(pNormalUsageSettings->cYThreshold);
@@ -674,7 +798,19 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
         break;
 
     case E_LASER_TUNING_MODE:
-        m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings.cameraParams);
+
+		switch (GetActualTouchType())
+		{
+		case E_DEVICE_FINGER_TOUCH_CONTROL:
+			m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_FingerTouchControl.cameraParams);
+			break;
+		case E_DEVICE_PALM_TOUCH_CONTROL:
+			m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_PalmTouchControl.cameraParams);
+			break;
+		default:
+			m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_WhiteBoard.cameraParams);
+			break;
+		}
         break;
 
     case E_NORMAL_USAGE_MODE:
@@ -735,7 +871,8 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
     //设置自动校正时的参数
-    m_oVideoPlayer.SetCameraParams(lensCfg.autoCalibrateSettings.cameraParams);
+	//刚开始摄像头参数是第一个参数
+    m_oVideoPlayer.SetCameraParams(lensCfg.autoCalibrateSettingsList[0].cameraParams);
 
 
     //<<added by xuke, 2016/11/12
@@ -754,12 +891,14 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     //停止"动态屏蔽"操作
     m_oPenPosDetector.EnableDynamicMasking(FALSE);
 
+	//停止“抗干扰”操作
+	m_oPenPosDetector.EnableAntiJamming(FALSE);
+
     //不显示光斑外接矩形
     m_oPenPosDetector.ShowSpotRect(FALSE);
 
     //不显示光斑尺寸信息
     m_oPenPosDetector.ShowSpotSizeInfo(FALSE);
-
 
 
     TAutoCalibrateParams autoCalibrateParams;
@@ -774,16 +913,27 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     //高亮块对应的灰度值
     //BYTE  cHilightGray = m_tCfgData.autoCalibrateSettings.autoCalibrateHilightGray;
     //autoCalibrateParams.clrGridHighlight       = RGB(cHilightGray,cHilightGray,cHilightGray);
-    autoCalibrateParams.imageParamsList        = lensCfg.autoCalibrateSettings.calibrateImageParamsList;
+	///delete by vera_zhao
+//    autoCalibrateParams.imageParamsList        = lensCfg.autoCalibrateSettings.calibrateImageParamsList;
+
     autoCalibrateParams.bSaveInermediatFile    = g_tSysCfgData.globalSettings.bSaveIntermediateFile;
-    autoCalibrateParams.bRecordVideo           = g_tSysCfgData.globalSettings.bRecordVideo;//m_tCfgData.advanceSettings.bRecordVideo;
-	
+    autoCalibrateParams.bRecordVideo           = g_tSysCfgData.globalSettings.bRecordVideo;
+
+	autoCalibrateParams.autocalibrateparamslist.clear();
+	int nCount = lensCfg.autoCalibrateSettingsList.size();
+	for (int i = 0 ; i < nCount; i++ )
+	{
+		AutoCalibrateParams  params;
+		params.autoCalibrateImageParams  = lensCfg.autoCalibrateSettingsList[i].calibrateImageParams;
+		params.videoprocampproperty = lensCfg.autoCalibrateSettingsList[i].cameraParams;
+
+		autoCalibrateParams.autocalibrateparamslist.push_back(params);
+	}
+
+	//m_tCfgData.advanceSettings.bRecordVideo;
     //autoCalibrateParams.monitors.resize(m_tCfgData.attachedMonitorIds.size());
 
     //m_oDispMonitorFinder.SearchDisplayDev();
-
-
-
     //for(size_t i =0; i < m_tCfgData.attachedMonitorIds.size(); i++)
     //{
     //      unsigned int uMonitorID = m_tCfgData.attachedMonitorIds[i];
@@ -840,9 +990,7 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     staticMaskingParams.cStaticMaskThreshold   = lensCfg.autoMaskSettings.cAutoMaskDetectThreshold;
     staticMaskingParams.nMaskEroseSize         = lensCfg.autoMaskSettings.nMaskAreaEroseSize;
 
-
     m_oAutoCalibrator.StartCalibrating(autoCalibrateParams, staticMaskingParams);
-
 
     m_oPenPosDetector.EnterCalibrateMode(m_oAutoCalibrator.GetCalibrateHWnd(), CALIBRATE_MODE_AUTO);
 
@@ -876,11 +1024,9 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
-
     //设置自动校正时的参数
     //m_oVideoPlayer.SetCameraParams(lensCfg.autoCalibrateSettings.cameraParams);
     //>>
-
 
     //合上滤光片
     IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), TRUE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
@@ -895,6 +1041,9 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 
     //停止"动态屏蔽"操作
     m_oPenPosDetector.EnableDynamicMasking(FALSE);
+
+	//停止“抗干扰”操作
+	m_oPenPosDetector.EnableAntiJamming(FALSE);
 
     //不显示光斑外接矩形
     m_oPenPosDetector.ShowSpotRect(FALSE);
@@ -914,12 +1063,25 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
     //高亮块对应的灰度值
     //BYTE  cHilightGray = m_tCfgData.autoCalibrateSettings.autoCalibrateHilightGray;
     //autoCalibrateParams.clrGridHighlight       = RGB(cHilightGray,cHilightGray,cHilightGray);
-    autoMaskingParams.imageParamsList        = lensCfg.autoCalibrateSettings.calibrateImageParamsList;
+  //  autoMaskingParams.imageParamsList        = lensCfg.autoCalibrateSettings.calibrateImageParamsList;
+
+    //delete by vera_zhao
+//	autoMaskingParams.imageParamsList = calibrateImageParamsList;
+
 	autoMaskingParams.bSaveInermediatFile = g_tSysCfgData.globalSettings.bSaveIntermediateFile;
 	autoMaskingParams.bRecordVideo = g_tSysCfgData.globalSettings.bRecordVideo;//m_tCfgData.advanceSettings.bRecordVideo;
 
 
     autoMaskingParams.bDoStaticMaskingOnly   = TRUE;//仅作静态屏蔽
+
+	int nCount = lensCfg.autoCalibrateSettingsList.size();
+	for (int i = 0; i < nCount; i++)
+	{
+		AutoCalibrateParams params;
+		params.autoCalibrateImageParams = lensCfg.autoCalibrateSettingsList[i].calibrateImageParams;
+		params.videoprocampproperty = lensCfg.autoCalibrateSettingsList[i].cameraParams;
+		autoMaskingParams.autocalibrateparamslist.push_back(params);
+	}
 
     //搜索系统屏幕个数
     //theApp.GetMonitorFinder().SearchDisplayDev();
@@ -1094,7 +1256,9 @@ void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsI
 	//add by vera_zhao 2018.11.30
 	int ImageWidth  = this->m_oPenPosDetector.GetSrcImageWidth();
 	int ImageHeight = this->m_oPenPosDetector.GetSrcImageHeight();
+
     this->m_oManualCalibrator.StartCalibrate(parameters, ImageWidth, ImageHeight);
+
     m_oPenPosDetector.EnterCalibrateMode(this->m_oManualCalibrator, CALIBRATE_MODE_MANUAL);
 
 
@@ -1436,8 +1600,8 @@ void _stdcall CIWBSensor::OnManualSampleDoneCallBackProc(LPVOID lpCtx, BOOL bSuc
 
     }
 
-
     lpSensor->GetPenPosDetector()->LeaveManualResample();
+
 }
 
 
@@ -1485,9 +1649,6 @@ BOOL CIWBSensor::CalibrateSymbolManualResample()
     m_oPenPosDetector.EnterManualResample(m_oCalibSymbolManualSampler.GetHwnd());
 
     return TRUE;
-
-
-    return FALSE;
 }
 
 
@@ -1506,9 +1667,7 @@ BOOL CIWBSensor::IsCalibrated()const
                 return TRUE;
 
         }
-
     }
-
     return FALSE;
 }
 
@@ -1556,7 +1715,6 @@ BOOL CIWBSensor::GetAttachedScreenArea(RECT& rcMonitor)const
 					{
 						return FALSE;
 					}
-
 				}
 				else//多个屏幕
 				{
@@ -1624,4 +1782,34 @@ void CIWBSensor::SetlenCfgData(const TLensConfig& lencfgData)
 
 	TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 	lensCfg = lencfgData;
+}
+
+//@功能：把设置插值的值保存下来
+void CIWBSensor::SetStrokeInterpolate(bool bEnableStrokeInterpolate)
+{
+	TSensorModeConfig* TSensorModeConfig = NULL;
+	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+	{
+		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+	}
+	else {
+		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+	}
+
+	TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = bEnableStrokeInterpolate;
+}
+
+//@功能：把设置的勾勒外部屏幕区域的值保存下来
+void CIWBSensor::SetOnlineScreenArea(bool bEnableOnlineScreenArea)
+{
+	TSensorModeConfig* TSensorModeConfig = NULL;
+	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+	{
+		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+	}
+	else {
+		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+	}
+
+	TSensorModeConfig->advanceSettings.bIsOnLineScreenArea = bEnableOnlineScreenArea;
 }

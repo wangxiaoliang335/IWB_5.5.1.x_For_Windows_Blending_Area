@@ -49,6 +49,7 @@ public:
 
     
     EDeviceTouchType  GetUSBKeyTouchType() const;
+	EPalmTouchControlType GetPalmTouchType()const;
 
 
     //int GetDoubleScreenMerge() const
@@ -112,8 +113,9 @@ protected:
     BOOL   m_bAutoRunMode;
     BOOL   m_bForAllUser ;//所有用户标志
 
-    //int    m_nUSBKeyTouchType;//1:为手指触控   //0:为3DTouch
+    //int    m_nUSBKeyTouchType;////0:为3DTouch电子白板,1:为手指触控电子白板，2:为高清手指触控，3:为手掌互动  
     EDeviceTouchType m_eUSBKeyTouchType;//
+	EPalmTouchControlType   m_ePalmTouchControlType;
 
     
     EScreenType    m_eScreenType; //0:为单屏，1：为双屏
@@ -124,7 +126,6 @@ protected:
     CDispDevFinder m_oDispMonitorFinder;
 
 	CUsbCameraDeviceList   m_oUSBCameraList;//视频设备列表
-
 
     //static const int m_nStartDelayTime = 5000;//10000ms,最大启动延迟时间
 

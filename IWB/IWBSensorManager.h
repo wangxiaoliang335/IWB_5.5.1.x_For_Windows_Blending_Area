@@ -140,9 +140,6 @@ public:
 
 
 
-
-
-
     //@功能:判断校正是否成功
     BOOL IsCalibarateOk();
 

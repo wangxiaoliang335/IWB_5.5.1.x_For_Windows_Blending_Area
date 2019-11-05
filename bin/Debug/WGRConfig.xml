@@ -1,11 +1,11 @@
 <WGRSetting>
     <PERSetting>
         <Exceptions count="0" />
-        <General permission="463219" />
+        <General permission="0" />
     </PERSetting>
     <LOGSETTING logPermission="0" />
     <MULTIPLESETTING value="5" />
     <WEIGHTCONF k0="1" k1="3" />
-    <GLBGRPERMIT value="1" />
+    <GLBGRPERMIT value="0" />
     <ERASERMULTIPLE value="4" />
 </WGRSetting>
