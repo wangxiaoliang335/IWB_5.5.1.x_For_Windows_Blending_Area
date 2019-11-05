@@ -218,10 +218,7 @@ BOOL CScreenLayoutDesigner::InitWindow()
 
     ::ReleaseDC(GetDesktopWindow(), hDCScreen);
 
-
-
     return TRUE;
-
 }
 
 
@@ -260,6 +257,12 @@ void CScreenLayoutDesigner::Uninit()
         ::DeleteObject(m_hFontButton);
         m_hFontButton = NULL;
     }
+
+    m_vecScreenRelativeLayouts.clear();
+    m_vceScreenAbsLayouts.clear();
+    m_vecMergeAreasRelative.clear();
+    m_vecMergeAreasAbs.clear();
+    m_vecActiveAreas.clear();
 }
 
 //@功能:初始化活动区数组
@@ -965,35 +968,44 @@ void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& splitterAre
     LONG nLeftMargin = nSplitterPos - currentMergeArea.left;
     LONG nRightMargin = currentMergeArea.right - nSplitterPos;
 
-    if (0 == uSplitterIndex)
+    if (m_vecMergeAreasAbs.size() > 1)
     {
-        const RECT& rightSideMergeArea = m_vecMergeAreasAbs[1];
-                
-        rcClipCursorNew.left   = 0 + nLeftMargin + 1;
-        rcClipCursorNew.right  = rightSideMergeArea.left - nRightMargin;
-        rcClipCursorNew.top    = splitterArea.rcBound.top;
-        rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
-    }
-    else if (m_vecMergeAreasAbs.size() - 1 == uSplitterIndex)
-    {
-        const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+        if (0 == uSplitterIndex)
+        {
+            const RECT& rightSideMergeArea = m_vecMergeAreasAbs[1];
 
-        rcClipCursorNew.left   = leftSideMergeArea.right + nLeftMargin + 1;
-        rcClipCursorNew.right  = m_DisplaySize.cx - nRightMargin;
-        rcClipCursorNew.top    = splitterArea.rcBound.top;
-        rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+            rcClipCursorNew.left = 0 + nLeftMargin + 1;
+            rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
+            rcClipCursorNew.top = splitterArea.rcBound.top;
+            rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+        }
+        else if (m_vecMergeAreasAbs.size() - 1 == uSplitterIndex)
+        {
+            const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+            rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
+            rcClipCursorNew.right = m_DisplaySize.cx - nRightMargin;
+            rcClipCursorNew.top = splitterArea.rcBound.top;
+            rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+        }
+        else
+        {
+            const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+            const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
+
+            rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
+            rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
+            rcClipCursorNew.top = splitterArea.rcBound.top;
+            rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+
+        }
     }
     else
     {
-        const RECT& leftSideMergeArea = m_vecMergeAreasAbs [uSplitterIndex - 1];
-        const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
-
-        rcClipCursorNew.left   = leftSideMergeArea.right + nLeftMargin + 1;
-        rcClipCursorNew.right  = rightSideMergeArea.left - nRightMargin;
-        rcClipCursorNew.top    = splitterArea.rcBound.top;
-        rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
-
-
+        rcClipCursorNew.left   = nLeftMargin + 1;
+        rcClipCursorNew.right  = m_DisplaySize.cx - nRightMargin;
+        rcClipCursorNew.top    = 0;
+        rcClipCursorNew.bottom = m_DisplaySize.cy;
     }
 
     ClipCursor(&rcClipCursorNew);

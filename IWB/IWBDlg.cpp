@@ -541,8 +541,9 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, &CIWBDlg::OnInstallationanddebuggingTouchpad)
 
     ON_COMMAND(ID_SWAP_SENSOR_IMAGE, &CIWBDlg::OnSwapSensorImage)
-    ON_COMMAND_RANGE(ID_SWAP_WITH_SENSOR, ID_SWAP_WITH_SENSOR + (int)EScreenModeNumber, &CIWBDlg::OnSwapImageWithSensor)
-        
+    ON_COMMAND_RANGE(ID_SWAP_WITH_SENSOR0, ID_SWAP_WITH_SENSOR0 + (int)EScreenModeNumber, &CIWBDlg::OnSwapImageWithSensor)
+
+    ON_COMMAND_RANGE(ID_SWTICH_SCREENMODE_ONE, ID_SWTICH_SCREENMODE_ONE + (int)EScreenModeNumber, &CIWBDlg::OnSwitchToFusionScreenMode)
 
     ON_COMMAND_RANGE(ID_TOUCHSCREENASPECTRATIO_AUTO, ID_TOUCHSCREENASPECTRATIO_4_3, &CIWBDlg::OnChangeTouchScreenAspectRatio)
 
@@ -561,9 +562,15 @@ END_MESSAGE_MAP()
 
 void CIWBDlg::InitMenu()
 {
+    m_oMenu.DestroyMenu();
+
+    m_oMenu.LoadMenu(IDR_MENU_MAIN);
+
+    InsertParamSettingMenuItem(&m_oMenu, 3);
+
     if(NULL == m_oMenu.GetSafeHmenu()) return;
 
-    if (theApp.GetScreenMode() >= EScreenModeDouble)
+    if (theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble)
     {
         CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
 
@@ -584,7 +591,45 @@ void CIWBDlg::InitMenu()
         mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING482]);
         mnuiteminfo.wID = ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER;
         pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+        //添加屏幕融合模式子菜单
+        m_oSubMenuMergMode.DestroyMenu();
+        m_oSubMenuMergMode.CreatePopupMenu();
+
+
+        mnuiteminfo.fMask = MIIM_SUBMENU | MIIM_ID | MIIM_STRING;
+        mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING483]);
+        mnuiteminfo.hSubMenu = m_oSubMenuMergMode.GetSafeHmenu();
+        mnuiteminfo.wID = ID_SWTICH_SCREENMODE;
+        pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+        for (EScreenMode eScreenMode = EScreenModeSingle; eScreenMode <= theApp.GetScreenModeFromUSBKey(); eScreenMode = EScreenMode(eScreenMode + 1))
+        {
+            CString strText = const_cast<LPTSTR>(g_oResStr[IDS_STRING484 + eScreenMode]);
+
+            mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
+            mnuiteminfo.fType = MFT_STRING;
+            mnuiteminfo.dwTypeData = const_cast<LPTSTR>(strText.GetString());
+            mnuiteminfo.wID = ID_SWTICH_SCREENMODE_ONE + (int)eScreenMode;
+            m_oSubMenuMergMode.InsertMenuItem(m_oSubMenuMergMode.GetMenuItemCount(), &mnuiteminfo, TRUE);
+        }//for
+
     }
+
+    this->SetMenu(&m_oMenu);
+
+    m_oOwnerDrawMenu.Attach(m_oMenu.GetSafeHmenu());
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_1X, (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_1X], RGB(1, 0, 0));
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_1D5X, (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_1D5X], RGB(1, 0, 0));
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_2X, (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_2X], RGB(1, 0, 0));
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_3X, (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_4X], RGB(1, 0, 0));
+
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_1X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_1X], RGB(1, 0, 0));
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_1D5X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_1D5X], RGB(1, 0, 0));
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_2X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_2X], RGB(1, 0, 0));
+    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_3X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_3X], RGB(1, 0, 0));
+
+    
 
 }
 
@@ -683,9 +728,9 @@ BOOL CIWBDlg::OnInitDialog()
     m_aryMenuBmp[e_BMP_ERASE_3X ].LoadBitmap(IDB_BITMAP_ERASER_4X);
 
 
-    m_oMenu.LoadMenu(IDR_MENU_MAIN);
-    InsertParamSettingMenuItem(&m_oMenu, 3);
+
     InitMenu();
+    /*
     this->SetMenu(&m_oMenu);
 
     m_oOwnerDrawMenu.Attach(m_oMenu.GetSafeHmenu());
@@ -698,6 +743,7 @@ BOOL CIWBDlg::OnInitDialog()
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_1D5X , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_1D5X], RGB(1,0,0));
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_2X   , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_2X ] , RGB(1,0,0));
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_3X   , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_3X ] , RGB(1,0,0));
+    */
 
     CreateOwnerCursor();
 
@@ -2019,7 +2065,8 @@ BOOL CIWBDlg::LoadConfig(int PID,int VID)
 	{
        ::g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType = GetActualTouchType();
 	}
-	else {
+	else
+    {
 		::g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType = GetActualTouchType();
 	}
 
@@ -2883,7 +2930,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //AtlTrace(_T("OnInitMenuPopup, MF_CHECKED\r\n"));
     }
 
-	if (g_tSysCfgData.globalSettings.eCameraType == E_CAMERA_MODEL_3)
+	if (g_tSysCfgData.globalSettings.eCameraType == E_CAMERA_MODEL_2)
 	{
 		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
 	}
@@ -2997,7 +3044,30 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
     {
         BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
         m_oMenu.CheckMenuItem(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, MF_BYCOMMAND | bIsVisible?MF_CHECKED: MF_UNCHECKED);
+
+
+
+
     }
+
+    if (theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble)
+    {
+        for (EScreenMode eScreenMode = EScreenModeSingle; eScreenMode <= theApp.GetScreenModeFromUSBKey(); eScreenMode = EScreenMode(eScreenMode + 1))
+        {
+            UINT uMenuID = ID_SWTICH_SCREENMODE_ONE + (UINT)eScreenMode;
+
+            if (eScreenMode == theApp.GetScreenMode())
+            {//勾选当前的屏接模式
+                m_oMenu.CheckMenuItem(uMenuID, MF_BYCOMMAND | MF_CHECKED );
+            }
+            else
+            {
+                m_oMenu.CheckMenuItem(uMenuID, MF_BYCOMMAND | MF_UNCHECKED);
+            }
+        }
+
+    }
+
 
 }
 
@@ -3200,7 +3270,7 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                     mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
                     mnuiteminfo.fType = MFT_STRING;
                     mnuiteminfo.dwTypeData = const_cast<LPTSTR>(strID.GetString());
-                    mnuiteminfo.wID = ID_SWAP_WITH_SENSOR + id;
+                    mnuiteminfo.wID = ID_SWAP_WITH_SENSOR0 + id;
                     menuSwapTargets.InsertMenuItem(menuSwapTargets.GetMenuItemCount(), &mnuiteminfo, TRUE);
                 }
 
@@ -5041,7 +5111,7 @@ void CIWBDlg::OnSwapImageWithSensor(UINT uID)
     CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(ptCursor);
     if (pSensor == NULL) return;
 
-    UINT uSensorID = uID - ID_SWAP_WITH_SENSOR;
+    UINT uSensorID = uID - ID_SWAP_WITH_SENSOR0;
     if (uSensorID < 0 || uSensorID >= m_oIWBSensorManager.GetSensorCount()) return;
 
     UINT uCurrentSensorID = pSensor->GetID();
@@ -5262,19 +5332,7 @@ void CIWBDlg::OnMenuTouchScreenLayoutDesigner()
     
     BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
     this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(!bIsVisible);
-
-    //UINT state = pInstallMenu->GetMenuState(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, MF_BYCOMMAND);
-    //ASSERT(state != 0xFFFFFFFF);
-
-    //if (state & MF_CHECKED)
-    //{//触屏布局编辑器可见，则隐藏之
-    //    
-    //}
-    //else
-    //{
-
-    //}
-
+    
 }
 
 
@@ -5283,8 +5341,6 @@ HRESULT CIWBDlg::OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam)
 {
     UINT uID = UINT(lParam);
     
-
-
     if (uID == BUTTON_ID_OK)
     {//
         //隐藏屏幕布局编辑工具
@@ -5321,6 +5377,62 @@ HRESULT CIWBDlg::OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam)
     }
 
 
+
+    
     return 0L;
+
+}
+
+
+
+void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
+{
+    EScreenMode eScreenMode = EScreenMode(uID - ID_SWTICH_SCREENMODE_ONE);
+    int nSensorCount = int(eScreenMode) + 1;
+
+    g_tSysCfgData.globalSettings.eScreenMode = eScreenMode;
+
+    //反初始化
+    m_oIWBSensorManager.Uninit();
+
+
+    //初始化
+    //m_oIWBSensorManager.Init(theApp.GetScreenType() == EDoubleScreenMode?2:1);
+    //根据注册的信息决定
+    m_oIWBSensorManager.Init(nSensorCount);
+
+    //载入配置信息
+    //LoadConfig();
+
+    //const TCaptureDeviceInstance*  pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance((UINT)0);
+    //if (pDevInst)
+    //{
+    //    //再根据设备的实际PID、VID加载一遍，保证摄像头的数据正确
+    //    ::UpDateConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, pDevInst->m_nPID, pDevInst->m_nVID);
+
+    //}
+
+    //将配置数据设置到传感器中去
+    this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
+
+
+    m_oUSBCameraDeviceList.UpdateDeviceList();
+
+    //CIWBSensor对象分配摄像头设备路径
+    m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
+
+
+    //通知各个模块更改屏幕物理尺寸和屏幕分辨率
+    OnDisplayChangeHelper(::GetActualScreenControlSize());
+
+
+    CRect rcDisplayArea;
+    GetClientRect(&rcDisplayArea);
+    InvalidateRect(&rcDisplayArea, TRUE);
+    UpdateWindow();
+
+
+    StartRunning();
+
 
 }

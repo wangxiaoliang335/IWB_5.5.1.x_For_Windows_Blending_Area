@@ -13,8 +13,11 @@ public:
     CScreenLayoutDesigner ();
     ~CScreenLayoutDesigner();
 
+    //@功能:布局初始化
     void Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight);
 
+    //@功能:反初始化
+    void Uninit();
 
     //@功  能:返回按照相对尺寸划分的屏幕区域数组。
     //@参  数:pCount, 存放区域个数的内存指针
@@ -71,7 +74,6 @@ public:
     void Reset();
 protected:
     BOOL InitWindow();
-    void Uninit();
 
 
     LRESULT  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

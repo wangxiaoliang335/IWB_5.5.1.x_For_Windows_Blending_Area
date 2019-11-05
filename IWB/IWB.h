@@ -53,16 +53,10 @@ public:
     //  return m_nDoubleScreenType ;
     //}
 
-    EScreenMode GetScreenMode()const
-    {
-        return this->m_eScreenMode;
-        //return EDoubleScreenMode;
-    }
+    EScreenMode GetScreenMode()const;
+    EScreenMode GetScreenModeFromUSBKey()const;
 
-    int GetScreenCount() const
-    {
-        return int(this->m_eScreenMode) + 1;
-    }
+    int GetScreenCount() const;
 
 
     BOOL IsHardwareKeyExist()const
@@ -123,7 +117,9 @@ protected:
     
     //EScreenType    m_eScreenType; //0:为单屏，1：为双屏
 
-    EScreenMode    m_eScreenMode;//屏幕模式
+
+    EScreenMode    m_eScreenModeFromUsbKey;//从机密狗注册信息中得到的屏幕模式
+    
     
     BOOL           m_bFoundHardwareUSBKey;//发现硬件USB Key标志
     BOOL           m_bIsOnlineRegistered;//是否在线注册了。

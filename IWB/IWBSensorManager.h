@@ -19,6 +19,9 @@ public:
     //@参数: nSensorCount, CMOS传感器个数
     void Init(int nSensorCount);
 
+    //@功能:反初始化
+    void Uninit();
+
 
     //@功能:给IWBSensor对象分派摄像
     //@参数:Camera设备列表

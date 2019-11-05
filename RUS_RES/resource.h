@@ -36,7 +36,6 @@
 #define IDD_DIALOG_UPDATE_FIRMWARE      159
 #define IDD_CAMERA_FMT_DIALOG           161
 #define IDC_CURSOR_SPLIT_HORZ           164
-#define IDC_CURSOR2                     165
 #define IDC_CURSOR_HAND                 165
 #define IDS_ABOUTBOX                    400
 #define IDS_STRING102                   401
@@ -121,6 +120,18 @@
 #define IDS_STRING480                   480
 #define IDS_STRING481                   481
 #define IDS_STRING482                   482
+#define IDS_STRING483                   483
+#define IDS_STRING484                   484
+#define IDS_STRING485                   485
+#define IDS_STRING486                   486
+#define IDS_STRING487                   487
+#define IDS_STRING488                   488
+#define IDS_STRING489                   489
+#define IDS_STRING490                   490
+#define IDS_STRING491                   491
+#define IDS_STRING492                   492
+#define IDS_STRING493                   493
+
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000
@@ -392,7 +403,25 @@
 #define ID_MENU_VIDEOFORMAT             32897
 #define ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER 32900
 #define ID_SWAP_SENSOR_IMAGE            33000
-#define ID_SWAP_WITH_SENSOR             33001
+#define ID_SWAP_WITH_SENSOR0             33000
+#define ID_SWAP_WITH_SENSOR1             33001
+#define ID_SWAP_WITH_SENSOR2             33002
+#define ID_SWAP_WITH_SENSOR3             33003
+#define ID_SWAP_WITH_SENSOR4             33004
+#define ID_SWAP_WITH_SENSOR5             33005
+#define ID_SWAP_WITH_SENSOR6             33006
+#define ID_SWAP_WITH_SENSOR7             33007
+#define ID_SWAP_WITH_SENSOR8             33008
+#define ID_SWAP_WITH_SENSOR9             33008
+#define ID_SWTICH_SCREENMODE             33020
+#define ID_SWTICH_SCREENMODE_ONE         33021
+#define ID_SWTICH_SCREENMODE_TWO         33022
+#define ID_SWTICH_SCREENMODE_THREE       33023
+#define ID_SWTICH_SCREENMODE_FOUR        33024
+#define ID_SWTICH_SCREENMODE_FIVE        33025
+#define ID_SWTICH_SCREENMODE_SIX         33026
+
+
 
 // Next default values for new objects
 // 

@@ -22,12 +22,7 @@ m_nCurrentSensorID(-1)
 
 CIWBSensorManager::~CIWBSensorManager()
 {
-    for(size_t i=0; i<m_vecSensors.size(); i++)
-    {
-        delete m_vecSensors[i];
-        m_vecSensors[i] = NULL;
-
-    }
+    Uninit();
     delete m_pSpotListProcessor;
 }
 
@@ -67,6 +62,19 @@ void CIWBSensorManager::Init(int nSensorCount)
 
 }
 
+
+//@功能:反初始化
+void CIWBSensorManager::Uninit()
+{
+    for (size_t i = 0; i<m_vecSensors.size(); i++)
+    {
+        delete m_vecSensors[i];
+        m_vecSensors[i] = NULL;
+    }
+
+    m_vecSensors.clear();
+    m_oScreenLayoutDesigner.Uninit();
+}
 
 
 //@功能:给IWBSensor对象分派摄像头

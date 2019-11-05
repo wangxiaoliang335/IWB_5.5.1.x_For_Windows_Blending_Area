@@ -634,15 +634,25 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
 			{
 				globalSettings.nMaxTimeInSearchDevice = atoi(paramValue);
 			}
+            else if (paramName && paramValue && _stricmp(paramName, "ScreenCount") == 0)
+            {
+                int nScreenCount = atoi(paramValue);
+
+                globalSettings.eScreenMode = EScreenModeUnknown;
+
+                if ( 0 <  nScreenCount && nScreenCount <= EScreenModeNumber)
+                {
+                    globalSettings.eScreenMode = (EScreenMode)(nScreenCount + 1);
+                }
+            }
+
         }//if
         else if(_stricmp(lpszElementName, "CMOS_CHIP") == 0)
         {
             LoadConfig(pChild, globalSettings.CMOSChipSpecification);
         }
+       
     }while(pChild);
-
-
-
 
 
     return TRUE;
@@ -815,8 +825,22 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     //保存CMOS芯片
     SaveConfig(pElement, globalSettings.CMOSChipSpecification);
 
+    //屏接的屏幕数目
+    pXmlComment = new TiXmlComment("屏接的屏幕数目");
+    pNode->LinkEndChild(pXmlComment);
 
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ScreenCount");
 
+    if (EScreenModeUnknown == globalSettings.eScreenMode)
+    {
+        pElement->SetAttribute("value", -1);
+    }
+    else
+    {
+        pElement->SetAttribute("value", int(globalSettings.eScreenMode) + 1);
+    }
+    pNode->LinkEndChild(pElement);
 
     return TRUE;
 }
@@ -2668,7 +2692,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
  //               _stprintf_s(szPath, _countof(szPath), _T("%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 	//			break;
 
-	//		case  E_CAMERA_MODEL_3:
+	//		case  E_CAMERA_MODEL_2:
  //               _stprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 	//			break;
 	//		default:
@@ -2684,7 +2708,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 	//		 case  E_CAMERA_MODEL_1:
 	//			 sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 	//			 break;
-	//		case E_CAMERA_MODEL_3:
+	//		case E_CAMERA_MODEL_2:
 	//			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 	//			break;
 	//		default:
@@ -2757,7 +2781,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 		   case E_CAMERA_MODEL_1:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
-		   case E_CAMERA_MODEL_3:
+		   case E_CAMERA_MODEL_2:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
 		   default:
@@ -2774,7 +2798,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 			case E_CAMERA_MODEL_1:
 				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
-			case E_CAMERA_MODEL_3:
+			case E_CAMERA_MODEL_2:
 				sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
 			default:
@@ -3141,7 +3165,7 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,
 	}
 	else if (PID == 37424 && VID == 1443)
 	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_3;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
 	}
 	else {
 		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
@@ -3185,7 +3209,7 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,
 
     //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
     TCHAR szPath[MAX_PATH];
-    _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), PROFILE::SETTINGS_BASE_DIRECTORY, PROFILE::SCREEN_LAYOUT_FILE_NAME);
+    _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, (LPCTSTR)PROFILE::SCREEN_LAYOUT_FILE_NAME);
     LoadConfig(szPath, sysCfgData.vecScreenLayouts);
 
 
@@ -3227,13 +3251,11 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
 	pSettings->LinkEndChild(pIWBSensors);
 
 	SaveConfig(pIWBSensors, sysCfgData.vecSensorConfig);
-
-
-
+    
 
     //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
     TCHAR szPath[MAX_PATH];
-    _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), PROFILE::SETTINGS_BASE_DIRECTORY, PROFILE::SCREEN_LAYOUT_FILE_NAME);
+    _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, (LPCTSTR)PROFILE::SCREEN_LAYOUT_FILE_NAME);
     SaveConfig(szPath, sysCfgData.vecScreenLayouts);
 
 
@@ -3312,7 +3334,7 @@ BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSenso
 		   case E_CAMERA_MODEL_1:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			  break;
-		   case E_CAMERA_MODEL_3:
+		   case E_CAMERA_MODEL_2:
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			  break;
 		   default:
@@ -3329,7 +3351,7 @@ BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSenso
 		case E_CAMERA_MODEL_1:
 			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			break;
-		case E_CAMERA_MODEL_3:
+		case E_CAMERA_MODEL_2:
 			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 			break;
 		default:
@@ -3410,7 +3432,7 @@ BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PI
 	}
 	else if (PID == 37424 && VID == 1443)
 	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_3;
+		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
 	}
 	else {
 		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;

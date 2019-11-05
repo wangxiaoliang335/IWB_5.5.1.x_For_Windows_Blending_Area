@@ -79,7 +79,7 @@ CIWBApp::CIWBApp()
     m_bForAllUser(FALSE),
     m_eUSBKeyTouchType(E_DEVICE_PEN_TOUCH),
     //m_eScreenType(ESingleScreenMode),
-    m_eScreenMode(EScreenModeSingle),
+    m_eScreenModeFromUsbKey(EScreenModeSingle),
     m_bFoundHardwareUSBKey(FALSE),
     m_bIsOnlineRegistered(FALSE)
 {
@@ -421,14 +421,14 @@ BOOL CIWBApp::InitInstance()
     int nVScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
     int nVScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
-    LOG_INF("Screen Size = %d X %d, Virtual Screen Size = %d X %d, <Left,Top>=<%d,%d>,  Double Screen Merge Eabled:%s\n",
+    LOG_INF("Screen Size = %d X %d, Virtual Screen Size = %d X %d, <Left,Top>=<%d,%d>,  Multiple Screen Merge Eabled:%s\n",
         nCxScreen,
         nCyScreen,
         nCxVScreen,
         nCyVScreen,
         nVScreenLeft,
         nVScreenTop,
-        (EScreenModeDouble == m_eScreenMode) ? "Yes" : "No");
+        (m_eScreenModeFromUsbKey >= EScreenModeDouble)? "Yes" : "No");
 
     ParseCmdLine(this->m_lpCmdLine);
 
@@ -770,7 +770,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 {
 
     //屏幕模式缺省为单屏模式
-    m_eScreenMode      = EScreenModeSingle;
+    //m_eScreenMode      = EScreenModeSingle;
+    m_eScreenModeFromUsbKey = EScreenModeSingle;
 
     //手触/笔触模式
     m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH;
@@ -863,7 +864,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                 }//switch
                 
                  //选择最多的凭借模式
-                if (eScreenMode > m_eScreenMode) m_eScreenMode = eScreenMode;
+                if (eScreenMode > m_eScreenModeFromUsbKey) m_eScreenModeFromUsbKey = eScreenMode;
             }
 
             bFoundUSBKey = TRUE;//找到加密狗后继续循环查找，
@@ -915,9 +916,9 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                 {
                     if(EScreenModeSingle <= (EScreenMode)value && (EScreenMode)value <= EScreenModeHexa)
                     {
-                        if (m_eScreenMode < (EScreenMode)value)
+                        if (m_eScreenModeFromUsbKey < (EScreenMode)value)
                         {
-                            m_eScreenMode = (EScreenMode)value;
+                            m_eScreenModeFromUsbKey = (EScreenMode)value;
                         }
 
                     }
@@ -938,9 +939,9 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                         m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
 
                         //bDoubleScreenTouchMerge = onlineRegisterDlg.GetScreenType() == EDoubleScreenMode ? TRUE : FALSE;
-                        if (m_eScreenMode < onlineRegisterDlg.GetScreenMode())
+                        if (m_eScreenModeFromUsbKey < onlineRegisterDlg.GetScreenMode())
                         {
-                            m_eScreenMode = onlineRegisterDlg.GetScreenMode();
+                            m_eScreenModeFromUsbKey = onlineRegisterDlg.GetScreenMode();
                         }
 
                         break;
@@ -964,4 +965,29 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
     } while (!bFoundUSBKey);
 
     m_bFoundHardwareUSBKey = bFoundUSBKey;
+}
+
+
+EScreenMode CIWBApp::GetScreenMode()const
+{
+    EScreenMode eScreenMode = m_eScreenModeFromUsbKey;
+    
+    if (g_tSysCfgData.globalSettings.eScreenMode != EScreenModeUnknown && g_tSysCfgData.globalSettings.eScreenMode < m_eScreenModeFromUsbKey)
+    {
+        eScreenMode = g_tSysCfgData.globalSettings.eScreenMode;
+    }
+
+    return eScreenMode;
+}
+
+
+int CIWBApp::GetScreenCount() const
+{
+    return int(GetScreenMode()) + 1;
+}
+
+
+EScreenMode CIWBApp::GetScreenModeFromUSBKey()const
+{
+    return m_eScreenModeFromUsbKey;
 }

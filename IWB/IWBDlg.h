@@ -412,6 +412,7 @@ protected:
 	afx_msg void OnCtxmenuAutoCalibrate();
     afx_msg void OnSwapSensorImage();
     afx_msg void OnSwapImageWithSensor(UINT uID);
+    afx_msg void OnSwitchToFusionScreenMode(UINT uID);
 
 	afx_msg void OnChangeTouchScreenAspectRatio(UINT uID);
 
@@ -609,6 +610,7 @@ protected:
 	//CString                  m_strFavoriteFormatName       ;//优先选用的视频格式
 	CUsbCameraDeviceList     m_oUSBCameraDeviceList        ;//视频设备列表
 	CMenu                    m_oMenu                       ;
+    CMenu                    m_oSubMenuMergMode;
 	CMenu                    m_mnuManualScreenAreaSettings ;//2011/11/03,手动屏幕区域指定快捷菜单。
 	//CMenu                    m_mnuSensorCtx                ;//
 	CIWBSensor*              m_pSelectedSensor             ;//选中的图像传感器对象指针

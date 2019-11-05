@@ -9,10 +9,11 @@ enum EScreenMode
     EScreenModeSingle = 0,//单屏模式
     EScreenModeDouble = 1,//双屏模式
     EScreenModeTriple = 2,//三屏模式
-    EScreenModeQuad   = 3,//四屏模式
-    EScreenModeQuint =  4,//五屏模式
-    EScreenModeHexa  =  5,//六屏模式
-    EScreenModeNumber = 6//屏幕模式个数
+    EScreenModeQuad = 3,//四屏模式
+    EScreenModeQuint = 4,//五屏模式
+    EScreenModeHexa = 5,//六屏模式
+    EScreenModeNumber = 6,//屏幕模式个数
+    EScreenModeUnknown = (UINT)-1
 };
 
 #define  SENSOR_NUMBER int(EScreenModeNumber)
@@ -88,7 +89,7 @@ enum ECameraType
 {
 	E_CAMERA_MODEL_0 = 0,   //PID=0x9186,VID=0x18ec  ,正常摄像头
 	E_CAMERA_MODEL_1 = 1,   //PID=0x3390,VID=0x18ec  ,1/6摄像头
-	E_CAMERA_MODEL_3 = 2,   //PID=0x9230,VID= 0x05a3 ,高清摄像头
+	E_CAMERA_MODEL_2 = 2,   //PID=0x9230,VID= 0x05a3 ,高清摄像头
 };
 
 inline const TCHAR*  GetCameraTypeString(ECameraType eCameraType)
@@ -101,7 +102,7 @@ inline const TCHAR*  GetCameraTypeString(ECameraType eCameraType)
         case E_CAMERA_MODEL_1:
             return _T("QC0308");
 
-        case E_CAMERA_MODEL_3:
+        case E_CAMERA_MODEL_2:
             return _T("OV2710");
 
     }//switch
@@ -152,7 +153,7 @@ struct GlobalSettings
 
 	ECameraType             eCameraType;         //攝像頭的類型
 
-
+    EScreenMode            eScreenMode;//屏接的屏幕数目
 
 
     GlobalSettings()
@@ -184,7 +185,11 @@ struct GlobalSettings
         CMOSChipSpecification.width_in_pixel  = 656  ;//像素
         CMOSChipSpecification.height_in_pixel = 488  ;//像素
 
-		eCameraType = E_CAMERA_MODEL_0;
+        eCameraType = E_CAMERA_MODEL_0;
+
+
+        //屏接的屏幕数目
+        eScreenMode = EScreenModeUnknown;
     }
 };
 

@@ -384,6 +384,18 @@ BEGIN
     IDS_STRING480           "Auto Calibration Failed!"
     IDS_STRING481           "Auto Calibration Succeeded."
     IDS_STRING482           "Touch Screen Layout Designer ..."
+    IDS_STRING483           "Screen Fusion Mode"
+    IDS_STRING484           "1 Screen"
+    IDS_STRING485           "2 Screens"
+    IDS_STRING486           "3 Screens"
+    IDS_STRING487           "4 Screens"
+    IDS_STRING488           "5 Screens"
+    IDS_STRING489           "6 Screens"
+	IDS_STRING490           "7 Screens"
+	IDS_STRING491           "8 Screens"
+	IDS_STRING492           "9 Screens"
+	IDS_STRING493           "10 Screens"
+
 END
 
 #endif    // Chinese (Simplified, PRC) resources
