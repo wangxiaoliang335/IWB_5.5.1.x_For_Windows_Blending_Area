@@ -65,11 +65,11 @@ typedef struct
 
 
 //光斑采样模式
-enum ESampleCollectPattern
-{
-    E_SAMPLE_COLLECT_PATTERN_9_Points, //9点采样，单屏模式的采样
-    E_SAMPLE_COLLECT_PATTERN_15_Points,//15点采样，双屏模式的采样
-};
+//enum ESampleCollectPattern
+//{
+//    E_SAMPLE_COLLECT_PATTERN_9_Points, //9点采样，单屏模式的采样
+//    E_SAMPLE_COLLECT_PATTERN_15_Points,//15点采样，双屏模式的采样
+//};
 
 struct ValidParamsInfo
 {
@@ -120,14 +120,17 @@ public:
     //@功能:开始光斑采样
     //@参数:pMonitors, 屏幕区域数组
     //      nMonitorCount, 屏幕个数
-    BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, ESampleCollectPattern ePattern = E_SAMPLE_COLLECT_PATTERN_9_Points);
+    //BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, ESampleCollectPattern ePattern = E_SAMPLE_COLLECT_PATTERN_9_Points);
+    BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol);
+
+    
 
     //@功能:判断是否放弃光斑采用    
     //@返回值:TRUE, 结束采样
     //        FALSE, 继续采样
     BOOL AbortCollectSpotSize();//结束
 
-    const ALL_LIGHTSPOT_SAMPLE_SIZE& GetAllSampleSize() const {return m_allLightSpotSampleSize;}
+    const ALL_LIGHTSPOT_SAMPLE_SIZE& GetScreenSamples() const {return m_ScreenLightspotSample;}
 
 
     //@功能:屏幕分辨率变化事件响应函数
@@ -201,7 +204,7 @@ protected:
     int                               m_nCxVScreen        ;//虚拟桌面的宽度
 	int                               m_nCyVScreen        ;//虚拟桌面的高度
 	int                               m_nSampleNumEachRow ;//每行的采样次数
-	int                               m_nSampleNumEachCol ;//每列的采样次数    
+	int                               m_nSampleNumEachCol ;//每列的采样次数
     int                               m_nCurrentSampleNo  ;//当前校正符号编号,从0开始
 	std::vector<TSampleSymbol>        m_vecSampleSymbols  ;//校正符号信息
 	//std::vector<POINT>                m_vecStandardCross;//标准的坐标点
@@ -214,8 +217,8 @@ protected:
 
 
 
-    ALL_LIGHTSPOT_SAMPLE_SIZE         m_allLightSpotSampleSize;//所有监视器的光斑采样点, 一个监视器对应一组采样点
-    //CDispMonitorFinder                m_oMonitorFinder    ;//屏幕查找器
+    ALL_LIGHTSPOT_SAMPLE_SIZE         m_ScreenLightspotSample;//所有监视器的光斑采样点, 一个监视器对应一组采样点
+
 
 	std::vector<RECT>                m_vecMonitorAreas    ;//屏幕显示器信息
     int                              m_nCurMonitorAreaId  ;//当前显示器Id
@@ -230,7 +233,7 @@ protected:
 	}m_eSpotSamplingState;
 
     //E_COLLECTSPOT_MODE m_eSpotSamplingMode    ;//光斑采集模式,手动,模拟等
-    ESampleCollectPattern m_eSpotSamplePattern;//
+    //ESampleCollectPattern m_eSpotSamplePattern;//
 
     int    m_nSymbolHorzInterval ;//校正符号水平间隔
     int    m_nSymbolVertInterval ;//校正符号垂直间隔

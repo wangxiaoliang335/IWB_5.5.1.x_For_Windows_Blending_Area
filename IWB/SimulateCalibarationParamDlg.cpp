@@ -63,7 +63,7 @@ void CSimulateCalibarationParamDlg::OnBnClickedButtonBrowseForFilePath()
              {
                  int pattern, width, height, brightness;
                  int nGet = 
-                 _stscanf(pSquareBracket,
+                 _stscanf_s(pSquareBracket,
                      _T("[pattern %d, screen %dX%d,brightness %d]"),
                      &pattern,
                      &width,

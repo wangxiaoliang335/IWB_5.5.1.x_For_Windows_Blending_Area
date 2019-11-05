@@ -83,6 +83,10 @@ namespace PROFILE
     
     _declspec(selectany) extern CAtlString WGR_CONFIG_FILE_NAME =_T("WGRConfig.xml");
 
+
+    _declspec(selectany) extern CAtlString SCREEN_LAYOUT_FILE_NAME = _T("ScreenLayout.xml");
+
+
     //_declspec(selectany) extern CAtlString INSTALL_TIP_APP_NAME = _T("InstallTip\\IntallTip.exe");
 
     const int DEFAULT_SPOT_MINIMUM_WIDTH = 3;

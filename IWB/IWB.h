@@ -12,12 +12,9 @@
 #include "UsbCameraDeviceList.h"
 // CIWBApp:
 // See OpticalPen.cpp for the implementation of this class
-//
-enum EScreenType
-{
-    ESingleScreenMode = 0,//单屏模式
-    EDoubleScreenMode = 1 //双屏模式
-};
+
+
+
 
 //@功能:返回实际的触控类型
 EDeviceTouchType GetActualTouchType();
@@ -57,12 +54,11 @@ public:
     //  return m_nDoubleScreenType ;
     //}
 
-    EScreenType GetScreenType()const
-    {
-        return this->m_eScreenType;
-        //return EDoubleScreenMode;
+    EScreenMode GetScreenMode()const;
+    EScreenMode GetScreenModeFromUSBKey()const;
 
-    }
+    int GetScreenCount() const;
+
 
     BOOL IsHardwareKeyExist()const
     {
@@ -101,8 +97,11 @@ public:
     CString m_strIntermediatOutputDir;//调试输出文件存放目录
     CString m_strFirmwareDirectory   ;//固件文件目录
 
-    //从USBKey中读取信息
-    void ReadUSBKey();
+    //@功能:从USBKey中读取信息
+    //@参数:bFirstTime, 第一次检测UsbKey的存在
+    //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
+    //      第二次及以后则不再弹出兑换框。
+    void ReadUSBKey(BOOL bFirstTime = FALSE);
 
 
 protected:
@@ -118,7 +117,12 @@ protected:
 	EPalmTouchControlType   m_ePalmTouchControlType;
 
     
-    EScreenType    m_eScreenType; //0:为单屏，1：为双屏
+    //EScreenType    m_eScreenType; //0:为单屏，1：为双屏
+
+
+    EScreenMode    m_eScreenModeFromUsbKey;//从机密狗注册信息中得到的屏幕模式
+    
+    
     BOOL           m_bFoundHardwareUSBKey;//发现硬件USB Key标志
     BOOL           m_bIsOnlineRegistered;//是否在线注册了。
     CString m_strLanguageCode;//语言编码

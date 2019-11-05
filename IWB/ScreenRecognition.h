@@ -6,6 +6,7 @@ public:
     //@参数:clrText, 缺省的文字颜色。
 	CScreenRecognition(COLORREF clrText = RGB(255, 0, 0));
 	~CScreenRecognition();
+
 	LRESULT  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 public:
@@ -36,7 +37,9 @@ protected:
     HDC       m_hMemDC;
     HBITMAP   m_hBitmap;
     HBITMAP   m_hBitmapOld;
+    HPEN      m_hPen;
+    HPEN      m_hPenOld;
     //CDispMonitorFinder m_oDispMonitorFinder;
-
+    static const LONG DEFAULT_PEN_WIDTH = 1;
 
 };

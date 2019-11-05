@@ -204,14 +204,15 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 
      //只读信息, 双屏拼接
      GetDlgItem(IDC_CHECK_DOUBLE_SCREEN)->EnableWindow(FALSE);
-     CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenType() == EDoubleScreenMode?BST_CHECKED:BST_UNCHECKED);
+     //CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenType() == EDoubleScreenMode?BST_CHECKED:BST_UNCHECKED);
+     CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenMode() >= EScreenModeDouble ? BST_CHECKED : BST_UNCHECKED);
 
      //勾选实际选择的镜头类型
       CheckDlgButton(IDC_RADIO_THROW_RATIO_015 + int(this->m_tSensorConfig.eSelectedLensType), BST_CHECKED);
  
 
      //如果是双屏则显示"屏幕选择"按钮
-     if(theApp.GetScreenType() == EDoubleScreenMode)
+     if(theApp.GetScreenMode() >= EScreenModeDouble)
      {
         GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_SHOW);
      }

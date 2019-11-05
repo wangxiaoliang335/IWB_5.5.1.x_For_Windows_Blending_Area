@@ -824,6 +824,7 @@
     <ClCompile Include="ParamsSettingPropertySheet.cpp" />
     <ClCompile Include="PenPosDetector.cpp" />
     <ClCompile Include="PlayWnd.cpp" />
+    <ClCompile Include="ScreenLayoutDesigner.cpp" />
     <ClCompile Include="ScreenRecognition.cpp" />
     <ClCompile Include="ScrollablePropertyPage.cpp" />
     <ClCompile Include="SensorTimerAction.cpp" />
@@ -1015,6 +1016,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResStr.h" />
     <ClInclude Include="RobustCornerDetect.h" />
+    <ClInclude Include="ScreenLayoutDesigner.h" />
     <ClInclude Include="ScreenRecognition.h" />
     <ClInclude Include="ScrollablePropertyPage.h" />
     <ClInclude Include="SensorTimerAction.h" />
@@ -1079,6 +1081,8 @@
     <None Include="..\OEM\Singapore\res\cursor_DrawScreenArea.cur" />
     <None Include="ClassDiagram1.cd" />
     <None Include="res\cursor_DrawScreenArea.cur" />
+    <None Include="res\Cursor_SplitHorz.cur" />
+    <None Include="res\hand.cur" />
     <None Include="res\IWB.rc2" />
   </ItemGroup>
   <ItemGroup>

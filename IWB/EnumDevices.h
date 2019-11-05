@@ -622,7 +622,8 @@ inline HRESULT EnumVideoCaptureDevice(CaptuerDeviceInstanceSet& instanceSet)
 
             if(SUCCEEDED(hr))
             {	
-                deviceInstance.m_strDevPath = _tcslwr(pDeviceInterfaceDetailData->DevicePath);
+                errno_t err = _tcslwr_s(pDeviceInterfaceDetailData->DevicePath, _tcslen(pDeviceInterfaceDetailData->DevicePath) + 1);
+                deviceInstance.m_strDevPath = pDeviceInterfaceDetailData->DevicePath;
                 deviceInstance.m_dwDevInst  = DeviceInfoData.DevInst;
                 deviceInstance.m_strName    = szFriendlyName;
 

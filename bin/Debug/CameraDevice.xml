@@ -6,5 +6,6 @@
 <USBCamera vid="18EC" pid="9186"></USBCamera>
 <USBCamera vid="18EC" pid="3390"></USBCamera>
 <USBCamera vid="05a3" pid="9230"></USBCamera>
+<USBCamera vid="18EC" pid="9105"></USBCamera>
 </all>
 

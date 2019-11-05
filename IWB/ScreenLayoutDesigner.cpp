@@ -1,0 +1,1267 @@
+#include "stdafx.h"
+
+CScreenLayoutDesigner::CScreenLayoutDesigner()
+    :
+    m_hInst(NULL),
+    m_hWnd(NULL),
+    m_hBitmap(NULL),
+    m_hBitmapOld(NULL),
+    m_hbrBackground(NULL),
+    m_hMemDC(NULL),
+    m_hFontButton(NULL),
+    m_hFontOld(NULL),
+    m_bIsDragging(FALSE),
+    m_pDragArea(NULL)
+{
+    m_DisplaySize.cx = ::GetSystemMetrics(SM_CXSCREEN);
+
+    m_DisplaySize.cy = ::GetSystemMetrics(SM_CYSCREEN);
+
+    //手形光标
+    m_hCursorhHand = theApp.LoadCursor(IDC_CURSOR_HAND);
+
+    //水平切分光标
+    m_hCursorSplit_Horz = theApp.LoadCursor(IDC_CURSOR_SPLIT_HORZ);
+
+
+    m_hCursorArrow = LoadCursor(NULL, IDC_ARROW);
+}
+
+
+CScreenLayoutDesigner::~CScreenLayoutDesigner()
+{
+
+    Uninit();
+}
+
+BOOL CScreenLayoutDesigner::IsVisible()const
+{
+    if (NULL == m_hWnd) return FALSE;
+
+    return IsWindowVisible(m_hWnd);
+}
+
+void CScreenLayoutDesigner::Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight)
+{
+    if (nScreenCount == 0) return;
+
+    
+    m_DisplaySize.cx = nDisplayWidth;
+    m_DisplaySize.cy = nDisplayHeight;
+    
+    InitScreenArea(nScreenCount);
+
+
+    m_rcClipCursorOld = RECT{0, 0, m_DisplaySize.cx, m_DisplaySize.cy};
+
+    InitWindow();
+
+    InitActiveAreas();
+}
+
+void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
+{
+    m_vecScreenRelativeLayouts.resize(nScreenCount);
+    m_vceScreenAbsLayouts.resize(nScreenCount);
+
+    //均分时，每个屏幕的宽度
+    int nWidthEachArea = m_DisplaySize.cx / nScreenCount;
+
+
+    int nRemainder = m_DisplaySize.cx % nScreenCount;
+
+    //余数计数
+    int nRemainderCount = 0;
+
+    RECT  absArea = { 0   ,    0,    0, m_DisplaySize.cy };
+    RectF relArea = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    //计算每个屏幕区域的相对尺寸和绝对尺寸
+    for (int i = 0; i < nScreenCount; i++)
+    {
+
+        absArea.right = absArea.left + nWidthEachArea;
+
+        nRemainderCount += nRemainder;
+
+        if (nRemainderCount >= nScreenCount)
+        {
+            nRemainderCount -= nScreenCount;
+            absArea.right++;
+        }
+
+        m_vceScreenAbsLayouts[i] = absArea;
+
+        relArea.right = (float)absArea.right / (float)m_DisplaySize.cx;
+
+        m_vecScreenRelativeLayouts[i] = relArea;
+
+        //
+        absArea.left = absArea.right;
+
+        //
+        relArea.left = relArea.right;
+
+
+    }//for
+
+
+    int nMergeAreaCount = nScreenCount - 1;
+
+    //计算每个融合区的尺寸
+    m_vecMergeAreasRelative.resize(nMergeAreaCount);
+    m_vecMergeAreasAbs.resize(nMergeAreaCount);
+
+    float fMergeAreaHalfSize = 0.02;
+
+    for (int i = 0; i < nMergeAreaCount; i++)
+    {
+        RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
+
+        RectF relArea;
+        relArea.top = 0.0f;
+        relArea.bottom = 1.0f;
+        relArea.left = relScreenArea.right - fMergeAreaHalfSize;
+        relArea.right = relScreenArea.right + fMergeAreaHalfSize;
+
+        //融合区相对尺寸
+        m_vecMergeAreasRelative[i] = relArea;
+
+        //融合区绝对尺寸
+        RECT absArea;
+        absArea.top = 0;
+        absArea.bottom = m_DisplaySize.cy;
+        absArea.left  = (LONG)(relArea.left  * m_DisplaySize.cx);
+        absArea.right = (LONG)(relArea.right * m_DisplaySize.cx);
+
+        m_vecMergeAreasAbs[i] = absArea;
+
+    }
+
+
+
+}
+
+
+BOOL CScreenLayoutDesigner::InitWindow()
+{
+    static int s_InstanceCount = 1;
+    CAtlString strClassName;
+    strClassName.Format(_T("TouchScreen Designer %d"), s_InstanceCount++);
+
+    m_hbrBackground = ::CreateSolidBrush(RGB(0,0,0));
+
+    WNDCLASSEX wndclass;
+    wndclass.cbSize = sizeof wndclass;
+    wndclass.style = CS_SAVEBITS;
+    wndclass.lpfnWndProc = StaticWndProc;
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    m_hInst = wndclass.hInstance = reinterpret_cast<HINSTANCE>(&__ImageBase);;
+    wndclass.hIcon = 0;
+    wndclass.hCursor = 0;
+    wndclass.hbrBackground = m_hbrBackground;
+    wndclass.lpszMenuName = 0;
+    wndclass.lpszClassName = strClassName;
+    wndclass.hIconSm = 0;
+    ATOM  atom = RegisterClassEx(&wndclass);
+
+    m_hWnd = ::CreateWindowEx(
+        WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_LAYERED,//分层窗体。
+        //WS_EX_TOOLWINDOW | WS_EX_TOPMOST
+        strClassName,
+        strClassName,//windows name
+        WS_POPUP,
+        0,
+        0,
+        m_DisplaySize.cx,
+        m_DisplaySize.cy,
+        NULL,//owner window
+        0,//Menu ID
+        m_hInst,
+        (LPVOID)this //传入CREATESTRUCT结构的参数
+    );
+
+    SetLayeredWindowAttributes(
+        this->m_hWnd, //A handle to the layered window.
+        TRASNPARENT_COLOR, //specifies the transparency color key
+        255,//the opacity of the layered window. 
+        LWA_ALPHA |   //Use bAlpha to determine the opacity of the layered window.
+        LWA_COLORKEY  //se crKey as the transparency color
+    );
+
+
+    HDC hDCScreen = ::GetDC(GetDesktopWindow());
+    m_hMemDC      = ::CreateCompatibleDC(hDCScreen);
+
+    m_hBitmap     = ::CreateCompatibleBitmap(hDCScreen, m_DisplaySize.cx, m_DisplaySize.cy);
+
+    m_hBitmapOld = (HBITMAP)SelectObject(m_hMemDC, m_hBitmap);
+    SetBkMode(m_hMemDC, TRANSPARENT);
+
+
+    int nButtonHeight = m_DisplaySize.cy / 16;
+
+    LOGFONT lf;
+    memset(&lf, 0, sizeof(LOGFONT));
+    lf.lfHeight = nButtonHeight;
+    lf.lfWidth = 0;
+    lf.lfWeight = FW_BOLD;
+    lf.lfCharSet = ANSI_CHARSET;
+    lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+    lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+    memcpy(lf.lfFaceName, _T("Times New Roman"), _countof(lf.lfFaceName));
+
+    m_hFontButton = CreateFontIndirect(&lf);
+
+    m_hFontOld = (HFONT)SelectObject(m_hMemDC, m_hFontButton);
+
+    ::ReleaseDC(GetDesktopWindow(), hDCScreen);
+
+    return TRUE;
+}
+
+
+void CScreenLayoutDesigner::Uninit()
+{
+    ::DestroyWindow(m_hWnd);//销毁
+    FreeThunk(&CScreenLayoutDesigner::WndProc, this);
+
+    if (m_hBitmapOld)
+    {
+        SelectObject(m_hMemDC, m_hBitmapOld);
+        DeleteObject(m_hBitmap);
+        m_hBitmap = NULL;
+    }
+
+    if (m_hMemDC)
+    {
+        ::DeleteDC(m_hMemDC);
+        m_hMemDC = NULL;
+    }
+
+    if (m_hbrBackground)
+    {
+        ::DeleteObject(m_hbrBackground);
+        m_hbrBackground = NULL;
+    }
+
+    if (m_hFontOld)
+    {
+        ::SelectObject(m_hMemDC, m_hFontOld);
+        m_hFontOld = NULL;
+    }
+
+    if (m_hFontButton)
+    {
+        ::DeleteObject(m_hFontButton);
+        m_hFontButton = NULL;
+    }
+
+    m_vecScreenRelativeLayouts.clear();
+    m_vceScreenAbsLayouts.clear();
+    m_vecMergeAreasRelative.clear();
+    m_vecMergeAreasAbs.clear();
+    m_vecActiveAreas.clear();
+}
+
+//@功能:初始化活动区数组
+void CScreenLayoutDesigner::InitActiveAreas()
+{
+    m_vecActiveAreas.clear();
+
+    //分割条
+    int nScreenCount = m_vceScreenAbsLayouts.size();
+    for (int i = 0; i < nScreenCount - 1; i++)
+    {
+        const RECT& rcScreen = m_vceScreenAbsLayouts[i];
+        TActiveArea activeArea;
+        activeArea.uID = DEFAULT_ID;
+        activeArea.rcBound.left   = rcScreen.right - (SPLITTER_WIDTH >> 1);
+        activeArea.rcBound.right  = rcScreen.right + (SPLITTER_WIDTH >> 1);
+        activeArea.rcBound.top    = rcScreen.top;
+        activeArea.rcBound.bottom = rcScreen.bottom;
+
+        activeArea.eAreaType = E_AREA_TYPE_SPLITTER;
+        activeArea.ulData = i;//分割条的索引号
+
+        m_vecActiveAreas.push_back(activeArea);
+
+    }//for
+
+    TActiveArea btns[] = 
+    {
+        { BUTTON_ID_RESET, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("RESET"), 0 },
+        { BUTTON_ID_OK, RECT{0,0,0,0}, E_AREA_TYPE_BUTTON, _T("OK"), 0},
+        { BUTTON_ID_CANCEL, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("Cancel"), 0 },
+       
+    };
+
+
+    UINT btnCount = _countof(btns);
+    //计算按钮的最大宽度
+    LONG nMaxButtonWidth  = 0;
+    LONG nMaxButtonHeight = 0;
+    for (UINT uBtnIdx = 0; uBtnIdx < btnCount; uBtnIdx++)
+    {
+        TActiveArea& btn = btns[uBtnIdx];
+
+        ::DrawText(
+            m_hMemDC,
+            btn.szText,
+            _tcsclen(btn.szText),
+            &btn.rcBound,
+            DT_CALCRECT | DT_SINGLELINE);
+
+        LONG lBtnWidth  = btn.rcBound.right - btn.rcBound.left;
+        LONG lBtnHeight = btn.rcBound.bottom - btn.rcBound.top;
+
+        if (nMaxButtonWidth < lBtnWidth) nMaxButtonWidth = lBtnWidth;
+        if (nMaxButtonHeight < lBtnHeight) nMaxButtonHeight = lBtnHeight;
+    }
+
+    LONG nButtonHorzInterval = 10;
+
+    int nTotoalWidth = btnCount*nMaxButtonWidth + (btnCount - 1)*nButtonHorzInterval;
+
+    LONG left = (m_DisplaySize.cx - nTotoalWidth) >> 1;
+    LONG top  = (m_DisplaySize.cy >> 3)*7 - (nMaxButtonHeight >> 1);
+
+
+
+    for (UINT uBtnIdx = 0; uBtnIdx < btnCount; uBtnIdx++)
+    {
+        TActiveArea& btn = btns[uBtnIdx];
+
+        btn.rcBound.left    = left;
+        btn.rcBound.top     = top;
+        btn.rcBound.right   = left + nMaxButtonWidth;
+        btn.rcBound.bottom  = top  + nMaxButtonHeight;
+
+        left += nMaxButtonWidth + nButtonHorzInterval;
+
+        m_vecActiveAreas.push_back(btn);
+    }
+
+
+
+    ////添加确定取消按钮
+    //TActiveArea confirmButton;
+    //confirmButton.uID = IDOK;
+    //confirmButton.szText = _T("OK");
+    //RECT rcConfirmText;
+    //memset(&rcConfirmText, 0, sizeof(rcConfirmText));
+
+    //SetTextColor(m_hMemDC, RGB(0, 0, 0));
+
+    //::DrawText(
+    //    m_hMemDC,
+    //    confirmButton.szText,
+    //    _tcsclen(confirmButton.szText),
+    //    &rcConfirmText,
+    //    DT_CALCRECT | DT_SINGLELINE);
+    //
+    //int nConfirmTextWidth  = rcConfirmText.right  - rcConfirmText.left;
+    //int nConfirmTextHeight = rcConfirmText.bottom - rcConfirmText.top;
+
+    //confirmButton.rcBound.left    = (m_DisplaySize.cx - nConfirmTextWidth) >> 1;
+    //confirmButton.rcBound.right   = confirmButton.rcBound.left + nConfirmTextWidth;
+
+    //confirmButton.rcBound.top     = (m_DisplaySize.cy >> 2) - (nConfirmTextHeight >> 1);
+    //confirmButton.rcBound.bottom  = confirmButton.rcBound.top + nConfirmTextHeight;
+
+    //confirmButton.eAreaType = E_AREA_TYPE_BUTTON;
+    //confirmButton.ulData = (ULONG)0;
+
+    //m_vecActiveAreas.push_back(confirmButton);
+
+
+    ////添加取消按钮
+    //TActiveArea cancelButton;
+    //cancelButton.uID = IDCANCEL;
+
+    //cancelButton.szText = _T("Cancel");
+
+    //RECT rcCancelText;
+    //memset(&rcCancelText, 0, sizeof(rcCancelText));
+
+    //::DrawText(
+    //    m_hMemDC,
+    //    cancelButton.szText,
+    //    _tcsclen(cancelButton.szText),
+    //    &rcCancelText,
+    //    DT_CALCRECT | DT_SINGLELINE);
+
+
+    //int nCancelTextWidth = rcCancelText.right - rcCancelText.left;
+    //int nCancelTextHeight = rcCancelText.bottom - rcCancelText.top;
+
+    //cancelButton.rcBound.left = (m_DisplaySize.cx - nCancelTextWidth) >> 1;
+    //cancelButton.rcBound.right = cancelButton.rcBound.left + nCancelTextWidth;
+
+    //cancelButton.rcBound.top    = (m_DisplaySize.cy >> 2)*3 - (nCancelTextHeight >> 1);
+    //cancelButton.rcBound.bottom = cancelButton.rcBound.top + nCancelTextHeight;
+
+    //cancelButton.eAreaType = E_AREA_TYPE_BUTTON;
+    //cancelButton.ulData = (ULONG)0;
+
+    //m_vecActiveAreas.push_back(cancelButton);
+}
+
+//@功  能:返回按照相对尺寸划分的屏幕区域数组。
+//@参  数:pCount, 存放区域个数的内存指针
+//@返回值:屏幕相对划分矩形区域数组的首地址。
+const RectF* CScreenLayoutDesigner::GetScreenRelativeLayouts(UINT* pScreenCount) const
+{ 
+    const RectF* pRelativeScreens = NULL;
+
+    if (pScreenCount) *pScreenCount = m_vecScreenRelativeLayouts.size();
+
+    if (m_vecScreenRelativeLayouts.size() > 0)
+    {
+        pRelativeScreens = &m_vecScreenRelativeLayouts[0];
+    }
+
+    return pRelativeScreens;
+}
+
+//@功  能:返回按照像素尺寸划分的屏幕区域数组。
+//@参  数:pCount, 存放区域个数的内存指针
+//@返回值:按照像素尺寸划分的屏幕区域的首地址。
+const RECT* CScreenLayoutDesigner::GetScreenAbsoluteLayouts(UINT* pScreenCount)const
+{
+    const RECT* pAbsScreen = NULL;
+    
+    if(pScreenCount) *pScreenCount = m_vceScreenAbsLayouts.size();
+
+    if (m_vceScreenAbsLayouts.size() >= 0)
+    {
+        pAbsScreen = &m_vceScreenAbsLayouts[0];
+    }
+
+
+    return pAbsScreen;
+
+}
+
+
+//@功 能:设置屏幕的相对划分区域
+//@参 数:pRelativeLayouts, 屏幕划分矩形区域数组的首地址
+//       nAreaCount，屏幕划分矩形区域数组元素的个数
+void CScreenLayoutDesigner::SetScreenRelativeLayouts(const RectF* pRelativeLayouts, UINT uScreenCount)
+{
+    m_vecScreenRelativeLayouts.resize(uScreenCount);
+
+    for(UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
+    {
+        m_vecScreenRelativeLayouts[screenIndex] = pRelativeLayouts[screenIndex];
+    }
+
+    //更新绝对像素尺寸的屏幕区域数组
+    m_vceScreenAbsLayouts.resize(uScreenCount);
+
+
+    //
+    for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
+    {
+        const RectF& rectRel = m_vecScreenRelativeLayouts[screenIndex];
+        RECT& rectAbs        = m_vceScreenAbsLayouts[screenIndex];
+
+        rectAbs.left  = LONG(rectRel.left  * m_DisplaySize.cx);
+        rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
+
+        rectAbs.top    = LONG(rectRel.top    * m_DisplaySize.cy);
+        rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+    }
+
+    InitActiveAreas();
+}
+
+
+
+//@功  能:相对尺寸设置的触控融合区。
+//@参  数:pRelativeMergeArea, 触控融合区数组
+//        nAreaCount， 触控融合区数目
+//@返回值:空
+void  CScreenLayoutDesigner::SetRelativeMergeAreas(const RectF* pRelativeMergeArea, UINT nAreaCount)
+{
+    m_vecMergeAreasRelative.resize(nAreaCount);
+
+    for (UINT areaIndex = 0; areaIndex < nAreaCount; areaIndex++)
+    {
+        m_vecMergeAreasRelative[areaIndex] = pRelativeMergeArea[areaIndex];
+
+    }//for
+
+    //更新绝对像素尺寸的融合区数组
+    m_vecMergeAreasAbs.resize(nAreaCount);
+
+    for (UINT areaIndex = 0; areaIndex < nAreaCount; areaIndex++)
+    {
+        const RectF& rectRel = m_vecMergeAreasRelative[areaIndex];
+        RECT&  rectAbs       = m_vecMergeAreasAbs[areaIndex];
+
+        rectAbs.left   = LONG(rectRel.left   * m_DisplaySize.cx);
+        rectAbs.right  = LONG(rectRel.right  * m_DisplaySize.cx);
+        rectAbs.top    = LONG(rectRel.top    * m_DisplaySize.cy);
+        rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+
+    }//for
+
+    InitActiveAreas();
+
+}
+
+//@功  能:返回按照相对尺寸设置的触控融合区。
+//@参  数:pCount, 存放区域个数的内存指针
+//@返回值:触控融合区域数组首地址。
+const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
+{
+    const RectF* pRelMergeArea = NULL;
+
+    if (pAreaCount) *pAreaCount = m_vecMergeAreasRelative.size();
+
+    if (m_vecMergeAreasRelative.size() > 0)
+    {
+        pRelMergeArea = &m_vecMergeAreasRelative[0];
+    }
+
+
+    return pRelMergeArea;
+
+}
+
+
+//@功 能:响应屏幕分辨率发生变化的事件
+//@参 数:
+//       nScreenWidth, 屏幕像素宽度
+//       nScreenHeight, 屏幕像素高度
+void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
+{
+    int nScreenAreaCount = m_vecScreenRelativeLayouts.size();
+
+    for (int i = 0; i < nScreenAreaCount; i++)
+    {
+        //屏幕区域
+        RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
+        RECT& absScreenArea = m_vceScreenAbsLayouts[i];
+
+        absScreenArea.left = relScreenArea.left     * nScreenWidth;
+        absScreenArea.right = relScreenArea.right   * nScreenWidth;
+        absScreenArea.top = relScreenArea.top       * nScreenHeight;
+        absScreenArea.bottom = relScreenArea.bottom * nScreenHeight;
+    }
+
+    int nMergeAreaCount = m_vecMergeAreasRelative.size();
+    for (int i = 0; i < nMergeAreaCount; i++)
+    {
+        //触控合并区域
+        RectF& relMergeArea = m_vecMergeAreasRelative[i];
+        RECT& absMergeArea  = m_vecMergeAreasAbs[i];
+
+        absMergeArea.left   = relMergeArea.left   * nScreenWidth;
+        absMergeArea.right  = relMergeArea.right  * nScreenWidth;
+        absMergeArea.top    = relMergeArea.top    * nScreenHeight;
+        absMergeArea.bottom = relMergeArea.bottom * nScreenHeight;
+    }
+
+
+    m_DisplaySize.cx = nScreenWidth;
+    m_DisplaySize.cy = nScreenHeight;
+}
+
+
+//@功  能:返回按照像素尺寸设置的触控融合区。
+//@参  数:pCount, 存放区域个数的内存指针
+//@返回值:触控融合区域数组首地址。
+const RECT* CScreenLayoutDesigner::GetAbsoluteMergeAreas(UINT* pAreaCount)const
+{
+
+    if (m_vecMergeAreasAbs.size() == 0) return NULL;
+
+    if (*pAreaCount) *pAreaCount = m_vecMergeAreasAbs.size();
+
+    return &m_vecMergeAreasAbs[0];
+}
+
+LRESULT  CScreenLayoutDesigner::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    //AtlTrace(_T("msg=0x%x\n"), uMsg);
+
+    switch (uMsg)
+    {
+
+    case WM_NCDESTROY:
+    {
+
+
+        break;
+    }
+
+    case WM_CREATE:
+    {
+
+        break;
+    }
+
+    case WM_SHOWWINDOW:
+
+        break;
+
+    case WM_ERASEBKGND:
+
+        return 1;//erases the background
+        break;
+
+    case WM_NCPAINT:
+
+        return 0;
+        break;
+
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps);
+
+        RECT rcClient;
+        GetClientRect(hWnd, &rcClient);
+
+        BitBlt(
+            hdc,
+            0,
+            0,
+            rcClient.right - rcClient.left,
+            rcClient.bottom - rcClient.top,
+            m_hMemDC,
+            0,
+            0,
+            SRCCOPY);
+
+        
+        EndPaint(hWnd, &ps);
+
+        AtlTrace(_T("WM_PAINT\n"));
+        return 0;
+
+        break;
+    }
+
+    case WM_TIMER:
+
+        break;
+
+    case WM_KEYDOWN:
+        //ShowWindow(this->m_hWnd, SW_HIDE);
+        break;
+
+    case WM_LBUTTONDOWN:
+    {
+        POINT cursorPos;
+        cursorPos.x = LOWORD(lParam);
+        cursorPos.y = HIWORD(lParam);
+        OnLButtonDown(wParam, cursorPos);
+    }
+    break;
+
+    case WM_LBUTTONUP:
+    {
+        POINT cursorPos;
+        cursorPos.x = LOWORD(lParam);
+        cursorPos.y = HIWORD(lParam);
+        OnLButtonUp(wParam, cursorPos);
+    }
+    break;
+
+
+    case WM_MOUSEMOVE:
+    {
+        POINT cursorPos;
+        cursorPos.x = LOWORD(lParam);
+        cursorPos.y = HIWORD(lParam);
+        OnMouseMove(wParam, cursorPos);
+    }
+    break;
+
+    case WM_SETCURSOR:
+    {
+        HWND hWnd = (HWND)wParam;
+        UINT nHitTest = LOWORD(lParam);
+        UINT uMessage = HIWORD(lParam);
+        return OnSetCursor(hWnd, nHitTest, uMessage);
+    }
+        break;
+
+
+
+    case WM_DISPLAYCHANGE:
+
+        break;
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+LRESULT CALLBACK CScreenLayoutDesigner::StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+
+    if (uMsg == WM_CREATE)
+    {
+        CREATESTRUCT* lpcs = reinterpret_cast< CREATESTRUCT*>(lParam);
+
+        SetWindowLong(
+            hWnd,
+            GWL_WNDPROC,
+            (LONG)MF2GF<WNDPROC>(&CScreenLayoutDesigner::WndProc, (CScreenLayoutDesigner*)lpcs->lpCreateParams));
+    }
+
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+
+
+//@功能:执行设计
+void CScreenLayoutDesigner::DoDesign(BOOL bYes)
+{
+    ShowWindow(this->m_hWnd, bYes?SW_SHOW:SW_HIDE);
+
+
+    Draw(m_hMemDC);
+
+    UpdateWindow(this->m_hWnd);
+}
+
+void CScreenLayoutDesigner::Draw(HDC hDC)
+{
+
+    //透明色画刷
+    HBRUSH transBrush = ::CreateSolidBrush(TRASNPARENT_COLOR);
+    HBRUSH hBrushOld = (HBRUSH)SelectObject(hDC, transBrush);
+    
+    //用透明画面清空背景
+    Rectangle(hDC, 0, 0, m_DisplaySize.cx, m_DisplaySize.cy);
+    SelectObject(hDC, hBrushOld);
+
+    DrawScreenLabel(hDC);
+
+    UINT nActiveAreaCount = m_vecActiveAreas.size();
+
+    for (UINT areaIndex = 0; areaIndex < nActiveAreaCount; areaIndex++)
+    {
+        const TActiveArea&  activeArea = m_vecActiveAreas[areaIndex];
+
+        switch (activeArea.eAreaType)
+        {
+        case E_AREA_TYPE_SPLITTER://绘制分割条
+            DrawSplitter(hDC, activeArea.rcBound);
+            break;
+
+
+        case E_AREA_TYPE_BUTTON://绘制按钮
+            DrawButton(hDC, activeArea);
+            break;
+        }
+
+    }
+
+
+    //绘制融合区
+    DrawAllMergeArea(hDC);
+
+}
+
+//@功能:绘制屏幕标号
+void CScreenLayoutDesigner::DrawScreenLabel(HDC hDC)
+{
+    
+    UINT uScreenCount = m_vceScreenAbsLayouts.size();
+    for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
+    {
+        const RECT& rcArea = m_vceScreenAbsLayouts[uScreenIndex];
+
+        LONG areaWidth  = rcArea.right  - rcArea.left;
+        LONG areaHeight = rcArea.bottom - rcArea.top;
+
+        LONG lFontHeight = areaWidth > areaHeight ? areaHeight : areaWidth;
+
+
+        LOGFONT lf;
+        memset(&lf, 0, sizeof(LOGFONT));
+        lf.lfHeight       = lFontHeight;
+        lf.lfWidth        = 0;
+        lf.lfWeight       = FW_BOLD;
+        lf.lfCharSet      = ANSI_CHARSET;
+        lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+        lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+        memcpy(lf.lfFaceName, _T("Times New Roman"), _countof(lf.lfFaceName));
+
+        HFONT hFont  = CreateFontIndirect(&lf);
+
+        HFONT hFontOld = (HFONT)::SelectObject(hDC, hFont);
+
+        TCHAR szLabel[32];
+        _stprintf_s(szLabel, _countof(szLabel), _T("%d"), uScreenIndex + 1);
+
+        RECT rcText = rcArea;
+
+        ::SetTextColor(hDC, RGB(255, 255, 255));
+        DrawText(hDC, szLabel, _tcsclen(szLabel), &rcText, DT_CENTER | DT_VCENTER);
+
+
+        SelectObject(hDC, hFontOld);
+
+    }//for
+
+
+
+
+}
+
+
+void CScreenLayoutDesigner::DrawButton(HDC hDC, const TActiveArea& btn)
+{
+    RECT rcText = btn.rcBound;
+    ///HBRUSH brush = ::CreateSolidBrush(RGB(255, 0, 0));
+
+    HBRUSH brush = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+    HBRUSH brushOld = (HBRUSH)::SelectObject(hDC, brush);
+
+    //FrameRect(hDC, &btn.rcBound, brush);
+    Rectangle(
+        hDC, 
+        btn.rcBound.left,
+        btn.rcBound.top, 
+        btn.rcBound.right,
+        btn.rcBound.bottom);
+    
+    SetTextColor(hDC, RGB(0, 0, 0));
+
+    DrawText(hDC, btn.szText, _tcsclen(btn.szText), &rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+
+    SelectObject(hDC, brushOld);
+    //DeleteObject(brush);
+
+}
+
+void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
+{
+    POINT pt0, pt1;
+
+    pt0.x = (rcSplitter.left + rcSplitter.right) >> 1;
+    pt0.y = rcSplitter.top;
+    pt1.x = pt0.x;
+    pt1.y = rcSplitter.bottom;
+
+
+    LOGPEN logPen;
+    logPen.lopnStyle = PS_DASHDOTDOT;
+    logPen.lopnWidth = { 1, 0 };
+    logPen.lopnColor = RGB(255, 0, 0);
+    HPEN hRedPen = ::CreatePenIndirect(&logPen);
+
+
+    logPen.lopnStyle = PS_SOLID;
+    logPen.lopnWidth = { 1, 0 };
+    logPen.lopnColor = GetSysColor(COLOR_BTNFACE);
+    HPEN hGraypen = ::CreatePenIndirect(&logPen); 
+    
+    //HBRUSH hGreenBrush = ::CreateSolidBrush(RGB(0, 255, 0));
+    HBRUSH hLightGrayBrush = (HBRUSH)::GetStockObject(LTGRAY_BRUSH);
+    HBRUSH hBrushOld = (HBRUSH)::SelectObject(hDC, hLightGrayBrush);
+
+    HPEN hPenOld = (HPEN)::SelectObject(hDC, hGraypen);
+    
+    Rectangle(
+        hDC,
+        rcSplitter.left,
+        rcSplitter.top,
+        rcSplitter.right,
+        rcSplitter.bottom);
+
+
+    //选择红色笔
+    ::SelectObject(hDC, hRedPen);
+
+    //绘制中分线
+    MoveToEx(hDC, pt0.x, pt0.y, NULL);
+    LineTo(hDC, pt1.x, pt1.y);
+
+    SelectObject(hDC, hBrushOld);
+    SelectObject(hDC, hPenOld);
+
+    ::DeleteObject(hGraypen);
+    ::DeleteObject(hRedPen);
+
+
+}
+
+
+void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
+{
+    int nMergeAreaCount = m_vecMergeAreasAbs.size();
+    HRGN allRgn = ::CreateRectRgn(0, 0, 0, 0);
+
+    for (int i = 0; i < nMergeAreaCount; i++)
+    {
+        RECT&  rcMergeArea = m_vecMergeAreasAbs[i];
+
+        RECT  rcShrink = rcMergeArea;
+
+        InflateRect(&rcShrink, -2, -2);
+
+
+        HRGN rgn       = ::CreateRectRgnIndirect(&rcMergeArea);
+        HRGN rgnShrink = ::CreateRectRgnIndirect(&rcShrink);
+
+        ::CombineRgn(rgn, rgnShrink, rgn, RGN_XOR);
+        
+        ::CombineRgn(allRgn, rgn, allRgn, RGN_OR);
+
+
+        ::DeleteRgn(rgnShrink);
+        ::DeleteRgn(rgn);
+
+        
+    }//for
+    
+    CBrush* pBrushHalftone = CDC::GetHalftoneBrush();
+    HBRUSH hBrushOld = (HBRUSH)::SelectObject(hDC, pBrushHalftone->GetSafeHandle());
+    //https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createpatternbrush
+    //A brush created by using a monochrome (1 bit per pixel) bitmap has the text and background colors of the device context to which it is drawn. 
+    //Pixels represented by a 0 bit are drawn with the current text color; pixels represented by a 1 bit are drawn with the current background color.
+    SetTextColor(hDC, RGB (0,     0,   0));
+    SetBkColor(hDC,   RGB (0,   255,   0));
+
+    SelectClipRgn(hDC, allRgn);
+
+    RECT rcClipBox;
+    GetClipBox(hDC, &rcClipBox);
+
+    PatBlt(
+        hDC,
+        rcClipBox.left,
+        rcClipBox.top,
+        rcClipBox.right   - rcClipBox.left,
+        rcClipBox.bottom - rcClipBox.top,
+        PATINVERT);
+        //PATCOPY);
+
+
+    SelectClipRgn(hDC, NULL);
+    ::SelectObject(hDC, hBrushOld);
+
+    //DeleteObject(hBrush);
+    ::DeleteRgn(allRgn);
+}
+
+
+//@功能:限制分割条的来限制鼠标移动范围
+//@参数:splitterArea, 分割条活动区域
+void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& splitterArea)
+{
+    UINT uSplitterIndex = splitterArea.ulData;
+
+    GetClipCursor(&m_rcClipCursorOld);
+    RECT rcClipCursorNew;
+
+    const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
+    LONG nSplitterPos = ((splitterArea.rcBound.right + splitterArea.rcBound.left) >> 1);
+    LONG nLeftMargin = nSplitterPos - currentMergeArea.left;
+    LONG nRightMargin = currentMergeArea.right - nSplitterPos;
+
+    if (m_vecMergeAreasAbs.size() > 1)
+    {
+        if (0 == uSplitterIndex)
+        {
+            const RECT& rightSideMergeArea = m_vecMergeAreasAbs[1];
+
+            rcClipCursorNew.left = 0 + nLeftMargin + 1;
+            rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
+            rcClipCursorNew.top = splitterArea.rcBound.top;
+            rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+        }
+        else if (m_vecMergeAreasAbs.size() - 1 == uSplitterIndex)
+        {
+            const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+            rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
+            rcClipCursorNew.right = m_DisplaySize.cx - nRightMargin;
+            rcClipCursorNew.top = splitterArea.rcBound.top;
+            rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+        }
+        else
+        {
+            const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+            const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
+
+            rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
+            rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
+            rcClipCursorNew.top = splitterArea.rcBound.top;
+            rcClipCursorNew.bottom = splitterArea.rcBound.bottom;
+
+        }
+    }
+    else
+    {
+        rcClipCursorNew.left   = nLeftMargin + 1;
+        rcClipCursorNew.right  = m_DisplaySize.cx - nRightMargin;
+        rcClipCursorNew.top    = 0;
+        rcClipCursorNew.bottom = m_DisplaySize.cy;
+    }
+
+    ClipCursor(&rcClipCursorNew);
+}
+
+
+void CScreenLayoutDesigner::OnLButtonDown(UINT uFlags, const POINT& ptCursor)
+{
+    TActiveArea* pActiveArea = GetActiveArea(ptCursor);
+
+    if (pActiveArea == NULL) return;
+
+    if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER)
+    {
+        SetCapture(m_hWnd);
+        m_bIsDragging = TRUE;
+        m_pDragArea   = pActiveArea;
+
+        CWindowDC dc(CWnd::GetDesktopWindow());
+
+        //绘制拖拽框
+        CSize size(1, 1);
+        dc.DrawDragRect(&pActiveArea->rcBound, size, NULL, size, NULL, NULL);
+
+        
+        m_rcLastDragRect = pActiveArea->rcBound ;
+
+        //<<debug
+        //RECT rcClip;
+        //dc.GetClipBox(&rcClip);
+
+        //AtlTrace("rcClip left=%d, top=%d, righ=%d, bottom=%d, width=%d, height=%d\n",
+        //    rcClip.left,
+        //    rcClip.top,
+        //    rcClip.right,
+        //    rcClip.bottom,
+        //    rcClip.right  - rcClip.left,
+        //    rcClip.bottom - rcClip.top);
+        //debug>>
+
+
+        ConfineSplitterCursor(*pActiveArea);
+    }
+    
+    
+}
+
+
+
+void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
+{
+    if (m_bIsDragging)
+    {
+        //拖拽矩形的绘制区域
+        RECT dragRect;
+        dragRect.top    = m_pDragArea->rcBound.top;
+        dragRect.bottom = m_pDragArea->rcBound.bottom;
+
+        int splitterWidth = m_pDragArea->rcBound.right - m_pDragArea->rcBound.left;
+
+        dragRect.left  = ptCursor.x - (splitterWidth >> 1);
+        dragRect.right = ptCursor.x + (splitterWidth >> 1);
+
+
+        CWindowDC dc(CWnd::GetDesktopWindow());
+
+        //绘制拖拽框
+        CSize size(1, 1);
+        dc.DrawDragRect(&dragRect, size, &m_rcLastDragRect, size, NULL, NULL);
+
+        m_rcLastDragRect = dragRect;
+
+    }
+
+    //AtlTrace(_T("OnMouseMove \n"));
+    //AtlTrace(_T("\n MouseMove pt.x=%d, pt.y=%d\n"), ptCursor.x, ptCursor.y);
+
+}
+
+
+void CScreenLayoutDesigner::OnLButtonUp(UINT uFlags, const POINT& ptCursor)
+{
+    if (m_bIsDragging)
+    {
+        ReleaseCapture();
+        m_bIsDragging = FALSE;
+
+
+
+        /*
+        CWindowDC dc(CWnd::GetDesktopWindow());
+
+        //消除拖拽框
+
+        CSize size(1, 1);
+        RECT rcEmpty = { 0,0,0,0 };
+        dc.DrawDragRect(&rcEmpty, size, &m_rcLastDragRect, size, NULL, NULL);
+
+        //int x = m_rcLastDragRect.left;
+        //for (int y = m_rcLastDragRect.top; y < 100; y++)
+        //{
+        //   
+        //    DWORD color = ::GetPixel(dc.GetSafeHdc(), x, y);
+        //    AtlTrace(_T("\n[%d,%d]pixel=0x%08x\n"), x, y, color);
+        //    
+        //}
+        //Sleep(10);//对Desktop DC的操作和后面的对MemDC的操作不同步，
+                    //先画到Desktop DC上的内容竟然后出屏幕上。
+        */
+        
+
+        if (m_pDragArea->eAreaType == E_AREA_TYPE_SPLITTER)
+        {
+            
+            ClipCursor(&m_rcClipCursorOld);
+
+            OnDragSplitterDone(m_rcLastDragRect, *m_pDragArea);
+        }
+    }
+    else
+    {
+
+        const TActiveArea* pActiveArea = GetActiveArea(ptCursor);
+
+        if (pActiveArea && pActiveArea->eAreaType == E_AREA_TYPE_BUTTON)
+        {
+            ::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_END_SCREEN_LAYOUT_DESIGN, (WPARAM)0, (LPARAM)pActiveArea->uID);
+        }
+
+    }
+
+    AtlTrace(_T("\nOnLButtonUp pt.x=%d, pt.y=%d\n"), ptCursor.x, ptCursor.y);
+}
+
+
+
+//@功能:根据分割条的拖拽矩形的位置和分割条索引号, 来调整屏幕布局
+//@参数:lpDragRect, 拖拽的矩形区域
+//     nSplitterIndex，分割条索引号
+void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea& splitterArea)
+{
+ 
+    UINT uSplitterIndex = splitterArea.ulData;
+    if (uSplitterIndex >= m_vecMergeAreasAbs.size()) return;
+
+    //分割条对应的融合区
+    const RECT& mergeArea = m_vecMergeAreasAbs[uSplitterIndex];
+
+    //分割条的旧位置
+    LONG nOldSplitterPos = (splitterArea.rcBound.left + splitterArea.rcBound.right) >> 1;
+
+    //融合区左右边检相对于分割线的偏移量。
+    LONG lMergeAreaLeftSideOffset  = nOldSplitterPos - mergeArea.left;
+    LONG lMergeAreaRightSideOffset = mergeArea.right - nOldSplitterPos;
+
+    //分割条的新位置
+    LONG nNewSplitterPos = (dragRect.left + dragRect.right) >> 1;
+
+
+    UINT uRightAreaIndex = uSplitterIndex;
+    UINT uLeftAreaIndex  = uSplitterIndex + 1;
+
+    //屏幕绝对布局
+    m_vceScreenAbsLayouts[uRightAreaIndex].right = nNewSplitterPos;
+    m_vceScreenAbsLayouts[uLeftAreaIndex ].left  = nNewSplitterPos;
+
+    //屏幕相对布局
+    m_vecScreenRelativeLayouts[uRightAreaIndex].right = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
+    m_vecScreenRelativeLayouts[uLeftAreaIndex ].left  = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
+
+    //触控融合区所在的矩形区域(像素绝对值)
+    m_vecMergeAreasAbs[uSplitterIndex].left  = nNewSplitterPos - lMergeAreaLeftSideOffset;
+    m_vecMergeAreasAbs[uSplitterIndex].right = nNewSplitterPos + lMergeAreaRightSideOffset;
+
+
+    //触控融合区所在的矩形区域(归一化相对值)
+    m_vecMergeAreasRelative[uSplitterIndex].left  = (float)m_vecMergeAreasAbs[uSplitterIndex].left / (float)m_DisplaySize.cx;
+    m_vecMergeAreasRelative[uSplitterIndex].right = (float)m_vecMergeAreasAbs[uSplitterIndex].right / (float)m_DisplaySize.cx;
+
+
+    splitterArea.rcBound = dragRect;
+
+
+    //重新绘制
+    Draw(m_hMemDC);
+
+    //作废窗体区域，以便在UpdateWindows时触发WM_PAINT消息。
+    RECT rcWnd = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
+    ::InvalidateRect(m_hWnd, &rcWnd, TRUE);
+
+
+    UpdateWindow(m_hWnd);
+}
+
+
+BOOL CScreenLayoutDesigner::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
+{
+    POINT cursorPos;
+    GetCursorPos(&cursorPos);
+
+    const TActiveArea* pActiveArea = GetActiveArea(cursorPos);
+
+    if (pActiveArea)
+    {
+        if (pActiveArea->eAreaType == E_AREA_TYPE_BUTTON)
+        {
+            SetCursor(m_hCursorhHand);
+            return TRUE;
+        }
+        else if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER)
+        {
+            SetCursor(m_hCursorSplit_Horz);
+            return TRUE;
+        }
+    }
+    else
+    {
+        SetCursor(m_hCursorArrow);
+    }
+
+    //AtlTrace(_T("OnSetCursor \n"));
+
+    return FALSE;
+}
+
+
+ CScreenLayoutDesigner::TActiveArea* CScreenLayoutDesigner::GetActiveArea(const POINT& ptCursor)
+{
+    int nActiveAreaCount = m_vecActiveAreas.size();
+    for (int i = 0; i < nActiveAreaCount; i++)
+    {
+         TActiveArea& activeArea = m_vecActiveAreas[i];
+
+        if (PtInRect(&activeArea.rcBound, ptCursor))
+        {
+            return &activeArea;
+        }
+
+    }//for
+
+    return NULL;
+
+}
+
+ void CScreenLayoutDesigner::Reset()
+ {
+     int nScreenCount = m_vceScreenAbsLayouts.size();
+
+     InitScreenArea(nScreenCount);
+     InitActiveAreas();
+
+     Draw(m_hMemDC);
+
+     //作废窗体区域，以便在UpdateWindows时触发WM_PAINT消息。
+     RECT rcWnd = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
+     ::InvalidateRect(m_hWnd, &rcWnd, TRUE);
+
+     UpdateWindow(this->m_hWnd);
+ }

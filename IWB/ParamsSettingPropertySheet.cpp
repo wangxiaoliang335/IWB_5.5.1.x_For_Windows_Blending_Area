@@ -196,7 +196,7 @@ BOOL CParamsSettingPropertySheet::OnInitDialog()
 
 	BOOL bResult = (BOOL)Default();
 
-	if (theApp.GetScreenType() == EDoubleScreenMode &&  m_advSettingPage.m_pSensor)
+	if (theApp.GetScreenMode() >= EScreenModeDouble &&  m_advSettingPage.m_pSensor)
 	{//在双屏拼接模式下, 需要在属性页标签上显示传感器编号
 		TC_ITEM item;
 		item.mask = TCIF_TEXT;

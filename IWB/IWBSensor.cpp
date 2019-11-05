@@ -24,17 +24,17 @@ BOOL  CALLBACK CIWBSensor::OnPreStaticMasking(LPVOID lpCtx)
     IRCUTSwtich(lpSensor->m_oVideoPlayer.GetCaptureFilter(), FALSE, lpSensor->m_tDeviceInfo.m_nPID, lpSensor->m_tDeviceInfo.m_nVID);
 
     //载入正常使用时的相机参数
-	EDeviceTouchType eTouchType;
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[1];
-	}
+    EDeviceTouchType eTouchType;
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[1];
+    }
 
-	eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+    eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
     TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
 	switch(eTouchType)
 	{
@@ -76,12 +76,13 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
     CIWBSensor* lpThis = reinterpret_cast<CIWBSensor*>(lpCtx);
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[0];
+    }
+	else
 	{
-		TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[0]; 
-	}
-	else {
 		TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[1];
 	}
 
@@ -89,14 +90,14 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
     TVideoProcAmpProperty cameraParams;
 
-    switch(eCtrlMode)
+    switch (eCtrlMode)
     {
-    case E_CAMERA_SHARPNESS_MAX://设置最大锐利度
-        lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
+      case E_CAMERA_SHARPNESS_MAX://设置最大锐利度
+          lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
 
-		IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
+           IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
 
-//        cameraParams.Prop_VideoProcMap_Gain  = IRCUT_OFF;//保持滤光片打开
+        //        cameraParams.Prop_VideoProcMap_Gain  = IRCUT_OFF;//保持滤光片打开
         return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
 
         break;
@@ -113,134 +114,134 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
         break;
 
     case E_CAMERA_BRIGHTNESS_INCREASE://增加亮度
+    {
+        LONG lBrightness, lMax, lMin, lSteppingDelta, lDefault;
+        BYTE absDiff = param1;
+
+        //按照亮度差的绝对值大小,按彼列调节
+        BYTE K = 2;//比例调节系数Kp = 1/K
+        if (!lpThis->m_oVideoPlayer.GetCameraBrightness(lBrightness, lMax, lMin, lSteppingDelta, lDefault))
         {
-            LONG lBrightness , lMax, lMin,lSteppingDelta, lDefault;
-            BYTE absDiff = param1;
-
-            //按照亮度差的绝对值大小,按彼列调节
-            BYTE K = 2;//比例调节系数Kp = 1/K
-            if(!lpThis->m_oVideoPlayer.GetCameraBrightness(lBrightness, lMax, lMin, lSteppingDelta, lDefault))
-            {
-                return FALSE;
-            }
-            if(lSteppingDelta <  absDiff/K)
-            {
-                lSteppingDelta = absDiff/K;
-            }
-
-            if(lBrightness > lMax - lSteppingDelta)
-            {
-                lBrightness = lMax;
-            }
-            else
-            {
-                lBrightness += lSteppingDelta;
-            }
-
-            //lpThis->m_oFilterGraphBuilder.GetCameraParams(cameraParams);
-            /*
-            lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
-            cameraParams.Prop_VideoProcAmp_Brightness = lBrightness;
-            cameraParams.Prop_VideoProcMap_Gain       = IRCUT_OFF  ;//保持滤光片打开
-            */
-
-            //AtlTrace(_T("[Brightness]delta =%d, coef=%d, increase\n"), lSteppingDelta, lBrightness);
-            return lpThis->m_oVideoPlayer.SetCameraParams(lBrightness, VideoProcAmp_Brightness);
+            return FALSE;
+        }
+        if (lSteppingDelta < absDiff / K)
+        {
+            lSteppingDelta = absDiff / K;
         }
 
+        if (lBrightness > lMax - lSteppingDelta)
+        {
+            lBrightness = lMax;
+        }
+        else
+        {
+            lBrightness += lSteppingDelta;
+        }
 
-        break;
+        //lpThis->m_oFilterGraphBuilder.GetCameraParams(cameraParams);
+        /*
+        lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
+        cameraParams.Prop_VideoProcAmp_Brightness = lBrightness;
+        cameraParams.Prop_VideoProcMap_Gain       = IRCUT_OFF  ;//保持滤光片打开
+        */
+
+        //AtlTrace(_T("[Brightness]delta =%d, coef=%d, increase\n"), lSteppingDelta, lBrightness);
+        return lpThis->m_oVideoPlayer.SetCameraParams(lBrightness, VideoProcAmp_Brightness);
+    }
+
+
+    break;
 
     case E_CAMERA_BRIGHTNESS_DECREASE://减少亮度
+    {
+        LONG lBrightness, lMax, lMin, lSteppingDelta, lDefault;
+        BYTE absDiff = param1;
+
+        //按照亮度差的绝对值大小,按彼列调节
+        BYTE K = 2;//比例调节系数Kp = 1/K
+        if (!lpThis->m_oVideoPlayer.GetCameraBrightness(lBrightness, lMax, lMin, lSteppingDelta, lDefault))
         {
-            LONG lBrightness , lMax, lMin,lSteppingDelta, lDefault;
-            BYTE absDiff = param1;
-
-            //按照亮度差的绝对值大小,按彼列调节
-            BYTE K = 2;//比例调节系数Kp = 1/K
-            if(!lpThis->m_oVideoPlayer.GetCameraBrightness(lBrightness, lMax, lMin, lSteppingDelta, lDefault))
-            {
-                return FALSE;
-            }
-
-
-            if(lSteppingDelta <  absDiff/K)
-            {
-                lSteppingDelta = absDiff/K;
-            }
-
-            if(lBrightness < lSteppingDelta)
-            {
-                lBrightness = lMin;
-            }
-            else
-            {
-                lBrightness -= lSteppingDelta;
-            }
-
-
-            //AtlTrace(_T("[Brightness]delta =%d, coef=%d,decrease\n"), lSteppingDelta, lBrightness);
-
-            /*
-            lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
-            cameraParams.Prop_VideoProcAmp_Brightness = lBrightness;
-            cameraParams.Prop_VideoProcMap_Gain       = IRCUT_OFF  ;//保持滤光片打开
-            */
-
-
-            return lpThis->m_oVideoPlayer.SetCameraParams(lBrightness, VideoProcAmp_Brightness);
+            return FALSE;
         }
-        break;
+
+
+        if (lSteppingDelta < absDiff / K)
+        {
+            lSteppingDelta = absDiff / K;
+        }
+
+        if (lBrightness < lSteppingDelta)
+        {
+            lBrightness = lMin;
+        }
+        else
+        {
+            lBrightness -= lSteppingDelta;
+        }
+
+
+        //AtlTrace(_T("[Brightness]delta =%d, coef=%d,decrease\n"), lSteppingDelta, lBrightness);
+
+        /*
+        lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
+        cameraParams.Prop_VideoProcAmp_Brightness = lBrightness;
+        cameraParams.Prop_VideoProcMap_Gain       = IRCUT_OFF  ;//保持滤光片打开
+        */
+
+
+        return lpThis->m_oVideoPlayer.SetCameraParams(lBrightness, VideoProcAmp_Brightness);
+    }
+    break;
 
 
     case E_CAMERA_CONTRAST_MAX:
-        {
-            if(!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams)) return FALSE;
+    {
+        if (!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams)) return FALSE;
 
-            LONG lValue, lMax, lMin, lSteppingDelta, lDefault;
-            lMax = 255;      
-            lpThis->m_oVideoPlayer.GetCameraContrast(lValue, lMax,lMin, lSteppingDelta, lDefault);
-            cameraParams.Prop_VideoProcAmp_Contrast = lMax;
-            return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
-        }
-        break;
+        LONG lValue, lMax, lMin, lSteppingDelta, lDefault;
+        lMax = 255;
+        lpThis->m_oVideoPlayer.GetCameraContrast(lValue, lMax, lMin, lSteppingDelta, lDefault);
+        cameraParams.Prop_VideoProcAmp_Contrast = lMax;
+        return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
+    }
+    break;
 
 
     case E_CAMERA_CONTRAST_DEFAULT:
-        {
-            if(!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams))return FALSE;
+    {
+        if (!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams))return FALSE;
 
-            LONG lValue, lMax, lMin, lSteppingDelta, lDefault;
-            if(!lpThis->m_oVideoPlayer.GetCameraContrast(lValue, lMax,lMin, lSteppingDelta, lDefault))
-            {
-                return FALSE;
-            }
-            cameraParams.Prop_VideoProcAmp_Contrast = lDefault;
-            return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
+        LONG lValue, lMax, lMin, lSteppingDelta, lDefault;
+        if (!lpThis->m_oVideoPlayer.GetCameraContrast(lValue, lMax, lMin, lSteppingDelta, lDefault))
+        {
+            return FALSE;
         }
+        cameraParams.Prop_VideoProcAmp_Contrast = lDefault;
+        return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
+    }
 
     case E_CAMERA_CONTRAST:
-        {
-            if(!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams)) return FALSE;
-            cameraParams.Prop_VideoProcAmp_Contrast = param1;
-            return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
-        }
+    {
+        if (!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams)) return FALSE;
+        cameraParams.Prop_VideoProcAmp_Contrast = param1;
+        return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
+    }
 
 
     case E_CAMERA_AUTO_CALIBRATE:
 
         cameraParams = lensCfg.autoCalibrateSettingsList[param2].cameraParams;
 
-		IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(),FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
+        IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
 
-//        cameraParams.Prop_VideoProcMap_Gain     = IRCUT_OFF  ;//保持滤光片打开
+        //        cameraParams.Prop_VideoProcMap_Gain     = IRCUT_OFF  ;//保持滤光片打开
         return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
         break;
 
     case E_CAMERA_AUTO_MASK:
 
-		EDeviceTouchType eTouchType;
-		eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+        EDeviceTouchType eTouchType;
+        eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
 		switch (eTouchType)
 		{
 		   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
@@ -273,7 +274,7 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 		//合上滤光片 
 		IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), TRUE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
 
-//        cameraParams.Prop_VideoProcMap_Gain     = IRCUT_ON ;//拉上滤光片
+        //        cameraParams.Prop_VideoProcMap_Gain     = IRCUT_ON ;//拉上滤光片
         return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
 
         break;
@@ -286,14 +287,14 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
 
 CIWBSensor::CIWBSensor(int nID)
-:
-m_tFavoriteMediaType(DEFAULT_VIDEO_FORMAT),
-m_nID(nID),
-m_oPenPosDetector(nID),
-m_oVideoPlayer(nID),
-m_oTimerActionExecuter(*this)//,
-//m_hVideoDispWnd(NULL),
-//m_hNotifyWnd(NULL)
+    :
+    m_tFavoriteMediaType(DEFAULT_VIDEO_FORMAT),
+    m_nID(nID),
+    m_oPenPosDetector(nID),
+    m_oVideoPlayer(nID),
+    m_oTimerActionExecuter(*this)//,
+    //m_hVideoDispWnd(NULL),
+    //m_hNotifyWnd(NULL)
 
 {
     //memset(&m_rcVideoDispArea, 0, sizeof(RECT));
@@ -304,17 +305,21 @@ m_oTimerActionExecuter(*this)//,
 
     this->m_oVideoPlayer.SetInterceptFilter(m_pInterceptFilter);
 
-	m_tDeviceInfo.m_nPID = 37254;
-	m_tDeviceInfo.m_nVID = 6380;
-	m_tDeviceInfo.m_strDevPath = "";
-	m_tDeviceInfo.m_strName = "";
+    m_tDeviceInfo.m_nPID = 37254;
+    m_tDeviceInfo.m_nVID = 6380;
+    m_tDeviceInfo.m_strDevPath = "";
+    m_tDeviceInfo.m_strName = "";
+
+    m_rcMonintorArea.left   = 0;
+    m_rcMonintorArea.top    = 0;
+    m_rcMonintorArea.right  = ::GetSystemMetrics(SM_CXSCREEN);
+    m_rcMonintorArea.bottom = ::GetSystemMetrics(SM_CYSCREEN);
 
 }
 
 
-
 CIWBSensor::~CIWBSensor()
-{ 
+{
     m_oVideoPlayer.StopDetect();
     this->m_oVideoPlayer.SetInterceptFilter(NULL);
     m_pInterceptFilter->Release();
@@ -350,7 +355,7 @@ BOOL CIWBSensor::Run()
 {
     //<<added by toxuke@gmail.com,2014/12/14
     //如果设备路径为空则不播放。
-    if(m_tDeviceInfo.m_strDevPath.IsEmpty()) return FALSE;
+    if (m_tDeviceInfo.m_strDevPath.IsEmpty()) return FALSE;
     //>>
 
     BOOL bRet = m_oVideoPlayer.StartDetect(m_tDeviceInfo.m_strDevPath, &m_tFavoriteMediaType.videoInfoHeader);
@@ -367,7 +372,7 @@ BOOL CIWBSensor::Run()
     //拉开滤光片禁用光笔控制，避免光斑乱跳
     BOOL bIsPenControlling = this->m_oPenPosDetector.IsOpticalPenControlling();
 
-    if(bIsPenControlling)
+    if (bIsPenControlling)
     {//
         m_oPenPosDetector.EnableOpticalPenControl(FALSE);//
     }
@@ -388,12 +393,12 @@ BOOL CIWBSensor::Run()
     //使能光笔。
     m_oPenPosDetector.EnableOpticalPenControl(bIsPenControlling);
 
-	RECT rcMonitor;
-	BOOL bGet = this->GetAttachedScreenArea(rcMonitor);
-	if (bGet)
-	{
-		m_oPenPosDetector.SetAttachedMonitorSize(rcMonitor);
-	}
+    RECT rcMonitor;
+    BOOL bGet = this->GetAttachedScreenArea(rcMonitor);
+    if (bGet)
+    {
+        m_oPenPosDetector.SetAttachedMonitorSize(rcMonitor);
+    }
 
     //切换到已设置的镜头模式
     SwitchLensMode(this->m_eLensMode);
@@ -408,53 +413,75 @@ BOOL CIWBSensor::Stop()
 
 void CIWBSensor::ShowStatusInfo()
 {
-	m_oVideoPlayer.MissStatusInfo();
+    m_oVideoPlayer.MissStatusInfo();
 }
 //@功能:进入指定的工作模式
 //@参数:eMode, 模式枚举值
 void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
 {
-	////////////判断是墙面模式还是桌面模式
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
-	BOOL bRet = FALSE;
+    ////////////判断是墙面模式还是桌面模式
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+    }
+    BOOL bRet = FALSE;
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
-    switch(eMode)
+    switch (eMode)
     {
     case E_VIDEO_TUNING_MODE:
 
-		//禁用光笔
-		//g_oMouseEventGen.EnableOpticalPenControl(FALSE);
-		EnableOpticalPen(FALSE);
+        //禁用光笔
+        //g_oMouseEventGen.EnableOpticalPenControl(FALSE);
+        EnableOpticalPen(FALSE);
 
         //打开滤光片
         IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), FALSE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
         //载入安装调试时的相机参数
         bRet = m_oVideoPlayer.SetCameraParams(lensCfg.installTunningSettings.cameraParams);
-        if(!bRet)
+        if (!bRet)
         {
             AtlTrace(_T("Set CameraParam Failed!\n"));
         }
 
-		m_oVideoPlayer.AddOSDText(
-			E_OSDTEXT_TYPE_GUIDE_BOX,
-			g_oResStr[IDS_STRING465],
-			lensCfg.rcGuideRectangle,
-			DT_BOTTOM | DT_CENTER | DT_SINGLELINE,
-			8,
-			_T("Times New Roman"),
-			-1);
+        {
+            SIZE videoSize;
+            bRet = m_oVideoPlayer.GetVideoSize(videoSize);
+
+
+
+            if (bRet && videoSize.cx > 0 && videoSize.cy > 0)
+            {
+                //TOSDText::RectF rcText;
+                RectF rcText;
+                rcText.left = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cx;
+                rcText.top = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cy;
+
+                rcText.right = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cx;
+                rcText.bottom = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cy;
+
+                m_oVideoPlayer.AddOSDText(
+                    E_OSDTEXT_TYPE_GUIDE_BOX,
+                    g_oResStr[IDS_STRING465],
+                    rcText,
+                    DT_BOTTOM | DT_CENTER | DT_SINGLELINE,
+                    8,
+                    _T("Times New Roman"),
+                    -1);
+
+            }
+
+
+
+        }
 
         //禁用"静态屏蔽"操作
-        m_oPenPosDetector.EnableStaticMasking(FALSE) ;
+        m_oPenPosDetector.EnableStaticMasking(FALSE);
 
         //停止"动态屏蔽"操作
         m_oPenPosDetector.EnableDynamicMasking(FALSE);
@@ -521,8 +548,8 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
     case E_NORMAL_USAGE_MODE:
         //载入正常使用时的相机参数
 
-		EDeviceTouchType eTouchType;
-		eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+        EDeviceTouchType eTouchType;
+        eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
 
 		switch (eTouchType)
 		{
@@ -584,7 +611,7 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
         //不显示光斑尺寸信息
         m_oPenPosDetector.ShowSpotSizeInfo(TRUE);
 
-		this->m_pInterceptFilter->SetFrameSkipCount(10);
+        this->m_pInterceptFilter->SetFrameSkipCount(10);
         //禁用画面亮度自动调节
         this->m_pInterceptFilter->EnableBrightnessAutoRegulating(FALSE);
 
@@ -599,21 +626,21 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
 {
     m_tDeviceInfo = devInfo;
 
-	/////如果是高清摄像头的话，如果设置中不是1080*720或者1920*1080的话就默认为1080*720
-	if (m_tDeviceInfo.m_nPID == SONIX_PID && m_tDeviceInfo.m_nVID == SONIX_VID)
-	{
-		if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
-		{
-			m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
-	    }
-	}
+    /////如果是高清摄像头的话，如果设置中不是1080*720或者1920*1080的话就默认为1080*720
+    if (m_tDeviceInfo.m_nPID == SONIX_PID && m_tDeviceInfo.m_nVID == SONIX_VID)
+    {
+        if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
+        {
+            m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
+        }
+    }
 
     //选取最合适的视频格式
-    for(size_t i=0; i< m_tDeviceInfo.m_vecVideoFmt.size(); i++)
+    for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)
     {
         CAtlString strFormatName = GetVideoFormatName(m_tDeviceInfo.m_vecVideoFmt[i]);
 
-        if(strFormatName == m_tCfgData.strFavoriteMediaType)
+        if (strFormatName == m_tCfgData.strFavoriteMediaType)
         {
             m_tFavoriteMediaType = m_tDeviceInfo.m_vecVideoFmt[i];
             break;
@@ -621,7 +648,7 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
     }
 
     m_tCfgData.strFavoriteDevicePath = m_tDeviceInfo.m_strDevPath;
-    m_tCfgData.strFavoriteMediaType  = GetVideoFormatName(m_tFavoriteMediaType);
+    m_tCfgData.strFavoriteMediaType = GetVideoFormatName(m_tFavoriteMediaType);
 
 }
 
@@ -641,11 +668,11 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
     m_tDeviceInfo.m_strDevPath = cfgData.strFavoriteDevicePath;
 
     //选取最合适的视频格式
-    for(size_t i=0; i< m_tDeviceInfo.m_vecVideoFmt.size(); i++)
+    for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)
     {
         CAtlString strFormatName = GetVideoFormatName(m_tDeviceInfo.m_vecVideoFmt[i]);
 
-        if(strFormatName == m_tCfgData.strFavoriteMediaType)
+        if (strFormatName == m_tCfgData.strFavoriteMediaType)
         {
             m_tFavoriteMediaType = m_tDeviceInfo.m_vecVideoFmt[i];
             break;
@@ -653,14 +680,14 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 
     }
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+    }
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
@@ -668,7 +695,7 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 
     const NormalUsageSettings* pNormalUsageSettings = NULL;
     //全局配置信息
-    if(pGlobalSettings)
+    if (pGlobalSettings)
     {
 		switch (theApp.GetUSBKeyTouchType())
 		{
@@ -734,10 +761,10 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
         //设置光斑检测门限
         m_oPenPosDetector.SetYThreshold(pNormalUsageSettings->cYThreshold);
 
-		//设置动态屏蔽门限
-		int nPercenttage = pNormalUsageSettings->nDynamicMaskThresholdPercentage;
-		BYTE cDynamicMaskThreshold = BYTE(int(pNormalUsageSettings->cYThreshold) * nPercenttage /100);
-		m_oPenPosDetector.SetDynamicMaskThreshold(cDynamicMaskThreshold);
+        //设置动态屏蔽门限
+        int nPercenttage = pNormalUsageSettings->nDynamicMaskThresholdPercentage;
+        BYTE cDynamicMaskThreshold = BYTE(int(pNormalUsageSettings->cYThreshold) * nPercenttage / 100);
+        m_oPenPosDetector.SetDynamicMaskThreshold(cDynamicMaskThreshold);
 
 
         //设置最小光斑尺寸
@@ -747,7 +774,7 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
         m_oPenPosDetector.SetMinimumLightSpotSize(minimumLightSpotSize);
 
         m_oPenPosDetector.SetGuideRectangle(
-			lensCfg.rcGuideRectangle, lensCfg.dwGuideRectangleColor);
+            lensCfg.rcGuideRectangle, lensCfg.dwGuideRectangleColor);
 
         m_oPenPosDetector.ShowGuideRectangle(lensCfg.bRectangleVisible);
 
@@ -762,7 +789,7 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
         m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
 
         //设置CMOS芯片规格数据
-        if(pGlobalSettings)
+        if (pGlobalSettings)
         {
             m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetCMOSChipSpecification(pGlobalSettings->CMOSChipSpecification);
         }
@@ -770,28 +797,28 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
         //设置镜头规格数据
         m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetLensSpecification(lensCfg.lensSpecification);
 
-		//设置镜头的内部初始参数
-		m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetLensInternalAndSymmmetricDistortParams(
-			lensCfg.bInternalAndSymmetricDistortParamsIsValid?
-			&lensCfg.lensInternalAndSymmetricDistortParams:
-			NULL		
-		);
+        //设置镜头的内部初始参数
+        m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetLensInternalAndSymmmetricDistortParams(
+            lensCfg.bInternalAndSymmetricDistortParamsIsValid ?
+            &lensCfg.lensInternalAndSymmetricDistortParams :
+            NULL
+        );
         //设置校正参数
         m_oPenPosDetector.GetVideoToScreenMap().SetCalibParams(TSensorModeConfig->calibParam);
 
     }
 
-	//设置Sensor实际关联的屏幕区域
-	RECT rcArea;
-	BOOL bRet = GetAttachedScreenArea(rcArea);
-	if (bRet)
-	{
-		this->m_oPenPosDetector.GetVideoToScreenMap().SetActualMonitorResolution(rcArea);
-	}
+    //设置Sensor实际关联的屏幕区域
+    RECT rcArea;
+    BOOL bRet = GetAttachedScreenArea(rcArea);
+    if (bRet)
+    {
+        this->m_oPenPosDetector.GetVideoToScreenMap().SetActualMonitorResolution(rcArea);
+    }
 
 
     //根据工作模式立即生效摄像头参数
-    switch(m_eLensMode)
+    switch (m_eLensMode)
     {
     case E_VIDEO_TUNING_MODE:
         m_oVideoPlayer.SetCameraParams(lensCfg.installTunningSettings.cameraParams);
@@ -857,16 +884,16 @@ BOOL CIWBSensor::IsOpticalPenControlling()
 //      hNotifyWnd, 校正结束后的同志消息的接收窗体
 void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNotifyWnd)
 {
-    if(!this->IsDetecting()) return;//未在运行则立即退出
+    if (!this->IsDetecting()) return;//未在运行则立即退出
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+    }
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
@@ -886,7 +913,7 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 
 
     //停止"静态屏蔽"操作
-    m_oPenPosDetector.EnableStaticMasking(FALSE) ;
+    m_oPenPosDetector.EnableStaticMasking(FALSE);
 
     //停止"动态屏蔽"操作
     m_oPenPosDetector.EnableDynamicMasking(FALSE);
@@ -903,12 +930,12 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 
     TAutoCalibrateParams autoCalibrateParams;
 
-    autoCalibrateParams.hNotifyWnd            = hNotifyWnd;
-    autoCalibrateParams.ePattern              = ePattern;
+    autoCalibrateParams.hNotifyWnd = hNotifyWnd;
+    autoCalibrateParams.ePattern = ePattern;
     //autoCalibrateParams.cAvgBrightness         = m_tCfgData.autoCalibrateSettings.autoCalibrateExpectedBrightness;
     autoCalibrateParams.ChangeCameraParamsProc = OnAutoCalibChangeCameraParams;
-    autoCalibrateParams.lpCtx                  = (LPVOID)this;
-    autoCalibrateParams.eDebugLevel            = (ECalibDebugLevel)g_tSysCfgData.globalSettings.nDebugLevel;
+    autoCalibrateParams.lpCtx = (LPVOID)this;
+    autoCalibrateParams.eDebugLevel = (ECalibDebugLevel)g_tSysCfgData.globalSettings.nDebugLevel;
 
     //高亮块对应的灰度值
     //BYTE  cHilightGray = m_tCfgData.autoCalibrateSettings.autoCalibrateHilightGray;
@@ -977,33 +1004,33 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
       //autoCalibrateParams.monitors.push_back(*pDisplayDevInfo);
     //}
 
-	TScreenInfo tScreenInfo;
-	BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
+    TScreenInfo tScreenInfo;
+    BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
 
-	if (!bRet) return;
-	autoCalibrateParams.vecScreenInfos.push_back(tScreenInfo);
+    if (!bRet) return;
+    autoCalibrateParams.vecScreenInfos.push_back(tScreenInfo);
 
     //准备静态屏蔽参数
     TStaticMaskingParams staticMaskingParams;
     staticMaskingParams.fpPreStaticMaskingProc = CIWBSensor::OnPreStaticMasking;
-    staticMaskingParams.lpPreStaticMaskingCtx  = this;
-    staticMaskingParams.cStaticMaskThreshold   = lensCfg.autoMaskSettings.cAutoMaskDetectThreshold;
-    staticMaskingParams.nMaskEroseSize         = lensCfg.autoMaskSettings.nMaskAreaEroseSize;
+    staticMaskingParams.lpPreStaticMaskingCtx = this;
+    staticMaskingParams.cStaticMaskThreshold = lensCfg.autoMaskSettings.cAutoMaskDetectThreshold;
+    staticMaskingParams.nMaskEroseSize = lensCfg.autoMaskSettings.nMaskAreaEroseSize;
 
     m_oAutoCalibrator.StartCalibrating(autoCalibrateParams, staticMaskingParams);
 
     m_oPenPosDetector.EnterCalibrateMode(m_oAutoCalibrator.GetCalibrateHWnd(), CALIBRATE_MODE_AUTO);
 
-	BOOL bRecordVideoTemp;
+    BOOL bRecordVideoTemp;
 
-	bRecordVideoTemp = g_tSysCfgData.globalSettings.bRecordVideo;
+    bRecordVideoTemp = g_tSysCfgData.globalSettings.bRecordVideo;
 
 
-    if(bRecordVideoTemp)
+    if (bRecordVideoTemp)
     {
         this->m_pInterceptFilter->StartRecording(m_oAutoCalibrator.GetDebugVideoFilePath());
     }
-    
+
 }
 
 
@@ -1011,16 +1038,16 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 //@参数:hNotifyWnd, 校正结束后的同志消息的接收窗体
 void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 {
-    if(!this->IsDetecting()) return;//未在运行则立即退出
+    if (!this->IsDetecting()) return;//未在运行则立即退出
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+    }
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
@@ -1037,7 +1064,7 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
     //>>
 
     //停止"静态屏蔽"操作
-    m_oPenPosDetector.EnableStaticMasking(FALSE) ;
+    m_oPenPosDetector.EnableStaticMasking(FALSE);
 
     //停止"动态屏蔽"操作
     m_oPenPosDetector.EnableDynamicMasking(FALSE);
@@ -1055,10 +1082,10 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 
     TAutoMaskingParams autoMaskingParams;
 
-    autoMaskingParams.hNotifyWnd            = hNotifyWnd;
+    autoMaskingParams.hNotifyWnd = hNotifyWnd;
     autoMaskingParams.ChangeCameraParamsProc = OnAutoCalibChangeCameraParams;
-    autoMaskingParams.lpCtx                  = (LPVOID)this;
-    autoMaskingParams.eDebugLevel            = (ECalibDebugLevel)g_tSysCfgData.globalSettings.nDebugLevel;
+    autoMaskingParams.lpCtx = (LPVOID)this;
+    autoMaskingParams.eDebugLevel = (ECalibDebugLevel)g_tSysCfgData.globalSettings.nDebugLevel;
 
     //高亮块对应的灰度值
     //BYTE  cHilightGray = m_tCfgData.autoCalibrateSettings.autoCalibrateHilightGray;
@@ -1072,7 +1099,7 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 	autoMaskingParams.bRecordVideo = g_tSysCfgData.globalSettings.bRecordVideo;//m_tCfgData.advanceSettings.bRecordVideo;
 
 
-    autoMaskingParams.bDoStaticMaskingOnly   = TRUE;//仅作静态屏蔽
+    autoMaskingParams.bDoStaticMaskingOnly = TRUE;//仅作静态屏蔽
 
 	int nCount = lensCfg.autoCalibrateSettingsList.size();
 	for (int i = 0; i < nCount; i++)
@@ -1091,22 +1118,22 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
     //{
     //    autoMaskingParams.monitors.push_back(*pDisplayDevInfo);
     //}
-	TScreenInfo tScreenInfo;
-	BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
-	if (!bRet) return;
-	autoMaskingParams.vecScreenInfos.push_back(tScreenInfo);
+    TScreenInfo tScreenInfo;
+    BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
+    if (!bRet) return;
+    autoMaskingParams.vecScreenInfos.push_back(tScreenInfo);
 
 
     //准备静态屏蔽参数
     TStaticMaskingParams staticMaskingParams;
     staticMaskingParams.fpPreStaticMaskingProc = CIWBSensor::OnPreStaticMasking;
-    staticMaskingParams.lpPreStaticMaskingCtx  = this;
-    staticMaskingParams.cStaticMaskThreshold   = lensCfg.autoMaskSettings.cAutoMaskDetectThreshold;
-    staticMaskingParams.nMaskEroseSize         = lensCfg.autoMaskSettings.nMaskAreaEroseSize;
+    staticMaskingParams.lpPreStaticMaskingCtx = this;
+    staticMaskingParams.cStaticMaskThreshold = lensCfg.autoMaskSettings.cAutoMaskDetectThreshold;
+    staticMaskingParams.nMaskEroseSize = lensCfg.autoMaskSettings.nMaskAreaEroseSize;
 
-	int Width  = m_oPenPosDetector.GetSrcImageWidth() ;
-	int Height = m_oPenPosDetector.GetSrcImageHeight();
-    m_oAutoCalibrator.StartMasking(autoMaskingParams, staticMaskingParams, Width,Height);
+    int Width = m_oPenPosDetector.GetSrcImageWidth();
+    int Height = m_oPenPosDetector.GetSrcImageHeight();
+    m_oAutoCalibrator.StartMasking(autoMaskingParams, staticMaskingParams, Width, Height);
 
     //m_oPenPosDetector.GetMouseEventGenerator().EnterCalibrateMode(m_oAutoCalibrator.GetCalibrateHWnd(), CALIBRATE_MODE_AUTO);
     m_oPenPosDetector.EnterCalibrateMode(m_oAutoCalibrator.GetCalibrateHWnd(), CALIBRATE_MODE_AUTO);
@@ -1128,24 +1155,24 @@ void CIWBSensor::ShowErrInfo(LPCTSTR lpszInfo)
 void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
 {
 
-    if(!bSuccess)//失败
+    if (!bSuccess)//失败
     {
         //如果调试输出目录不为空则弹出该文件夹
-		if (!PathIsDirectoryEmpty(m_oAutoCalibrator.GetCalibrateIntermediataDirName()))
-		{
-			ShellExecute(NULL, NULL, m_oAutoCalibrator.GetCalibrateIntermediataDirName(), NULL, NULL, SW_SHOW);
-		}
+        if (!PathIsDirectoryEmpty(m_oAutoCalibrator.GetCalibrateIntermediataDirName()))
+        {
+            ShellExecute(NULL, NULL, m_oAutoCalibrator.GetCalibrateIntermediataDirName(), NULL, NULL, SW_SHOW);
+        }
 
         //m_oVideoPlayer.SetDisplayInfo(_T("自动校正失败！"));
         //m_oVideoPlayer.SetDisplayInfo(_T("Auto Calibration Failed!"));
-		m_oVideoPlayer.SetDisplayInfo(g_oResStr[IDS_STRING480]);
+        m_oVideoPlayer.SetDisplayInfo(g_oResStr[IDS_STRING480]);
         m_oPenPosDetector.SetCalibrateFailed(TRUE);
         SwitchLensMode(E_VIDEO_TUNING_MODE);
     }
     else//成功
     {
         //m_oVideoPlayer.SetDisplayInfo(_T("Auto Calibrate Succeeded."));
-		m_oVideoPlayer.SetDisplayInfo(g_oResStr[IDS_STRING481]);
+        m_oVideoPlayer.SetDisplayInfo(g_oResStr[IDS_STRING481]);
         m_oPenPosDetector.SetCalibrateFailed(FALSE);
 
 
@@ -1154,31 +1181,31 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
         //保存静态屏蔽图
         m_oPenPosDetector.SaveStaticMaskFrame();
 
-        CVideToScreenMap& vtsm=  m_oPenPosDetector.GetVideoToScreenMap();
+        CVideToScreenMap& vtsm = m_oPenPosDetector.GetVideoToScreenMap();
 
         const TCalibData* pCalibData = m_oAutoCalibrator.GetCalibrateData();
 
-		if(pCalibData && pCalibData->allMonitorCalibData.size() > 0 )
+        if (pCalibData && pCalibData->allMonitorCalibData.size() > 0)
         {
             TCalibData calibData = *pCalibData;
             //vtsm.SetCalibrateData(*pCalibData, m_tCfgData.advanceSettings.bIsRearProjection);
             calibData.eCalibType = E_CALIBRATE_TYPE_AUTO;
-            calibData.lpCtx  = const_cast<LPVOID>((const LPVOID)m_oAutoCalibrator.GetMaskFrame().GetData());
+            calibData.lpCtx = const_cast<LPVOID>((const LPVOID)m_oAutoCalibrator.GetMaskFrame().GetData());
 
             vtsm.SetCalibrateData(calibData);
 
-			TSensorModeConfig* TSensorModeConfig = NULL;
-			if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-			{
-				TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-			}
-			else {
-				TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-			}
-
-            if(vtsm.DoCalibrate())
+            TSensorModeConfig* TSensorModeConfig = NULL;
+            if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
             {
-				TSensorModeConfig->calibParam   = *vtsm.GetCalibParams();
+                TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+            }
+            else {
+                TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+            }
+
+            if (vtsm.DoCalibrate())
+            {
+                TSensorModeConfig->calibParam = *vtsm.GetCalibParams();
             }
         }
 
@@ -1193,10 +1220,10 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
         SwitchLensMode(E_NORMAL_USAGE_MODE);
 
     }
-	BOOL bRecordVideoTemp = g_tSysCfgData.globalSettings.bRecordVideo;
-    if(bRecordVideoTemp)
+    BOOL bRecordVideoTemp = g_tSysCfgData.globalSettings.bRecordVideo;
+    if (bRecordVideoTemp)
     {
-        if(m_pInterceptFilter->IsRecording())
+        if (m_pInterceptFilter->IsRecording())
         {
             this->m_pInterceptFilter->StopRecording();
         }
@@ -1228,34 +1255,34 @@ void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsI
     //    parameters.monitors.push_back(*pDisplayDevInfo);
     //}
 
-	TScreenInfo tScreenInfo;
-	BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
-	if (!bRet)
-	{
-		return;
-	}
-	parameters.vecScreenInfos.push_back(tScreenInfo);
+    TScreenInfo tScreenInfo;
+    BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
+    if (!bRet)
+    {
+        return;
+    }
+    parameters.vecScreenInfos.push_back(tScreenInfo);
 
 
     //合上滤光片
     IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), TRUE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+    }
 
-    parameters.nCalibratePointsInRow = (nPtsInRow == -1)? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachRow : nPtsInRow;
-    parameters.nCalibratePointsInCol = (nPtsInCol == -1)? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachCol : nPtsInCol;
-    parameters.hNotifyWnd            = hNotifyWnd;
-	//把图像的高和宽传递进手动校正中
-	//add by vera_zhao 2018.11.30
-	int ImageWidth  = this->m_oPenPosDetector.GetSrcImageWidth();
-	int ImageHeight = this->m_oPenPosDetector.GetSrcImageHeight();
+    parameters.nCalibratePointsInRow = (nPtsInRow == -1) ? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachRow : nPtsInRow;
+    parameters.nCalibratePointsInCol = (nPtsInCol == -1) ? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachCol : nPtsInCol;
+    parameters.hNotifyWnd = hNotifyWnd;
+    //把图像的高和宽传递进手动校正中
+    //add by vera_zhao 2018.11.30
+    int ImageWidth = this->m_oPenPosDetector.GetSrcImageWidth();
+    int ImageHeight = this->m_oPenPosDetector.GetSrcImageHeight();
 
     this->m_oManualCalibrator.StartCalibrate(parameters, ImageWidth, ImageHeight);
 
@@ -1269,9 +1296,9 @@ void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsI
 //@参数:bSuccess, 成功/失败标志
 void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
 {
-    if(bSuccess)
+    if (bSuccess)
     {
-        CVideToScreenMap& vtsm=  m_oPenPosDetector.GetVideoToScreenMap();
+        CVideToScreenMap& vtsm = m_oPenPosDetector.GetVideoToScreenMap();
 
         TCalibData calibData;
         calibData.allMonitorCalibData = m_oManualCalibrator.GetCalibrateData();
@@ -1281,32 +1308,32 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
         calibData.eCalibType = E_CALIBRATE_TYPE_MANUAL;
         vtsm.SetCalibrateData(calibData);
 
-		TSensorModeConfig* TSensorModeConfig = NULL;
-		if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-		{
-			TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-		}
-		else {
-			TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-		}
-
-        if(vtsm.DoCalibrate())
+        TSensorModeConfig* TSensorModeConfig = NULL;
+        if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
         {
-			TSensorModeConfig->calibParam  = *vtsm.GetCalibParams();
+            TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+        }
+        else {
+            TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+        }
+
+        if (vtsm.DoCalibrate())
+        {
+            TSensorModeConfig->calibParam = *vtsm.GetCalibParams();
 
             CImageFrame maskFrame = m_oManualCalibrator.GetScreenAreaMask();
 
-			LOG_INF("maskFrameWidth=%d，maskFrameHeight=%d", maskFrame.Width(), maskFrame.Height());
+            LOG_INF("maskFrameWidth=%d，maskFrameHeight=%d", maskFrame.Width(), maskFrame.Height());
 
             const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
             //适当腐蚀屏蔽区，扩到屏幕区域
-            for(int r=0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r ++)
+            for (int r = 0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r++)
             {
                 Morph_Dilate8(
                     maskFrame.GetData(),
                     maskFrame.GetData(),
-                    maskFrame.Width(), 
+                    maskFrame.Width(),
                     maskFrame.Height());
             }
 
@@ -1332,13 +1359,13 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
 //@参数:bSuccess, 成功/失败标志
 void CIWBSensor::OnAutoSearchMaskAreaDone(BOOL bSuccess)
 {
-    if(!bSuccess)//失败
+    if (!bSuccess)//失败
     {
         //显示自动屏蔽失败信息
         m_oVideoPlayer.SetDisplayInfo(_T("Auto Mask Failed！"));
 
         //打开调试输出目录
-        ShellExecute(NULL, NULL, m_oAutoCalibrator.GetCalibrateIntermediataDirName(), NULL, NULL, SW_SHOW); 
+        ShellExecute(NULL, NULL, m_oAutoCalibrator.GetCalibrateIntermediataDirName(), NULL, NULL, SW_SHOW);
 
         SwitchLensMode(E_VIDEO_TUNING_MODE);
     }
@@ -1407,7 +1434,7 @@ void CIWBSensor::OnLightSpotSamplingDone(const ALL_LIGHTSPOT_SAMPLE_SIZE& allSam
 
     this->m_oPenPosDetector.LeaveSpotSamplingMode();
 
-    if(bSuccess)
+    if (bSuccess)
     {
         this->m_oPenPosDetector.SetLightSpotSampleSize(allSampleSize);
     }
@@ -1421,13 +1448,13 @@ void CIWBSensor::OnLightSpotSamplingDone(const ALL_LIGHTSPOT_SAMPLE_SIZE& allSam
 //void CIWBSensor::OnMonitorResolutionChange(const RECT&  rcNewMonitorResolution)
 void CIWBSensor::OnMonitorResolutionChange()
 {
-	RECT rcArea;
-	BOOL bRet = GetAttachedScreenArea(rcArea);
-	if (bRet)
-	{
-		this->m_oPenPosDetector.GetVideoToScreenMap().SetActualMonitorResolution(rcArea);
-//		this->m_oPenPosDetector.SetScreenSize((rcArea.right - rcArea.left),(rcArea.bottom- rcArea.top));
-	}
+    RECT rcArea;
+    BOOL bRet = GetAttachedScreenArea(rcArea);
+    if (bRet)
+    {
+        this->m_oPenPosDetector.GetVideoToScreenMap().SetActualMonitorResolution(rcArea);
+        //		this->m_oPenPosDetector.SetScreenSize((rcArea.right - rcArea.left),(rcArea.bottom- rcArea.top));
+    }
 }
 
 /*
@@ -1450,14 +1477,14 @@ void CIWBSensor::OnStopDetectBackSplashVanished()
 //@功能:设备丢失事件响应函数
 void CIWBSensor::OnDeviceIsMissing()
 {
-    if( this->m_oPenPosDetector.IsManualCalibrating())
+    if (this->m_oPenPosDetector.IsManualCalibrating())
     {
         this->m_oManualCalibrator.OnDeviceMissing();
-    } 
-	if(this->m_oPenPosDetector.IsAutoCalibrating())
-	{
-		this->m_oAutoCalibrator.OnDeviceMissing();
-	}
+    }
+    if (this->m_oPenPosDetector.IsAutoCalibrating())
+    {
+        this->m_oAutoCalibrator.OnDeviceMissing();
+    }
 }
 
 
@@ -1468,16 +1495,16 @@ void CIWBSensor::OnDeviceIsMissing()
 //@Author:15077727@qq.com, 2015/09/09
 BOOL CIWBSensor::CheckCalibrateSymbolPos(BOOL bShow)
 {
-    if(bShow)
+    if (bShow)
     {
-        if(this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return FALSE;
+        if (this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return FALSE;
         const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_nID);
-        if(NULL == pDisplayDevInfo) return FALSE;
+        if (NULL == pDisplayDevInfo) return FALSE;
 
         //const TCalibData* pCalibData = m_oAutoCalibrator.GetCalibrateData();
         const TCalibData& calibData = m_oPenPosDetector.GetVideoToScreenMap().GetCalibrateData();
 
-        if(calibData.allMonitorCalibData.size() == 0) 
+        if (calibData.allMonitorCalibData.size() == 0)
         {
             MessageBox(NULL, _T("No Calibrate Data found"), _T("Error"), MB_OK | MB_ICONERROR);
             return FALSE;
@@ -1489,7 +1516,7 @@ BOOL CIWBSensor::CheckCalibrateSymbolPos(BOOL bShow)
         std::vector<POINT> symbolPos;
         symbolPos.resize(nSymbolCount);
 
-        for(int i=0; i < nSymbolCount; i++)
+        for (int i = 0; i < nSymbolCount; i++)
         {
             symbolPos[i] = calibData.allMonitorCalibData[0].calibData[i].ptScreenCoord;
         }
@@ -1497,7 +1524,7 @@ BOOL CIWBSensor::CheckCalibrateSymbolPos(BOOL bShow)
         std::vector<POINT> projectPos;
         projectPos.resize(nSymbolCount);
 
-        for(int i=0; i < nSymbolCount; i++)
+        for (int i = 0; i < nSymbolCount; i++)
         {
             const TPoint2D& pt2dImage = calibData.allMonitorCalibData[0].calibData[i].pt2DImageCoord;
             bool bIsOutside = FALSE;
@@ -1517,13 +1544,13 @@ BOOL CIWBSensor::CheckCalibrateSymbolPos(BOOL bShow)
             &projectPos[0]
         );
 
-		m_oPenPosDetector.ShowCalibratePoints(TRUE);
+        m_oPenPosDetector.ShowCalibratePoints(TRUE);
 
     }
     else
     {
         m_oCalibSymbolChecker.Hide();
-		m_oPenPosDetector.ShowCalibratePoints(FALSE);
+        m_oPenPosDetector.ShowCalibratePoints(FALSE);
     }
 
     return TRUE;
@@ -1541,7 +1568,7 @@ void _stdcall CIWBSensor::OnManualSampleDoneCallBackProc(LPVOID lpCtx, BOOL bSuc
 {
     CIWBSensor* lpSensor = reinterpret_cast<CIWBSensor*>(lpCtx);
 
-    if(bSuccess)
+    if (bSuccess)
     {
         SYSTEMTIME sysTime;
         GetLocalTime(&sysTime);
@@ -1561,22 +1588,22 @@ void _stdcall CIWBSensor::OnManualSampleDoneCallBackProc(LPVOID lpCtx, BOOL bSuc
         FILE* file;
 
         errno_t err = fopen_s(&file, szFileName, "w");
-        if(err == 0)
+        if (err == 0)
         {
             char szData[1256];
 
-            const std::vector<TPoint2D> & vecSymbolsInVideo  =  lpSensor->GetCalibrateSymbolManualSampler().GetSymbolsCoordInVideo();
-            const std::vector<TPoint2D> & vecLightSpotsInVideo =  lpSensor->GetCalibrateSymbolManualSampler().GetLightSpotsCoordInVideo();
+            const std::vector<TPoint2D> & vecSymbolsInVideo = lpSensor->GetCalibrateSymbolManualSampler().GetSymbolsCoordInVideo();
+            const std::vector<TPoint2D> & vecLightSpotsInVideo = lpSensor->GetCalibrateSymbolManualSampler().GetLightSpotsCoordInVideo();
 
             const std::vector<POINT>& vecActualTouchPosInScreen = lpSensor->GetCalibrateSymbolManualSampler().GetActualTouchPosInScreen();
-            const std::vector<POINT>& vecSymbolPosInScreen      = lpSensor->GetCalibrateSymbolManualSampler().GetSymbolPosInScreen();
+            const std::vector<POINT>& vecSymbolPosInScreen = lpSensor->GetCalibrateSymbolManualSampler().GetSymbolPosInScreen();
             int nCount = vecSymbolsInVideo.size();
-            for(int i=0; i < nCount; i++)
+            for (int i = 0; i < nCount; i++)
             {
-                const TPoint2D& ptSymbol    = vecSymbolsInVideo[i];
+                const TPoint2D& ptSymbol = vecSymbolsInVideo[i];
                 const TPoint2D& ptLightSpot = vecLightSpotsInVideo[i];
 
-                const POINT&  symbolPos   = vecSymbolPosInScreen[i];
+                const POINT&  symbolPos = vecSymbolPosInScreen[i];
                 const POINT&  actualTouch = vecActualTouchPosInScreen[i];
                 sprintf_s(
                     szData,
@@ -1590,7 +1617,7 @@ void _stdcall CIWBSensor::OnManualSampleDoneCallBackProc(LPVOID lpCtx, BOOL bSuc
                     symbolPos.y,
                     actualTouch.x,
                     actualTouch.y
-                    );
+                );
 
                 fwrite(szData, 1, strlen(szData), file);
             }
@@ -1608,14 +1635,14 @@ void _stdcall CIWBSensor::OnManualSampleDoneCallBackProc(LPVOID lpCtx, BOOL bSuc
 //@功能:对校正符号进行手动再采样
 BOOL CIWBSensor::CalibrateSymbolManualResample()
 {
-    if(this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return FALSE;
+    if (this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return FALSE;
     const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_nID);
-    if(NULL == pDisplayDevInfo) return FALSE;
+    if (NULL == pDisplayDevInfo) return FALSE;
 
 
     const TCalibData& calibData = m_oPenPosDetector.GetVideoToScreenMap().GetCalibrateData();
 
-    if(calibData.allMonitorCalibData.size() == 0) 
+    if (calibData.allMonitorCalibData.size() == 0)
     {
         MessageBox(NULL, _T("No Calibrate Data found"), _T("Error"), MB_OK | MB_ICONERROR);
         return FALSE;
@@ -1624,16 +1651,16 @@ BOOL CIWBSensor::CalibrateSymbolManualResample()
 
     int nSymbolCount = calibData.allMonitorCalibData[0].calibData.size();
 
-    std::vector<POINT> symbolPosOnScreen ;
+    std::vector<POINT> symbolPosOnScreen;
     symbolPosOnScreen.resize(nSymbolCount);
 
     std::vector<TPoint2D> symbolPosOnImage;
     symbolPosOnImage.resize(nSymbolCount);
 
-    for(int i=0; i < nSymbolCount; i++)
+    for (int i = 0; i < nSymbolCount; i++)
     {
-        symbolPosOnScreen[i]   = calibData.allMonitorCalibData[0].calibData[i].ptScreenCoord;
-        symbolPosOnImage [i]   = calibData.allMonitorCalibData[0].calibData[i].pt2DImageCoord;
+        symbolPosOnScreen[i] = calibData.allMonitorCalibData[0].calibData[i].ptScreenCoord;
+        symbolPosOnImage[i] = calibData.allMonitorCalibData[0].calibData[i].pt2DImageCoord;
     }
 
     m_oCalibSymbolManualSampler.DoManualResample(
@@ -1644,12 +1671,12 @@ BOOL CIWBSensor::CalibrateSymbolManualResample()
         RGB(255, 0, 0),
         &CIWBSensor::OnManualSampleDoneCallBackProc,
         this
-        );
+    );
 
     m_oPenPosDetector.EnterManualResample(m_oCalibSymbolManualSampler.GetHwnd());
 
     return TRUE;
-}
+    return FALSE;}
 
 
 
@@ -1658,130 +1685,142 @@ BOOL CIWBSensor::CalibrateSymbolManualResample()
 BOOL CIWBSensor::IsCalibrated()const
 {
     const TCalibParams*  pCalibParams = m_oPenPosDetector.GetVideoToScreenMap().GetCalibParams();
-    if(pCalibParams)
+    if (pCalibParams)
     {
-        if(pCalibParams->allCalibCoefs.size() >0)
+        if (pCalibParams->allCalibCoefs.size() > 0)
         {
-
-            if(pCalibParams->allCalibCoefs[0].calibCoefs.size() > 0)
+            if (pCalibParams->allCalibCoefs[0].calibCoefs.size() > 0)
                 return TRUE;
-
         }
     }
     return FALSE;
 }
 
 
+/*
+//@功能:获取关联的屏幕区域尺寸
+BOOL CIWBSensor::GetAttachedScreenArea(RECT& rcMonitor)const
+{
+    theApp.GetMonitorFinder().SearchDisplayDev();
+
+    int nMonitorCount = theApp.GetMonitorFinder().GetDisplayDevCount();
+    if (nMonitorCount == 0) return FALSE;
+
+    if (m_tCfgData.bAutoAttachMonitor)
+    {//自动关联屏幕
+        EScreenMode screenMode = theApp.GetScreenMode();
+
+        if (screenMode == EScreenModeSingle)
+        {//
+            if (this->m_nID >= nMonitorCount) return FALSE;
+            {
+                const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetPrimaryMonitorInfo();
+                rcMonitor = pDisplayDevInfo->rcMonitor;
+            }
+            
+        }
+        else if (screenMode >= EScreenModeDouble)
+        {//多屏拼接模式
+            //EScreenModeDouble://双屏模式
+            //EScreenModeTriple://三屏模式
+            //EScreenModeQuad  ://四屏模式
+            //EScreenModeQuint ://五屏模式
+            //EScreenModeHexa  ://六屏模式
+            if (nMonitorCount == 1)
+            {//只有一个屏幕
+                //将屏幕等比例均分
+                const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(0);
+
+                LONG nWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
+                rcMonitor = pDisplayDevInfo->rcMonitor;
+                LONG left = rcMonitor.left;
+
+                //每个屏幕的宽度
+                LONG perWidth = nWidth / (int(screenMode) + 1);
+
+                rcMonitor.left = left + this->m_nID*perWidth;
+
+                rcMonitor.right = rcMonitor.left + perWidth;
+
+
+            }
+            else//多个屏幕
+            {
+                
+
+            }
+        }//else if
+
+    }
+    else
+    {//手动指定屏幕
+        if (this->m_tCfgData.nAttachedMonitorId >= theApp.GetMonitorFinder().GetDisplayDevCount())
+        {
+            return FALSE;
+        }
+        const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_tCfgData.nAttachedMonitorId);
+        switch (this->m_tCfgData.eMonitorAreaType)
+        {
+        case E_MONITOR_AREA_TYPE_FULLSCREEN://全屏
+            rcMonitor = pDisplayDevInfo->rcMonitor;
+            break;
+
+        case  E_MONITOR_AREA_TYPE_LEFT_HALF://左半屏
+            rcMonitor = pDisplayDevInfo->rcMonitor;
+            {
+                int nWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
+                rcMonitor.right = rcMonitor.left + (nWidth >> 1);
+            }
+            break;
+
+        case E_MONITOR_AREA_TYPE_RIGHT_HALF://右半部
+            rcMonitor = pDisplayDevInfo->rcMonitor;
+            {
+                int nWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
+                rcMonitor.left = rcMonitor.right - (nWidth >> 1);
+            }
+            break;
+
+        default:
+            return FALSE;
+        }
+    }//else
+
+    return TRUE;
+}
+*/
+
+void CIWBSensor::SetAttachedScreenArea(const RECT& rcMonitor)
+{
+    m_rcMonintorArea = rcMonitor;
+    this->m_oPenPosDetector.GetVideoToScreenMap().SetActualMonitorResolution(rcMonitor);
+}
 
 //@功能:获取关联的屏幕区域尺寸
 BOOL CIWBSensor::GetAttachedScreenArea(RECT& rcMonitor)const
 {
-	theApp.GetMonitorFinder().SearchDisplayDev();
-
-	int nMonitorCount = theApp.GetMonitorFinder().GetDisplayDevCount();
-	if (nMonitorCount == 0) return FALSE;
-
-	if (m_tCfgData.bAutoAttachMonitor)
-	{//自动关联屏幕
-		switch (theApp.GetScreenType())
-		{
-			case ESingleScreenMode://单屏幕	
-				if (this->m_nID >= nMonitorCount) return FALSE;
-				{
-				const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetPrimaryMonitorInfo();
-				rcMonitor = pDisplayDevInfo->rcMonitor;
-				}
-				break;
-
-			case EDoubleScreenMode://双屏幕
-				if (nMonitorCount == 1)//只有一个屏幕
-				{
-					if (this->m_nID == 0)
-					{
-						const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(0);
-						int nWidth  = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
-						rcMonitor = pDisplayDevInfo->rcMonitor;
-						rcMonitor.right = rcMonitor.left + (nWidth >> 1);
-						
-					}
-					else if (this->m_nID == 1)
-					{
-						const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(0);
-						int nWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
-						rcMonitor = pDisplayDevInfo->rcMonitor;
-						rcMonitor.left = rcMonitor.right - (nWidth >> 1);
-					}
-					else
-					{
-						return FALSE;
-					}
-				}
-				else//多个屏幕
-				{
-					const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_nID);
-					rcMonitor = pDisplayDevInfo->rcMonitor;
-				}
-
-			break;
-		}
-		
-	}//if
-	else
-	{
-		if (this->m_tCfgData.nAttachedMonitorId >= theApp.GetMonitorFinder().GetDisplayDevCount())
-		{
-			return FALSE;
-		}
-		const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_tCfgData.nAttachedMonitorId);
-		switch (this->m_tCfgData.eMonitorAreaType)
-		{
-			case E_MONITOR_AREA_TYPE_FULLSCREEN ://全屏
-				rcMonitor = pDisplayDevInfo->rcMonitor;
-				break;
-
-			case  E_MONITOR_AREA_TYPE_LEFT_HALF://左半屏
-				rcMonitor = pDisplayDevInfo->rcMonitor;
-				{
-					int nWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
-					rcMonitor.right = rcMonitor.left + (nWidth >> 1);
-				}
-				break;
-	
-			case E_MONITOR_AREA_TYPE_RIGHT_HALF://右半部
-				rcMonitor = pDisplayDevInfo->rcMonitor;
-				{
-					int nWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
-					rcMonitor.left = rcMonitor.right - (nWidth >> 1);
-				}
-				break;
-
-			default:
-				return FALSE;
-		}
-	}//else
-
-	return TRUE;
+    rcMonitor = m_rcMonintorArea;
+    return TRUE;
 }
-
 
 void CIWBSensor::OnTimer(LPVOID lpCtxData)
 {
-	m_oTimerActionExecuter.Run();
+    m_oTimerActionExecuter.Run();
 }
 
 void CIWBSensor::SetlenCfgData(const TLensConfig& lencfgData)
 {
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+    TSensorModeConfig* TSensorModeConfig = NULL;
+    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+    {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
+    }
+    else {
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
+    }
 
-	TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
-	lensCfg = lencfgData;
+    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+    lensCfg = lencfgData;
 }
 
 //@功能：把设置插值的值保存下来

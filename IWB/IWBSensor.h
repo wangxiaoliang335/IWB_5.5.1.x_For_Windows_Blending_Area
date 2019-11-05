@@ -187,6 +187,7 @@ public:
       //功能;判断传感器是否有校正数据
       BOOL IsCalibrated()const;
 
+      void SetAttachedScreenArea(const RECT& rcMonitor);
 
 	  //@功能:获取关联的屏幕区域尺寸
 	  BOOL GetAttachedScreenArea(RECT& rcMonitor)const;
@@ -195,6 +196,8 @@ public:
 	  void  OnTimer(LPVOID lpCtxData);
 	  void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
 	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea);
+
+
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;
@@ -225,7 +228,7 @@ protected:
 
 
   //此图像传感器监视的屏幕区域
-  //RECT  m_rcMonintorArea;
+  RECT  m_rcMonintorArea;
 
 
   //视频坐标到屏幕坐标的映射对象.

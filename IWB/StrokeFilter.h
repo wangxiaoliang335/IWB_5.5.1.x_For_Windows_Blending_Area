@@ -133,8 +133,8 @@ public:
                     {
                         
                         //计算平滑系数
-                        //线性模型                        
-                        //λ = λmax - (λmax - λmin) * D / D_max                        
+                        //线性模型
+                        //λ = λmax - (λmax - λmin) * D / D_max
                         //double smooth_coef = m_dbMaxSmoothCoef - (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*distance / m_nMaxDistance;
 
                         //抛物线模型

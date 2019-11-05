@@ -12,6 +12,7 @@
 #endif
 
 
+
 class CInterceptFilter;
 
 //
@@ -34,6 +35,14 @@ class CInterceptFilter;
 class TOSDText
 {
 public:
+    //struct RectF
+    //{
+    //    float left;
+    //    float top;
+    //    float right;
+    //    float bottom;
+    //};
+
 	TOSDText()
 		:
 		m_strText(_T("")),
@@ -43,15 +52,15 @@ public:
 		m_hFont(NULL),
 		m_nDisplayTimesCounter(-1)
 	{
-		m_rcDisplayArea.left   = 0;
-		m_rcDisplayArea.right  = 0;
-		m_rcDisplayArea.top    = 0;
-		m_rcDisplayArea.bottom = 0;
+		m_rcDisplayArea.left   = 0.0;
+        m_rcDisplayArea.top    = 0.0;
+		m_rcDisplayArea.right  = 1.0;
+		m_rcDisplayArea.bottom = 1.0;
 
 	}
 	TOSDText(
 		const TCHAR* szText,
-		const RECT&  rcDisplayArea,
+		const RectF&  rcDisplayArea,
 		UINT dwDrawTextFormat,
 		LONG lFontSize,
 		const TCHAR* lpszFontFaceName	
@@ -137,13 +146,13 @@ public:
 	}
 
 
-	void SetDisplayArea(const RECT& rcDisplayArea, UINT dwDrawTextFormat)
+	void SetDisplayArea(const RectF& rcDisplayArea, UINT dwDrawTextFormat)
 	{
 		m_rcDisplayArea    = rcDisplayArea;
 		m_dwDrawTextFormat = dwDrawTextFormat;
 	}
 
-	const RECT& GetDisplayArea()const
+	const RectF& GetDisplayArea()const
 	{
 		return m_rcDisplayArea;
 	}
@@ -181,11 +190,12 @@ public:
 	{
 		return (LPCTSTR)m_strFontFaceName;
 	}
+    
 	
 protected:
 	CString      m_strText;
 	HFONT        m_hFont;
-	RECT         m_rcDisplayArea;
+    RectF        m_rcDisplayArea;//坐标归一化到[0,1]内的矩形
 	UINT         m_dwDrawTextFormat;//API DrawText的Format参数
 	LONG         m_lFontSize;
 	CString      m_strFontFaceName;
@@ -197,9 +207,10 @@ protected:
 
 enum EOSDTextType
 {
-	E_OSDTEXT_TYPE_ERROR_INFO = 0,//校正信息
-	E_OSDTEXT_TYPE_GUIDE_BOX = 1,//引导框
-	E_OSDTEXT_TYPE_COUNT  = 2
+    E_OSDTEXT_TYPE_ERROR_INFO  = 0,//校正信息
+    E_OSDTEXT_TYPE_GUIDE_BOX   = 1,//引导框
+    E_OSDTEXT_TYPE_FORMAT_INFO = 2,//视频格式信息
+    E_OSDTEXT_TYPE_COUNT       = 3
 };
 
 class CVideoPlayer
@@ -333,12 +344,14 @@ public:
     void SetDisplayInfo(LPCTSTR lpszInfo);
 
 
+
 	//@功能:增加OSD显示文字
 	//
 	BOOL AddOSDText(
 		EOSDTextType eOSDTextType,
 		const TCHAR* szContent,
-		const RECT&  rcDisplayArea,
+		//const TOSDText::RectF&  rcDisplayArea,
+        const RectF&  rcDisplayArea,
 		UINT deDrawTextFormat,
 		LONG lFontSize,
 		const TCHAR* lpszFontFaceName,
@@ -347,16 +360,20 @@ public:
 
 	void ClearOSDText(EOSDTextType eOSDTextType);
 
-	void ShowCameraInfo(int nImageWidth, int nImageHeight, DWORD ImageType);
+	void UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps);
 	CString   CurrentCameraResolution();
+
+
+    BOOL GetVideoSize(SIZE&  size);
 
 protected:
     //
 	HRESULT PlayVideo(HWND hWnd = NULL, HWND hNotifyWnd=NULL);
 
-
 	HRESULT InitializeVideo();
+
 	void UnInitializeVideo();
+
 	HRESULT GetInterfaces();
 	HRESULT CloseInterfaces();
 

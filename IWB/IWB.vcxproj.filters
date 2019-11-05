@@ -273,6 +273,9 @@
     <ClCompile Include="CameraFmtDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScreenLayoutDesigner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt">
@@ -598,6 +601,9 @@
     <ClInclude Include="CameraFmtDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenLayoutDesigner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Arrows\bottom_left.bmp">
@@ -693,6 +699,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\IWB.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Cursor_SplitHorz.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\hand.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ClassDiagram1.cd" />

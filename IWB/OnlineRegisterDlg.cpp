@@ -18,7 +18,7 @@ COnlineRegisterDlg::COnlineRegisterDlg(CWnd* pParent /*=NULL*/)
     m_bRegisteredOk(FALSE)
     , m_strSN(_T(""))
     ,m_eTouchType(E_DEVICE_PEN_TOUCH_WHITEBOARD)
-    ,m_eScreenType(ESingleScreenMode)
+    ,m_eScreenMode(EScreenModeSingle)
 
 {
 
@@ -55,7 +55,7 @@ BOOL COnlineRegisterDlg::OnInitDialog()
            g_oResStr[IDS_STRING459],
            theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD ? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
            g_oResStr[IDS_STRING462],
-           theApp.GetScreenType() == EDoubleScreenMode?g_oResStr[IDS_STRING464] :g_oResStr[IDS_STRING463]);
+           theApp.GetScreenMode() >= EScreenModeDouble? g_oResStr[IDS_STRING464] :g_oResStr[IDS_STRING463]);
            
    }
    else
@@ -118,7 +118,16 @@ BOOL COnlineRegisterDlg::OnInitDialog()
             status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE,&value);
             if(status == BIT_SUCCESS)
             {
-                m_eScreenType = (value == 0)?ESingleScreenMode:EDoubleScreenMode;
+                //m_eScreenType = (value == 0)?ESingleScreenMode:EDoubleScreenMode;
+                if (EScreenModeSingle <= (EScreenMode)value && (EScreenMode)value < EScreenModeHexa)
+                {
+                    m_eScreenMode = (EScreenMode)value;
+                }
+                else
+                {
+                    m_eScreenMode = EScreenModeSingle;
+                }
+
             }
 
            m_strText.Format(
@@ -127,9 +136,7 @@ BOOL COnlineRegisterDlg::OnInitDialog()
            g_oResStr[IDS_STRING459],
            m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD ? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
            g_oResStr[IDS_STRING462],
-           m_eScreenType == EDoubleScreenMode?g_oResStr[IDS_STRING464] :g_oResStr[IDS_STRING463]);
-
-
+           m_eScreenMode >= EScreenModeDouble ? g_oResStr[IDS_STRING464] : g_oResStr[IDS_STRING463]);
 
         }//if(status == BIT_SUCCESS)
         else

@@ -13,8 +13,9 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-
 #include <atlbase.h>
+
+#include "../inc/RectF.h"
 
 #include "../inc/VideoProcAmpProperty.h"
 #include "../inc/MultiDimensionPoint.h"
@@ -54,7 +55,6 @@
 
 //////////////////////////////////////////////////////////////////////////
 
-#include <atlbase.h>
 #include <atlcoll.h>
 #include <atlstr.h>
 #include <vector>
@@ -142,6 +142,11 @@
 
 #include "ManualCalibrationWnd.h"
 
+//屏幕布局编辑工具
+#include "ScreenLayoutDesigner.h"
+
+
+
 #include "SensorTimerAction.h"
 #include "IWBSensor.h"
 #include "IWBSensorManager.h"
@@ -154,6 +159,8 @@
 #include "SimulateCalibarationParamDlg.h"
 #include "HyperLinkWnd.h"
 #include "ScreenRecognition.h"
+
+
 #include "AdvancedSettingsDlg.h"
 
 #include "GestureSettingDlg.h"

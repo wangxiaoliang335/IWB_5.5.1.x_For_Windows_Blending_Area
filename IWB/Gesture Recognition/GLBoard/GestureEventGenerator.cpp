@@ -430,7 +430,7 @@ bool CGestureEventGenerator::DoDetection(const TLightSpot * aryLightSpots,  cons
         isResponse = (bool)EraserTransPen(aryLightSpots, nCount);
         
 
-        POINT pts[CAMERA_NUMBER*MAX_OBJ_NUMBER];
+        POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
         int   nActualCount;        
 
         if (isResponse)

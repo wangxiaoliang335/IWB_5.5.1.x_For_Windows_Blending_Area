@@ -35,9 +35,11 @@ m_eSpotSamplingState(E_ALL_SPOT_SAMPLEING_END),
 m_nSampleTimes(0),
 m_nCurrentSampleNo(0),/*,
 m_eSpotSamplingMode(eCollectSpotMode)*/
-m_eSpotSamplePattern(E_SAMPLE_COLLECT_PATTERN_9_Points),
+//m_eSpotSamplePattern(E_SAMPLE_COLLECT_PATTERN_9_Points),
 m_nSymbolHorzInterval(50),
-m_nSymbolVertInterval(50)
+m_nSymbolVertInterval(50),
+m_nSampleNumEachRow(0),
+m_nSampleNumEachCol(0)
 {
     WNDCLASSEX wnd;
     wnd.cbSize = sizeof wnd;
@@ -91,7 +93,7 @@ CCollectSpotSize::~CCollectSpotSize(void)      //析构函数
     UnregisterClass(m_szClassName,m_hInstacne);
 }
 
-//////////////////////////////窗体的创建
+///窗体的创建
 BOOL CCollectSpotSize::Create()
 {
     m_hWnd = ::CreateWindowEx(
@@ -109,7 +111,7 @@ BOOL CCollectSpotSize::Create()
     return (m_hWnd != NULL);
 }
 
-/////////////////////////窗体全屏化
+//窗体全屏化
 void CCollectSpotSize::FullScreen(BOOL bFull)
 {
     if (bFull)
@@ -178,7 +180,7 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
     //{
     //	DoubleScreenMergeCount = MAX_SAMPLE_NUMBER;
 
-    m_nSampleNumEachCol = 3;
+    /*m_nSampleNumEachCol = 3;
     switch(m_eSpotSamplePattern)
     {
     case E_SAMPLE_COLLECT_PATTERN_9_Points:
@@ -193,13 +195,14 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
     default:
         m_nSampleNumEachRow = 3;
     }
+    */
 
     int nSampleCount = m_nSampleNumEachCol * m_nSampleNumEachRow;
     m_vecSampleSymbols.resize(nSampleCount);
 
-    for(size_t i=0; i< m_allLightSpotSampleSize.size(); i++)
+    for(size_t i=0; i< m_ScreenLightspotSample.size(); i++)
     {
-        m_allLightSpotSampleSize[i].vecSampleSize.resize(nSampleCount);
+        m_ScreenLightspotSample[i].vecSampleSize.resize(nSampleCount);
     }
     
     //}
@@ -264,6 +267,8 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
 
     nSymbolIndex = 0;
 
+
+    //按列优先排列,计算每列中各个采样点的位置
     for(int col = 0 ; col < m_nSampleNumEachRow;col++)
     {
          nX = nMonitorLeft + (nMonitorWidth * col) / (m_nSampleNumEachRow - 1);
@@ -274,7 +279,6 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
 
             TSampleSymbol& symbol   = m_vecSampleSymbols[nSymbolIndex];
 
-            //设置采样点中心位置到屏幕边界处，便于实现双线性插值操作
             symbol.ptCenter.x = nX;
             symbol.ptCenter.y = nY;
 
@@ -285,22 +289,22 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
 
     
 
-    //激光器底下的采样点向下偏移1/3间隔距离
-    int nOffsetY =  nMonitorHeight/(m_nSampleNumEachCol - 1);
-    nOffsetY = nOffsetY * 1/4;
+    ////激光器底下的采样点向下偏移1/3间隔距离
+    //int nOffsetY =  nMonitorHeight/(m_nSampleNumEachCol - 1);
+    //nOffsetY = nOffsetY * 1/4;
 
-    switch(m_eSpotSamplePattern)
-    {
-    case E_SAMPLE_COLLECT_PATTERN_9_Points:
-        m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
-        break;
+    //switch(m_eSpotSamplePattern)
+    //{
+    //case E_SAMPLE_COLLECT_PATTERN_9_Points:
+    //    m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
+    //    break;
 
-    case E_SAMPLE_COLLECT_PATTERN_15_Points:
-        m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
-        m_vecSampleSymbols[9].ptDisplay.y += nOffsetY;
-        break;
+    //case E_SAMPLE_COLLECT_PATTERN_15_Points:
+    //    m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
+    //    m_vecSampleSymbols[9].ptDisplay.y += nOffsetY;
+    //    break;
 
-    }
+    //}
 
 }
 
@@ -508,7 +512,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
                     {//采集了30次都是在一个点上，说明这个点是要取得的点
 
                         m_vecSampleSymbols[m_nCurrentSampleNo].bSampled = TRUE;
-                        m_allLightSpotSampleSize[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].ptCenter = m_vecSampleSymbols[m_nCurrentSampleNo].ptCenter;
+                        m_ScreenLightspotSample[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].ptCenter = m_vecSampleSymbols[m_nCurrentSampleNo].ptCenter;
                         
                         int nCalcuteSum = 0;
 						int nActiveSum = 0;
@@ -527,8 +531,8 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 							percentageArea = nActiveArea / nCalArea;
 						}
 	
-                        m_allLightSpotSampleSize[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].lSize = (LONG)nActiveArea;
-						m_allLightSpotSampleSize[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].fPercentage = percentageArea;
+                        m_ScreenLightspotSample[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].lSize = (LONG)nActiveArea;
+						m_ScreenLightspotSample[this->m_nCurMonitorAreaId].vecSampleSize[m_nCurrentSampleNo].fPercentage = percentageArea;
                         
                         m_eSpotSamplingState = E_CURRENT_SYMBOL_SAMPLING_END;
 
@@ -547,7 +551,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
                 if(m_nCurMonitorAreaId < (int)m_vecMonitorAreas.size() -1 )
                 {//还未采样到最后一个屏幕, 继续采样下一个屏幕
 
-					m_nCurMonitorAreaId++;
+                    m_nCurMonitorAreaId++;
                    InitSamplePosition(m_vecMonitorAreas[m_nCurMonitorAreaId]);
                    InvalidateRect(m_hWnd,NULL,TRUE);
                    m_nCurrentSampleNo = 0;
@@ -564,7 +568,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
                     if (m_hOwner)
                     {
                         //结束光斑采集
-                        PostMessage(m_hOwner,WM_FINISH_COLLECTSPOT, m_allLightSpotSampleSize.size(), 0);
+                        PostMessage(m_hOwner,WM_FINISH_COLLECTSPOT, m_ScreenLightspotSample.size(), 0);
 
                         //关闭全屏显示
                         //FullScreen(FALSE);
@@ -808,7 +812,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 //@参数:pMonitorInfo, 屏幕信息数组
 //      nMonitorCount, 屏幕个数
 //BOOL  CCollectSpotSize::StartCollectSpotSize(const MonitorInfo* pMonitorInfo, int nMonitorCount, HWND hNotifyWnd, ESampleCollectPattern ePattern)
-BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, ESampleCollectPattern ePattern)
+BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol)
 {
 	//一个显示设备都未找到，则立即返回
 	if (nAreaCount == 0) return FALSE;
@@ -826,11 +830,11 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
     }
 
     //采样样式
-    m_eSpotSamplePattern = ePattern;
+    //m_eSpotSamplePattern = ePattern;
     
     //复制屏幕信息
 	m_vecMonitorAreas.resize(nAreaCount);
-    m_allLightSpotSampleSize.resize(nAreaCount);
+    m_ScreenLightspotSample.resize(nAreaCount);
 
 
 	RECT rcBoundary;
@@ -843,22 +847,26 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
     for(int i=0; i< nAreaCount; i++)
     {
 		m_vecMonitorAreas[i] = pMonitorAreas[i];
-        m_allLightSpotSampleSize[i].rcMonitor = pMonitorAreas[i];
+        m_ScreenLightspotSample[i].rcMonitor = pMonitorAreas[i];
 
 		RECT rcArea = pMonitorAreas[i];
-		if (rcArea.left  < rcBoundary.left ) rcBoundary.left   = rcArea.left;
-		if (rcArea.right > rcBoundary.right) rcBoundary.right  = rcArea.right;
-		if (rcArea.top   < rcBoundary.top  ) rcBoundary.top    = rcArea.top;
-		if (rcArea.bottom > rcBoundary.top ) rcBoundary.bottom = rcArea.bottom;
+		if (rcArea.left  < rcBoundary.left    ) rcBoundary.left   = rcArea.left;
+		if (rcArea.right > rcBoundary.right   ) rcBoundary.right  = rcArea.right;
+		if (rcArea.top   < rcBoundary.top     ) rcBoundary.top    = rcArea.top;
+		if (rcArea.bottom > rcBoundary.bottom ) rcBoundary.bottom = rcArea.bottom;
     }
+
+
+    m_nSampleNumEachCol = nSampleNumEachCol;
+    m_nSampleNumEachRow = nSampleNumEachRow;
 
     
     //初始化
     m_nCurrentSampleNo =0;
     m_eSpotSamplingState = E_ALL_SPOT_SAMPLING_START;
 
+    //初始化第一个校正屏幕
 	m_nCurMonitorAreaId = 0;
-
     InitSamplePosition(m_vecMonitorAreas[m_nCurMonitorAreaId]);
 
 	SetWindowPos(

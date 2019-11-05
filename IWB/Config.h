@@ -1,6 +1,31 @@
 ﻿#pragma once
 #include "../inc/CameraSpecs.h"
 
+//#define SENSOR_NUMBER 6
+
+//屏幕模式
+enum EScreenMode
+{
+    EScreenModeSingle = 0,//单屏模式
+    EScreenModeDouble = 1,//双屏模式
+    EScreenModeTriple = 2,//三屏模式
+    EScreenModeQuad = 3,//四屏模式
+    EScreenModeQuint = 4,//五屏模式
+    EScreenModeHexa = 5,//六屏模式
+    EScreenModeNumber = 6,//屏幕模式个数
+    EScreenModeUnknown = (UINT)-1
+};
+
+#define  SENSOR_NUMBER int(EScreenModeNumber)
+
+struct TScreenLayout
+{
+    std::vector<RectF> vecScreens  ;//屏幕区域数组
+    std::vector<RectF> vecMergeAreas;//光斑融合区数组
+
+};
+
+
 //传感器镜头模式
 enum ESensorLensMode
 {
@@ -42,12 +67,48 @@ enum EProjectionMode
 	E_PROJECTION_DESKTOP, //桌面模式
 };
 
+inline const TCHAR* GetProjectModeString(EProjectionMode eProjectionMode)
+{
+    switch (eProjectionMode)
+    {
+    case E_PROJECTION_WALL:
+        return _T("WallMode");
+        break;
+
+
+    case E_PROJECTION_DESKTOP:
+        return _T("DesktopMode");
+        break;
+
+    }//switch
+
+    return _T("");
+}
+
 enum ECameraType
 {
-	E_CAMERA_TR_0 = 0,   //PID=0x9186,VID=0x18ec  //正常摄像头
-	E_CAMERA_TR_1 = 1,   //PID=0x3390,VID=0x18ec  //1/6摄像头
-	E_CAMERA_TR_2 = 2,   //PID=0x9230,VID= 0x05a3;//高清摄像头
+	E_CAMERA_MODEL_0 = 0,   //PID=0x9186,VID=0x18ec  ,正常摄像头
+	E_CAMERA_MODEL_1 = 1,   //PID=0x3390,VID=0x18ec  ,1/6摄像头
+	E_CAMERA_MODEL_2 = 2,   //PID=0x9230,VID= 0x05a3 ,高清摄像头
 };
+
+inline const TCHAR*  GetCameraTypeString(ECameraType eCameraType)
+{
+    switch (eCameraType)
+    {
+        case E_CAMERA_MODEL_0:
+            return _T("OV7725");
+
+        case E_CAMERA_MODEL_1:
+            return _T("QC0308");
+
+        case E_CAMERA_MODEL_2:
+            return _T("OV2710");
+
+    }//switch
+
+    return _T("");
+}
 
 enum ETouchScreenAspectRatio
 {
@@ -92,6 +153,9 @@ struct GlobalSettings
 
 	ECameraType             eCameraType;         //攝像頭的類型
 
+    EScreenMode            eScreenMode;//屏接的屏幕数目
+
+
     GlobalSettings()
     {
         langCode                 = _T("");
@@ -121,7 +185,11 @@ struct GlobalSettings
         CMOSChipSpecification.width_in_pixel  = 656  ;//像素
         CMOSChipSpecification.height_in_pixel = 488  ;//像素
 
-		eCameraType = E_CAMERA_TR_0;
+        eCameraType = E_CAMERA_MODEL_0;
+
+
+        //屏接的屏幕数目
+        eScreenMode = EScreenModeUnknown;
     }
 };
 
@@ -5209,11 +5277,14 @@ struct TSensorConfig
 struct TSysConfigData
 {
 	GlobalSettings               globalSettings;//全局配置信息
-    std::vector<TSensorConfig>  vecSensorConfig; //投影模式配置
+    std::vector<TSensorConfig>  vecSensorConfig;//投影模式配置
+    std::vector<TScreenLayout>  vecScreenLayouts;//多屏屏接屏幕布局
+
 	TSysConfigData()
 	{
-		vecSensorConfig.resize(2);
+		vecSensorConfig.resize(SENSOR_NUMBER);
 	}
+
 };
 
 //typedef std::vector<TSensorConfig> AllSensorsConfig;
@@ -5271,5 +5342,5 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData);
 
 extern TSysConfigData g_tSysCfgData;
 
-#define SENSOR_NUMBER 2
+
 

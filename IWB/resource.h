@@ -34,7 +34,12 @@
 #define IDD_DIALOG_ONLINE_REGISTER      155
 #define IDD_DIALOG_ATTACH_SCREEN        156
 #define IDD_DIALOG_UPDATE_FIRMWARE      159
+
 #define IDD_DIALOG_ADANCEDSETTINGS      161
+
+#define IDC_CURSOR_SPLIT_HORZ           164
+#define IDC_CURSOR_HAND                 165
+
 #define IDS_ABOUTBOX                    400
 #define IDS_STRING102                   401
 #define IDS_STRING103                   402
@@ -117,6 +122,19 @@
 #define IDS_STRING479                   479
 #define IDS_STRING480                   480
 #define IDS_STRING481                   481
+#define IDS_STRING482                   482
+#define IDS_STRING483                   483
+#define IDS_STRING484                   484
+#define IDS_STRING485                   485
+#define IDS_STRING486                   486
+#define IDS_STRING487                   487
+#define IDS_STRING488                   488
+#define IDS_STRING489                   489
+#define IDS_STRING490                   490
+#define IDS_STRING491                   491
+#define IDS_STRING492                   492
+#define IDS_STRING493                   493
+
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000
@@ -381,7 +399,6 @@
 #define ID_OPERATION_MANUALMASKAREA     32876
 #define ID_OPERATION_MANUALMASKAREA32877 32877
 #define ID_MANUALMASKAREA_ENDEDITING    32878
-#define ID_SWAMP_SENSOR_IMAGE           32879
 #define ID_SENSORCTXMENU_32880          32880
 #define ID_SENSORCTXMENU_GUESTURE_SETTINGS 32881
 #define ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS 32882
@@ -396,18 +413,42 @@
 #define ID_OPERATION_MANUALCALIBRATION  32894
 #define ID_TRAYCTXMENU_MANUALCALIBRATION 32895
 #define ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE 32896
-#define ID_MENU_ADVANCESSETTING         32898
-#define ID_MENU_DRAWMASKFRAME_START     32899
-#define ID_MENU_DRAWMASKFRAME_CLEAR     32900
-#define ID_MENU_DRAWMASKFRAME_DISABLE   32901
+
+#define ID_MENU_VIDEOFORMAT             32897
+#define ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER 32900
+#define ID_SWAP_SENSOR_IMAGE            33000
+#define ID_SWAP_WITH_SENSOR0             33000
+#define ID_SWAP_WITH_SENSOR1             33001
+#define ID_SWAP_WITH_SENSOR2             33002
+#define ID_SWAP_WITH_SENSOR3             33003
+#define ID_SWAP_WITH_SENSOR4             33004
+#define ID_SWAP_WITH_SENSOR5             33005
+#define ID_SWAP_WITH_SENSOR6             33006
+#define ID_SWAP_WITH_SENSOR7             33007
+#define ID_SWAP_WITH_SENSOR8             33008
+#define ID_SWAP_WITH_SENSOR9             33008
+#define ID_SWTICH_SCREENMODE             33020
+#define ID_SWTICH_SCREENMODE_ONE         33021
+#define ID_SWTICH_SCREENMODE_TWO         33022
+#define ID_SWTICH_SCREENMODE_THREE       33023
+#define ID_SWTICH_SCREENMODE_FOUR        33024
+#define ID_SWTICH_SCREENMODE_FIVE        33025
+#define ID_SWTICH_SCREENMODE_SIX         33026
+
+#define ID_MENU_ADVANCESSETTING         33100
+#define ID_MENU_DRAWMASKFRAME_START     33101
+#define ID_MENU_DRAWMASKFRAME_CLEAR     33102
+#define ID_MENU_DRAWMASKFRAME_DISABLE   33103
+
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        164
-#define _APS_NEXT_COMMAND_VALUE         32914
-#define _APS_NEXT_CONTROL_VALUE         1137
+#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_COMMAND_VALUE         32900
+#define _APS_NEXT_CONTROL_VALUE         1127
+
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

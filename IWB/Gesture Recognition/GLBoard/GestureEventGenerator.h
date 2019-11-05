@@ -300,7 +300,7 @@ public:
 
     //智能光笔匹配
     static const int MAXMATCH_NUM = 10;
-    static const int CAMERA_NUMBER = 2;
+    static const int MAX_CAMERA_NUMBER = 6;
     CSmartMatch<MAXMATCH_NUM> m_oSmartMatch;//
     CStrokeFilter<MAXMATCH_NUM>  m_oStrokFilter;//笔迹过滤器
     CMultiPenGestureRecognition m_GRMultiPen; //多笔模式下手势识别
