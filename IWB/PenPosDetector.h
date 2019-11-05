@@ -265,7 +265,7 @@ public:
 	const CImageFrame& GetScreenAreaMask();
 
 	//@功能:更新手动指定屏幕区域屏蔽图
-	void UpdateManualScreenAreaMask();
+//	void UpdateManualScreenAreaMask();
 
 	//@功  能:根据8位位图设置YUY2格式的屏蔽位图
 	//@参  数:maskFrame,8位屏蔽位图
@@ -363,16 +363,22 @@ public:
 	void  EnableDynamicMasking(BOOL bEnableDynamicMasking)      { m_bIsDynamicMasking = bEnableDynamicMasking; }
     BOOL  IsDynamicMasking()const                               { return m_bIsDynamicMasking; }
 
+	/////////modify by vera_zhao 2019.10.24
+	void  EnableAntiJamming(BOOL bEnableAntiJamming)            { m_bIsAntiJamming = bEnableAntiJamming; }
+	BOOL  IsAntiJamming()const                                  { return m_bIsAntiJamming; }
+
     void EnableStaticMasking(BOOL bEnableStaticMasking)         { m_bIsStaticMasking = bEnableStaticMasking; }
 	BOOL IsStaticMasking()const                                 { return m_bIsStaticMasking;}
+
+	void EnableOnLineScreenArea(BOOL bEnableManualMaskFrame) { m_bEnableOnLineScreenArea = bEnableManualMaskFrame; }
+	BOOL IsEnableOnLineScreenArea()const                           { return m_bEnableOnLineScreenArea; }
 
 	void SetCalibrateFailed(int CalibrateFailed)                {  m_bCalibratorFailed = CalibrateFailed ;  }
 
     //Added by toxuke@gmail.com, 2014/09/10
     //void EnbleGestureRecognition(BOOL bEnable)                  { m_bGestureRecognitionEnable = bEnable;}
 
-    BOOL IsGestureRecognitionEnable() { return (m_eDeviceTouchType == E_DEVICE_FINGER_TOUCH)?TRUE:FALSE; };
-
+    BOOL IsGestureRecognitionEnable() {return (m_eDeviceTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD || m_eDeviceTouchType == E_DEVICE_PALM_TOUCH_CONTROL)?TRUE:FALSE; };
 
     //2014/12/18, added by toxuke@gmail.com
     //@功能:设置触控类型(笔触/手触)
@@ -388,6 +394,7 @@ public:
 	//const CYUY2Frame& GetDynamicMaskFrame() const  {return m_oDynamicMask      ;}
     const CImageFrame& GetDynamicMaskFrame() const  {return m_oDynamicMask      ;}
 	//CYUY2Frame&  GetStaticMask()                   { return this->m_oStaticMask;}
+	const  CImageFrame& GetManualOnLineScreenArea() const { return this->m_oManualOnLineScreenArea; }
 
     //<<2014/12/16
     //@功能:设置是否显示光斑尺寸信息
@@ -556,6 +563,20 @@ public:
          }
          return FALSE;
      }
+
+	 void    SetOnLineScreenAreaPt(CPoint &point);
+	 void    GetOnLineScreenAreaPt(std::vector<CPoint> &pt);
+
+	 void    DeleteOnLineScreenArea();
+	 void    ClearOnLineScreenAreaPt();
+
+	 void    SaveOnLineScreenArea();
+	 void    LoadOnLineScreenArea();
+
+	 void    DeleteOnLineFile();
+	 bool    LoadOnLinePt();
+	 bool    SaveOnLinePt();
+
 		 
 protected:
 
@@ -752,6 +773,8 @@ protected:
 	BOOL m_bMaskingClutter     ;   //自动屏蔽干扰光斑标志
 	BYTE m_MaskingClutter      ;   //自动屏蔽干扰光斑时使用的判断门限
 
+	CImageFrame  m_oManualOnLineScreenArea;   //绘制的静态屏蔽图
+
 
 	//<<added by toxuke@gmail.com
 	BOOL m_bInitialStage;//初始阶段
@@ -773,7 +796,12 @@ protected:
 	int  m_nSpotProportion     ;
 	int  m_nMultiEraser        ;
 
-	BOOL m_bIsDynamicMasking       ;//是否正在自动屏蔽
+	BOOL m_bIsDynamicMasking       ; //是否正在自动屏蔽
+	/////////modify by vera_zhao   2019.10.24
+	BOOL  m_bIsAntiJamming          ; //是否进行抗干扰处理
+
+	BOOL   m_bEnableOnLineScreenArea; //是否启用手动绘制的静态屏蔽图
+
 	BOOL m_bIsStaticMasking        ;//是否静态屏蔽干扰点标志
 
     BOOL m_bIsClutterDetecting       ;//干扰点检测
@@ -876,6 +904,7 @@ protected:
 	//<<调试工具
 	TCameraDebugData m_vecDebugData[MAX_OBJ_NUMBER];
 	//>>
+	std::vector<CPoint>  m_vecOnLinePt;
 
 };
 

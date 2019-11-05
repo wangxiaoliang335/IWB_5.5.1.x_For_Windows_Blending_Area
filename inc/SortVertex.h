@@ -167,17 +167,25 @@ public:
 
 
                     if(dotProduct > 0 &&  __int64(crossProduct_square)*__int64(norm_square_product_threshold) < __int64(cross_product_square_threshold) * __int64(norm_vector_I_square) * __int64(norm_vector_J_square))
-                    */
-                    double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy);
-                    
+                  
                     //sin(theta) > sin_theta_threshold
                     //crossProdut=|Vi||Vj|sin(theta);
                     //
                     //sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
                     //用dotProduct的符号>0来限定两矢量夹角属于[-pi/2, pi/2]
                     //用crossProduct的绝对值来判定是否两矢量的夹角来判定夹角小于设定的门限角
-                    //当然也可以用dotProduct的值来判定， dotProduct值越大，则意味着两矢量夹角越大。
-                    if(dotProduct > 0 && abs(crossProduct) < sin_theta_threshold*norm_vector_I*norm_vector_J)
+                    //当然也可以用dotProduct的值来判定， dotProduct值越大，则意味着两矢量夹角越大。              
+
+			        */
+					double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy);
+					
+					//sin(theta) > sin_theta_threshold
+					//crossProdut=|Vi||Vj|sin(theta);
+					//
+					//sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
+					//
+					if(dotProduct > 0 && abs(crossProduct) < sin_theta_threshold*norm_vector_I*norm_vector_J)
+
                     {//位于同一方向，即夹角<15度
                         //移除J
                         for(int pos = J; pos < neighbourCount - 1; pos ++)
@@ -199,8 +207,6 @@ public:
 
             //以当前结点为原点, 按方位角排列各矢量。
             SortNeighbours(neighbours, neighbourCount);
-
-
 
 
             //在剩下的邻接点中, 以本结点为原点, 选取夹角最大的两个邻接点。

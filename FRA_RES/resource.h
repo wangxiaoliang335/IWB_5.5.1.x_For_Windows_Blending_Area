@@ -34,9 +34,12 @@
 #define IDD_DIALOG_ONLINE_REGISTER      155
 #define IDD_DIALOG_ATTACH_SCREEN        156
 #define IDD_DIALOG_UPDATE_FIRMWARE      159
-#define IDD_CAMERA_FMT_DIALOG           161
+
+#define IDD_DIALOG_ADANCEDSETTINGS      161
+
 #define IDC_CURSOR_SPLIT_HORZ           164
 #define IDC_CURSOR_HAND                 165
+
 #define IDS_ABOUTBOX                    400
 #define IDS_STRING102                   401
 #define IDS_STRING103                   402
@@ -221,6 +224,16 @@
 #define IDC_WALLMODE                    1123
 #define IDC_DESKTOPMODE                 1124
 #define IDC_CAMERAFMT_COMBO             1125
+#define IDC_CHECK_HID                   1127
+#define IDC_CHECK_TUIO                  1128
+#define IDC_IPADDRESS_IP                1130
+#define IDC_EDIT_PORT                   1131
+#define IDC_RADIO_FINGERTOUCHCONTROL    1132
+#define IDC_RADIO2                      1133
+#define IDC_RADIO_PALMTOUCHCONTROL      1133
+#define IDC_CHECK_DYNAMICMASKFRAMECONTROL 1134
+#define IDC_CHECK_ANTIJAMMINGCONTROL    1135
+
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
@@ -400,6 +413,7 @@
 #define ID_OPERATION_MANUALCALIBRATION  32894
 #define ID_TRAYCTXMENU_MANUALCALIBRATION 32895
 #define ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE 32896
+
 #define ID_MENU_VIDEOFORMAT             32897
 #define ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER 32900
 #define ID_SWAP_SENSOR_IMAGE            33000
@@ -421,6 +435,10 @@
 #define ID_SWTICH_SCREENMODE_FIVE        33025
 #define ID_SWTICH_SCREENMODE_SIX         33026
 
+#define ID_MENU_ADVANCESSETTING         33100
+#define ID_MENU_DRAWMASKFRAME_START     33101
+#define ID_MENU_DRAWMASKFRAME_CLEAR     33102
+#define ID_MENU_DRAWMASKFRAME_DISABLE   33103
 
 
 // Next default values for new objects
@@ -430,6 +448,7 @@
 #define _APS_NEXT_RESOURCE_VALUE        166
 #define _APS_NEXT_COMMAND_VALUE         32900
 #define _APS_NEXT_CONTROL_VALUE         1127
+
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

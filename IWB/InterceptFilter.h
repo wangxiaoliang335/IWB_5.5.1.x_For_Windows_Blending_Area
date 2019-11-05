@@ -101,10 +101,10 @@ public:
 
 
     //@功能:使能静态屏蔽。
-    void EnableStaticMasking(BOOL bMasking);
+//    void EnableStaticMasking(BOOL bMasking);
 
     //@功能:返回静态屏蔽状态
-    BOOL IsStaticMasking()const;
+//    BOOL IsStaticMasking()const;
 
     //@功能:使能画面亮度自动调节
     void EnableBrightnessAutoRegulating(BOOL bEnable);
@@ -112,16 +112,19 @@ public:
     //@功能:设置画面的平均亮度
     //@参数:brightness:亮度值
     void SetImageAverageBrightness(BYTE brightness);
-
+	void SetAutoCalibrateParamsIndex(BYTE nIndex);
 
     void CaptureImage();
 
 	void  SetFrameSkipCount(int nFrameskipcount);
 
+	void  SetStartDrawMaskFrame(bool Start) { m_bStartDrawMaskFrame = Start; }
+	void  SetDrawMovePt(CPoint &point) { m_PtMove = point; }
+
 private:
     //<<2015/8/18
     //亮度控制函数
-    static bool BrightnessControl(bool bInc, BYTE absDiff, LPVOID lpCtxData);
+    static bool BrightnessControl(bool bInc, BYTE absDiff, BYTE nIndex, LPVOID lpCtxData);
 
     //@功能:实际执行亮度控制
     void DoAutoBrightnessControl(const BYTE* YUY2Frame, int nWidth, int nHeight);
@@ -179,8 +182,8 @@ protected:
 
     BOOL m_bCaptureImage;
 	
-    //跳过的帧率
-	int m_nFrameSkipCount;
-
+	int     m_nFrameSkipCount;
+	bool    m_bStartDrawMaskFrame;
+	CPoint  m_PtMove;
 
 };

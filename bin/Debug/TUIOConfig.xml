@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Config>
-<Address IP="127.0.0.1" Port="3333"></Address>
+    <Address IP="127.0.0.1" Port="3333" />
 </Config>

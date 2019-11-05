@@ -17,7 +17,7 @@ COnlineRegisterDlg::COnlineRegisterDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(COnlineRegisterDlg::IDD, pParent),
     m_bRegisteredOk(FALSE)
     , m_strSN(_T(""))
-    ,m_eTouchType(E_DEVICE_PEN_TOUCH)
+    ,m_eTouchType(E_DEVICE_PEN_TOUCH_WHITEBOARD)
     ,m_eScreenMode(EScreenModeSingle)
 
 {
@@ -53,7 +53,7 @@ BOOL COnlineRegisterDlg::OnInitDialog()
            _T("%s\r\n%s:%s\r\n%s:%s"), 
            g_oResStr[IDS_STRING458],//"使用硬件加密狗"信息
            g_oResStr[IDS_STRING459],
-           theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
+           theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD ? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
            g_oResStr[IDS_STRING462],
            theApp.GetScreenMode() >= EScreenModeDouble? g_oResStr[IDS_STRING464] :g_oResStr[IDS_STRING463]);
            
@@ -112,7 +112,7 @@ BOOL COnlineRegisterDlg::OnInitDialog()
             BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE,&value);
             if(status == BIT_SUCCESS)
             {
-                m_eTouchType = (value == 0)?E_DEVICE_PEN_TOUCH:E_DEVICE_FINGER_TOUCH;
+                m_eTouchType = (value == 0)? E_DEVICE_PEN_TOUCH_WHITEBOARD : E_DEVICE_FINGER_TOUCH_WHITEBOARD;
             }
             
             status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE,&value);
@@ -134,7 +134,7 @@ BOOL COnlineRegisterDlg::OnInitDialog()
            _T("%s\r\n%s:%s\r\n%s:%s"), 
            g_oResStr[IDS_STRING455],//注册成功
            g_oResStr[IDS_STRING459],
-           m_eTouchType == E_DEVICE_PEN_TOUCH? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
+           m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD ? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
            g_oResStr[IDS_STRING462],
            m_eScreenMode >= EScreenModeDouble ? g_oResStr[IDS_STRING464] : g_oResStr[IDS_STRING463]);
 

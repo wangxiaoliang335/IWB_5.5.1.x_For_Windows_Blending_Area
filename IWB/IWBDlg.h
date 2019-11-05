@@ -338,8 +338,8 @@ protected:
 	afx_msg void OnMenuRun();
 	afx_msg void OnMenuStop();
 	//afx_msg void OnMenuManualCalibrate();
-	afx_msg void OnUpdateMenuStop(CCmdUI *pCmdUI);
-	afx_msg void OnUpdateMenuRun(CCmdUI *pCmdUI);
+//	afx_msg void OnUpdateMenuStop(CCmdUI *pCmdUI);
+//	afx_msg void OnUpdateMenuRun(CCmdUI *pCmdUI);
 	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
 	afx_msg void OnMenuAbout();
     afx_msg void OnMenuOnlineRegister();
@@ -416,8 +416,17 @@ protected:
 
 	afx_msg void OnChangeTouchScreenAspectRatio(UINT uID);
 
+	afx_msg void OnInstallationanddebuggingUpdatefirmware();
+	afx_msg void OnEndSession(BOOL bEnding);
+
+	afx_msg void OnInstallationanddebuggingEnableinterpolate();
+	afx_msg void OnMenuAdvancessetting();
+
+	afx_msg void OnMenuDrawmaskframeStart();
+	afx_msg void OnMenuDrawmaskframeClear();
+
 //=====函数======
-	void AdjustStatusBar(int left, int top, int cx, int cy);
+//	void AdjustStatusBar(int left, int top, int cx, int cy);
 	BOOL StartRunning();
 	BOOL StopRunning();
 	void DoAutoCalibrate();
@@ -431,17 +440,17 @@ protected:
     BOOL SaveConfig();
     void Exit();
 
-	afx_msg void OnBnClickedCheckMouseControl();
-
 
 
 //	afx_msg void OnBnClickedButtonStartStop();
 	HRESULT OnFpsNotify         (WPARAM wParam,LPARAM lParam);
     HRESULT OnCameraStatusNotify(WPARAM wParam,LPARAM lParam);
-	HRESULT OnCalcAdjustMatrix(WPARAM wParam, LPARAM lParam);
+//	HRESULT OnCalcAdjustMatrix(WPARAM wParam, LPARAM lParam);
 	HRESULT OnDeviceChange(WPARAM wParam, LPARAM lParam);
 
 	HRESULT OnAutoCalibrateDone(WPARAM wParam, LPARAM lParam);
+
+	HRESULT OnAppCommMsg(WPARAM wParam, LPARAM lParam);
 
 	//@功能:最小化到托盘中
 	void MinimizeToTray();
@@ -488,8 +497,6 @@ protected:
 	LRESULT OnRearProjection(WPARAM wParam, LPARAM lParam);
 
 
-
-
 	//afx_msg void OnMenuAutoCalibrationWithHumanIntervention();
 	//afx_msg void OnAutoSearchScreenArea();
 
@@ -503,6 +510,7 @@ protected:
 
    //@功能;响应任务栏重新生成消息。
     LRESULT OnTaskbarRestartMsg(WPARAM, LPARAM lParam);
+
     //<<added by toxuke@gmail.com, 2014/12/18
     void OnAdvancedSettings(CIWBSensor* pSensor);
     //>>
@@ -543,6 +551,12 @@ protected:
 
     //@功能:结束屏幕布局设计
     HRESULT OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam);
+
+	//2018/01/26
+	//更新加密锁的状态
+	void UpdateInfoAboutDongle();
+	//
+
 
 //====变量===========
 
@@ -719,9 +733,6 @@ protected:
 	std::stack<TMaskAreaEditActions> m_stackRedo;
 	std::stack<TMaskAreaEditActions> m_stackUndo;
 
-
-
-
 	//激光笔模式相关变量和函数
 	ATOM                     m_atomLaserPwrOffHotkey       ;//光笔电源关闭指示热键
 	ATOM                     m_atomLaserPwrOnHotkey        ;//光笔电源打开指示热键 
@@ -785,7 +796,7 @@ public:
     static UINT m_uTaskbarRestartMsg;
 
     //自动校正过程中变更摄像头参数的回调函数
-    static BOOL  OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1);
+    static BOOL  OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1, BYTE param2);
 
     CIWBSensorManager m_oIWBSensorManager;//CMOS传感器管理者
     CStatusBarEx         m_ctlStatusBar;//状态栏
@@ -814,18 +825,12 @@ public:
     //ICONINFO m_shieldIconInfo;
 
     HBITMAP m_hUCShieldBitmap;
-
 	static UINT m_uAppCommMsg;
-	HRESULT OnAppCommMsg(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnInstallationanddebuggingUpdatefirmware();
-	afx_msg void OnEndSession(BOOL bEnding);
+	///add by vera_zhao 2019.10.28
+	bool    m_bStartDrawMaskFrame;
+	bool    m_bPreGuideRectangleVisible;
 
-	//2018/01/26
-	//更新加密锁的状态
-	void UpdateInfoAboutDongle();
-	//
-    afx_msg void OnInstallationanddebuggingEnableinterpolate();
-	afx_msg void OnMenuVideoformat();
+	afx_msg void OnMenuDrawmaskframeDisable();
 
     //触屏布局编辑工具
     afx_msg void OnMenuTouchScreenLayoutDesigner();

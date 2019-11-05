@@ -40,6 +40,18 @@ public:
 	}
 	EHIDDeviceMode GetHIDMode()const { return m_eHIDDeviceMode; }
 
+	//@功能：设置HID触控模式
+	void SetTouchHIDMode(bool  eMode);
+	bool GetTouchHIDMode()const {return m_bTouchHIDMode;}
+	//@功能：设置TUIO触控模式
+	void SetTouchTUIOMode(bool  eMode);
+	bool GetTouchTUIOMode()const { return m_bTouchTUIOMode; }
+
+	/////////////////
+	void    SetIPadressAndPort(DWORD IP, int nPort);
+	DWORD   GetIPadress();
+	int     GetPort();
+
 	static CVirtualMouse& GetVirtualMouse() { return m_oVirtualMouse; }
 
 	//@功能:判断虚拟驱动是否是打开的。
@@ -71,11 +83,18 @@ protected:
 
 	HANDLE m_hDev;
 	EHIDDeviceMode m_eHIDDeviceMode;
+
+	//////////////add by zhaown 2019.09.26
+	CVirtualTUIO  m_oVirtualTUIOTouch;
+	bool     m_bTouchHIDMode  ;
+	bool     m_bTouchTUIOMode ;
+
+
 	static const int MAX_TOUCH_POINT_COUNT = 10;
 	EASI_TouchPoint m_TouchPoints[MAX_TOUCH_POINT_COUNT];
+
 	static CVirtualMouse m_oVirtualMouse;//虚拟鼠标对象
 
-	CVirtualTUIO  m_oVirtualTUIOTouch;
 
 	//功能:设备句柄观联事件回调接口
 	static void  DeviceHandleEventCallBack(const DeviceHandleMonitorEntry* pEntry, WPARAM dbtEvent);
@@ -102,6 +121,7 @@ protected:
 	static DWORD WINAPI AutoOpenThreadProc(LPVOID lpCtx);
 	HANDLE m_hAutoOpenThread;
 	BOOL   m_bAutoOpenThreadExit;
+
 	EHIDDeviceMode m_eDesiredHIDMode;//想要的模式
 
 	BOOL CreateAutoOpenThread();

@@ -122,4 +122,7 @@ public:
     CIWBSensor*        m_pSensor           ;//指向传感器的指针
     
 	afx_msg void OnBnClickedButtonAttachToAScreen();
+	afx_msg void OnBnClickedCheckDynamicmaskframecontrol();
+	afx_msg void OnBnClickedCheckAntijammingcontrol();
+
 };

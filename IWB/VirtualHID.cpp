@@ -175,11 +175,7 @@ BOOL GetPointerDeviceDevPath(
 
     }//for
 
-
-
-
     SetupDiDestroyDeviceInfoList(hardwareDeviceInfo);
-
 
     return bSuccess;
 }
@@ -261,27 +257,21 @@ BOOL IsMonitorAttachedToPointerDevice(
             &cchData);
 
 
-        if (retCode == ERROR_SUCCESS && _tcsicmp(lpszMonitorDevicePath, achData) == 0)
-        {//发现了显示器设备路径了。
+		if (retCode == ERROR_SUCCESS && _tcsicmp(lpszMonitorDevicePath, achData) == 0)
+		{//发现了显示器设备路径了。
 
-            _tcsupr_s(
-                achValue,
-                cchValue + 1
-            );
+			_tcsupr_s(
+				achValue,
+				cchValue + 1
+			);
 
-            if (_tcsstr(achValue, lpszPointerDevicePath))
-            {//触控设备路径也对上了
-                bAttached = TRUE;
-                break;
-            }
-
-        }
-
-
+			if (_tcsstr(achValue, lpszPointerDevicePath))
+			{//触控设备路径也对上了
+				bAttached = TRUE;
+				break;
+			}
+		}
     }
-
-
-
     RegCloseKey(hKey);
 
     return bAttached;
@@ -299,10 +289,12 @@ CVirtualHID::CVirtualHID()
     m_bAutoOpenThreadExit(FALSE),
     m_aspectRatioNominator(16),
     m_aspectRatioDenominator(9),
-    m_eTouchDataAdjustModel(E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO)
+    m_eTouchDataAdjustModel(E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO),
+	m_bTouchHIDMode(true),
+	m_bTouchTUIOMode(false)
+
 {
     memset(&m_TouchPoints[0], 0, sizeof(m_TouchPoints));
-
 	RetrievePointerDevices();
 
 	m_oVirtualTUIOTouch.OpenTUIOServer();
@@ -385,7 +377,6 @@ void CVirtualHID::Reset()
                 m_TouchPoints[i].bStatus = TIP_UP;
                 EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[i], 1);
             }
-
         }//for(i)
 
         break;
@@ -407,44 +398,45 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
         }
     }
 
-    switch(m_eHIDDeviceMode)
-    {
-       case E_DEV_MODE_MOUSE:
-
-          //搜索编号为0的笔信息
-           for(int i=0; i < nPenCount; i++)
-           {
-               if(pPenInfos[i].uId == 0)
-              {
-                  m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
-                  break;
-              }
-           }
-           break;
-
-
-       case E_DEV_MODE_TOUCHSCREEN:
+	if (m_bTouchHIDMode)
+	{
+       switch(m_eHIDDeviceMode)
+       {
+           case E_DEV_MODE_MOUSE:
+             //搜索编号为0的笔信息
+             for(int i=0; i < nPenCount; i++)
+             {
+                 if(pPenInfos[i].uId == 0)
+                 {			   
+                     m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);				
+                     break;
+                 }	
+             }
+             break;
+          case E_DEV_MODE_TOUCHSCREEN:
 #ifdef SINGLE_TOUCH
-		  //搜索编号为0的笔信息
-		  for (int i = 0; i < nPenCount; i++)
-		  {
-			  if (pPenInfos[i].uId == 0)
-			  {
-			     InputTouchPoints(&pPenInfos[i], 1);
-				 break;
-			  }
-		   }
+		     //搜索编号为0的笔信息
+		     for (int i = 0; i < nPenCount; i++)
+		     {
+			     if (pPenInfos[i].uId == 0)
+			     {
+			           InputTouchPoints(&pPenInfos[i], 1);
+				       break;
+			     }
+		     }
 #else
-		   bRet = InputTouchPoints(pPenInfos, nPenCount);
+		      bRet = InputTouchPoints(pPenInfos, nPenCount);
 #endif
-		  break;
+		     break;
+           }   
+	}
 
-       }   
-
-	   //模拟虚拟的TUIO
-	   m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
-	   
-       return bRet;
+	if (m_bTouchTUIOMode)
+	{
+	     //模拟虚拟的TUIO
+	     m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
+	}
+   return bRet;
 }
 
 
@@ -793,9 +785,7 @@ void CVirtualHID::OnSetTouchScreenDimension(int  nPhysicalDiagonalLength, SIZE s
 }
 
 
-
 #include "..\inc\Win32UDllLibrary.h"
-
 
 
 BOOL CVirtualHID::RetrievePointerDevices()
@@ -1002,8 +992,37 @@ void CVirtualHID::UpdateAttachedMonitorInfo()
         m_aspectRatioNominator   = nMaxActiveCx;
         m_aspectRatioDenominator = nMaxActiveCy;
     }
+}
 
+void CVirtualHID::SetTouchTUIOMode(bool  eMode)
+{
+	m_bTouchTUIOMode = eMode;
+}
+void CVirtualHID::SetTouchHIDMode(bool  eMode)
+{	
+	/////m_bTouchHIDMode = true; 
+	/////eMode = false ;
+	if (m_bTouchHIDMode && !eMode)
+	{
+		///停用掉HID触控模式，要Reset();
+		Reset();
+	}
+	m_bTouchHIDMode = eMode;
+}
 
+void  CVirtualHID::SetIPadressAndPort(DWORD IP,int nPort)
+{
+	m_oVirtualTUIOTouch.SetIPadressAndPort(IP, nPort);
+}
+
+DWORD CVirtualHID::GetIPadress()
+{
+	return m_oVirtualTUIOTouch.GetIPadress();
+}
+
+int CVirtualHID::GetPort()
+{
+	return m_oVirtualTUIOTouch.GetPort();
 }
 
 

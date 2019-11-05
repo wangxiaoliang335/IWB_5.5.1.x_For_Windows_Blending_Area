@@ -1,5 +1,5 @@
 #pragma once
-#include "VideoProcAmpProperty.h"
+#include "../inc/VideoProcAmpProperty.h"
 #define  AUTO_MASK_AREA_INFLATE_RADIUS_MIN 0
 #define  AUTO_MASK_AREA_INFLATE_RADIUS_MAX 10
 

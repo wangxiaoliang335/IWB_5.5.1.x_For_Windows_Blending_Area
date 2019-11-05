@@ -304,6 +304,7 @@ BOOL CAboutDlg::OnInitDialog()
 
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 const int StatusPaneCountEachSensor = 3;
@@ -349,7 +350,9 @@ m_pSelectedSensor(NULL),
 m_uScreenRecognitionCloseTimer(0u),
 m_hDispWnd(NULL),
 m_pCurInstalledSensor(NULL),
-m_hUCShieldBitmap(NULL)
+m_hUCShieldBitmap(NULL),
+m_bStartDrawMaskFrame(false),
+m_bPreGuideRectangleVisible(false)
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -505,9 +508,10 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY, OnChangeAutoCalibrateLightGray)
     ON_MESSAGE(WM_REAR_PROJECTION, OnRearProjection)
 
-    //ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
-    //ON_MESSAGE(WM_MANUAL_CORRECT_DONE, &CIWBDlg::OnManualCorrectDone)
-    //ON_MESSAGE(WM_DISPLAYWINDOW,&CIWBDlg::OnDisPlayWindow)
+
+//ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
+//ON_MESSAGE(WM_MANUAL_CORRECT_DONE, &CIWBDlg::OnManualCorrectDone)
+//ON_MESSAGE(WM_DISPLAYWINDOW,&CIWBDlg::OnDisPlayWindow)
 
 
     //    ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_RECOGNITION, OnChangeEnableGestrueRecognition)
@@ -540,25 +544,26 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_MOUSE, &CIWBDlg::OnInstallationanddebuggingMouse)
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, &CIWBDlg::OnInstallationanddebuggingTouchpad)
 
+    ON_COMMAND_RANGE(ID_TOUCHSCREENASPECTRATIO_AUTO, ID_TOUCHSCREENASPECTRATIO_4_3, &CIWBDlg::OnChangeTouchScreenAspectRatio)
     ON_COMMAND(ID_SWAP_SENSOR_IMAGE, &CIWBDlg::OnSwapSensorImage)
     ON_COMMAND_RANGE(ID_SWAP_WITH_SENSOR0, ID_SWAP_WITH_SENSOR0 + (int)EScreenModeNumber, &CIWBDlg::OnSwapImageWithSensor)
 
+    ON_REGISTERED_MESSAGE(m_uAppCommMsg, OnAppCommMsg)
     ON_COMMAND_RANGE(ID_SWTICH_SCREENMODE_ONE, ID_SWTICH_SCREENMODE_ONE + (int)EScreenModeNumber, &CIWBDlg::OnSwitchToFusionScreenMode)
 
-    ON_COMMAND_RANGE(ID_TOUCHSCREENASPECTRATIO_AUTO, ID_TOUCHSCREENASPECTRATIO_4_3, &CIWBDlg::OnChangeTouchScreenAspectRatio)
-
-    ON_REGISTERED_MESSAGE(m_uAppCommMsg, OnAppCommMsg)
 
     ON_MESSAGE(WM_APPLY_SENSOR_CONFIG, &CIWBDlg::OnApplySensorConfig)
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, &CIWBDlg::OnInstallationanddebuggingUpdatefirmware)
     ON_WM_ENDSESSION()
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, &CIWBDlg::OnInstallationanddebuggingEnableinterpolate)
-    ON_COMMAND(ID_MENU_VIDEOFORMAT, &CIWBDlg::OnMenuVideoformat)
-    ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
+    ON_COMMAND(ID_MENU_ADVANCESSETTING, &CIWBDlg::OnMenuAdvancessetting)
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_START, &CIWBDlg::OnMenuDrawmaskframeStart)
 
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_CLEAR, &CIWBDlg::OnMenuDrawmaskframeClear)
 
-    ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
-END_MESSAGE_MAP()
+    ON_WM_RBUTTONDBLCLK()
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_DISABLE, &CIWBDlg::OnMenuDrawmaskframeDisable)
+    ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)END_MESSAGE_MAP()
 
 void CIWBDlg::InitMenu()
 {
@@ -847,6 +852,10 @@ BOOL CIWBDlg::OnInitDialog()
         //MessageBox(strInfo, g_oResStr[IDS_STRING109], MB_OK |MB_ICONERROR);
         m_bVisible = TRUE;
     }
+
+
+	ShowTaskBar(TRUE);
+
 
     //是自动运行的模式,自动最小化到托盘中
     if(theApp.IsStartFromAutoRun())
@@ -1157,8 +1166,6 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     {//在当前窗口上显示视频时
         this->m_oIWBSensorManager.SetVideoDisplayArea(rcClient);
     }    
-
-
 }
 
 
@@ -1585,7 +1592,6 @@ HRESULT CIWBDlg::OnManualCalibrationDone (WPARAM wParam,LPARAM lParam)
         //最小化到托盘
         MinimizeToTray();
     }
-
 
     return 0;
 }
@@ -2234,7 +2240,15 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         pDevInterface->dbcc_classguid.Data4[7]
                     ); 
                     AtlTrace(_T("\t\tInterface name %s\r\n"), pDevInterface->dbcc_name);
+					
+					/////把前面的VIP和PID读出来，如果上次的PID和VID这次的PID一致的话就不用再重新加载配置文件了
+					CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+					const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
 
+					if (theApp.GetScreenMode() == EScreenModeSingle)
+					{
+						if (pSensor->IsDetecting()) break;
+					}
 
                     if(m_oUSBCameraDeviceList.IsCandidateDevice(pDevInterface->dbcc_name))
                     {
@@ -2248,14 +2262,16 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             theApp.ReadUSBKey();
 							UpdateInfoAboutDongle();
 
-							LoadConfig(pDevInst->m_nPID, pDevInst->m_nVID);
-							this->m_oIWBSensorManager.SetCfgData(::g_tSysCfgData);
+							if (devInfo.m_nPID != pDevInst->m_nPID || devInfo.m_nVID != pDevInst->m_nVID)
+							{
+							    LoadConfig(pDevInst->m_nPID, pDevInst->m_nVID);
+							    this->m_oIWBSensorManager.SetCfgData(::g_tSysCfgData);
+							}
 
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
                         }
                     }
                 }
-
                 break;
 
             case DBT_DEVTYP_HANDLE:
@@ -2274,12 +2290,8 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
             case DBT_DEVTYP_VOLUME:
                 AtlTrace(_T("\tDBT_DEVTYP_VOLUME\r\n"));
                 break;
-
             }
-
-
         }
-
         break;
 
     case DBT_DEVICEREMOVECOMPLETE://USB设备拔离USB端口
@@ -2351,7 +2363,6 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
 
     case DBT_DEVNODES_CHANGED:
         AtlTrace(_T("DBT_DEVNODES_CHANGED\r\n"));
-        ;
         break;
 
     default:
@@ -2384,7 +2395,48 @@ void CIWBDlg::OnMenuParameterSettings()
              ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
 		}
 
-
+		////////////把设置的是否动态屏蔽传到需要的地方去
+		///////////如果图像模式等于正常模式的话，那么动态屏蔽才能起作用，其他两种模式都是不可操作的
+		//////////Modify by vera_zhao 2019.10.24
+		if (this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE)
+		{
+		     TSensorModeConfig* TSensorModeConfig = NULL;
+		     if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+		     {
+			      TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0];
+		     }
+		     else
+		     {
+			      TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1];
+		     }
+			 /////设置是否开启自动屏蔽功能
+		     if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
+		     {
+		         pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
+		     }
+		     else
+		     {
+			     pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
+		     }
+			 ////////////设置是否开启抗干扰功能
+			 if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
+			 {
+				 pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
+			 }
+			 else
+			 {
+				 pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
+			 }
+			 /////////设置是否启用手动绘制的静态屏蔽图
+			 if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
+			 {
+				 pSensor->GetPenPosDetector()->EnableOnLineScreenArea(TRUE);
+			 }
+			 else
+			 {
+				 pSensor->GetPenPosDetector()->EnableOnLineScreenArea(FALSE);
+			 }
+		}
     }//if
 }
 
@@ -2438,25 +2490,20 @@ void CIWBDlg::OnEnterIdle(UINT nWhy, CWnd* pWho)
 
 LRESULT CIWBDlg::OnKickIdle(WPARAM wParam, LPARAM lParam)
 {
-
     return 0L;
 }
 
 
 HRESULT CIWBDlg::OnSetDetectThreshold(WPARAM wParam, LPARAM lParam)
 {
-
-
     return 0;
 }
-
 
 void CIWBDlg::OnMenuAbout()
 {
     // TODO: Add your command handler code here
     CAboutDlg dlgAbout;
     dlgAbout.DoModal();
-
 }
 
 void CIWBDlg::OnMenuOnlineRegister()
@@ -2464,14 +2511,12 @@ void CIWBDlg::OnMenuOnlineRegister()
     // TODO: Add your command handler code here
     COnlineRegisterDlg onlineRegisterDlg;
     onlineRegisterDlg.DoModal();
-
 }
 
 
 void CIWBDlg::OnMenuStatus()
 {
     // TODO: Add your command handler code here
-
     this->m_ctlStatusBar.ShowWindow(SW_SHOW);
 }
 
@@ -2480,9 +2525,6 @@ void CIWBDlg::OnMenuDisableOpticalPenControl()
 {
     // TODO: Add your command handler code here
     this->m_oIWBSensorManager.EnableOpticalPen(!this->m_oIWBSensorManager.IsOpticalPenControlling());
-
-
-
 }
 
 
@@ -2504,9 +2546,6 @@ void CIWBDlg::OnTimer(UINT_PTR nIDEvent)
         //    }
         //    */
         //    break;
-
-
-
         //case TIMER_AUTO_CLUTTER_DETECTION_AFTER_AUTO_CALIBRATION://
         //    {
         //        /*
@@ -2529,8 +2568,6 @@ void CIWBDlg::OnTimer(UINT_PTR nIDEvent)
 
         //        KillTimer(TIMER_AUTO_CLUTTER_DETECTION_AFTER_AUTO_CALIBRATION);
         //        */
-
-
         //    }
         //    break;
 
@@ -2736,10 +2773,6 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
               szWorkingDirectory,
                g_oResStr[IDS_STRING124]);
 
-
-
-        
-
             //关键在于runas这个Verb, 用来实现UAC Elevation(UAC提升)
             SHELLEXECUTEINFO shExInfo = {0};
             shExInfo.cbSize = sizeof(shExInfo);
@@ -2767,7 +2800,6 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
     }
 
 }
-
 
 void CIWBDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
@@ -2806,7 +2838,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         m_oMenu.EnableMenuItem(ID_AUTO_ADD_MASK_AREA, MF_BYCOMMAND| MF_ENABLED);
 
         //使能"光斑采样"菜单项
-        m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_ENABLED);
+	    m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_ENABLED);
 
         //使能"自动校正"菜单项
         m_oMenu.EnableMenuItem(ID_MENU_AUTO_CALIBRATE, MF_BYCOMMAND| MF_ENABLED);
@@ -2825,71 +2857,93 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //<<added by toxuke@gmail.com, 2013/06/14
         switch(this->m_oIWBSensorManager.GetLensMode())
         {
-        case E_NORMAL_USAGE_MODE://正常使用模式
-            m_oMenu.CheckMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_CHECKED  ); 
-            m_oMenu.CheckMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_UNCHECKED); 
-            m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
+           case E_NORMAL_USAGE_MODE://正常使用模式
+                m_oMenu.CheckMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_CHECKED  ); 
+                m_oMenu.CheckMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_UNCHECKED); 
+                m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
 
-            //使能"光斑采样"菜单项
-            m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_ENABLED);
+                //使能"光斑采样"菜单项
+			    if (GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+			    {
+				     m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_GRAYED);
+			    }
+			    else
+			    {
+                     m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_ENABLED);
+			    }
 
-            //使能"手动编辑屏蔽区"子菜单
-            m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_ENABLED);
-            m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_ENABLED); 
-            m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_ENABLED);
-            //使能"手动校正"子菜单
-            //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_ENABLED);
-            //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_ENABLED);
-			m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
+                //使能"手动编辑屏蔽区"子菜单
+                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_ENABLED);
+                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_ENABLED); 
+                m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_ENABLED);
+                //使能"手动校正"子菜单
+                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_ENABLED);
+                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_ENABLED);
+			    m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
 
-            break;
+				////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
+				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
+				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_GRAYED);
 
-        case E_VIDEO_TUNING_MODE://图像调试模式
-            m_oMenu.CheckMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_UNCHECKED); 
-            m_oMenu.CheckMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_CHECKED  );
-            m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
+                break;
 
-            //灰化"光斑采样"菜单项
-            m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_GRAYED);
+          case E_VIDEO_TUNING_MODE://图像调试模式
 
-            //灰化"手动编辑屏蔽区"子菜单
-            m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
-            m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
-            m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
+               m_oMenu.CheckMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_UNCHECKED); 
+               m_oMenu.CheckMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_CHECKED  );
+               m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
 
-            //灰化"手动校正"子菜单
-            //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
-            //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_GRAYED);
-			m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
-            break;
+               //灰化"光斑采样"菜单项
+               m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_GRAYED);
 
-        case  E_LASER_TUNING_MODE://激光器调试模式
-            m_oMenu.CheckMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_UNCHECKED); 
-            m_oMenu.CheckMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
-            m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_CHECKED  );
+               //灰化"手动编辑屏蔽区"子菜单
+               m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
+               m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
+               m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
 
-            //灰化"光斑采样"菜单项
-            m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_GRAYED);
+               //灰化"手动校正"子菜单
+               //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
+               //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_GRAYED);
+			   m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
 
-            //灰化"手动编辑屏蔽区"子菜单
-            m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
-            m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
-            m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
+			   ////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+			   m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_ENABLED);
+			   m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_ENABLED);
+			   m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE,MF_BYCOMMAND| MF_ENABLED);
 
-            //灰化"手动校正"子菜单
-            //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
-            //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_GRAYED);
-			m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
+               break;
 
-            break;
+           case  E_LASER_TUNING_MODE://激光器调试模式
+                m_oMenu.CheckMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_UNCHECKED); 
+                m_oMenu.CheckMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
+                m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_CHECKED  );
+
+                //灰化"光斑采样"菜单项
+                m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_GRAYED);
+
+                //灰化"手动编辑屏蔽区"子菜单
+                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
+                m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
+
+                //灰化"手动校正"子菜单
+                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
+                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_GRAYED);
+			    m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
+
+				////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
+				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
+				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE,MF_BYCOMMAND| MF_GRAYED);
+
+                break;
         }
     }
     else
     {   
         m_oMenu.EnableMenuItem(ID_MENU_RUN, MF_BYCOMMAND|MF_ENABLED );//使能运行菜单
         m_oMenu.EnableMenuItem(ID_MENU_STOP, MF_BYCOMMAND|MF_GRAYED );//灰化停止菜单
-
-
 
         //灰化"自动屏蔽"菜单项
         m_oMenu.EnableMenuItem(ID_AUTO_ADD_MASK_AREA, MF_BYCOMMAND| MF_GRAYED);
@@ -2916,6 +2970,18 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         m_oMenu.EnableMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_GRAYED); 
         m_oMenu.EnableMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_GRAYED);
 
+		////插值
+		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_GRAYED);
+		///高级设置
+		m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
+
+		////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+		m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
+		m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
+		m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_GRAYED);
+
+		//更新固件。。
+		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
 
     }
 
@@ -3007,15 +3073,19 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	*/
 	///////插值标志
 	BOOL bEnableStrokeInterpolateTemp ;
+	BOOL bEnableOnLineScreenArea;
+
 	///////如果是桌面的话，开启或者关闭插值功能
 	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
 	{
 		bEnableStrokeInterpolateTemp = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bEnableStrokeInterpolate;
+		bEnableOnLineScreenArea = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea;
 	}
 	else {
 		bEnableStrokeInterpolateTemp = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate;
+		bEnableOnLineScreenArea = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea;
 	}
-
+	////是否进行插值
     if(bEnableStrokeInterpolateTemp)
     {
         m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_CHECKED);
@@ -3024,7 +3094,15 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
     {
         m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_UNCHECKED);
     }
-
+	//////是否启用绘制的外部勾勒图
+	if (bEnableOnLineScreenArea)
+	{
+		m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);		
+	}
+	else 
+	{
+       m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
+	}
 
 
     //如果"虚拟驱动"已打开, 则使能"Mouse"和"TouchPad"菜单项"
@@ -3161,8 +3239,6 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                     ID_SENSORCTXMENU_MANUAL_CALIBRATE,
                     MF_BYCOMMAND|MF_GRAYED);
             }
-
-
         }
 
         //"自动屏蔽..."菜单项
@@ -3179,6 +3255,11 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         pSubMenu->EnableMenuItem(
             ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING,
             MF_BYCOMMAND|(pSensor->IsDetecting()?MF_ENABLED:MF_GRAYED));
+
+		if (GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+		{
+			pSubMenu->EnableMenuItem(ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING, MF_BYCOMMAND|MF_GRAYED);
+		}
 
         //"安装向导菜单项"
         pSubMenu->EnableMenuItem(
@@ -3404,23 +3485,41 @@ void CIWBDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
     switch(this->m_eScreenMaskAreaEditMode)
     {
-    case e_SCREEN_MASK_AREA_EDIT_MODE_IDLE:
-        break;
+       case e_SCREEN_MASK_AREA_EDIT_MODE_IDLE:
+            break;
 
-        //case e_SCREEN_MASK_AREA_EDIT_MODE_SELECT_SCREEN_AREA:
-        //    this->m_eScreenMaskAreaEditMode = e_SCREEN_MASK_AREA_EDIT_MODE_IDLE;
-
+     //case e_SCREEN_MASK_AREA_EDIT_MODE_SELECT_SCREEN_AREA:
+     //    this->m_eScreenMaskAreaEditMode = e_SCREEN_MASK_AREA_EDIT_MODE_IDLE;
         //break;
 
-    case e_SCREEN_MASK_AREA_EDIT_MODE_ADD_MASK:
-        this->m_stackUndo.push(this->m_tMaskEditAction);
-        break;
+       case e_SCREEN_MASK_AREA_EDIT_MODE_ADD_MASK:
+           this->m_stackUndo.push(this->m_tMaskEditAction);
+           break;
 
-    case e_SCREEN_MASK_AREA_EDIT_MODE_ERASE_MASK:
-        this->m_stackUndo.push(this->m_tMaskEditAction);
-        break;
+       case e_SCREEN_MASK_AREA_EDIT_MODE_ERASE_MASK:
+            this->m_stackUndo.push(this->m_tMaskEditAction);
+            break;
     }//swtich
 
+	if (m_bStartDrawMaskFrame)
+	{
+		CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(point);
+		if (pSensor == NULL) return;
+
+		if (pSensor->IsDetecting())
+		{
+			RECT rcDisplayArea = pSensor->GetVideoPlayer()->GetDisplayArea();
+			int nPlayWndWidth = rcDisplayArea.right - rcDisplayArea.left;
+			int nPlayWndHeight = rcDisplayArea.bottom - rcDisplayArea.top;
+			int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
+			int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
+			CPoint pt;
+			pt.x = point.x *nSrcImgWidth /nPlayWndWidth;
+			pt.y = point.y* nSrcImgHeight /nPlayWndHeight;
+
+			pSensor->GetPenPosDetector()->SetOnLineScreenAreaPt(pt);
+		}
+	}
 
     CDialog::OnLButtonUp(nFlags, point);
 }
@@ -3500,11 +3599,29 @@ void CIWBDlg::OnMouseMove(UINT nFlags, CPoint point)
             break;
 
         }//switch
-
     }//if
+
+    ////////////在移动的时候把把最后一个点传递过去就好了。
+	if (m_bStartDrawMaskFrame)
+	{
+		if (pSensor->IsDetecting())
+		{
+			RECT rcDisplayArea = pSensor->GetVideoPlayer()->GetDisplayArea();
+			int nPlayWndWidth = rcDisplayArea.right - rcDisplayArea.left;
+			int nPlayWndHeight = rcDisplayArea.bottom - rcDisplayArea.top;
+			int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
+			int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
+			CPoint pt;
+			pt.x = point.x *nSrcImgWidth / nPlayWndWidth;
+			pt.y = point.y* nSrcImgHeight / nPlayWndHeight;
+
+			pSensor->GetInterceptFilter()->SetDrawMovePt(pt);
+		}
+	}
 
     CDialog::OnMouseMove(nFlags, point);
 }
+
 
 BOOL CIWBDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
@@ -4503,7 +4620,6 @@ void CIWBDlg::OnEndSession(BOOL bEnding)
 
 LRESULT CIWBDlg::OnGraphNotify(WPARAM wParam, LPARAM lParam)
 {
-
     TRACE(_T("[OnGraphNotify]wParam=0x%x, lParam=0x%x\n"), wParam, lParam);
     return 0;
 }
@@ -4617,6 +4733,7 @@ LRESULT CIWBDlg::OnRearProjection(WPARAM wParam, LPARAM lParam)
     return 0L;
 }
 
+
 LRESULT CIWBDlg::OnChangeAutoMaskDetectThreshold(WPARAM wParam, LPARAM lParam)
 {
     m_nAutoMaskDetectThreshold = int(lParam & 0x0000FFFF);
@@ -4705,7 +4822,7 @@ void CIWBDlg::OnMenuManualCalibrate36()
 //静态函数
 //自动校正过程中变更摄像头参数的回调函数
 //
-BOOL  CIWBDlg::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1)
+BOOL  CIWBDlg::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1,BYTE param2)
 {
     return TRUE;
 }
@@ -4741,7 +4858,36 @@ void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 
     if(pSensor)
     {
-        OnAdvancedSettings(pSensor);
+		if (m_bStartDrawMaskFrame)
+		{
+			m_bStartDrawMaskFrame = false;
+			////加上引导框
+			if (pSensor)
+			{
+				pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+
+				pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+				pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+
+				//RECT rcGuideRectangle;
+				//DWORD dwRGBColor;
+				//pSensor->GetPenPosDetector()->GetGuideRectangle(&rcGuideRectangle, &dwRGBColor);
+
+				//pSensor->GetVideoPlayer()->AddOSDText(
+				//	E_OSDTEXT_TYPE_GUIDE_BOX,
+				//	g_oResStr[IDS_STRING465],
+				//	rcGuideRectangle,
+				//	DT_BOTTOM | DT_CENTER | DT_SINGLELINE,
+				//	8,
+				//	_T("Times New Roman"),
+				//	-1);
+			}
+		}
+		else
+		{
+             OnAdvancedSettings(pSensor);
+		}
+
         //CString strAdditionalCaption;
 
         //strAdditionalCaption.Format(_T("%s%d"), g_oResStr[IDS_STRING446], pSensor->GetID());
@@ -4764,7 +4910,6 @@ void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 //图像传感器快捷菜单处理函数
 void CIWBDlg::OnSensorCtxMenu(UINT uID)
 {
-
     if(this->m_pSelectedSensor == NULL) return;
 
     switch(uID)
@@ -5175,6 +5320,17 @@ void CIWBDlg::InitDeviceUseModeMenuItemWithMenu(CMenu *pMenu)
  //       pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_MOUSE,    MF_BYCOMMAND| MF_GRAYED);
         pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, MF_BYCOMMAND| MF_GRAYED);
     }
+
+	////////////////add by zhaown if是HID模式，按原来的走，如果只是TUIO模式，那么鼠标和触屏选项要灰掉
+	bool bHIDMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchHIDMode();
+	bool bTUIOMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchTUIOMode();
+	//////只有TUIO模式，HID模式选择全部灰掉
+	if (!bHIDMode && bTUIOMode)
+	{
+		pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_MOUSE, MF_BYCOMMAND | MF_GRAYED);
+		pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, MF_BYCOMMAND | MF_GRAYED);
+	}
+
 }
 
 void CIWBDlg::OnChangeTouchScreenAspectRatio(UINT uID)
@@ -5208,8 +5364,29 @@ HRESULT CIWBDlg::OnAppCommMsg(WPARAM wParam, LPARAM lParam)
 		//自动定位
 		OnStartMenuAutoCalibrate();
 		break;
-	}
+	case  3:
+		//控制IRCUT
+		if(lParam == 1)
+		{
+			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+			if (lpSensor)
+			{
+				IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(),FALSE,lpSensor->GetDeviceInfo().m_nPID,lpSensor->GetDeviceInfo().m_nVID);
+		    }
+		}
+		else if (lParam == 2)
+		{
+			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+			if (lpSensor)
+			{
+			    IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE, lpSensor->GetDeviceInfo().m_nPID, lpSensor->GetDeviceInfo().m_nVID);
+			}
+		}
+		break;
 
+	default:
+		break;
+	}
 	return 0L;
 }
 
@@ -5235,7 +5412,6 @@ void CIWBDlg::UpdateInfoAboutDongle()
 		g_oResStr[IDS_STRING476]:(theApp.IsOnlineRegistered()?_T(""):g_oResStr[IDS_STRING477]);
 
 	strAboutDongle += theApp.IsHardwareKeyExist() ? _T("/color:black") : _T("/color:red");
-
 
 	m_ctlStatusBar.SetPaneText(PANE_DONGLE, strAboutDongle, TRUE);
 
@@ -5267,33 +5443,44 @@ void CIWBDlg::OnInstallationanddebuggingEnableinterpolate()
 	else {
 		g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate;
 	}
-
-    
+	/////需要把改变的设置进行保存
+	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+	if (pSensor)
+	{
+		pSensor->SetStrokeInterpolate(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate);
+	}
 }
 
-void CIWBDlg::OnMenuVideoformat()
+void CIWBDlg::OnMenuAdvancessetting()
 {
+	// TODO: Add your command handler code here
 	// TODO: Add your command handler code here
 	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
 	std::vector<CAtlString>  vecCameraInfo;
 	if (pSensor)
 	{
-	     const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-	     for (size_t i = 0; i < devInfo.m_vecVideoFmt.size(); i++)
-	     {
-			 CAtlString strFormatName  = GetVideoFormatName(devInfo.m_vecVideoFmt[i]);
-			 int nIndex = strFormatName.Find(_T("MJPG"),0);
-			 int nIndex1 = strFormatName.Find(_T("YUY2"),0);
-			 if (nIndex >0 || nIndex1 >0 )
-			 {
-			      vecCameraInfo.push_back(strFormatName);
-			 }
-	     }
+		const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+		for (size_t i = 0; i < devInfo.m_vecVideoFmt.size(); i++)
+		{
+			CAtlString strFormatName = GetVideoFormatName(devInfo.m_vecVideoFmt[i]);
+			int nIndex = strFormatName.Find(_T("MJPG"), 0);
+			int nIndex1 = strFormatName.Find(_T("YUY2"), 0);
+			if (nIndex >0 || nIndex1 >0)
+			{
+				vecCameraInfo.push_back(strFormatName);
+			}
+		}
 	}
 	CAtlString CurrentUserResolution = pSensor->GetVideoPlayer()->CurrentCameraResolution();
 
 	CameraFmtDialog  camerafmtdlg;
 	camerafmtdlg.SetCameraResolution(vecCameraInfo, CurrentUserResolution);
+
+	DWORD dIP = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetIPadress();
+	int nPort = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetPort();
+
+	camerafmtdlg.SetIPadressAndPort(dIP, nPort);
+	///////////////////////////////////
 	CAtlString  SelectValue;
 	if (camerafmtdlg.DoModal() == IDOK)
 	{
@@ -5301,7 +5488,7 @@ void CIWBDlg::OnMenuVideoformat()
 		if (pSensor)
 		{
 			const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-			for (size_t j = 0 ; j < devInfo.m_vecVideoFmt.size() ;j++ )
+			for (size_t j = 0; j < devInfo.m_vecVideoFmt.size(); j++)
 			{
 				CAtlString strFName = GetVideoFormatName(devInfo.m_vecVideoFmt[j]);
 				if (strFName == SelectValue)
@@ -5310,20 +5497,89 @@ void CIWBDlg::OnMenuVideoformat()
 				}
 			}
 		}
-		////////////////////////保存数据
-		if (CurrentUserResolution != SelectValue )
+
+		/////得到触控方式，如果两个都是不选择的话，就强行的置为HID触控模式。
+		bool bHIDMode = camerafmtdlg.GetTouchHIDMode();
+		bool bTUIOMode = camerafmtdlg.GetTouchTUIOMode();
+		if (!bHIDMode && !bTUIOMode)
 		{
-	     	 int nCount = this->m_oIWBSensorManager.GetSensorCount();
-		     if (nCount >0)
-		     {
-		          g_tSysCfgData.vecSensorConfig[nCount-1].strFavoriteMediaType = SelectValue;	
-		     }
-		     //写入配置文件
-		     ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+			g_tSysCfgData.globalSettings.bTouchHIDMode = true;
 		}
+		else
+		{
+			g_tSysCfgData.globalSettings.bTouchHIDMode= bHIDMode;
+		}
+		g_tSysCfgData.globalSettings.bTouchTUIOMode  = bTUIOMode;
+
+		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchTUIOMode(bTUIOMode);
+		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchHIDMode(bHIDMode);
+
+		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetIPadressAndPort(camerafmtdlg.GetIPAddress(),camerafmtdlg.GetPort());
+
+		////////////////////////保存数据
+		int nCount = this->m_oIWBSensorManager.GetSensorCount();
+		if (nCount >0)
+		{
+			g_tSysCfgData.vecSensorConfig[nCount - 1].strFavoriteMediaType = SelectValue;
+		}
+		//写入配置文件
+		::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+	}
+}
+void CIWBDlg::OnMenuDrawmaskframeStart()
+{
+	// TODO: Add your command handler code here
+	m_bStartDrawMaskFrame = true;
+	////去掉引导框
+	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+	//m_bPreGuideRectangleVisible記錄上次引導框的顯示情況，方便后面的恢复。
+	if(lpSensor)
+	{
+	     m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible();
+	     lpSensor->GetPenPosDetector()->ShowGuideRectangle(false);
+
+		 lpSensor->GetInterceptFilter()->SetStartDrawMaskFrame(m_bStartDrawMaskFrame);
+		 /////清除数组中的数据
+		 lpSensor->GetPenPosDetector()->ClearOnLineScreenAreaPt();
+		 lpSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
 	}
 }
 
+void CIWBDlg::OnMenuDrawmaskframeClear()
+{
+	// TODO: Add your command handler code here
+	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+	if (lpSensor)
+	{
+    	lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
+	}	
+}
+
+
+void CIWBDlg::OnMenuDrawmaskframeDisable()
+{
+	// TODO: Add your command handler code here
+	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();	
+
+	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+	{
+		g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea;
+	    if(lpSensor)
+	    {
+			lpSensor->SetOnlineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea);
+		    lpSensor->GetPenPosDetector()->EnableOnLineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea);
+	    }
+	}
+	else 
+	{
+		g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea;
+		if (lpSensor)
+		{
+			lpSensor->SetOnlineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea);
+			lpSensor->GetPenPosDetector()->EnableOnLineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea);
+		}
+	}
+}
 
 void CIWBDlg::OnMenuTouchScreenLayoutDesigner()
 {

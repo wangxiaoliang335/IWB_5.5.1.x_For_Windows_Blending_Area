@@ -164,7 +164,7 @@ public:
     //@功能:设备丢失事件响应函数
     void OnDeviceIsMissing();
 
-      static BOOL  OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1);
+    static BOOL  OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMode, LPVOID lpCtx, BYTE param1, BYTE param2);
 
 
       //@功能:查看校正符号位置
@@ -193,7 +193,9 @@ public:
 	  BOOL GetAttachedScreenArea(RECT& rcMonitor)const;
 
 
-	  void OnTimer(LPVOID lpCtxData);
+	  void  OnTimer(LPVOID lpCtxData);
+	  void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
+	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea);
 
 
 protected:

@@ -403,7 +403,6 @@ BOOL LoadConfig(TiXmlNode *pNode, TCMOSChipSpecification &CMOSChipSpec)
     do
     {
         pChild = pNode->IterateChildren(pChild);
-
         if(NULL == pChild) break;
 
         const char* lpszElementName = pChild->Value();
@@ -557,6 +556,28 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
             { //启动时的工作模式
                 globalSettings.eLensMode = (ESensorLensMode)atoi(paramValue);
             }
+			else if (paramName && paramValue && _stricmp(paramName, "TouchTUIOMode") == 0)
+			{
+				if (_stricmp(paramValue, "Yes") == 0)
+				{
+					globalSettings.bTouchTUIOMode = TRUE;
+				}
+				else
+				{
+					globalSettings.bTouchTUIOMode = FALSE;
+				}
+			}
+			else if (paramName && paramValue && _stricmp(paramName, "TouchHIDMode") == 0)
+			{
+				if (_stricmp(paramValue, "Yes") == 0)
+				{
+					globalSettings.bTouchHIDMode = TRUE;
+				}
+				else
+				{
+					globalSettings.bTouchHIDMode = FALSE;
+				}
+			}
             else if(paramName && paramValue && _stricmp(paramName, "HID Mode") == 0)
             {
 
@@ -659,8 +680,6 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
 }
 
 
-
-
 //@功能:载入配置文件
 //@参数:pNode,
 //      globalSettings,
@@ -728,6 +747,25 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pElement->SetAttribute("name", "LensMode");
     pElement->SetAttribute("value", int(globalSettings.eLensMode));
     pNode->LinkEndChild(pElement);
+
+	//TUIO触控的方式
+	pXmlComment = new TiXmlComment("是否打开TUIO触控方式");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "TouchTUIOMode");
+	pElement->SetAttribute("value", globalSettings.bTouchTUIOMode? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	//HID触控的方式
+	pXmlComment = new TiXmlComment("是否打开HID触控方式");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "TouchHIDMode");
+	pElement->SetAttribute("value", globalSettings.bTouchHIDMode ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
 
     //HID工作模式
     pXmlComment = new TiXmlComment("HID工作方式(Mouse; Touch Screen)");
@@ -889,16 +927,12 @@ BOOL LoadConfig(TiXmlNode *pNode, NormalUsageSettings& normalUsageSettings)
                 if(paramDefault) normalUsageSettings.nLightSpotMinimumHeightDefault = atoi(paramDefault);
 
             }
-
         }
         else if(_stricmp(lpszElementName, "CameraParams") == 0)
         {//正常使用时的相机参数
             LoadConfig(pChild, normalUsageSettings.cameraParams, normalUsageSettings.defaultParams);
         }
-
-
     }while(pChild);
-
 
     return TRUE;
 }
@@ -1071,7 +1105,6 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams)
 }
 
 
-
 //@功能:载入自动校正时的图像参数列表
 //@参数:pNode, 指向配置文件中<ImageParams>节点的指针
 //      imageParam, 自动校正画面参数
@@ -1106,9 +1139,7 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
                 //缺省值
                 if(paramDefault)defaultParams.autoCalibrateHilightGray = atoi(paramDefault);
             }
-
         }
-
     }while(pChild);
 
     return TRUE;
@@ -1174,16 +1205,12 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParams& imageParams, c
     return TRUE;
 }
 
-
-
 //@功能:载入自动校正时的图像参数列表
 //@参数:pNode, 指向配置文件中<ImageParamsList>节点的指针
 //      imageParamList, 自动校正画面参数列表
-BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParamsList& imageParamList)
+BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateSettings& autoCalibrateSettings)
 {
     if(NULL == pNode) return FALSE;
-
-    AutoCalibrateImageParamsList list;
     TiXmlNode* pChild = NULL;
     do
     {
@@ -1192,61 +1219,17 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParamsList& imageParamList)
         const char* lpszElementName = pChild->Value();
 
         if(_stricmp(lpszElementName, "ImageParams") == 0)
-        {//载入自动校正时的画面参数
-            AutoCalibrateImageParams imageParams;
-            if(LoadConfig(pChild, imageParams))
-            {
-                list.push_back(imageParams);
-            }
-
+        {
+			//载入自动校正时的画面参数
+			LoadConfig(pChild, autoCalibrateSettings.calibrateImageParams, autoCalibrateSettings.defaultCalibrateImageParams);
         }
+		else if(_stricmp(lpszElementName, "CameraParams") == 0)
+		{
+			LoadConfig(pChild, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
+		}
 
     }while(pChild);
 
-    if(list.size())
-    {
-        imageParamList = list;
-    }
-    return TRUE;
-}
-
-
-//@功能:载入自动校正时的图像参数列表
-//@参数:pNode, 指向配置文件中<ImageParamsList>节点的指针
-//      imageParamList, 自动校正画面参数列表
-BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParamsList& imageParamList, AutoCalibrateImageParamsList& defaultImageParamList)
-{
-    if(NULL == pNode) return FALSE;
-
-    AutoCalibrateImageParamsList paramList;
-    AutoCalibrateImageParamsList defaultParamList;
-
-    TiXmlNode* pChild = NULL;
-    do
-    {
-        pChild = pNode->IterateChildren(pChild);
-        if(NULL == pChild) break;
-        const char* lpszElementName = pChild->Value();
-
-        if(_stricmp(lpszElementName, "ImageParams") == 0)
-        {//载入自动校正时的画面参数
-            AutoCalibrateImageParams imageParams;
-            AutoCalibrateImageParams defaultParams;
-            if(LoadConfig(pChild, imageParams, defaultParams))
-            {
-                paramList.push_back(imageParams);
-                defaultParamList.push_back(defaultParams);
-            }
-
-        }
-
-    }while(pChild);
-
-    if(paramList.size())
-    {
-        imageParamList = paramList;
-        defaultImageParamList = defaultParamList;
-    }
     return TRUE;
 }
 
@@ -1255,78 +1238,55 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParamsList& imageParamList,
 //@功能:保存自动校正下的参数
 //@参数:pNode, 指向配置文件中<ImageParamsList>节点的指针
 //      imageParamList, 输入参数, 自动校正画面参数列表
-BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParamsList& imageParamList)
+BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateSettings& autoCalibrateSettings,int nIndex)
 {
-    int nCount = imageParamList.size();
+      //自动校正画面参数
+      char text[1024];
+      sprintf_s(text, _countof(text), "第(%d)组自动校正画面参数", nIndex);
+      TiXmlComment* pXmlComment = new TiXmlComment(text);
+      pNode->LinkEndChild(pXmlComment);
 
-    for(int i = 0; i < nCount; i++)
-    {
-        //自动校正画面参数
-        char text[1024];
-        sprintf_s(text, _countof(text), "第(%d)组自动校正画面参数", i+1);
-        TiXmlComment* pXmlComment = new TiXmlComment(text);
-        pNode->LinkEndChild(pXmlComment);
+      TiXmlElement* pElement = new TiXmlElement("ImageParams");
+      SaveConfig(pElement, autoCalibrateSettings.calibrateImageParams, autoCalibrateSettings.defaultCalibrateImageParams);
+      pNode->LinkEndChild(pElement);
 
-        TiXmlElement* pElement = new TiXmlElement("ImageParams");
-        SaveConfig(pElement, imageParamList[i]);
-        pNode->LinkEndChild(pElement);
-    }
+	  sprintf_s(text, _countof(text), "第(%d)组自动校正参数", nIndex);
+	  pXmlComment = new TiXmlComment(text);
+	  pNode->LinkEndChild(pXmlComment);
+
+	  pElement = new TiXmlElement("CameraParams");
+	  SaveConfig(pElement, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
+	  pNode->LinkEndChild(pElement);
 
     return TRUE;
 }
-
-
-//@功能:保存自动校正下的参数
-//@参数:pNode, 指向配置文件中<ImageParamsList>节点的指针
-//      imageParamList, 输入参数, 自动校正画面参数列表
-//      defaultImageParamList, 输入参数, 缺省的参数列表
-BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParamsList& imageParamList, const AutoCalibrateImageParamsList& defaultImageParamList)
-{
-    int nCount = imageParamList.size();
-
-    for(int i = 0; i < nCount; i++)
-    {
-        //自动校正画面参数
-        char text[1024];
-        sprintf_s(text, _countof(text), "第(%d)组自动校正画面参数", i+1);
-        TiXmlComment* pXmlComment = new TiXmlComment(text);
-        pNode->LinkEndChild(pXmlComment);
-
-        TiXmlElement* pElement = new TiXmlElement("ImageParams");
-        SaveConfig(pElement, imageParamList[i], defaultImageParamList[i]);
-        pNode->LinkEndChild(pElement);
-    }
-
-    return TRUE;
-}
-
-
-
 
 //@功能:载入正常使用时的配置信息
 //@参数:pNode, 指向配置文件中<AutoCalibrate>节点的指针
 //      autoCalibrateSettings, 输出参数, 自动校正配置信息
-BOOL LoadConfig(TiXmlNode *pNode, AutoCalibrateSettings& autoCalibrateSettings)
+BOOL LoadConfig(TiXmlNode *pNode, AutoCalibrateSettingsList& autoCalibrateSettingslist)
 {
     if(pNode == NULL) return FALSE;
     TiXmlNode* pChild = NULL;
+
+	AutoCalibrateSettings autocalibrateSettings;
+	autoCalibrateSettingslist.clear();
     do
     {
         pChild = pNode->IterateChildren(pChild);
         if(NULL == pChild) break;
         const char* lpszElementName = pChild->Value();
 
-        if(_stricmp(lpszElementName, "ImageParamsList") == 0)
-        {//载入自动校正时的画面参数
+        if(_stricmp(lpszElementName, "AutoCalibrateParams") == 0)
+        {  
+			//载入自动校正时的画面参数
 
-            LoadConfig(pChild, autoCalibrateSettings.calibrateImageParamsList, autoCalibrateSettings.defaultCalibrateImageParamsList);
-
+			if (LoadConfig(pChild, autocalibrateSettings))
+			{
+				autoCalibrateSettingslist.push_back(autocalibrateSettings);
+			}
         }
-        else if(_stricmp(lpszElementName, "CameraParams") == 0)
-        {//自动校正相机参数
-            LoadConfig(pChild, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
-        }
-
+      
     }while(pChild);
 
     return TRUE;
@@ -1337,25 +1297,21 @@ BOOL LoadConfig(TiXmlNode *pNode, AutoCalibrateSettings& autoCalibrateSettings)
 //@功能:保存自动校正下的参数
 //@参数:pNode, 指向配置文件中<AutoCalibrate>节点的指针
 //      autoCalibrateSettings, 输入参数, 自动校正配置信息
-BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateSettings& autoCalibrateSettings)
+BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateSettingsList& autoCalibrateSettingslist)
 {
-    //自动校正画面参数列表
-    TiXmlComment* pXmlComment = new TiXmlComment("自动校正参数列表");
-    pNode->LinkEndChild(pXmlComment);
+	int nCount = autoCalibrateSettingslist.size();
 
-    TiXmlElement* pElement = new TiXmlElement("ImageParamsList");
-    SaveConfig(pElement, autoCalibrateSettings.calibrateImageParamsList, autoCalibrateSettings.defaultCalibrateImageParamsList);
-    pNode->LinkEndChild(pElement);
+	for(int i = 0 ;i < nCount ; i++ )
+	{
+		char text[1024];
+		sprintf_s(text, _countof(text), "第(%d)组自动校正参数", i + 1);
+		TiXmlComment* pXmlComment = new TiXmlComment(text);
+		pNode->LinkEndChild(pXmlComment);
 
-
-    //自动校正相机参数
-    pXmlComment = new TiXmlComment("自动校正相机参数");
-    pNode->LinkEndChild(pXmlComment);
-
-    pElement = new TiXmlElement("CameraParams");
-    pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
-
+		TiXmlElement* pElement = new TiXmlElement("AutoCalibrateParams");
+		SaveConfig(pElement, autoCalibrateSettingslist[i],i+1);
+		pNode->LinkEndChild(pElement);
+	}
     return TRUE;
 }
 
@@ -1388,12 +1344,7 @@ BOOL LoadConfig(TiXmlNode *pNode, AutoMaskSettings& autoMasktSettings)
                 autoMasktSettings.nMaskAreaEroseSize = atoi(paramValue);
                 if(paramDefault) autoMasktSettings.nMaskAreaEroseSizeDefault = atoi(paramDefault);
             }
-
         }
-        //else if(_stricmp(lpszElementName, "CameraParams") == 0)
-        //{
-
-        //}
 
     }while(pChild);
     return TRUE;
@@ -1425,8 +1376,6 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoMaskSettings& autoMasktSettings)
     pNode->LinkEndChild(pElement);
     return TRUE;
 }
-
-
 
 
 //@功能:载入正常使用时的配置信息
@@ -1531,13 +1480,24 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 			}
 			else if (_stricmp(paramName, "DeviceTouchType") == 0)
 			{
-				if (paramValue &&_stricmp(paramValue, "Finger Touch") == 0)
+				if (paramValue &&_stricmp(paramValue, "Finger_Touch_WhiteBoard") == 0)
 				{
-					advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH;
+					advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+				}
+				else if(paramValue &&_stricmp(paramValue, "Pen_Touch_WhiteBoard") == 0)
+				{
+					advanceSettings.m_eTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+				}
+				else if(paramValue &&_stricmp(paramValue, "Finger_Touch_Control") == 0)
+				{
+					advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
+				}
+				else if (paramValue &&_stricmp(paramValue, "Palm_Touch_Control") == 0)
+				{
+					advanceSettings.m_eTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
 				}
 				else
 				{
-					advanceSettings.m_eTouchType = E_DEVICE_PEN_TOUCH;
 				}
 			}
 			else if (_stricmp(paramName, "RearProjectionDevice") == 0)
@@ -1552,6 +1512,38 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 				}
 
 			}
+			else if(_stricmp(paramName, "DynamicMaskFrame") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Yes")== 0)
+				{
+					advanceSettings.bIsDynamicMaskFrame = TRUE;
+				}
+				else {
+					advanceSettings.bIsDynamicMaskFrame = FALSE;
+				}
+			}
+			else if(_stricmp(paramName, "AntiJamming") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					advanceSettings.bIsAntiJamming = TRUE;
+				}
+				else
+				{
+					advanceSettings.bIsAntiJamming = FALSE;
+				}
+			}
+			else if (_stricmp(paramName, "OnLineScreenArea") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					advanceSettings.bIsOnLineScreenArea = TRUE;
+				}
+				else
+				{
+					advanceSettings.bIsOnLineScreenArea = FALSE;
+				}
+			}
         }
 
     }while(pChild);
@@ -1563,30 +1555,30 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 //      advanceSettings, 输入参数, 手动校正配置信息
 BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 {
-	//使能笔迹插值
-	TiXmlComment* pXmlComment = new TiXmlComment("使能笔迹插值(Yes/No)");
+
+	//设备触控类型
+	TiXmlComment* pXmlComment = new TiXmlComment("设备触控类型(\"Finger_Touch_WhiteBoard\":手触控电子白板; \"Pen_Touch_WhiteBoard\":笔触控电子白板; \"Finger_Touch_Control\":手指触控;\"Palm_Touch_Control\":手掌互动;");
 	pNode->LinkEndChild(pXmlComment);
 
 	TiXmlElement * pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "EnableStrokeInterpolate");
-	pElement->SetAttribute("value", advanceSettings.bEnableStrokeInterpolate?"Yes":"No");
-	pNode->LinkEndChild(pElement);
-
-	//设备触控类型
-	pXmlComment = new TiXmlComment("设备触控类型(\"Finger Touch\":手触控; \"Pen Touch\":笔触控");
-	pNode->LinkEndChild(pXmlComment);
-
-	pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "DeviceTouchType");
 	switch (advanceSettings.m_eTouchType)
 	{
-	case E_DEVICE_FINGER_TOUCH:
-		pElement->SetAttribute("value", "Finger Touch");
-		break;
+	   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+		    pElement->SetAttribute("value", "Finger_Touch_WhiteBoard");
+		    break;
 
-	case E_DEVICE_PEN_TOUCH:
-		pElement->SetAttribute("value", "Pen Touch");
-		break;
+	   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+		   pElement->SetAttribute("value", "Pen_Touch_WhiteBoard");
+		   break;
+	   case E_DEVICE_FINGER_TOUCH_CONTROL:
+		   pElement->SetAttribute("value", "Finger_Touch_Control");
+		   break;
+	   case E_DEVICE_PALM_TOUCH_CONTROL:
+		   pElement->SetAttribute("value", "Palm_Touch_Control");
+		   break;
+	   default:
+		   break;
 
 	}//switch
 
@@ -1637,7 +1629,42 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
     pElement->SetAttribute("value", advanceSettings.nFixedBlobSetTime);
     pNode->LinkEndChild(pElement);
 
+	//使能笔迹插值
+	pXmlComment = new TiXmlComment("使能笔迹插值(Yes/No)");
+	pNode->LinkEndChild(pXmlComment);
 
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "EnableStrokeInterpolate");
+	pElement->SetAttribute("value", advanceSettings.bEnableStrokeInterpolate ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	//是否打开动态屏蔽功能
+	pXmlComment = new TiXmlComment("是否打开动态屏蔽功能");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "DynamicMaskFrame");
+	pElement->SetAttribute("value", advanceSettings.bIsDynamicMaskFrame ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	//是否打开抗干扰功能
+	pXmlComment = new TiXmlComment("是否打开抗干扰功能");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "AntiJamming");
+	pElement->SetAttribute("value", advanceSettings.bIsAntiJamming ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	///是否启用手动绘制的静态屏蔽图
+	pXmlComment = new TiXmlComment("是否启用手动绘制屏幕区域");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "OnLineScreenArea");
+	pElement->SetAttribute("value", advanceSettings.bIsOnLineScreenArea ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+	
     return TRUE;
 }
 
@@ -1652,7 +1679,6 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<int> & attachedMonitorIds)
     attachedMonitorIds.resize(nMonitorCount);
 
     TiXmlNode * pChild = NULL;
-
 
     int nMonitorIndex = 0;
     do
@@ -1674,7 +1700,6 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<int> & attachedMonitorIds)
             {
                 attachedMonitorIds[nMonitorIndex] = 0;
             }
-
             nMonitorIndex ++;
         }
 
@@ -1827,8 +1852,6 @@ BOOL SaveConfig(TiXmlNode *pNode, const TMonitorCalibCoefs& tMonitorCalibCoefs)
     return TRUE;
 
 }
-
-
 
 //@功能:载入校正方程系数
 //@参数:pNode, 指向配置文件中<AttachedMonitorIds>节点的指针
@@ -2331,25 +2354,41 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
         }
         const char* lpszElementName = pChild->Value();
 
-        if(_stricmp(lpszElementName, "NormalUsage-FingerTouch") == 0)
+        if(_stricmp(lpszElementName, "NormalUsage-FingerTouchWhiteBoard") == 0)
         {//手触正常使用模式参数
-            LoadConfig(pChild, lensConfig.normalUsageSettings_FingerTouch);
+            LoadConfig(pChild, lensConfig.normalUsageSettings_FingerTouchWhiteBoard);
         }
-        else if(_stricmp(lpszElementName, "NormalUsage-PenTouch") == 0)
+        else if(_stricmp(lpszElementName, "NormalUsage-PenTouchWhiteBoard") == 0)
         {//笔触正常使用模式参数
-            LoadConfig(pChild, lensConfig.normalUsageSettings_PenTouch);
+            LoadConfig(pChild, lensConfig.normalUsageSettings_PenTouchWhiteBoard);
         }
+		else if (_stricmp(lpszElementName, "NormalUsage-FingerTouchControl") == 0)
+		{
+			LoadConfig(pChild,lensConfig.normalUsageSettings_FingerTouchControl);
+		}
+		else if (_stricmp(lpszElementName, "NormalUsage-PalmTouchControl") == 0)
+		{
+			LoadConfig(pChild, lensConfig.normalUsageSettings_PalmTouchControl);
+		}
         else if(_stricmp(lpszElementName, "InstallTunning") == 0)
         {//安装调试时的参数
             LoadConfig(pChild, lensConfig.installTunningSettings);
         }
-        else if(_stricmp(lpszElementName, "LaserTunning") == 0)
-        {//激光器调试模式参数
-            LoadConfig(pChild, lensConfig.laserTunningSettings);
+        else if(_stricmp(lpszElementName, "LaserTunning-WhiteBoard") == 0)
+        {  //电子白板激光器调试模式参数
+            LoadConfig(pChild, lensConfig.laserTunningSettings_WhiteBoard);
         }
-        else if(_stricmp(lpszElementName, "AutoCalibrate") == 0)
+		else if(_stricmp(lpszElementName, "LaserTunning-FingerTouchControl") == 0)
+		{  //手指触控激光器调试模式参数
+			LoadConfig(pChild, lensConfig.laserTunningSettings_FingerTouchControl);
+		}
+		else if(_stricmp(lpszElementName, "LaserTunning-PalmTouchControl") == 0)
+		{	//手掌互动激光器调试模式参数
+			LoadConfig(pChild, lensConfig.laserTunningSettings_PalmTouchControl);
+		}
+        else if(_stricmp(lpszElementName, "AutoCalibrateParamsList") == 0)
         {//自动校正参数
-            LoadConfig(pChild, lensConfig.autoCalibrateSettings);
+            LoadConfig(pChild, lensConfig.autoCalibrateSettingsList);
         }
         else if(_stricmp(lpszElementName, "AutoMask") == 0)
         {//自动屏蔽参数
@@ -2466,23 +2505,36 @@ BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
 	pNode->LinkEndChild(pElement);
 
 
-    //手指触控模式下的正常使用参数
-    pXmlComment = new TiXmlComment("手指触控模式下的正常使用参数");
+    //手指触控电子白板模式下的正常使用参数
+    pXmlComment = new TiXmlComment("电子白板手指触控模式下的正常使用参数");
     pNode->LinkEndChild(pXmlComment);
 
-    pElement = new TiXmlElement("NormalUsage-FingerTouch");
+    pElement = new TiXmlElement("NormalUsage-FingerTouchWhiteBoard");
     pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, lensConfig.normalUsageSettings_FingerTouch);
+    SaveConfig(pElement, lensConfig.normalUsageSettings_FingerTouchWhiteBoard);
 
 
-    //笔触控模式下的正常使用参数
-    pXmlComment = new TiXmlComment("笔触控模式下的正常使用参数");
+    //笔触控电子白板模式下的正常使用参数
+    pXmlComment = new TiXmlComment("电子白板笔触控模式下的正常使用参数");
     pNode->LinkEndChild(pXmlComment);
 
-    pElement = new TiXmlElement("NormalUsage-PenTouch");
+    pElement = new TiXmlElement("NormalUsage-PenTouchWhiteBoard");
     pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, lensConfig.normalUsageSettings_PenTouch);
+    SaveConfig(pElement, lensConfig.normalUsageSettings_PenTouchWhiteBoard);
 
+	//手指触控模式下的正常使用参数
+	pXmlComment = new TiXmlComment("手指触控模式下的正常使用参数");
+	pNode->LinkEndChild(pXmlComment);
+	pElement = new TiXmlElement("NormalUsage-FingerTouchControl");
+	pNode->LinkEndChild(pElement);
+	SaveConfig(pElement,lensConfig.normalUsageSettings_FingerTouchControl);
+
+	//手掌触控模式下的正常使用参数
+	pXmlComment = new TiXmlComment("手掌触控模式下的正常使用参数");
+	pNode->LinkEndChild(pXmlComment);
+	pElement = new TiXmlElement("NormalUsage-PalmTouchControl");
+	pNode->LinkEndChild(pElement);
+	SaveConfig(pElement, lensConfig.normalUsageSettings_PalmTouchControl);
 
     //安装调试时的模式参数
     pXmlComment = new TiXmlComment("安装调试模式参数");
@@ -2494,20 +2546,37 @@ BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
 
 
     //激光器调试模式参数
-    pXmlComment = new TiXmlComment("激光器调试模式参数");
+    pXmlComment = new TiXmlComment("电子白板激光器调试模式参数");
     pNode->LinkEndChild(pXmlComment);
 
-    pElement = new TiXmlElement("LaserTunning");
+    pElement = new TiXmlElement("LaserTunning-WhiteBoard");
     pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, lensConfig.laserTunningSettings);
+    SaveConfig(pElement, lensConfig.laserTunningSettings_WhiteBoard);
+
+	//激光器调试模式参数
+	pXmlComment = new TiXmlComment("手指触控激光器调试模式参数");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("LaserTunning-FingerTouchControl");
+	pNode->LinkEndChild(pElement);
+	SaveConfig(pElement, lensConfig.laserTunningSettings_FingerTouchControl);
+
+	//激光器调试模式参数
+	pXmlComment = new TiXmlComment("手掌触控激光器调试模式参数");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("LaserTunning-PalmTouchControl");
+	pNode->LinkEndChild(pElement);
+	SaveConfig(pElement, lensConfig.laserTunningSettings_PalmTouchControl);
+
 
     //自动校正参数
-    pXmlComment = new TiXmlComment("自动校正参数");
+    pXmlComment = new TiXmlComment("自动校正参数列表");
     pNode->LinkEndChild(pXmlComment);
 
-    pElement = new TiXmlElement("AutoCalibrate");
+    pElement = new TiXmlElement("AutoCalibrateParamsList");
     pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, lensConfig.autoCalibrateSettings);
+    SaveConfig(pElement, lensConfig.autoCalibrateSettingsList);
 
     //自动屏蔽参数
     pXmlComment = new TiXmlComment("自动屏蔽参数");
@@ -2669,7 +2738,6 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 
 	//保存各种镜头的配置参数
 	TCHAR szPath[MAX_PATH];
-    
     _stprintf_s(
         szPath,
         _countof(szPath), 
@@ -2678,7 +2746,6 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
         nSensorId,
         GetProjectModeString(EProjectionMode(nModeIndex)),
         GetCameraTypeString(g_tSysCfgData.globalSettings.eCameraType));
-
 
 	//if (nModeIndex==0)
 	//{
@@ -2766,7 +2833,6 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 
 	//////////////////////////////////
 	///保存各种镜头的配置参数
-//	AtlTrace(_T("eCameraType444444====%d\r\n"), g_tSysCfgData.globalSettings.eCameraType);
     /*
 	char szPath[MAX_PATH];
 
@@ -2782,6 +2848,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
 		   case E_CAMERA_MODEL_2:
+
 			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
 				break;
 		   default:
@@ -3171,8 +3238,6 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,
 		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
 	}
 
-//	AtlTrace(_T("eCameraType3333333====%d,%d,%d\r\n"), g_tSysCfgData.globalSettings.eCameraType,PID,VID);
-
     TiXmlDocument oXMLDoc;
     if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath),TIXML_ENCODING_UTF8))
     {
@@ -3320,7 +3385,6 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
 BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
 {
 	///保存各种镜头的配置参数
-//	AtlTrace(_T("eCameraType2222222====%d\r\n"), g_tSysCfgData.globalSettings.eCameraType);
     /*
 	char szPath[MAX_PATH];
 	if (nModeIndex == 0)
@@ -3429,13 +3493,16 @@ BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PI
 	if (PID ==13200 && VID == 6380)
 	{
 		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
+		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
 	}
 	else if (PID == 37424 && VID == 1443)
 	{
 		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
+		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.003;
 	}
 	else {
 		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
+		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
 	}
 
 	TiXmlDocument oXMLDoc;
@@ -3443,7 +3510,7 @@ BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PI
 	{
 		return FALSE;
 	}
-//	AtlTrace(_T("eCameraType1111====%d,%d,%d\r\n"), sysCfgData.globalSettings.eCameraType,PID,VID);
+
 	TiXmlElement *pRootElement = oXMLDoc.RootElement();
 	if (pRootElement == NULL)
 	{

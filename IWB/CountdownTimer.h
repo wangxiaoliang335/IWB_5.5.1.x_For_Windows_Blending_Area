@@ -42,7 +42,6 @@ protected:
             m_rcWndArea.bottom  = nYVScreen + nCyVScreen;
         }
 
-
         LOGFONT lf;
         memset(&lf, 0, sizeof(LOGFONT));
         lf.lfHeight        = (m_rcWndArea.bottom - m_rcWndArea.top)/2;

@@ -370,9 +370,10 @@ protected:
     //
 	HRESULT PlayVideo(HWND hWnd = NULL, HWND hNotifyWnd=NULL);
 
-
 	HRESULT InitializeVideo();
+
 	void UnInitializeVideo();
+
 	HRESULT GetInterfaces();
 	HRESULT CloseInterfaces();
 
@@ -445,4 +446,6 @@ protected:
 	TOSDText m_osdtext[E_OSDTEXT_TYPE_COUNT];
 
 	CString    m_sCurrentCameraResolution;
+
+	TCHAR m_szStatusText[256];
 };

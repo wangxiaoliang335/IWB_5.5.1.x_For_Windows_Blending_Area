@@ -96,7 +96,6 @@
 #define WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY           (WM_USER+ 33)
 #define WM_REAR_PROJECTION                              (WM_USER+ 34)
 
-
 //ÉãÏñÍ·×´Ì¬
 //WPARAM, LPCTSTR×Ö·û´®
 //LPARAM, ÉãÏñÍ·±àºÅ

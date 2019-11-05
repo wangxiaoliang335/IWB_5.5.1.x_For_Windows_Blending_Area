@@ -20,19 +20,59 @@ CBitAnswer  g_bitanswer;//比特安索在线注册对象。
 //@功能:返回实际的触控类型
 EDeviceTouchType GetActualTouchType()
 {
-    if (theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH)
-    {//加密狗为笔触模式, 强制工作模式为笔触模式
-        return E_DEVICE_PEN_TOUCH;
-    }
-    else
-    {
-        //加密狗为手触模式, 选用用户选择的触控模式
-        if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-        {
-            return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType;
-        }
-        return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType;
-    }
+	//return E_DEVICE_FINGER_TOUCH_CONTROL;
+
+	switch (theApp.GetUSBKeyTouchType())
+	{
+	    case  E_DEVICE_PEN_TOUCH_WHITEBOARD:
+			//加密狗为笔触模式电子白板, 强制工作模式为笔触电子白板模式
+			return E_DEVICE_PEN_TOUCH_WHITEBOARD;
+		   break;
+		case  E_DEVICE_FINGER_TOUCH_CONTROL:
+			//加密狗为手指触控时，强制工作模式为手指触控模式。
+			return E_DEVICE_FINGER_TOUCH_CONTROL;
+			break;
+		case E_DEVICE_PALM_TOUCH_CONTROL:
+			//加密狗为手掌触控时，强制工作模式是手掌互动模式
+			return E_DEVICE_PALM_TOUCH_CONTROL;
+			break;
+		default:
+			//加密狗为手触模式, 选用用户选择的触控模式
+			EDeviceTouchType eTouchType;
+			if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+			{
+				eTouchType = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType;
+			}
+			else
+			{
+				eTouchType = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType;
+			}
+
+			if (eTouchType == E_DEVICE_FINGER_TOUCH_CONTROL || eTouchType == E_DEVICE_PALM_TOUCH_CONTROL)
+			{
+				return E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+			}
+			else
+			{
+				return eTouchType;
+			}
+			break;
+	}
+
+//    if(theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+//   {//加密狗为笔触模式, 强制工作模式为笔触模式
+//        return E_DEVICE_PEN_TOUCH_WHITEBOARD;
+//    }
+//    else
+//    { 
+//		//加密狗为手触模式, 选用用户选择的触控模式
+//		if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+//		{
+//           return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType;
+//		}
+//		return g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType;
+//    }
+
 }
 
 //@功  能:返回实际的屏幕控制区域
@@ -73,15 +113,16 @@ END_MESSAGE_MAP()
 // CIWBApp construction
 
 CIWBApp::CIWBApp()
-    :
-    m_hMutex(NULL),
-    m_bAutoRunMode(FALSE),
-    m_bForAllUser(FALSE),
-    m_eUSBKeyTouchType(E_DEVICE_PEN_TOUCH),
-    //m_eScreenType(ESingleScreenMode),
-    m_eScreenModeFromUsbKey(EScreenModeSingle),
-    m_bFoundHardwareUSBKey(FALSE),
-    m_bIsOnlineRegistered(FALSE)
+:
+m_hMutex(NULL),
+m_bAutoRunMode(FALSE),
+m_bForAllUser(FALSE),
+
+m_eUSBKeyTouchType(E_DEVICE_PEN_TOUCH_WHITEBOARD),
+m_ePalmTouchControlType(E_PLAM_TOUCHCONTROL_P0),
+m_eScreenModeFromUsbKey(EScreenModeSingle),
+m_bFoundHardwareUSBKey(FALSE),
+m_bIsOnlineRegistered(FALSE)
 {
     // TODO: add construction code here,
     // Place all significant initialization in InitInstance
@@ -235,11 +276,11 @@ BOOL CIWBApp::InitInstance()
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
+
     //Sleep(5000);//延迟启动5秒中
     m_oUSBCameraList.UpdateDeviceList();
 
     int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
-
 
     ReadUSBKey(TRUE);
 
@@ -391,7 +432,6 @@ BOOL CIWBApp::InitInstance()
 
 
     //} while (!bFoundUSBKey);
-
 
     //#endif
 
@@ -760,6 +800,10 @@ EDeviceTouchType  CIWBApp::GetUSBKeyTouchType()const
     return this->m_eUSBKeyTouchType;
 }
 
+EPalmTouchControlType CIWBApp::GetPalmTouchType()const
+{
+	return this->m_ePalmTouchControlType;
+}
 
 
 //@功能:从USBKey中读取信息
@@ -774,7 +818,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
     m_eScreenModeFromUsbKey = EScreenModeSingle;
 
     //手触/笔触模式
-    m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH;
+    m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
 
     //BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
 
@@ -786,12 +830,11 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
         int nAppType = 0;
 
         float fVersion = 0.0f;
-
+		int   nPalmType = 0;
         UINT uKeyNum = SDKREG_GetUSBKeyCount();
 
         for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
         {
-
             if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
             {
                 continue;
@@ -801,77 +844,97 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
             {
                 continue;
             }
+			//AppType各位描述
+			//
+			//bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
+			//      │                                      │
+			//      │                                      └─0:3D Touch；1:手指触控
+			//      └─1:使能双屏拼接功能                                                 
+			//
+			//
+			if (SDKREG_GetAppType(&nAppType, uKeyIndex) == S_OK)
+			{
+				switch (nAppType & 0x0000FF)
+				{
+				case 0:
+					m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+					break;
+				case 1:
+					m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+					break;
+				case 2:
+					m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
+					break;
+				case 3:
+					m_eUSBKeyTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
+					nPalmType = SDKREG_GetParamType(uKeyIndex);
 
-            //AppType各位描述
-            //
-            //bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
-            //      │                                      │
-            //      │                                      └─0:3D Touch；1:手指触控
-            //      └─1:使能双屏拼接功能                                                 
-            //
-            //
+					switch (nPalmType)
+					{
+					case 0:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P0;
+						break;
+					case 1:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P1;
+						break;
+					case 2:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P2;
+						break;
+					case 3:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P3;
+						break;
+					case 4:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P4;
+						break;
+					default:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P5;
+						break;
+					}
+					break;
+				default:
+					break;
+				}
+			}
 
-            if (SDKREG_GetAppType(&nAppType, uKeyIndex) == S_OK)
-            {
-                //if ((nAppType & 0x00000FF) != 0 && (nAppType & 0x0000FF) != 1)
-                //{
-                //    //nAppType
-                //    //1:为手指触控
-                //    //0:为3DTouch
-                //    //既不为手指触控也不为3D-Touch,则继续搜索下一个加密狗。
-                //   
-                //}
-                if ((nAppType & 0x0000FF) == 0x01)
-                {
-                    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
-                }
+			BOOL bMultipleScreenMode = (nAppType >> 8) & 0x00000001;
 
-            }
+			if (bMultipleScreenMode)
+			{//多屏屏接模式
+				EScreenMode eScreenMode = EScreenModeDouble;
 
-            BOOL bMultipleScreenMode = (nAppType >> 8) & 0x00000001;
+				//获得多屏融合类型
+				UINT dwScreenMergeType = SDKREG_GetMultiScreenMergeType(uKeyIndex);
 
-            //bDoubleScreenTouchMerge = (nAppType >> 8) & 0x00000001;
+				switch (dwScreenMergeType & 0x00000001F)
+				{
+				case 1://双屏拼接
+					eScreenMode = EScreenModeDouble;
+					break;
 
-            if (bMultipleScreenMode)
-            {//多屏屏接模式
-                EScreenMode eScreenMode = EScreenModeDouble;
+				case 2://三屏拼接
+					eScreenMode = EScreenModeTriple;
+					break;
 
-                //获得多屏融合类型
-                UINT dwScreenMergeType = SDKREG_GetMultiScreenMergeType(uKeyIndex);
+				case 4://四屏拼接
+					eScreenMode = EScreenModeQuad;
+					break;
 
-                switch (dwScreenMergeType & 0x00000001F)
-                {
-                case 1://双屏拼接
-                    eScreenMode = EScreenModeDouble;
-                    break;
+				case 8://五屏拼接
+					eScreenMode = EScreenModeQuint;
+					break;
 
-                case 2://三屏拼接
-                    eScreenMode = EScreenModeTriple;
-                    break;
+				case 0x10://六屏拼接
+					eScreenMode = EScreenModeHexa;
+					break;
 
-                case 4://四屏拼接
-                    eScreenMode = EScreenModeQuad;
-                    break;
+				}//switch
 
-                case 8://五屏拼接
-                    eScreenMode = EScreenModeQuint;
-                    break;
+				 //选择最多的凭借模式
+				if (eScreenMode > m_eScreenModeFromUsbKey) m_eScreenModeFromUsbKey = eScreenMode;
+			}
 
-                case 0x10://六屏拼接
-                    eScreenMode = EScreenModeHexa;
-                    break;
-
-                }//switch
-                
-                 //选择最多的凭借模式
-                if (eScreenMode > m_eScreenModeFromUsbKey) m_eScreenModeFromUsbKey = eScreenMode;
-            }
-
-            bFoundUSBKey = TRUE;//找到加密狗后继续循环查找，
-
+            bFoundUSBKey = TRUE;//找到加密狗退出
         }//for
-
-
 
         if(!bFoundUSBKey)
         {//未找到USBKey, 尝试读取在线注册信息
@@ -906,7 +969,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                 BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE, &value);
                 if (status == BIT_SUCCESS)
                 {
-                    m_eUSBKeyTouchType = (value == 0) ? E_DEVICE_PEN_TOUCH : E_DEVICE_FINGER_TOUCH;
+                    m_eUSBKeyTouchType = (value == 0) ? E_DEVICE_PEN_TOUCH_WHITEBOARD : E_DEVICE_FINGER_TOUCH_WHITEBOARD;
                 }
 
                 status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE, &value);
@@ -950,13 +1013,12 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                     //开启试用版超时检测器。
                     SetTimer(NULL, 0, 1000, timerProc);
                     g_dwBeginTime = GetTickCount();
-                    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
+                    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
 
                     LOG_INF("Start Evaluation Timer\n");
                 }
 
             }//else
-
 
             break;//跳出大循环
         }//if(!bFoundUSBKey)

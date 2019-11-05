@@ -5,6 +5,7 @@
 #include "SIMD.h"
 #include <mmintrin.h>
 #include "MyAPI.h"
+#include "../inc/VideoProcAmpProperty.h"
 #include "../inc/MultiDimensionPoint.h"
 #include "../inc/PerfDetector.h"
 #include "../inc/ImageFrame.h"

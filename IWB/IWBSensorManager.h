@@ -141,7 +141,6 @@ public:
     //@参数:bSuccess, 成功/失败标志    
     void OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCtxData);
 
-
     //@功能:判断校正是否成功
     BOOL IsCalibarateOk();
 

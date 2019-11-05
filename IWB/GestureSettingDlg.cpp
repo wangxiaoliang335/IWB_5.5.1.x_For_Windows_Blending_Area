@@ -13,7 +13,7 @@ IMPLEMENT_DYNAMIC(CGestureSettingDlg, CScrollablePropertyPage)
 
 CGestureSettingDlg::CGestureSettingDlg()
 	: CScrollablePropertyPage(CGestureSettingDlg::IDD)
-    , m_isWGRPermitted(true)
+    , m_isWGRPermitted(false)
     , m_isGLBGRPeritted(true)
     , m_nEraserMulti(4)
     , m_nPalmMulti(5)

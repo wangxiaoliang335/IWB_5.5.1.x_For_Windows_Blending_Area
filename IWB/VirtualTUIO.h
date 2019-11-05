@@ -35,8 +35,13 @@ public:
 	void   InitTuio();
 	BOOL   InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount);
 	bool   LoadTUIOConfig();
+	bool   SaveTUIOConfig();
 	void   Reset();
-
+	void   ReopenTUIOServer();
+	////////////////
+	void     SetIPadressAndPort(DWORD IP, int nPort);
+	DWORD    GetIPadress();
+	int      GetPort();
 
 protected:
 	TuioServer  *tuioServer;
@@ -44,8 +49,8 @@ protected:
 	TuioTime    frameTime;
 	int         m_nCxScreen;   //屏幕的宽度
 	int         m_nCyScreen;   //屏幕的高度
-	CString     strIP;
-	int         nPort;
+	char        szIP[24];
+	int         m_nPort;
 	std::list<VecTuioCursor> ActiveCursorList;
 
 };

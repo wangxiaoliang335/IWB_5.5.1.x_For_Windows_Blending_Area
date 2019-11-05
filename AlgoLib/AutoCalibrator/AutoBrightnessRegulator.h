@@ -7,9 +7,10 @@ class CAutoBrightnessRegulator
 {
 public:
 
-    CAutoBrightnessRegulator(int nExpectedBrightness = 100, bool (*fpControl)(bool inc,T absDiff, LPVOID lpCtxData) = NULL, LPVOID lpCtxData = NULL)
+    CAutoBrightnessRegulator(int nExpectedBrightness = 100,  bool (*fpControl)(bool inc,T absDiff, T nIndex, LPVOID lpCtxData) = NULL, LPVOID lpCtxData = NULL)
         :
     m_ExptectedBrightness(nExpectedBrightness),
+		m_nIndex(0),
         m_fpControl(fpControl),
         m_lpCtxData(lpCtxData)
     {
@@ -22,6 +23,10 @@ public:
         m_ExptectedBrightness = nExpectedBrightness;
     }
 
+	void SetAutoCalibrateParamsIndex(T nIndex)
+	{
+		m_nIndex = nIndex;
+	}
 
     //@功能:设置期望的亮度值
     T GetExpectedBrightness()const
@@ -29,7 +34,7 @@ public:
         return m_ExptectedBrightness;
     }
 
-    void SetFeedbackCtrlFunction(bool (*fpControl)(bool inc, T absDiff , LPVOID lpCtxData), LPVOID lpCtxData = NULL)
+    void SetFeedbackCtrlFunction(bool (*fpControl)(bool inc, T absDiff ,T nIndex, LPVOID lpCtxData), LPVOID lpCtxData = NULL)
     {
         m_fpControl = fpControl;
 		m_lpCtxData = lpCtxData;
@@ -78,7 +83,7 @@ public:
 
             if(m_fpControl)
             {
-                m_fpControl(bInc, absDiff, m_lpCtxData);
+                m_fpControl(bInc, absDiff,m_nIndex,m_lpCtxData);
             }
         }
 
@@ -95,19 +100,18 @@ public:
 
 protected:
     T m_ExptectedBrightness;//期望的亮度
-
+	T m_nIndex;             //第几个摄像头参数
 
     //反馈控制函数指针
     //@参 数:bInc, true:增加亮度; false:减少亮度
     //       db, 亮度绝对差值
     //       lpCtxData,上下文数据
     //@返回值:
-    bool (*m_fpControl)(bool bInc, T absDiff , LPVOID lpCtxData);//
+    bool (*m_fpControl)(bool bInc, T absDiff, T nIndex, LPVOID lpCtxData);//
 
     //反馈控制上下文数据
     LPVOID m_lpCtxData;
 
     int m_nFrameCount;
-
 
 };
