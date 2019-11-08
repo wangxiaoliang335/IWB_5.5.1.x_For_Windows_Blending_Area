@@ -940,7 +940,7 @@ void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
         hDC,
         rcClipBox.left,
         rcClipBox.top,
-        rcClipBox.right   - rcClipBox.left,
+        rcClipBox.right  - rcClipBox.left,
         rcClipBox.bottom - rcClipBox.top,
         PATINVERT);
         //PATCOPY);
@@ -1024,30 +1024,20 @@ void CScreenLayoutDesigner::OnLButtonDown(UINT uFlags, const POINT& ptCursor)
         m_bIsDragging = TRUE;
         m_pDragArea   = pActiveArea;
 
+        RECT dragRect = pActiveArea->rcBound;
+
         CWindowDC dc(CWnd::GetDesktopWindow());
+
+        dc.SetTextColor(RGB(0, 0, 0));
+        dc.SetBkColor(RGB(255, 255, 255));
 
         //»æÖÆÍÏ×§¿ò
         CSize size(1, 1);
-        dc.DrawDragRect(&pActiveArea->rcBound, size, NULL, size, NULL, NULL);
+        dc.DrawDragRect(&dragRect, size, NULL, size, NULL, NULL);
 
-        
-        m_rcLastDragRect = pActiveArea->rcBound ;
+        m_rcLastDragRect = dragRect;
 
-        //<<debug
-        //RECT rcClip;
-        //dc.GetClipBox(&rcClip);
-
-        //AtlTrace("rcClip left=%d, top=%d, righ=%d, bottom=%d, width=%d, height=%d\n",
-        //    rcClip.left,
-        //    rcClip.top,
-        //    rcClip.right,
-        //    rcClip.bottom,
-        //    rcClip.right  - rcClip.left,
-        //    rcClip.bottom - rcClip.top);
-        //debug>>
-
-
-        ConfineSplitterCursor(*pActiveArea);
+       ConfineSplitterCursor(*pActiveArea);
     }
     
     
@@ -1071,6 +1061,9 @@ void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
 
 
         CWindowDC dc(CWnd::GetDesktopWindow());
+
+        dc.SetTextColor(RGB(0, 0, 0));
+        dc.SetBkColor  (RGB(255, 255, 255));
 
         //»æÖÆÍÏ×§¿ò
         CSize size(1, 1);
