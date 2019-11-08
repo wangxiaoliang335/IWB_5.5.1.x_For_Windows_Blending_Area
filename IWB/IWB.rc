@@ -115,8 +115,8 @@ BEGIN
         MENUITEM "Auto Mask Clutter(Ctrl + Shift + A)", ID_AUTO_ADD_MASK_AREA
         POPUP "Manual Mask Area"
         BEGIN
-            MENUITEM "Add",                         ID_ADD_MASK_RECTANGLE_1D5X
-            MENUITEM "Erase",                       ID_ERASE_MASK_RECTANGLE_1D5X
+            MENUITEM "Add",                         ID_ADD_MASK_RECTANGLE_2X
+            MENUITEM "Erase",                       ID_ERASE_MASK_RECTANGLE_2X
             MENUITEM SEPARATOR
             MENUITEM "End Editing",                 ID_MANUALMASKAREA_ENDEDITING
         END
@@ -397,11 +397,10 @@ BEGIN
     IDS_STRING487           "4 Screens"
     IDS_STRING488           "5 Screens"
     IDS_STRING489           "6 Screens"
-	IDS_STRING490           "7 Screens"
-	IDS_STRING491           "8 Screens"
-	IDS_STRING492           "9 Screens"
-	IDS_STRING493           "10 Screens"
-
+    IDS_STRING490           "7 Screens"
+    IDS_STRING491           "8 Screens"
+    IDS_STRING492           "9 Screens"
+    IDS_STRING493           "10 Screens"
 END
 
 #endif    // Chinese (Simplified, PRC) resources

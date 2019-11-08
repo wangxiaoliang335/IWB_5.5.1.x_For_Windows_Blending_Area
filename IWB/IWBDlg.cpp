@@ -13,6 +13,34 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+void DbgCursor(HCURSOR hCursor)
+{//debug
+    ICONINFO iconInfo;
+    BOOL bRet = FALSE;
+    bRet = GetIconInfo(hCursor, &iconInfo);
+
+    BITMAP bitmapMask;
+    BITMAP bitmapColor;
+    if (bRet)
+    {
+        GetObject(iconInfo.hbmMask, sizeof(bitmapMask), &bitmapMask);
+
+        GetObject(iconInfo.hbmColor, sizeof(bitmapColor), &bitmapColor);
+    }
+
+    DWORD pixel = 0x00000000;
+    if (bitmapMask.bmBits)
+    {
+        pixel = *((DWORD*)bitmapMask.bmBits + (bitmapMask.bmHeight >> 1) * bitmapMask.bmWidth + (bitmapMask.bmWidth >> 1));
+    }
+
+    if (bitmapColor.bmBits)
+    {
+        pixel = *((DWORD*)bitmapColor.bmBits + (bitmapColor.bmHeight >> 1) * bitmapColor.bmWidth + (bitmapColor.bmWidth >> 1));
+    }
+
+}
+
 
 const TCHAR* GetAppName()
 {
@@ -358,6 +386,8 @@ m_bPreGuideRectangleVisible(false)
 
     m_hScreenMaskAreaSelectCursor = AfxGetApp()->LoadCursor(IDC_CURSOR_DRAW_SCREEN_AREA);
     m_hArrowCursor = ::LoadCursor(NULL, IDC_ARROW);
+    m_hHandCursor  = ::theApp.LoadCursor(IDC_CURSOR_HAND);
+
     m_EraseSize.cx = 16; m_EraseSize.cy = 16;
     m_FillSize.cx = 16; m_FillSize.cy = 16;
     m_hCurrentEditToolCursor = m_hArrowCursor;
@@ -385,6 +415,9 @@ m_bPreGuideRectangleVisible(false)
 	
 	//客户app通信消息
 	m_uAppCommMsg = RegisterWindowMessage(_T("EASI_8701715C-217D-440d-9404-F63C9CBC671B"));
+
+
+
 }
 
 void CIWBDlg::DoDataExchange(CDataExchange* pDX)
@@ -514,7 +547,7 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
 //ON_MESSAGE(WM_DISPLAYWINDOW,&CIWBDlg::OnDisPlayWindow)
 
 
-    //    ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_RECOGNITION, OnChangeEnableGestrueRecognition)
+    //ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_RECOGNITION, OnChangeEnableGestrueRecognition)
     //ON_MESSAGE(WM_CHANGE_ENABLE_GESTURE_TOUCH, OnChangeEnableGestureTouch)
     //ON_MESSAGE(WM_CHANGE_ENABLE_PEN_TOUCH, OnChangeEnablePenTouch)
 
@@ -557,13 +590,17 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_WM_ENDSESSION()
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, &CIWBDlg::OnInstallationanddebuggingEnableinterpolate)
     ON_COMMAND(ID_MENU_ADVANCESSETTING, &CIWBDlg::OnMenuAdvancessetting)
-    ON_COMMAND(ID_MENU_DRAWMASKFRAME_START, &CIWBDlg::OnMenuDrawmaskframeStart)
 
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_START, &CIWBDlg::OnMenuDrawmaskframeStart)
     ON_COMMAND(ID_MENU_DRAWMASKFRAME_CLEAR, &CIWBDlg::OnMenuDrawmaskframeClear)
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_DISABLE, &CIWBDlg::OnMenuDrawmaskframeDisable)
 
     ON_WM_RBUTTONDBLCLK()
-    ON_COMMAND(ID_MENU_DRAWMASKFRAME_DISABLE, &CIWBDlg::OnMenuDrawmaskframeDisable)
-    ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)END_MESSAGE_MAP()
+
+    ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
+    ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
+
+ END_MESSAGE_MAP()
 
 void CIWBDlg::InitMenu()
 {
@@ -751,6 +788,7 @@ BOOL CIWBDlg::OnInitDialog()
     */
 
     CreateOwnerCursor();
+
 
     m_mnuManualScreenAreaSettings.LoadMenu(IDR_MENU_MANUAL_SREEN_AREA_SETTINGS);
 
@@ -1102,8 +1140,6 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     {
         return ;
     }
-
-
 
     CRect rcClient;
     GetClientRect(&rcClient);
@@ -2960,9 +2996,14 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 
 
         //灰化"手动编辑屏蔽区"子菜单
-        m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
-        m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
+        //m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
+        //m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
+
+        m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X, MF_BYCOMMAND | MF_GRAYED);
+        m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND | MF_GRAYED);
+
         m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
+
 
 
         //灰化相机镜头模式
@@ -3636,22 +3677,26 @@ BOOL CIWBDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
             hCursor = m_hArrowCursor;
             break;
 
-            //case e_SCREEN_MASK_AREA_EDIT_MODE_SELECT_SCREEN_AREA:
-            //    hCursor = m_hScreenMaskAreaSelectCursor;
-            //    break;
-
-        case e_SCREEN_MASK_AREA_EDIT_MODE_ADD_MASK:
+      case e_SCREEN_MASK_AREA_EDIT_MODE_ADD_MASK:
             hCursor = m_hCurrentEditToolCursor;
             break;
 
         case e_SCREEN_MASK_AREA_EDIT_MODE_ERASE_MASK:
             hCursor = m_hCurrentEditToolCursor;
-
             break;
-        }//swtich
 
-        SetCursor(hCursor);
-        return TRUE;
+        }//switch
+        int nDebug = 0;
+        if (hCursor)
+        {
+            SetCursor(hCursor);
+            return TRUE;
+        }
+        else
+        {
+            nDebug = 1;
+        }
+       
 
     }
 
@@ -3806,6 +3851,8 @@ void CIWBDlg::CreateOwnerCursor()
                 RGB(0,255,0),
                 RGB(0,255,0),
                 0);
+
+            DbgCursor(HCURSOR(m_aryCursor[i]));
             break;
 
         case e_CURSOR_BRUSH_2X:
@@ -3928,6 +3975,7 @@ void CIWBDlg::OnEraseMaskArea(UINT uID)
         this->m_EraseSize.cx = 24;
         this->m_EraseSize.cy = 24;
         m_hCurrentEditToolCursor = m_aryCursor[e_CURSOR_ERASE_1D5X];
+        
         break;
 
     case ID_ERASE_MASK_RECTANGLE_2X:

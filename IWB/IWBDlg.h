@@ -689,6 +689,7 @@ protected:
 
 	HCURSOR        m_hScreenMaskAreaSelectCursor;//手动屏幕区域指定鼠标
 	HCURSOR        m_hArrowCursor               ;//
+    HCURSOR        m_hHandCursor                ;//手形光标
 
 	COwnerDrawMenu m_oOwnerDrawMenu             ;//画刷自画菜单
 	COwnerDrawMenu m_oOwnerDrawEaraseMenu       ;//橡皮擦自画菜单
