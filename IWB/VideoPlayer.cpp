@@ -2522,9 +2522,9 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 
 		DrawText(hDC, (LPCTSTR)osd.GetText(), _tcsclen(osd.GetText()), &rcTextArea, dwFormat);
 		
-        CBrush brush;
-        brush.CreateSolidBrush(RGB(255,0,0));
-        FrameRect(hDC, &rcTextArea, brush);
+  //      CBrush brush;
+  //      brush.CreateSolidBrush(RGB(255,0,0));
+  //      FrameRect(hDC, &rcTextArea, brush);
 		SelectObject(hDC, hFontOld);
 
 		if (osd.GetDisplayTimesCounter() != -1)
@@ -2536,52 +2536,57 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
     
 }
 
-void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps)
+void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps, int nId)
 {
-	////视频压缩格式
-	//CString  Compress;
-	//Compress.Format(_T("%c%c%c%c"), ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF);
-	//m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
 
-	//_stprintf_s(
-	//	m_szStatusText,
-	//	_countof(m_szStatusText),
-	//	_T("(%d*%d-%c%c%c%c)"),
-	//	nImageWidth,
-	//	nImageHeight,
-	//	ImageType & 0xFF, 
-	//	(ImageType >> 8) & 0xFF, 
-	//	(ImageType >> 16) & 0xFF, 
-	//	(ImageType >> 24) & 0xFF
-	//	);
+	 ////视频压缩格式,
+	 CString  Compress;
+	 Compress.Format(_T("%c%c%c%c"), ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF);
+	 ////这个是需要在高级设置的对话框中进行显示的，每个摄像头的所有格式都需要各自显示的，这个只是当前选中的格式而已
+	 m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
+	 /////这个是在帧率下显示的只显示第一个摄像头的信息	 
+	 if (theApp.GetScreenMode() == EScreenModeSingle)
+	 {
+	    _stprintf_s(
+	            	m_szStatusText,
+	            	_countof(m_szStatusText),
+		            _T("(%d*%d-%c%c%c%c)"),
+		            nImageWidth,
+		            nImageHeight,
+		            ImageType & 0xFF, 
+		            (ImageType >> 8) & 0xFF, 
+		            (ImageType >> 16) & 0xFF, 
+		            (ImageType >> 24) & 0xFF
+		             );
 
-	//m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
-	//PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)m_szStatusText, (LPARAM)m_nID);
+	      //m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
+	      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)m_szStatusText, (LPARAM)nId);
+		  PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, (WPARAM)(fps*2), (LPARAM)nId);
+	     ////SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+	}
+	else
+	{
+         CString strVideoInfo;
 
-	////SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+        strVideoInfo.Format(
+                           _T("#%d %c%c%c%c %d*%d@%.0f"),
+                           m_nID+1,
+                           ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF,
+                           nImageWidth,
+                           nImageHeight,
+                           fps*2);
 
-    CString strVideoInfo;
-
-    strVideoInfo.Format(
-        _T("#%d %c%c%c%c %d*%d@%.0f"),
-        m_nID+1,
-        ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF,
-        nImageWidth,
-        nImageHeight,
-        fps);
-
-    //TOSDText::RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
-    RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
-    AddOSDText(
-        E_OSDTEXT_TYPE_FORMAT_INFO,
-        (LPCTSTR)strVideoInfo,
-        textArea,
-        DT_TOP | DT_LEFT | DT_SINGLELINE,
-        10L,
-        _T("Times New Roman"),
-        -1 );
-
-	
+        //TOSDText::RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
+        RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
+       AddOSDText(
+                   E_OSDTEXT_TYPE_FORMAT_INFO,
+                   (LPCTSTR)strVideoInfo,
+                   textArea,
+                   DT_TOP | DT_LEFT | DT_SINGLELINE,
+                   10L,
+                   _T("Times New Roman"),
+                  -1 );
+	}
 }
 
 CString CVideoPlayer::CurrentCameraResolution()

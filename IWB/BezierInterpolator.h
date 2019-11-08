@@ -467,8 +467,6 @@ public:
                             t += t_inc;
                         }
 
-
-
                         //C0 <= C2
                         strokeInterpolateData.controlPoints[0] = strokeInterpolateData.controlPoints[2];
 
@@ -478,7 +476,6 @@ public:
                     }
                 }
 
-
                 break;
             }//switch
 
@@ -486,7 +483,6 @@ public:
 
         return 0;
     }
-
 
 
     //@功能:复位插值对象

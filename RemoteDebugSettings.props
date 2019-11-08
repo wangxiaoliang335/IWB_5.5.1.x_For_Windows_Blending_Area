@@ -4,7 +4,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <RemoteTargetIP>192.168.1.122</RemoteTargetIP>
-    <RemoteDir>\\$(RemoteTargetIP)\Share\IWB5.3</RemoteDir>
+    <RemoteDir>\\$(RemoteTargetIP)\Share\IWB5.2_TUIO</RemoteDir>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>

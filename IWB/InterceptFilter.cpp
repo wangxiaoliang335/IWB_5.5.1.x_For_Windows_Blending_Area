@@ -109,7 +109,6 @@ inline _declspec(naked)  void YUY2ToGray(const BYTE* pYUY2, int nPixelCount, BYT
     {
 
         pushad
-
             //reset the floating-point unit
             finit
 
@@ -126,10 +125,8 @@ next_16_pixel:
         movdqa xmm0, xmmword ptr[esi];//SSE
         add esi, 16;
 
-
         movdqa xmm1, xmmword ptr[esi];//SSE
         add esi, 16;
-
 
         pand xmm0, xmm2 //pand yuy2 with mask
             pand xmm1, xmm2 //pand yuy2 with mask
@@ -208,7 +205,7 @@ m_bEnableBrightnessAutoRegulating(FALSE),
 m_bCaptureImage(FALSE),
 m_nFrameSkipCount(0),
 m_oFpsDetector(60),
-m_bStartDrawMaskFrame(false)
+m_bStartDrawOnlineScreenArea(false)
 {
 
 
@@ -630,7 +627,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         {
             return S_OK;
         }
-        m_pVideoPlayer->UpdateVideoStreamForamtInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType, m_oFpsDetector.GetCurrentFps());
+
+        m_pVideoPlayer->UpdateVideoStreamForamtInfo(m_nRawImageWidth, m_nRawImageHeight, m_dwImageType, m_oFpsDetector.GetCurrentFps(), m_pSensor->GetID());
 
     }
 
@@ -753,10 +751,10 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         }
     }
 
-	if (m_bStartDrawMaskFrame)
+	if (m_bStartDrawOnlineScreenArea)
 	{
 	     std::vector<CPoint> vecpt;
-	     m_pPenPosDetector->GetOnLineScreenAreaPt(vecpt);
+	     m_pPenPosDetector->GetCurrentOnLineScreenAreaPt(vecpt);
 	     int nCount = vecpt.size();
 	     for (int Index = 0; Index < nCount-1; Index++ )
 	     {
@@ -771,23 +769,21 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 	{
 		if (m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
 		{
-			std::vector<CPoint> vecFinishpt;
-			m_pPenPosDetector->GetOnLineScreenAreaPt(vecFinishpt);
-			int nCount = vecFinishpt.size();
-			for (int Index = 0; Index < nCount; Index++)
-			{
-				if (Index == nCount-1)
-				{
-					m_BGRAFrame.Line(vecFinishpt[Index], vecFinishpt[0], ARGB_GREEN);
+			 std::vector<CPoint> vecFinishpt;
+			 m_pPenPosDetector->GetCurrentOnLineScreenAreaPt(vecFinishpt);
+			 int nCount = vecFinishpt.size();
+			 for (int Index = 0; Index < nCount; Index++)
+			 {
+				 if (Index == nCount-1)
+				 {
+					  m_BGRAFrame.Line(vecFinishpt[Index], vecFinishpt[0], ARGB_GREEN);
+				 }
+				 else
+				{                  
+					 m_BGRAFrame.Line(vecFinishpt[Index], vecFinishpt[Index + 1], ARGB_GREEN);
 				}
-				else
-				{
-                     m_BGRAFrame.Line(vecFinishpt[Index], vecFinishpt[Index + 1], ARGB_GREEN);
-				}
-
 			}
 		}
-
 	}
 
     //显示"手势触发事件文字"
@@ -1130,7 +1126,6 @@ void CInterceptFilter::SetAutoCalibrateParamsIndex(BYTE nIndex)
 {
 	this->m_oAutoBrightnessRegulator.SetAutoCalibrateParamsIndex(nIndex);
 }
-
 
 //////
 

@@ -26,13 +26,9 @@ BOOL  CALLBACK CIWBSensor::OnPreStaticMasking(LPVOID lpCtx)
     //载入正常使用时的相机参数
     EDeviceTouchType eTouchType;
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[1];
-    }
+
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
     TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
@@ -77,14 +73,9 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
     CIWBSensor* lpThis = reinterpret_cast<CIWBSensor*>(lpCtx);
 
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[0];
-    }
-	else
-	{
-		TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[1];
-	}
+	EProjectionMode eProjectionMode  = g_tSysCfgData.globalSettings.eProjectionMode;
+
+    TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[lpThis->m_tCfgData.eSelectedLensType];
 
@@ -421,13 +412,9 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
 {
     ////////////判断是墙面模式还是桌面模式
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-    }
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
+
     BOOL bRet = FALSE;
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
@@ -453,8 +440,6 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
             SIZE videoSize;
             bRet = m_oVideoPlayer.GetVideoSize(videoSize);
 
-
-
             if (bRet && videoSize.cx > 0 && videoSize.cy > 0)
             {
                 //TOSDText::RectF rcText;
@@ -473,11 +458,7 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
                     8,
                     _T("Times New Roman"),
                     -1);
-
             }
-
-
-
         }
 
         //禁用"静态屏蔽"操作
@@ -514,7 +495,6 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
               m_oVideoPlayer.SetCameraParams(lensCfg.laserTunningSettings_WhiteBoard.cameraParams);
 			  break;
 		}
-
 
 		m_oVideoPlayer.ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
         //使能光笔
@@ -581,10 +561,8 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
 //      }
 
 		m_oVideoPlayer.ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
-
         //合上滤光片
         IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), TRUE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
-
         //使能光笔
         //g_oMouseEventGen.EnableOpticalPenControl(TRUE);
         EnableOpticalPen(TRUE);
@@ -681,13 +659,9 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
     }
 
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-    }
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
@@ -887,13 +861,8 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     if (!this->IsDetecting()) return;//未在运行则立即退出
 
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-    }
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
@@ -1041,13 +1010,9 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
     if (!this->IsDetecting()) return;//未在运行则立即退出
 
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-    }
+
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
 
@@ -1195,14 +1160,10 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
             vtsm.SetCalibrateData(calibData);
 
             TSensorModeConfig* TSensorModeConfig = NULL;
-            if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-            {
-                TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-            }
-            else {
-                TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-            }
 
+			EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+            TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
+     
             if (vtsm.DoCalibrate())
             {
                 TSensorModeConfig->calibParam = *vtsm.GetCalibParams();
@@ -1268,13 +1229,9 @@ void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsI
     IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), TRUE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-    }
+
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     parameters.nCalibratePointsInRow = (nPtsInRow == -1) ? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachRow : nPtsInRow;
     parameters.nCalibratePointsInCol = (nPtsInCol == -1) ? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachCol : nPtsInCol;
@@ -1309,14 +1266,9 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
         vtsm.SetCalibrateData(calibData);
 
         TSensorModeConfig* TSensorModeConfig = NULL;
-        if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-        {
-            TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-        }
-        else {
-            TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-        }
-
+		EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
+ 
         if (vtsm.DoCalibrate())
         {
             TSensorModeConfig->calibParam = *vtsm.GetCalibParams();
@@ -1811,13 +1763,8 @@ void CIWBSensor::OnTimer(LPVOID lpCtxData)
 void CIWBSensor::SetlenCfgData(const TLensConfig& lencfgData)
 {
     TSensorModeConfig* TSensorModeConfig = NULL;
-    if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-    {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-    }
-    else {
-        TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-    }
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
     lensCfg = lencfgData;
@@ -1827,28 +1774,20 @@ void CIWBSensor::SetlenCfgData(const TLensConfig& lencfgData)
 void CIWBSensor::SetStrokeInterpolate(bool bEnableStrokeInterpolate)
 {
 	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
 	TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = bEnableStrokeInterpolate;
 }
 
 //@功能：把设置的勾勒外部屏幕区域的值保存下来
-void CIWBSensor::SetOnlineScreenArea(bool bEnableOnlineScreenArea)
+void CIWBSensor::SetOnlineScreenArea(bool bEnableOnlineScreenArea) 
 {
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[1];
-	}
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
-	TSensorModeConfig->advanceSettings.bIsOnLineScreenArea = bEnableOnlineScreenArea;
+	m_tCfgData.vecSensorModeConfig[eProjectionMode].advanceSettings.bIsOnLineScreenArea = bEnableOnlineScreenArea;
+
+	this->m_oPenPosDetector.EnableOnLineScreenArea(bEnableOnlineScreenArea);
+	
 }

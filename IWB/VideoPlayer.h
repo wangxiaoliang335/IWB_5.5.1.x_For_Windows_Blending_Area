@@ -220,7 +220,6 @@ public:
 
 	~CVideoPlayer();
 
-
     void SetInterceptFilter(CInterceptFilter* pFilter);
     CInterceptFilter* GetInterceptFilter();
 
@@ -250,7 +249,6 @@ public:
 	BOOL StopDetect();
 
 	void MissStatusInfo();
-
 
     //@功能:在窗体中显示视频帧
     //
@@ -360,7 +358,7 @@ public:
 
 	void ClearOSDText(EOSDTextType eOSDTextType);
 
-	void UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps);
+	void UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps,int nId);
 	CString   CurrentCameraResolution();
 
 

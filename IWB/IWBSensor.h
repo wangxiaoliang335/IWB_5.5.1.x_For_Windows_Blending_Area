@@ -195,7 +195,7 @@ public:
 
 	  void  OnTimer(LPVOID lpCtxData);
 	  void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
-	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea);
+	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea) ;
 
 
 protected:

@@ -4,7 +4,8 @@ CIWBSensorManager::CIWBSensorManager()
 :
 m_hVideoDispWnd(NULL),
 m_nAutoCalibrateTryTimes(0),
-m_nCurrentSensorID(-1)
+m_nCurrentSensorID(-1),
+m_uCurrentSelectSensordId(0)
 {
     m_pSpotListProcessor = new CSpotListProcessor();
 
@@ -322,6 +323,71 @@ ESensorLensMode CIWBSensorManager::GetLensMode()const
 //    return FALSE;
 //}
 
+void CIWBSensorManager::DrawSelectBound(HWND hWnd)
+{
+
+	HDC hDC = GetDC(hWnd);
+	CBrush brushBlack;
+	 brushBlack.CreateSolidBrush(RGB(0, 0, 0));
+
+	CBrush* pBrushHalftone = CDC::GetHalftoneBrush();
+
+	HBRUSH hBrushOld = NULL;
+
+	UINT nSensorCount = m_vecSensors.size();
+	for (UINT uSensorIdx = 0; uSensorIdx< nSensorCount; uSensorIdx++)
+	{
+		const RECT& rcArea = m_vecVideoLayout[uSensorIdx];
+		RECT  rcInternal  = rcArea;
+		RECT  rcExternal  = rcArea;
+		InflateRect(&rcExternal, SELECT_BOUND_WIDTH, SELECT_BOUND_WIDTH);
+
+
+		HRGN rgn = ::CreateRectRgnIndirect(&rcExternal);
+		HRGN rgnInternal = ::CreateRectRgnIndirect(&rcInternal);
+		::CombineRgn(rgn, rgnInternal, rgn, RGN_XOR);
+
+
+		SelectClipRgn(hDC, rgn);
+
+		RECT rcClipBox;
+		GetClipBox(hDC, &rcClipBox);
+
+
+		if (uSensorIdx == m_uCurrentSelectSensordId)
+		{
+			hBrushOld = (HBRUSH)::SelectObject(hDC, pBrushHalftone->GetSafeHandle());
+			//https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createpatternbrush
+			//A brush created by using a monochrome (1 bit per pixel) bitmap has the text and background colors of the device context to which it is drawn. 
+			//Pixels represented by a 0 bit are drawn with the current text color; pixels represented by a 1 bit are drawn with the current background color.
+			SetTextColor(hDC, RGB(0, 0, 0));
+			SetBkColor(hDC, RGB(255, 255, 255));
+		}
+		else
+		{
+			hBrushOld = (HBRUSH)::SelectObject(hDC, brushBlack.GetSafeHandle());
+		}
+
+		PatBlt(
+			hDC,
+			rcClipBox.left,
+			rcClipBox.top,
+			rcClipBox.right - rcClipBox.left,
+			rcClipBox.bottom - rcClipBox.top,
+			PATCOPY);
+
+		 SelectClipRgn(hDC, NULL);
+		::SelectObject(hDC, hBrushOld);
+
+		::DeleteRgn(rgn);
+		::DeleteRgn(rgnInternal);
+
+
+	}
+
+	ReleaseDC(hWnd, hDC);
+}
+
 //@参数:绘制布局框架
 //@窗体:hWnd, 窗体句柄
 void CIWBSensorManager::DrawLayoutFrame(HWND hWnd)
@@ -332,7 +398,6 @@ void CIWBSensorManager::DrawLayoutFrame(HWND hWnd)
     }
 
     if(NULL == hWnd) return;
-
 
     int nSensorCount = m_vecSensors.size();
 
@@ -349,9 +414,7 @@ void CIWBSensorManager::DrawLayoutFrame(HWND hWnd)
 
         //正在更新不刷背景，否则会闪烁
         if(!pSensor->GetVideoPlayer()->IsDetecting())
-        {
-
-            
+        {         
             //仿照CDC:FillSolidRect
             ::SetBkColor(hDC, clrBkgnd);
             ::ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rcArea, NULL, 0, NULL);
@@ -361,8 +424,6 @@ void CIWBSensorManager::DrawLayoutFrame(HWND hWnd)
         if(i != nSensorCount - 1)
         {
             RECT& rcSplitter = m_vecSplitter[i];
-
-
             //Draw3dRect
             ::SetBkColor(hDC, clrFace);
             ::ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rcSplitter, NULL, 0, NULL);
@@ -384,7 +445,6 @@ void CIWBSensorManager::DrawLayoutFrame(HWND hWnd)
             rc.bottom = rcSplitter.bottom - 1;
             ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
 
-
             ::SetBkColor(hDC, clrShadow);
             rc.left   = rcSplitter.right - 1;
             rc.top    = rcSplitter.top      ;
@@ -399,10 +459,11 @@ void CIWBSensorManager::DrawLayoutFrame(HWND hWnd)
             ExtTextOut(hDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
         }
 
-
     }
 
     ReleaseDC(hWnd, hDC);
+
+	DrawSelectBound(hWnd);
 }
 
 
@@ -457,6 +518,10 @@ void CIWBSensorManager::UpdateVideoLayout(const RECT& rcDisplayArea)
 
             left += SPLITTER_WIDTH;
         }
+
+
+		//
+		::InflateRect(&rcArea, -SELECT_BOUND_WIDTH, -SELECT_BOUND_WIDTH);
 
     }//for
 
@@ -700,18 +765,51 @@ CIWBSensor* CIWBSensorManager::SensorFromPt(const POINT& ptPos)
     return pSensor;
 }
 
-CIWBSensor* CIWBSensorManager::GetSensor0()
+
+void CIWBSensorManager::SelectAsCurrentSensor(CIWBSensor* pSensor)
 {
-    if (m_vecSensors.size() > 0) return m_vecSensors[0];
-    return NULL;
+	m_uCurrentSelectSensordId = pSensor->GetID();
+
+	DrawSelectBound(m_hVideoDispWnd);
 }
 
-const CIWBSensor* CIWBSensorManager::GetSensor(int nID) const 
+int  CIWBSensorManager::CurrentSelectSensor()
+{
+	return m_uCurrentSelectSensordId;
+}
+
+CIWBSensor* CIWBSensorManager::GetSensor0()
+{
+	if (m_vecSensors.size() == 0) return NULL;
+	return m_vecSensors[0];
+}
+
+CIWBSensor* CIWBSensorManager::GetSensor()
+{
+    
+	if (m_vecSensors.size() == 0) return NULL;
+
+	if (0 < m_uCurrentSelectSensordId && m_uCurrentSelectSensordId < m_vecSensors.size())
+	{
+		return m_vecSensors[m_uCurrentSelectSensordId];
+	}
+	else
+	{
+		return m_vecSensors[0];
+	}
+}
+
+const CIWBSensor* CIWBSensorManager::GetSensor(int nID) const
 {
     if ((size_t)nID >= m_vecSensors.size()) return NULL;
     return m_vecSensors[nID];	
 }
 
+CIWBSensor* CIWBSensorManager::GetSensor(int nID)
+{
+	if ((size_t)nID >= m_vecSensors.size()) return NULL;
+	return m_vecSensors[nID];
+}
 //@功能:使能光笔
 //@参数:bEnable,使能标志
 void CIWBSensorManager::EnableOpticalPen(BOOL bEnable)
@@ -1526,8 +1624,6 @@ void CIWBSensorManager::ApplyScreenLayout()
         this->m_pSpotListProcessor->GetSpotMerger().SetMergeAreas(pMergeAreas, nMergeAreaCount);
     }
 
-   
-
 }
 
 //@功能:屏幕分辨率变化事件响应函数
@@ -1560,10 +1656,6 @@ void CIWBSensorManager::OnDisplayChange(int nScreenWidth, int nScreenHeight)
     m_oScreenLayoutDesigner.OnDisplayChange(nScreenWidth, nScreenHeight);
 
     ApplyScreenLayout();
-
-
-
-
 }
 
 /*

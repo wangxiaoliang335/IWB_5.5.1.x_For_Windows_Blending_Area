@@ -649,39 +649,6 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
 //      
 void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCount)
 {
-//#ifdef _DEBUG
-//    static int s_times = 0;
-//    s_times ++;
-//
-//    //<<debug
-//    if(g_hDebugSampleFile)
-//    {        
-//        for(int i = 0; i < nLightSpotCount; i++)
-//        {
-//            char szData[128];
-//            sprintf_s(
-//                szData,
-//                _countof(szData),
-//                //"%d,%d,%d,%d,%d,%d,%d\n",
-//                "%d,%d,%d,%d,%d\n",
-//                s_times,
-//                pLightSpots[i].lStdSpotAreaInVideo,
-//                pLightSpots[i].ptPosInScreen.x,
-//                pLightSpots[i].ptPosInScreen.y,
-//                pLightSpots[i].mass
-//                //pLightSpots[i].mx,
-//                //pLightSpots[i].my
-//                );
-//
-//            fwrite(szData,1,strlen(szData),g_hDebugSampleFile);
-//        }
-//
-//    }
-//
-//    //debug>>
-//#endif    
-
-
     //双屏拼接时，融合区内的光斑合并。
     if(theApp.GetScreenMode() >= EScreenModeDouble)
     {
@@ -732,29 +699,9 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
     bool bHandHID2Me = DoGLBoardGestureRecognition(pLightSpots, nLightSpotCount);
 
 #ifdef _DEBUG
-    //<<debug
+
     if(g_hDebugSampleFile2)
     {       
-        //for(int i = 0; i < nLightSpotCount; i++)
-        //{
-        //    char szData[128];
-        //    sprintf_s(
-        //        szData,
-        //        _countof(szData),
-        //        "%d,%d,%g,%g,%d,%d,%d\n",
-        //        s_times,
-        //        pLightSpots[i].lStdSpotAreaInVideo,
-        //        pLightSpots[i].pt2dPosInVideo[0],
-        //        pLightSpots[i].pt2dPosInVideo[1],
-        //        pLightSpots[i].ptPosInScreen.x,
-        //        pLightSpots[i].ptPosInScreen.y,
-        //        pLightSpots[i].mass
-        //        //pLightSpots[i].mx,
-        //        //pLightSpots[i].my
-        //        );
-        //    fwrite(szData,1,strlen(szData),g_hDebugSampleFile2);
-        //}
-
         for(int i = 0; i < nLightSpotCount; i++)
         {
             char szData[128];
@@ -771,8 +718,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             fwrite(szData,1,strlen(szData),g_hDebugSampleFile2);
         }
     }
-
-    //debug>>
 #endif
 
 
@@ -795,18 +740,19 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             m_oStrokFilter.DoFilter(penInfo, penCount);
 
 			TSensorModeConfig* TSensorModeConfig = NULL;
-			if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-			{
-				TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0];
-			}
-			else
-			{
-				TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1];
-			}
+			EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+
+			TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[eProjectionMode];
+		
 			BOOL bEnableStrokeInterpolateTemp= TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate;
 
             if (FALSE == bEnableStrokeInterpolateTemp)
-            {//不插值
+            {   //不插值
+			//	if (penCount >0 )
+			//	{
+			//	    AtlTrace(_T("penInfo[0].pt.x ==%d,penInfo[0].pt.y ==%d\r\n"), penInfo[0].pt.x , penInfo[0].pt.y);
+			//	}
+
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
                 DebugContactInfo(penInfo, penCount);
@@ -830,7 +776,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 #ifdef _DEBUG
                         DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
-                        m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
+						//AtlTrace(_T("pInterpolateContact.pt.x ==%d,pInterpolateContact.pt.y ==%d\r\n"),pInterpolateContact[0].pt.x , pInterpolateContact[0].pt.y);
+						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
 
                         //延迟1ms
                         Sleep(1);

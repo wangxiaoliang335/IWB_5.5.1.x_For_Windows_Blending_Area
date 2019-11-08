@@ -63,8 +63,9 @@ enum EHIDDeviceMode
 
 enum EProjectionMode
 {
-	E_PROJECTION_WALL,    //墙面模式
-	E_PROJECTION_DESKTOP, //桌面模式
+	E_PROJECTION_DESKTOP = 0, //桌面模式
+	E_PROJECTION_WALL = 1,    //墙面模式
+
 };
 
 inline const TCHAR* GetProjectModeString(EProjectionMode eProjectionMode)

@@ -422,8 +422,14 @@ protected:
 	afx_msg void OnInstallationanddebuggingEnableinterpolate();
 	afx_msg void OnMenuAdvancessetting();
 
-	afx_msg void OnMenuDrawmaskframeStart();
-	afx_msg void OnMenuDrawmaskframeClear();
+	afx_msg void OnMenuStartDrawOnlineScreenArea();
+	afx_msg void OnMenuClearDrawOnlineScreenArea();
+
+	afx_msg void OnMenuEnableDrawOnlineScreenArea();
+
+	//触屏布局编辑工具
+	afx_msg void OnMenuTouchScreenLayoutDesigner();
+
 
 //=====函数======
 //	void AdjustStatusBar(int left, int top, int cx, int cy);
@@ -827,11 +833,7 @@ public:
     HBITMAP m_hUCShieldBitmap;
 	static UINT m_uAppCommMsg;
 	///add by vera_zhao 2019.10.28
-	bool    m_bStartDrawMaskFrame;
+	bool    m_bStartDrawOnlineScreenArea;
 	bool    m_bPreGuideRectangleVisible;
 
-	afx_msg void OnMenuDrawmaskframeDisable();
-
-    //触屏布局编辑工具
-    afx_msg void OnMenuTouchScreenLayoutDesigner();
 };
