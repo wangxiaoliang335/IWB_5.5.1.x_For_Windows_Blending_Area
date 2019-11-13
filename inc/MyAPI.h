@@ -765,3 +765,71 @@ inline BOOL IsEmptyRect(const RECT& rc)
 		return TRUE;
 	return FALSE;
 }
+
+class CHalfToneBrush
+{
+public:
+    CHalfToneBrush()
+        :
+    m_hBrushHalfTone(NULL)
+    {
+        WORD grayPattern[8];
+        for (int i = 0; i < 8; i++)
+        {
+            grayPattern[i] = (WORD)(0x5555 << (i & 1));
+        }
+
+        m_hGrayBitmap = CreateBitmap(8, 8, 1, 1, grayPattern);
+
+        if (m_hGrayBitmap != NULL)
+        {
+            m_hBrushHalfTone = ::CreatePatternBrush(m_hGrayBitmap);
+        }
+
+    }
+    ~CHalfToneBrush()
+    {
+        if (m_hBrushHalfTone)
+        {
+            DeleteObject(m_hBrushHalfTone);
+        }
+    }
+
+    operator HBRUSH()
+    {
+        return m_hBrushHalfTone;
+    }
+
+protected:
+    HBITMAP m_hGrayBitmap;
+
+    HBRUSH  m_hBrushHalfTone;
+};
+
+inline HBRUSH GetHalfToneBrush()
+{
+    static CHalfToneBrush s_HalfToneBrush;
+
+    return (HBRUSH)s_HalfToneBrush;
+
+
+
+    //WORD grayPattern[8];
+    //for (int i = 0; i < 8; i++)
+    //{
+    //    grayPattern[i] = (WORD)(0x5555 << (i & 1));
+    //}
+
+    //HBITMAP hGrayBitmap = CreateBitmap(8, 8, 1, 1, grayPattern);
+
+    //HBRUSH hBrushHalfTone = 0;
+    //if (hGrayBitmap != NULL)
+    //{
+    //    hBrushHalfTone = ::CreatePatternBrush(hGrayBitmap);
+    //}
+
+    //return hBrushHalfTone;
+
+}	
+
+

@@ -23,7 +23,7 @@ CScreenLayoutDesigner::CScreenLayoutDesigner()
     //水平切分光标
     m_hCursorSplit_Horz = theApp.LoadCursor(IDC_CURSOR_SPLIT_HORZ);
 
-
+    //鼠标光标
     m_hCursorArrow = LoadCursor(NULL, IDC_ARROW);
 }
 
@@ -45,7 +45,6 @@ void CScreenLayoutDesigner::Init(int nScreenCount, int nDisplayWidth, int  nDisp
 {
     if (nScreenCount == 0) return;
 
-    
     m_DisplaySize.cx = nDisplayWidth;
     m_DisplaySize.cy = nDisplayHeight;
     
@@ -136,9 +135,7 @@ void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
 
         m_vecMergeAreasAbs[i] = absArea;
 
-    }
-
-
+    }//for
 
 }
 
@@ -149,7 +146,7 @@ BOOL CScreenLayoutDesigner::InitWindow()
     CAtlString strClassName;
     strClassName.Format(_T("TouchScreen Designer %d"), s_InstanceCount++);
 
-    m_hbrBackground = ::CreateSolidBrush(RGB(0,0,0));
+    m_hbrBackground = ::CreateSolidBrush(TRANSPARENT_COLOR);
 
     WNDCLASSEX wndclass;
     wndclass.cbSize = sizeof wndclass;
@@ -168,7 +165,7 @@ BOOL CScreenLayoutDesigner::InitWindow()
 
     m_hWnd = ::CreateWindowEx(
         WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_LAYERED,//分层窗体。
-        //WS_EX_TOOLWINDOW | WS_EX_TOPMOST
+        //WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
         strClassName,
         strClassName,//windows name
         WS_POPUP,
@@ -179,12 +176,12 @@ BOOL CScreenLayoutDesigner::InitWindow()
         NULL,//owner window
         0,//Menu ID
         m_hInst,
-        (LPVOID)this //传入CREATESTRUCT结构的参数
-    );
+        (LPVOID)this); //传入CREATESTRUCT结构的参数
+
 
     SetLayeredWindowAttributes(
         this->m_hWnd, //A handle to the layered window.
-        TRASNPARENT_COLOR, //specifies the transparency color key
+        TRANSPARENT_COLOR, //specifies the transparency color key
         255,//the opacity of the layered window. 
         LWA_ALPHA |   //Use bAlpha to determine the opacity of the layered window.
         LWA_COLORKEY  //se crKey as the transparency color
@@ -227,6 +224,52 @@ void CScreenLayoutDesigner::Uninit()
     ::DestroyWindow(m_hWnd);//销毁
     FreeThunk(&CScreenLayoutDesigner::WndProc, this);
 
+    UninitGDI();
+
+    m_vecScreenRelativeLayouts.clear();
+    m_vceScreenAbsLayouts.clear();
+    m_vecMergeAreasRelative.clear();
+    m_vecMergeAreasAbs.clear();
+    m_vecActiveAreas.clear();
+}
+
+BOOL CScreenLayoutDesigner::InitGDI()
+{
+    UninitGDI();
+
+    HDC hDCScreen = ::GetDC(GetDesktopWindow());
+    m_hMemDC = ::CreateCompatibleDC(hDCScreen);
+
+    m_hBitmap = ::CreateCompatibleBitmap(hDCScreen, m_DisplaySize.cx, m_DisplaySize.cy);
+
+    m_hBitmapOld = (HBITMAP)SelectObject(m_hMemDC, m_hBitmap);
+    SetBkMode(m_hMemDC, TRANSPARENT);
+
+
+    int nButtonHeight = m_DisplaySize.cy / 16;
+
+    LOGFONT lf;
+    memset(&lf, 0, sizeof(LOGFONT));
+    lf.lfHeight = nButtonHeight;
+    lf.lfWidth = 0;
+    lf.lfWeight = FW_BOLD;
+    lf.lfCharSet = ANSI_CHARSET;
+    lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+    lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+    memcpy(lf.lfFaceName, _T("Times New Roman"), _countof(lf.lfFaceName));
+
+    m_hFontButton = CreateFontIndirect(&lf);
+
+    m_hFontOld = (HFONT)SelectObject(m_hMemDC, m_hFontButton);
+
+    ::ReleaseDC(GetDesktopWindow(), hDCScreen);
+
+    return TRUE;
+}
+
+
+BOOL CScreenLayoutDesigner::UninitGDI()
+{
     if (m_hBitmapOld)
     {
         SelectObject(m_hMemDC, m_hBitmapOld);
@@ -258,11 +301,8 @@ void CScreenLayoutDesigner::Uninit()
         m_hFontButton = NULL;
     }
 
-    m_vecScreenRelativeLayouts.clear();
-    m_vceScreenAbsLayouts.clear();
-    m_vecMergeAreasRelative.clear();
-    m_vecMergeAreasAbs.clear();
-    m_vecActiveAreas.clear();
+    return TRUE;
+
 }
 
 //@功能:初始化活动区数组
@@ -293,12 +333,13 @@ void CScreenLayoutDesigner::InitActiveAreas()
     {
         { BUTTON_ID_RESET, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("RESET"), 0 },
         { BUTTON_ID_OK, RECT{0,0,0,0}, E_AREA_TYPE_BUTTON, _T("OK"), 0},
-        { BUTTON_ID_CANCEL, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("Cancel"), 0 },
+        { BUTTON_ID_CANCEL, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("CANCEL"), 0 },
        
     };
 
 
     UINT btnCount = _countof(btns);
+
     //计算按钮的最大宽度
     LONG nMaxButtonWidth  = 0;
     LONG nMaxButtonHeight = 0;
@@ -327,8 +368,6 @@ void CScreenLayoutDesigner::InitActiveAreas()
     LONG left = (m_DisplaySize.cx - nTotoalWidth) >> 1;
     LONG top  = (m_DisplaySize.cy >> 3)*7 - (nMaxButtonHeight >> 1);
 
-
-
     for (UINT uBtnIdx = 0; uBtnIdx < btnCount; uBtnIdx++)
     {
         TActiveArea& btn = btns[uBtnIdx];
@@ -345,67 +384,6 @@ void CScreenLayoutDesigner::InitActiveAreas()
 
 
 
-    ////添加确定取消按钮
-    //TActiveArea confirmButton;
-    //confirmButton.uID = IDOK;
-    //confirmButton.szText = _T("OK");
-    //RECT rcConfirmText;
-    //memset(&rcConfirmText, 0, sizeof(rcConfirmText));
-
-    //SetTextColor(m_hMemDC, RGB(0, 0, 0));
-
-    //::DrawText(
-    //    m_hMemDC,
-    //    confirmButton.szText,
-    //    _tcsclen(confirmButton.szText),
-    //    &rcConfirmText,
-    //    DT_CALCRECT | DT_SINGLELINE);
-    //
-    //int nConfirmTextWidth  = rcConfirmText.right  - rcConfirmText.left;
-    //int nConfirmTextHeight = rcConfirmText.bottom - rcConfirmText.top;
-
-    //confirmButton.rcBound.left    = (m_DisplaySize.cx - nConfirmTextWidth) >> 1;
-    //confirmButton.rcBound.right   = confirmButton.rcBound.left + nConfirmTextWidth;
-
-    //confirmButton.rcBound.top     = (m_DisplaySize.cy >> 2) - (nConfirmTextHeight >> 1);
-    //confirmButton.rcBound.bottom  = confirmButton.rcBound.top + nConfirmTextHeight;
-
-    //confirmButton.eAreaType = E_AREA_TYPE_BUTTON;
-    //confirmButton.ulData = (ULONG)0;
-
-    //m_vecActiveAreas.push_back(confirmButton);
-
-
-    ////添加取消按钮
-    //TActiveArea cancelButton;
-    //cancelButton.uID = IDCANCEL;
-
-    //cancelButton.szText = _T("Cancel");
-
-    //RECT rcCancelText;
-    //memset(&rcCancelText, 0, sizeof(rcCancelText));
-
-    //::DrawText(
-    //    m_hMemDC,
-    //    cancelButton.szText,
-    //    _tcsclen(cancelButton.szText),
-    //    &rcCancelText,
-    //    DT_CALCRECT | DT_SINGLELINE);
-
-
-    //int nCancelTextWidth = rcCancelText.right - rcCancelText.left;
-    //int nCancelTextHeight = rcCancelText.bottom - rcCancelText.top;
-
-    //cancelButton.rcBound.left = (m_DisplaySize.cx - nCancelTextWidth) >> 1;
-    //cancelButton.rcBound.right = cancelButton.rcBound.left + nCancelTextWidth;
-
-    //cancelButton.rcBound.top    = (m_DisplaySize.cy >> 2)*3 - (nCancelTextHeight >> 1);
-    //cancelButton.rcBound.bottom = cancelButton.rcBound.top + nCancelTextHeight;
-
-    //cancelButton.eAreaType = E_AREA_TYPE_BUTTON;
-    //cancelButton.ulData = (ULONG)0;
-
-    //m_vecActiveAreas.push_back(cancelButton);
 }
 
 //@功  能:返回按照相对尺寸划分的屏幕区域数组。
@@ -460,8 +438,6 @@ void CScreenLayoutDesigner::SetScreenRelativeLayouts(const RectF* pRelativeLayou
     //更新绝对像素尺寸的屏幕区域数组
     m_vceScreenAbsLayouts.resize(uScreenCount);
 
-
-    //
     for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
     {
         const RectF& rectRel = m_vecScreenRelativeLayouts[screenIndex];
@@ -525,10 +501,8 @@ const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
     {
         pRelMergeArea = &m_vecMergeAreasRelative[0];
     }
-
-
+    
     return pRelMergeArea;
-
 }
 
 
@@ -536,6 +510,8 @@ const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
 //@参 数:
 //       nScreenWidth, 屏幕像素宽度
 //       nScreenHeight, 屏幕像素高度
+//
+//@说明:屏幕区域和融合区的相对尺寸保持不变, 绝对尺寸按照原先的相对尺寸进行调整。
 void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
 {
     int nScreenAreaCount = m_vecScreenRelativeLayouts.size();
@@ -546,10 +522,10 @@ void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
         RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
         RECT& absScreenArea = m_vceScreenAbsLayouts[i];
 
-        absScreenArea.left = relScreenArea.left     * nScreenWidth;
-        absScreenArea.right = relScreenArea.right   * nScreenWidth;
-        absScreenArea.top = relScreenArea.top       * nScreenHeight;
-        absScreenArea.bottom = relScreenArea.bottom * nScreenHeight;
+        absScreenArea.left   = relScreenArea.left      * nScreenWidth;
+        absScreenArea.right  = relScreenArea.right     * nScreenWidth;
+        absScreenArea.top    = relScreenArea.top       * nScreenHeight;
+        absScreenArea.bottom = relScreenArea.bottom    * nScreenHeight;
     }
 
     int nMergeAreaCount = m_vecMergeAreasRelative.size();
@@ -565,9 +541,28 @@ void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
         absMergeArea.bottom = relMergeArea.bottom * nScreenHeight;
     }
 
-
     m_DisplaySize.cx = nScreenWidth;
     m_DisplaySize.cy = nScreenHeight;
+
+    //调整窗体大小
+    MoveWindow(m_hWnd, 0, 0, m_DisplaySize.cx, m_DisplaySize.cy, FALSE);
+
+    m_rcClipCursorOld = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
+
+    //初始化活动区域
+    InitActiveAreas();
+
+    //初始化GDI
+    InitGDI();
+    
+    //重绘
+    Draw(this->m_hMemDC);
+
+    //作废窗体区域，以便在UpdateWindows时触发WM_PAINT消息。
+    RECT rcWnd = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
+    ::InvalidateRect(m_hWnd, &rcWnd, TRUE);
+
+    UpdateWindow(m_hWnd);
 }
 
 
@@ -729,16 +724,20 @@ void CScreenLayoutDesigner::DoDesign(BOOL bYes)
     UpdateWindow(this->m_hWnd);
 }
 
+#include "Windows_CreateSolidBrushEx.hpp"
 void CScreenLayoutDesigner::Draw(HDC hDC)
 {
-
     //透明色画刷
-    HBRUSH transBrush = ::CreateSolidBrush(TRASNPARENT_COLOR);
+
+   // HBRUSH  transBrush  = Windows::CreateSolidBrushEx(TRANSPARENT_COLOR, 128);
+    HBRUSH transBrush = ::CreateSolidBrush(TRANSPARENT_COLOR);
     HBRUSH hBrushOld = (HBRUSH)SelectObject(hDC, transBrush);
     
     //用透明画面清空背景
     Rectangle(hDC, 0, 0, m_DisplaySize.cx, m_DisplaySize.cy);
+   
     SelectObject(hDC, hBrushOld);
+    DeleteObject(transBrush);
 
     DrawScreenLabel(hDC);
 
@@ -759,7 +758,6 @@ void CScreenLayoutDesigner::Draw(HDC hDC)
             DrawButton(hDC, activeArea);
             break;
         }
-
     }
 
 
@@ -771,7 +769,6 @@ void CScreenLayoutDesigner::Draw(HDC hDC)
 //@功能:绘制屏幕标号
 void CScreenLayoutDesigner::DrawScreenLabel(HDC hDC)
 {
-    
     UINT uScreenCount = m_vceScreenAbsLayouts.size();
     for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
     {
@@ -781,7 +778,6 @@ void CScreenLayoutDesigner::DrawScreenLabel(HDC hDC)
         LONG areaHeight = rcArea.bottom - rcArea.top;
 
         LONG lFontHeight = areaWidth > areaHeight ? areaHeight : areaWidth;
-
 
         LOGFONT lf;
         memset(&lf, 0, sizeof(LOGFONT));
@@ -800,18 +796,128 @@ void CScreenLayoutDesigner::DrawScreenLabel(HDC hDC)
         TCHAR szLabel[32];
         _stprintf_s(szLabel, _countof(szLabel), _T("%d"), uScreenIndex + 1);
 
-        RECT rcText = rcArea;
+        RECT rcText = RECT{ 0, 0, areaWidth, areaHeight};
 
-        ::SetTextColor(hDC, RGB(255, 255, 255));
-        DrawText(hDC, szLabel, _tcsclen(szLabel), &rcText, DT_CENTER | DT_VCENTER);
+        DrawText(hDC, szLabel, _tcsclen(szLabel), &rcText,  DT_CALCRECT);
 
+        int nTextWidth  = rcText.right - rcText.left;
+        int nTextHeight = rcText.bottom - rcText.top;
 
         SelectObject(hDC, hFontOld);
 
+        {//Memory DC
+            HDC hMemDC = ::CreateCompatibleDC(hDC);
+            HBITMAP hBitmap = ::CreateCompatibleBitmap(hDC, nTextWidth, nTextHeight);
+            HBITMAP hBitmapOld = (HBITMAP)::SelectObject(hMemDC, hBitmap);
+
+            HDC hMaskDC = ::CreateCompatibleDC(hDC);
+            HBITMAP hMaskBitmap = ::CreateCompatibleBitmap(hDC, nTextWidth, nTextHeight);
+            HBITMAP hMaksBitmapOld = (HBITMAP)::SelectObject(hMaskDC, hMaskBitmap);
+
+            COLORREF BLACK_COLOR = RGB(0, 0, 0);
+            COLORREF WHITE_COLOR = RGB(255, 255, 255);
+
+            //黑色画刷
+            HBRUSH hBrushBlack = ::CreateSolidBrush(BLACK_COLOR);
+            HBRUSH hBrushOld = (HBRUSH)SelectObject(hMaskDC, hBrushBlack);
+
+            //用黑色画刷清空背景
+            Rectangle(hMaskDC, 0, 0, nTextWidth, nTextHeight);
+
+            SelectObject(hMaskDC, hBrushOld);
+ 
+
+            hFontOld = SelectFont(hMaskDC, hFont);
+
+            //生成屏蔽图
+            ::SetTextColor(hMaskDC, WHITE_COLOR);
+            ::SetBkMode(hMaskDC, TRANSPARENT);
+            DrawText(hMaskDC, szLabel, _tcsclen(szLabel), &rcText, DT_CENTER | DT_VCENTER);
+            SelectObject(hMaskDC, hFontOld);
+
+
+            //#define MERGECOPY           (DWORD)0x00C000CA /* dest = (source AND pattern)     */
+            //
+            //A brush created by using a monochrome (1 bit per pixel) bitmap has the text and background colors of the device context to which it is drawn. 
+            //Pixels represented by a 0 bit are drawn with the current text color;
+            //pixels represented by a 1 bit are drawn with the current background color.
+            HBRUSH hBrushHalfTone = GetHalfToneBrush();
+            COLORREF labelColor = RGB(0, 255, 255);
+
+            hBrushOld = (HBRUSH)SelectObject(hMemDC, hBrushHalfTone);
+
+            /*
+            //0-->TextColor -> Text color
+            SetTextColor(hMemDC, TextColor);
+            //1->Backgroudn Color->Transparent Color
+            SetBkColor(hMemDC, TRANSPARENT_COLOR);
+            */
+            //0-->TextColor -> Transparent Color
+            SetTextColor(hMemDC, TRANSPARENT_COLOR);
+            //1->Backgroudn Color->Label Color
+            SetBkColor(hMemDC, labelColor);
+
+            //memDC = maskDC & HalfToneBrush
+            //文字区域用Halftone画刷填充
+            BitBlt(
+                hMemDC,
+                0,
+                0,
+                nTextWidth,
+                nTextHeight,
+                hMaskDC,
+                0,
+                0,
+                MERGECOPY);//dest = (source AND pattern))
+
+            SelectObject(hMemDC, hBrushOld);
+
+
+            //反转屏蔽图
+            PatBlt(hMaskDC, 0, 0, nTextWidth, nTextHeight, DSTINVERT);
+
+            //destDC = destDC AND maskDC
+            BitBlt(
+                hDC,
+                rcArea.left + ((areaWidth - nTextWidth) >> 1),
+                rcArea.top + ((areaHeight - nTextHeight) >> 1),
+                nTextWidth,
+                nTextHeight,
+                hMaskDC,
+                0,
+                0,
+                SRCAND);
+
+            //destDC = destDC OR memDC
+            BitBlt(
+                hDC,
+                rcArea.left + ((areaWidth - nTextWidth) >> 1),
+                rcArea.top + ((areaHeight - nTextHeight) >> 1),
+                nTextWidth,
+                nTextHeight,
+                hMemDC,
+                0,
+                0,
+                SRCPAINT);
+
+
+
+            DeleteObject(hBrushBlack);
+            
+            DeleteObject(hFont);
+
+            ::SelectObject(hMaskDC, hMaksBitmapOld);
+            ::DeleteObject(hMaskBitmap);
+            ::DeleteDC(hMaskDC);
+
+
+             SelectObject(hMemDC, hBitmapOld);
+            ::DeleteObject(hBitmap);
+            ::DeleteDC(hMemDC);
+        }
+
+
     }//for
-
-
-
 
 }
 
@@ -923,8 +1029,9 @@ void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
         
     }//for
     
-    CBrush* pBrushHalftone = CDC::GetHalftoneBrush();
-    HBRUSH hBrushOld = (HBRUSH)::SelectObject(hDC, pBrushHalftone->GetSafeHandle());
+
+    HBRUSH hBrushHalfTone = GetHalfToneBrush();
+    HBRUSH hBrushOld = (HBRUSH)::SelectObject(hDC, hBrushHalfTone);
     //https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createpatternbrush
     //A brush created by using a monochrome (1 bit per pixel) bitmap has the text and background colors of the device context to which it is drawn. 
     //Pixels represented by a 0 bit are drawn with the current text color; pixels represented by a 1 bit are drawn with the current background color.
@@ -943,13 +1050,12 @@ void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
         rcClipBox.right  - rcClipBox.left,
         rcClipBox.bottom - rcClipBox.top,
         PATINVERT);
-        //PATCOPY);
 
 
     SelectClipRgn(hDC, NULL);
     ::SelectObject(hDC, hBrushOld);
 
-    //DeleteObject(hBrush);
+
     ::DeleteRgn(allRgn);
 }
 
@@ -1086,30 +1192,6 @@ void CScreenLayoutDesigner::OnLButtonUp(UINT uFlags, const POINT& ptCursor)
         ReleaseCapture();
         m_bIsDragging = FALSE;
 
-
-
-        /*
-        CWindowDC dc(CWnd::GetDesktopWindow());
-
-        //消除拖拽框
-
-        CSize size(1, 1);
-        RECT rcEmpty = { 0,0,0,0 };
-        dc.DrawDragRect(&rcEmpty, size, &m_rcLastDragRect, size, NULL, NULL);
-
-        //int x = m_rcLastDragRect.left;
-        //for (int y = m_rcLastDragRect.top; y < 100; y++)
-        //{
-        //   
-        //    DWORD color = ::GetPixel(dc.GetSafeHdc(), x, y);
-        //    AtlTrace(_T("\n[%d,%d]pixel=0x%08x\n"), x, y, color);
-        //    
-        //}
-        //Sleep(10);//对Desktop DC的操作和后面的对MemDC的操作不同步，
-                    //先画到Desktop DC上的内容竟然后出屏幕上。
-        */
-        
-
         if (m_pDragArea->eAreaType == E_AREA_TYPE_SPLITTER)
         {
             
@@ -1188,7 +1270,6 @@ void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea
     //作废窗体区域，以便在UpdateWindows时触发WM_PAINT消息。
     RECT rcWnd = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
     ::InvalidateRect(m_hWnd, &rcWnd, TRUE);
-
 
     UpdateWindow(m_hWnd);
 }

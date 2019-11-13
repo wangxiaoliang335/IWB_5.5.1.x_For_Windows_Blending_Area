@@ -74,7 +74,8 @@ public:
     void Reset();
 protected:
     BOOL InitWindow();
-
+    BOOL InitGDI();
+    BOOL UninitGDI();
 
     LRESULT  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -177,7 +178,7 @@ protected:
     RECT m_rcLastDragRect     ;//上一次拖拽的矩形区域
     TActiveArea * m_pDragArea;//当前正在拖拽的活动区域
 
-    static const COLORREF TRASNPARENT_COLOR = RGB(0, 0, 0);
+    static const COLORREF TRANSPARENT_COLOR = RGB(0, 0, 0);
 };
 
 
