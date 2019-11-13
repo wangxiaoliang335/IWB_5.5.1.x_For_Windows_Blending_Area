@@ -379,7 +379,7 @@ m_uScreenRecognitionCloseTimer(0u),
 m_hDispWnd(NULL),
 m_pCurInstalledSensor(NULL),
 m_hUCShieldBitmap(NULL),
-m_bStartDrawMaskFrame(false),
+m_bStartDrawOnlineScreenArea(false),
 m_bPreGuideRectangleVisible(false)
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -591,16 +591,16 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_COMMAND(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, &CIWBDlg::OnInstallationanddebuggingEnableinterpolate)
     ON_COMMAND(ID_MENU_ADVANCESSETTING, &CIWBDlg::OnMenuAdvancessetting)
 
-    ON_COMMAND(ID_MENU_DRAWMASKFRAME_START, &CIWBDlg::OnMenuDrawmaskframeStart)
-    ON_COMMAND(ID_MENU_DRAWMASKFRAME_CLEAR, &CIWBDlg::OnMenuDrawmaskframeClear)
-    ON_COMMAND(ID_MENU_DRAWMASKFRAME_DISABLE, &CIWBDlg::OnMenuDrawmaskframeDisable)
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_START, &CIWBDlg::OnMenuStartDrawOnlineScreenArea)
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_CLEAR, &CIWBDlg::OnMenuClearDrawOnlineScreenArea)
+    ON_COMMAND(ID_MENU_DRAWMASKFRAME_DISABLE, &CIWBDlg::OnMenuEnableDrawOnlineScreenArea)
 
-    ON_WM_RBUTTONDBLCLK()
 
     ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
     ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
 
  END_MESSAGE_MAP()
+
 
 void CIWBDlg::InitMenu()
 {
@@ -981,7 +981,7 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
     else if(nID  == IDM_CALIBRATE_FORM_FILE)
     {
 
-        CIWBSensor* pSensor0 = this->m_oIWBSensorManager.GetSensor0();
+        CIWBSensor* pSensor0 = this->m_oIWBSensorManager.GetSensor();
         if(pSensor0)
         {
             CFileDialog fileDlg(TRUE, _T("*.*"));
@@ -1039,7 +1039,7 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
     }
     else if(nID == IDM_CAPTURE_PICTURE)
     {
-        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
         if(pSensor)
         {
             //pSensor->GetPenPosDetector()->StartImageCapture(0000);
@@ -1049,7 +1049,7 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
     }
 	else if (nID == IDM_GPIO_ON)
 	{
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 		if (pSensor)
 		{
 			GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE);
@@ -1059,7 +1059,7 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 	else if (nID == IDM_GPIO_OFF)
 	{
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 		if (pSensor)
 		{
 			GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), FALSE);
@@ -1451,7 +1451,7 @@ LRESULT CIWBDlg::OnClose(WPARAM wParam,LPARAM lParam)
         m_pUSBDevDetector = NULL;
     }
 
-	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 	if (pSensor)
 	{
 		const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
@@ -1614,7 +1614,7 @@ HRESULT CIWBDlg::OnManualCalibrationDone (WPARAM wParam,LPARAM lParam)
     if(m_oIWBSensorManager.IsCalibarateOk())
     {
         //保存配置信息
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 		if (pSensor)
 		{
 			const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
@@ -2278,7 +2278,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                     AtlTrace(_T("\t\tInterface name %s\r\n"), pDevInterface->dbcc_name);
 					
 					/////把前面的VIP和PID读出来，如果上次的PID和VID这次的PID一致的话就不用再重新加载配置文件了
-					CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+					CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 					const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
 
 					if (theApp.GetScreenMode() == EScreenModeSingle)
@@ -2412,7 +2412,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
 
 void CIWBDlg::OnMenuParameterSettings()
 {
-    CIWBSensor *pSensor = m_oIWBSensorManager.GetSensor0();
+    CIWBSensor *pSensor = m_oIWBSensorManager.GetSensor();
     CParamsSettingPropertySheet paramsSettingSheet(const_cast<LPTSTR>(g_oResStr[IDS_STRING452]));
 
     paramsSettingSheet.SetIWBSensorInfo(pSensor, 1, false);
@@ -2437,14 +2437,11 @@ void CIWBDlg::OnMenuParameterSettings()
 		if (this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE)
 		{
 		     TSensorModeConfig* TSensorModeConfig = NULL;
-		     if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-		     {
-			      TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0];
-		     }
-		     else
-		     {
-			      TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1];
-		     }
+			 EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+
+			 int nIndex = pSensor->GetID();
+			 TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[nIndex].vecSensorModeConfig[eProjectionMode];
+	
 			 /////设置是否开启自动屏蔽功能
 		     if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
 		     {
@@ -2861,12 +2858,13 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 {
     CDialog::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
 
-    if (pPopupMenu != m_oMenu.GetSubMenu(0) && pPopupMenu != m_oMenu.GetSubMenu(1)) return; 
+	if (pPopupMenu != m_oMenu.GetSubMenu(0) && pPopupMenu != m_oMenu.GetSubMenu(1))	return;
+	
     // TODO: Add your message handler code here
 
     if(this->m_oIWBSensorManager.IsRunning())
     {
-        m_oMenu.EnableMenuItem(ID_MENU_RUN, MF_BYCOMMAND| MF_GRAYED );//灰化运行菜单
+-        m_oMenu.EnableMenuItem(ID_MENU_RUN, MF_BYCOMMAND| MF_GRAYED );//灰化运行菜单
         m_oMenu.EnableMenuItem(ID_MENU_STOP, MF_BYCOMMAND|MF_ENABLED);//使能停止菜单
 
 
@@ -3113,29 +3111,33 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	}
 	*/
 	///////插值标志
-	BOOL bEnableStrokeInterpolateTemp ;
-	BOOL bEnableOnLineScreenArea;
+	BOOL bEnableStrokeInterpolateTemp= FALSE ;
+	BOOL bEnableOnLineScreenArea = FALSE;
 
-	///////如果是桌面的话，开启或者关闭插值功能
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+
+	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
+	if (lpSensor)
 	{
-		bEnableStrokeInterpolateTemp = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bEnableStrokeInterpolate;
-		bEnableOnLineScreenArea = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea;
-	}
-	else {
-		bEnableStrokeInterpolateTemp = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate;
-		bEnableOnLineScreenArea = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea;
+		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[eProjectionMode].advanceSettings;
+		bEnableStrokeInterpolateTemp = advanceSettings.bEnableStrokeInterpolate;
 	}
 	////是否进行插值
-    if(bEnableStrokeInterpolateTemp)
-    {
-        m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_CHECKED);
-    }
-    else
-    {
-        m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_UNCHECKED);
-    }
+	if (bEnableStrokeInterpolateTemp)
+	{
+		m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_CHECKED);
+	}
+	else
+	{
+		m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_UNCHECKED);
+	}
 	//////是否启用绘制的外部勾勒图
+	if (lpSensor)
+	{
+		UINT nSensorIndex = lpSensor->GetID();
+		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[nSensorIndex].vecSensorModeConfig[eProjectionMode].advanceSettings;	
+		bEnableOnLineScreenArea = advanceSettings.bIsOnLineScreenArea;
+	}
 	if (bEnableOnLineScreenArea)
 	{
 		m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);		
@@ -3163,10 +3165,6 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
     {
         BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
         m_oMenu.CheckMenuItem(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, MF_BYCOMMAND | bIsVisible?MF_CHECKED: MF_UNCHECKED);
-
-
-
-
     }
 
     if (theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble)
@@ -3446,9 +3444,12 @@ void CIWBDlg::OnCaptureChanged(CWnd *pWnd)
 void CIWBDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
     // TODO: Add your message handler code here and/or call default
+
     TRACE(_T("OnLButtonDown\r\n"));
     CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(point);
     if(pSensor == NULL) return;
+	
+	m_oIWBSensorManager.SelectAsCurrentSensor(pSensor);
 
     if(pSensor->IsDetecting())
     {//只有在运行时才能够手动编辑屏蔽图
@@ -3542,9 +3543,9 @@ void CIWBDlg::OnLButtonUp(UINT nFlags, CPoint point)
             break;
     }//swtich
 
-	if (m_bStartDrawMaskFrame)
+	if (m_bStartDrawOnlineScreenArea)
 	{
-		CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(point);
+		CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
 		if (pSensor == NULL) return;
 
 		if (pSensor->IsDetecting())
@@ -3555,10 +3556,10 @@ void CIWBDlg::OnLButtonUp(UINT nFlags, CPoint point)
 			int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
 			int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
 			CPoint pt;
-			pt.x = point.x *nSrcImgWidth /nPlayWndWidth;
-			pt.y = point.y* nSrcImgHeight /nPlayWndHeight;
+			pt.x = (point.x  - rcDisplayArea.left) * nSrcImgWidth /nPlayWndWidth;
+			pt.y = (point.y  - rcDisplayArea.top ) * nSrcImgHeight /nPlayWndHeight;
 
-			pSensor->GetPenPosDetector()->SetOnLineScreenAreaPt(pt);
+			pSensor->GetPenPosDetector()->SetCurrentOnLineScreenAreaPt(pt);
 		}
 	}
 
@@ -3643,7 +3644,7 @@ void CIWBDlg::OnMouseMove(UINT nFlags, CPoint point)
     }//if
 
     ////////////在移动的时候把把最后一个点传递过去就好了。
-	if (m_bStartDrawMaskFrame)
+	if (m_bStartDrawOnlineScreenArea)
 	{
 		if (pSensor->IsDetecting())
 		{
@@ -4286,7 +4287,7 @@ HRESULT CIWBDlg::OnAutoCalibrateDone(WPARAM wParam, LPARAM lParam)
     if(m_oIWBSensorManager.IsCalibarateOk())
     {
 
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 		if (pSensor)
 		{
 			const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
@@ -4902,13 +4903,13 @@ BOOL CIWBDlg::OnEraseBkgnd(CDC* pDC)
 void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     // TODO: Add your message handler code here and/or call default
-    CIWBSensor* pSensor = this->m_oIWBSensorManager.SensorFromPt(point);
 
+    CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
     if(pSensor)
     {
-		if (m_bStartDrawMaskFrame)
+		if (m_bStartDrawOnlineScreenArea)
 		{
-			m_bStartDrawMaskFrame = false;
+			m_bStartDrawOnlineScreenArea = false;
 			////加上引导框
 			if (pSensor)
 			{
@@ -5270,7 +5271,6 @@ HRESULT CIWBDlg::OnProcessDetectBackSplashData(WPARAM wParam,LPARAM lParam)
     if (m_tipProcServer.IsStarted())
     {
         m_tipProcServer.OnDetectBackSlashVanish((int)wParam, (int)lParam);
-
        // AtlTrace(_T("OnDetectBackSlashVanish : Threshold=%d, nTotalSpots=%d, nTotalSpotArea=%d \n"), (((int)lParam)<<6), (int)lParam, (int)wParam);
     }
     return 0;
@@ -5313,8 +5313,6 @@ void CIWBDlg::OnSwapImageWithSensor(UINT uID)
         this->m_oIWBSensorManager.SwapSensorImage(pSensor->GetID(), uSensorID);
     }
 }
-
-
 
 
 void CIWBDlg::InsertMenuItem2TheMenu(CMenu *pMenu, const int &nInsertIndex, const DWORD &dwIMenuItemID, LPTSTR lpszMenuItemName)
@@ -5416,7 +5414,7 @@ HRESULT CIWBDlg::OnAppCommMsg(WPARAM wParam, LPARAM lParam)
 		//控制IRCUT
 		if(lParam == 1)
 		{
-			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
 			if (lpSensor)
 			{
 				IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(),FALSE,lpSensor->GetDeviceInfo().m_nPID,lpSensor->GetDeviceInfo().m_nVID);
@@ -5424,7 +5422,7 @@ HRESULT CIWBDlg::OnAppCommMsg(WPARAM wParam, LPARAM lParam)
 		}
 		else if (lParam == 2)
 		{
-			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
 			if (lpSensor)
 			{
 			    IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE, lpSensor->GetDeviceInfo().m_nPID, lpSensor->GetDeviceInfo().m_nVID);
@@ -5480,30 +5478,30 @@ void CIWBDlg::UpdateInfoAboutDongle()
 	//>>
 }
 
-
 void CIWBDlg::OnInstallationanddebuggingEnableinterpolate()
 {
     // TODO: Add your command handler code here
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-        g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bEnableStrokeInterpolate = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bEnableStrokeInterpolate;
-	}
-	else {
-		g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate;
-	}
 	/////需要把改变的设置进行保存
-	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
-	if (pSensor)
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+	/////插值的设定情况是在不管在哪个屏幕下，只要点击设置所有的屏上的插值都进行设置
+	int nCount = this->m_oIWBSensorManager.GetSensorCount();
+	for (int i = 0; i < nCount; i++)
 	{
-		pSensor->SetStrokeInterpolate(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bEnableStrokeInterpolate);
-	}
+	     CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
+         if (pSensor)
+	     {
+		     TAdvancedSettings &AdvancedSettings = g_tSysCfgData.vecSensorConfig[i].vecSensorModeConfig[eProjectionMode].advanceSettings;
+		     AdvancedSettings.bEnableStrokeInterpolate = !AdvancedSettings.bEnableStrokeInterpolate;
+		     pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate);
+	     }
+	}	
 }
 
 void CIWBDlg::OnMenuAdvancessetting()
 {
 	// TODO: Add your command handler code here
 	// TODO: Add your command handler code here
-	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor0();
+	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 	std::vector<CAtlString>  vecCameraInfo;
 	if (pSensor)
 	{
@@ -5574,58 +5572,52 @@ void CIWBDlg::OnMenuAdvancessetting()
 		::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
 	}
 }
-void CIWBDlg::OnMenuDrawmaskframeStart()
+void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
-	m_bStartDrawMaskFrame = true;
+
+	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
+
+	m_bStartDrawOnlineScreenArea = true;
 	////去掉引导框
-	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
 	//m_bPreGuideRectangleVisible記錄上次引導框的顯示情況，方便后面的恢复。
 	if(lpSensor)
 	{
 	     m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible();
 	     lpSensor->GetPenPosDetector()->ShowGuideRectangle(false);
 
-		 lpSensor->GetInterceptFilter()->SetStartDrawMaskFrame(m_bStartDrawMaskFrame);
+		 lpSensor->GetInterceptFilter()->SetStartDrawMaskFrame(m_bStartDrawOnlineScreenArea);
 		 /////清除数组中的数据
 		 lpSensor->GetPenPosDetector()->ClearOnLineScreenAreaPt();
 		 lpSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
 	}
 }
 
-void CIWBDlg::OnMenuDrawmaskframeClear()
+void CIWBDlg::OnMenuClearDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
-	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();
+	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
 	if (lpSensor)
 	{
     	lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
 	}	
+	m_bStartDrawOnlineScreenArea = false;
 }
 
 
-void CIWBDlg::OnMenuDrawmaskframeDisable()
+void CIWBDlg::OnMenuEnableDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
-	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor0();	
+    CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
+	if (lpSensor)
+	{
+	    int nIndex = lpSensor->GetID();
+	    EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+	    TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[nIndex].vecSensorModeConfig[eProjectionMode].advanceSettings;
+	    advanceSettings.bIsOnLineScreenArea = !advanceSettings.bIsOnLineScreenArea;
 
-	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea;
-	    if(lpSensor)
-	    {
-			lpSensor->SetOnlineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea);
-		    lpSensor->GetPenPosDetector()->EnableOnLineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.bIsOnLineScreenArea);
-	    }
-	}
-	else 
-	{
-		g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea = !g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea;
-		if (lpSensor)
-		{
-			lpSensor->SetOnlineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea);
-			lpSensor->GetPenPosDetector()->EnableOnLineScreenArea(g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.bIsOnLineScreenArea);
-		}
+	    lpSensor->SetOnlineScreenArea(advanceSettings.bIsOnLineScreenArea);
 	}
 }
 
@@ -5667,27 +5659,18 @@ HRESULT CIWBDlg::OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam)
 
                 this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenRelativeLayouts(&layout.vecScreens[0], layout.vecScreens.size());
                 this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetRelativeMergeAreas(&layout.vecMergeAreas[0], layout.vecMergeAreas.size());
-
-
                 break;
             }
-
         }
     }
     else if (uID == BUTTON_ID_RESET)
     {
 
         this->m_oIWBSensorManager.GetScreenLayoutDesigner().Reset();
-    }
-
-
-
-    
+    }   
     return 0L;
 
 }
-
-
 
 void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
 {
@@ -5698,13 +5681,10 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
 
     //反初始化
     m_oIWBSensorManager.Uninit();
-
-
     //初始化
     //m_oIWBSensorManager.Init(theApp.GetScreenType() == EDoubleScreenMode?2:1);
     //根据注册的信息决定
     m_oIWBSensorManager.Init(nSensorCount);
-
     //载入配置信息
     //LoadConfig();
 
@@ -5715,16 +5695,13 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     //    ::UpDateConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, pDevInst->m_nPID, pDevInst->m_nVID);
 
     //}
-
     //将配置数据设置到传感器中去
     this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
-
 
     m_oUSBCameraDeviceList.UpdateDeviceList();
 
     //CIWBSensor对象分配摄像头设备路径
     m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
-
 
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
@@ -5734,7 +5711,6 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     GetClientRect(&rcDisplayArea);
     InvalidateRect(&rcDisplayArea, TRUE);
     UpdateWindow();
-
 
     StartRunning();
 

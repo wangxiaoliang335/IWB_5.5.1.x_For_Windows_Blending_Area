@@ -1049,7 +1049,6 @@ HRESULT FindExtensionNode(IKsTopologyInfo *pKsTopologyInfo, DWORD *node)
 
 }
 
-
 HRESULT  XU_Get_InfoSize(
     IKsControl* pKsControl,
 	const GUID& set,
@@ -1084,7 +1083,6 @@ HRESULT  XU_Get_InfoSize(
     
     return hr;
 }
-
 
 
 HRESULT  Get_Info(
@@ -1178,8 +1176,6 @@ XU_Get_Property(
     return hr;
 }
 
-
-
 HRESULT 
 XU_Put_Property(
     IKsControl* pKsControl,
@@ -1209,8 +1205,6 @@ XU_Put_Property(
 
     return hr;
 }
-
-
 
 /////add by zhaown 2019.07.09
 //Sonix Techonology CO., LTD

@@ -210,6 +210,7 @@ protected:
 
     //正在触发手势标志
     BOOL m_bIsTriggeringGuesture;
+	BOOL m_bEnableStrokeInterpolateTemp;
 };
 
 ///////////////////////////////////////////////////////////////////////////

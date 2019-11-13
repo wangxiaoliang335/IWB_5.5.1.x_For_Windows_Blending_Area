@@ -30,15 +30,9 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
     CDialog::DoDataExchange(pDX);
 
 	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (m_tGlobalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[0];
-	}
-	else
-	{
-		TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[1];
-	}
 
+	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	
     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
 
     DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, TSensorModeConfig->advanceSettings.nSpotProportion);
@@ -163,14 +157,7 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 
 		//如果使用类型为笔触,则禁用"相应光斑大小比例输入框"和spin控件。
 		TSensorModeConfig* TSensorModeConfig = NULL;
-		if (m_tGlobalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-		{
-			TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[0];
-		}
-		else
-		{
-			TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[1];
-		}
+		TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
 		/////////////////////////////只有手指精确触控的时候才需要光斑大小判断
 		if (E_DEVICE_FINGER_TOUCH_WHITEBOARD != TSensorModeConfig->advanceSettings.m_eTouchType)
@@ -268,15 +255,8 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
 	//桌面墙面进行判断
 
 	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (m_tGlobalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[0];
-	}
-	else
-	{
-		TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[1];
-	}
-
+	TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	
     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
 
 	TSensorModeConfig->advanceSettings.nSpotProportion = SPOT_DEFAULT_POS;
@@ -547,13 +527,8 @@ void CAdvancedSettingsDlg::OnBnClickedRadioFingerTouch()
 	// TODO: Add your control notification handler code here
 
 	 TSensorModeConfig* TSensorModeConfig = NULL;
-	 if (m_tGlobalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	 {
-		TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[0];
-	 }
-	 else {
-		TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[1];
-	 }
+	 ///m_tGlobalSettings.eProjectionMode=0是桌面，m_tGlobalSettings.eProjectionMode=1是墙面
+	 TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
      TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
 
@@ -707,16 +682,16 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		m_tGlobalSettings.eProjectionMode = E_PROJECTION_DESKTOP;
 
 		CString strText;
-		strText.Format(_T("%d"), m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.nSpotProportion);
+		strText.Format(_T("%d"), m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.nSpotProportion);
 		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->SetWindowText(strText);
 
 		//更新正常使用时的亮度系数
-		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[0].lensConfigs[m_tSensorConfig.eSelectedLensType];
+		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].lensConfigs[m_tSensorConfig.eSelectedLensType];
 
-		m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.m_eTouchType = GetActualTouchType();
+		m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType = GetActualTouchType();
 
 		CString strBrightnessCoefficient;//亮度系数
-		switch (m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.m_eTouchType)
+		switch (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType)
 		{
 		  case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 			  strBrightnessCoefficient.Format(_T("%d"), lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
@@ -741,7 +716,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 //		}
 		GetDlgItem(IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT)->SetWindowText(strBrightnessCoefficient);
 		/////更新触控方式
-		switch (m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.m_eTouchType)
+		switch (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType)
 		{
 		   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 
@@ -798,7 +773,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		GetDlgItem(IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY)->SetWindowText(autoCalibrateHilightGray);
 
 		///根据墙面和桌面的不同来进行参数的设置
-		if(m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.bIsDynamicMaskFrame)
+		if(m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bIsDynamicMaskFrame)
 		{
 			((CButton*)GetDlgItem(IDC_CHECK_DYNAMICMASKFRAMECONTROL))->SetCheck(true);
 		}
@@ -807,7 +782,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 			((CButton*)GetDlgItem(IDC_CHECK_DYNAMICMASKFRAMECONTROL))->SetCheck(false);
 		}
 
-		if(m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.bIsAntiJamming)
+		if(m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bIsAntiJamming)
 		{
 			((CButton*)GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL))->SetCheck(true);
 		}
@@ -826,13 +801,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioPenTouch()
 	// TODO: Add your control notification handler code here
 	//////判断是墙面还是桌面
 	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (m_tGlobalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[0];
-	}
-	else {
-		TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[1];
-	}
+	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
 	if (IsDlgButtonChecked(IDC_RADIO_PEN_TOUCH) == BST_CHECKED)
@@ -868,14 +837,8 @@ void CAdvancedSettingsDlg::OnEnChangeEditAutomaskdetectthreshold()
 		return;
 	}
 	TSensorModeConfig* TSensorModeConfig = NULL;
-	if (m_tGlobalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-	{
-		TSensorModeConfig = & m_tSensorConfig.vecSensorModeConfig[0];
-	}
-	else 
-	{
-		TSensorModeConfig = & m_tSensorConfig.vecSensorModeConfig[1];
-	}
+
+	TSensorModeConfig = & m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
 

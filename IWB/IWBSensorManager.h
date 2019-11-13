@@ -73,6 +73,7 @@ public:
     CIWBSensor* FindSensorInstance(const RECT& rcDisplayArea);
 
 	const CIWBSensor* GetSensor(int nID) const;
+	CIWBSensor* GetSensor(int nID);
 
     //@参数:绘制布局框架
     //@窗体:hWnd, 窗体句柄
@@ -106,7 +107,11 @@ public:
     //      NULL,未找到。
     CIWBSensor* SensorFromPt(const POINT& ptPos);
 
-    CIWBSensor* GetSensor0();
+    CIWBSensor* GetSensor();
+	CIWBSensor* GetSensor0();
+	void SelectAsCurrentSensor(CIWBSensor* pSensor);
+
+	int   CurrentSelectSensor();
 
     //@功能:使能光笔
     //@参数:bEnable,使能标志
@@ -264,9 +269,11 @@ public:
 
     void ApplyScreenLayout();
 
+	
 protected:
     void UpdateVideoLayout(const RECT& rcDisplayArea);
-
+	void DrawSelectBound(HWND hWnd);
+	static const int SELECT_BOUND_WIDTH = 5;
 
     std::vector<CIWBSensor*> m_vecSensors;
     
@@ -321,7 +328,7 @@ protected:
     std::vector<BOOL> m_vecCalibrateResults         ;//保存每个传感器校正结果的数组,说明需要预先保存每个传感器的校正结果。因为传感器滤光片需要
                                                      //在所有传感器都校正完成后才能够一齐合上。
     //BOOL m_bAllScreenMergedOnOnePlane               ;//所有屏幕融合在一块平面上的标志
-
+	UINT m_uCurrentSelectSensordId;//当前选中的Sensor id
 
 
 };

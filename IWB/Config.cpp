@@ -3305,8 +3305,6 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,
     _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, (LPCTSTR)PROFILE::SCREEN_LAYOUT_FILE_NAME);
     LoadConfig(szPath, sysCfgData.vecScreenLayouts);
 
-
-
     return TRUE;
 }
 
@@ -3413,44 +3411,6 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
 BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
 {
 	///保存各种镜头的配置参数
-    /*
-	char szPath[MAX_PATH];
-	if (nModeIndex == 0)
-	{   ////说明是桌面模式
-		////高清摄像头PID=0x9230,VID=0x05a3
-		switch (g_tSysCfgData.globalSettings.eCameraType)
-		{
-		   case E_CAMERA_MODEL_0:
-			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-			  break;
-		   case E_CAMERA_MODEL_1:
-			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-			  break;
-		   case E_CAMERA_MODEL_2:
-			   sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\DesktopMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-			  break;
-		   default:
-			 break;
-		}
-	}
-	else
-	{
-		switch (g_tSysCfgData.globalSettings.eCameraType)
-		{
-		case E_CAMERA_MODEL_0:
-			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV7725", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-			break;
-		case E_CAMERA_MODEL_1:
-			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\QC0308", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-			break;
-		case E_CAMERA_MODEL_2:
-			sprintf_s(szPath, _countof(szPath), "%s\\Sensor%02d\\WallMode\\OV2710", (const char*)CT2A(PROFILE::SETTINGS_BASE_DIRECTORY), nSensorId);
-			break;
-		default:
-			break;
-		}
-	}
-    */
     TCHAR szPath[MAX_PATH];
     _stprintf_s(
         szPath,
@@ -3739,10 +3699,6 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScre
             TScreenLayout layout;
 
             TiXmlNode* pChild_L2 = NULL;
-
-
-
-
             do
             {
                 pChild_L2 = pChild_L1->IterateChildren(pChild_L2);

@@ -564,8 +564,8 @@ public:
          return FALSE;
      }
 
-	 void    SetOnLineScreenAreaPt(CPoint &point);
-	 void    GetOnLineScreenAreaPt(std::vector<CPoint> &pt);
+	 void    SetCurrentOnLineScreenAreaPt(CPoint &point);
+	 void    GetCurrentOnLineScreenAreaPt(std::vector<CPoint> &pt);
 
 	 void    DeleteOnLineScreenArea();
 	 void    ClearOnLineScreenAreaPt();
@@ -788,7 +788,10 @@ protected:
 	//BOOL m_bShowFirstGuideline ;//显示第一条水平引导线
 	//int m_nSecondGuidelineYPos ;//第二条水平引导线的位置
 	//BOOL m_bShowSecondGuideline;//显示第二条水平引导线
-    RECT   m_rcGuideRectangle    ;//引导矩形框的区域
+	RECT   m_rcGuideRectangle    ;//引导矩形框的区域
+//  RECT   m_rcGuideAbs          ;//绝对像素坐标引导矩形框的区域
+//	RectF  m_rcGuideRel          ;//相对的引导矩形框的区域
+
     DWORD  m_dwGuideRectangleColor;//引导矩形框的颜色
     BOOL   m_bShowGuideRectangle  ;//引导矩形框是否可见标志
 

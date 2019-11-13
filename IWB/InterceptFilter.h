@@ -118,7 +118,7 @@ public:
 
 	void  SetFrameSkipCount(int nFrameskipcount);
 
-	void  SetStartDrawMaskFrame(bool Start) { m_bStartDrawMaskFrame = Start; }
+	void  SetStartDrawMaskFrame(bool Start) { m_bStartDrawOnlineScreenArea= Start; }
 	void  SetDrawMovePt(CPoint &point) { m_PtMove = point; }
 
 private:
@@ -183,7 +183,7 @@ protected:
     BOOL m_bCaptureImage;
 	
 	int     m_nFrameSkipCount;
-	bool    m_bStartDrawMaskFrame;
+	bool    m_bStartDrawOnlineScreenArea;
 	CPoint  m_PtMove;
 
 };

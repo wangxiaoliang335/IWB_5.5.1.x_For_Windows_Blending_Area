@@ -1866,13 +1866,8 @@ void CAutoCalibratorImpl2::BinarizeImage(const CImageFrame& srcImage, const CIma
             Debug_SaveImageFrame(subAreaMask, strFileName);
         }
         
-
-
         //BYTE threshold = GetImageBinarizeThreshold_DoublePeak(srcImage, subAreaMask);
-        if ((i+1) == 5)
-        {
-            int ggg = 0;
-        }
+
         BYTE threshold = GetImageBinarizeThreshold_Ostu(srcImage, subAreaMask);
 
         //
@@ -1887,10 +1882,8 @@ void CAutoCalibratorImpl2::BinarizeImage(const CImageFrame& srcImage, const CIma
         CBitFrame subareaBitImage;
         subareaBitImage.SetSize(nImageWidth, nImageHeight);
 
-        CString strFileName;
-        strFileName.Format(_T("subarea(%d)-Scr.jpg"), i + 1);
-        Debug_SaveImageFrame(subAreaSrcImage, strFileName);
-        AtlTrace("threshold(%d)==%d......", i+1,threshold);
+
+
         GrayToBitFrame_SSE2((const BYTE*)subAreaSrcImage.GetData(), (BYTE*)subareaBitImage.GetData(), threshold, nImageWidth*nImageHeight);
 
 
