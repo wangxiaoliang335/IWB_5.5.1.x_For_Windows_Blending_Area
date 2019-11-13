@@ -80,7 +80,7 @@ public:
 
     //void SetScreenSize(int nNewScreenWidth, int nNewScreenHeight);
 
-    BOOL SetAdjustPtNumber(size_t nNewNumber);
+//    BOOL SetAdjustPtNumber(size_t nNewNumber);
 
     //@功能:获取屏幕尺寸
     //const SIZE GetScreenSize()const;

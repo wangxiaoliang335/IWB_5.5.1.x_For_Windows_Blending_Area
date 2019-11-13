@@ -530,7 +530,7 @@ public:
     CBlobDetector m_oBlobCounter;
 
 	//@功能，屏幕尺寸的改变
-	void SetScreenSize(int ScreenWidth, int ScreenHeight);
+//	void SetScreenSize(int ScreenWidth, int ScreenHeight);
     //<<debug
 
     //const POINT (& GetContourCrossPoints() const)  [MAX_OBJ_NUMBER][4] 
@@ -568,7 +568,7 @@ public:
 	 void    GetCurrentOnLineScreenAreaPt(std::vector<CPoint> &pt);
 
 	 void    DeleteOnLineScreenArea();
-	 void    ClearOnLineScreenAreaPt();
+	 void    ClearOnLineScreenArea();
 
 	 void    SaveOnLineScreenArea();
 	 void    LoadOnLineScreenArea();

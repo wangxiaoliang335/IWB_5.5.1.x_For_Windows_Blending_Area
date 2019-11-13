@@ -72,6 +72,12 @@
     <None Include="res\cursor_DrawScreenArea.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\Cursor_SplitHorz.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\hand.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

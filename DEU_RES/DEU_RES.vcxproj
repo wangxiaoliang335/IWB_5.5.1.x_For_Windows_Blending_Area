@@ -368,6 +368,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\cursor_DrawScreenArea.cur" />
+    <None Include="res\Cursor_SplitHorz.cur" />
+    <None Include="res\hand.cur" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DEU_RES.rc" />

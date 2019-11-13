@@ -3380,8 +3380,32 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
     return TRUE;
 }
 
-BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
+BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int PID, int VID, int nModeIndex, int nSensorId)
 {
+	ECameraType eCameraType = E_CAMERA_MODEL_1;
+
+	if (PID == 13200 && VID == 6380)
+	{
+		eCameraType = E_CAMERA_MODEL_1;
+
+		//sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
+		g_tSysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
+	}
+	else if (PID == 37424 && VID == 1443)
+	{
+		eCameraType = E_CAMERA_MODEL_2;
+
+		//sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
+		g_tSysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.003;
+	}
+	else 
+	{
+		eCameraType = E_CAMERA_MODEL_0;
+		//sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
+		g_tSysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
+	}
+
+
 	///保存各种镜头的配置参数
     TCHAR szPath[MAX_PATH];
     _stprintf_s(
@@ -3391,7 +3415,7 @@ BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSenso
         (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
         nSensorId,
         GetProjectModeString(EProjectionMode(nModeIndex)),
-        GetCameraTypeString(g_tSysCfgData.globalSettings.eCameraType));
+        GetCameraTypeString(eCameraType));
 
 	//CreateFullDirectory(CA2CT(szPath));
 
@@ -3416,107 +3440,109 @@ BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSenso
 	return true;
 }
 
-BOOL UpdateConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
-{
-	if (pNode == NULL) return FALSE;
-	TiXmlNode* pChild = NULL;
-	do
-	{
-		pChild = pNode->IterateChildren(pChild);
-		if (NULL == pChild)
-		{
-			break;
-		}
-		const char* lpszElementName = pChild->Value();
-		if (_stricmp(lpszElementName, "IWBProjectionMode") == 0)
-		{
-			const char* szCoefMode = ((TiXmlElement*)pChild)->Attribute("Mode");
-			int nModeIndex = 0;
-			if (_stricmp(szCoefMode, "Desktop") == 0)
-			{
-				//载入桌面的设置参数	
-				nModeIndex = 0;
-			}
-			else if (_stricmp(szCoefMode, "Wall") == 0)
-			{
-				//载入墙面的设置参数
-				nModeIndex = 1;
-			}
-			UpDateConfig(sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex, nSensorId);
-		}
-	} while (pChild);
+//BOOL UpdateConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
+//{
+//	if (pNode == NULL) return FALSE;
+//	TiXmlNode* pChild = NULL;
+//	do
+//	{
+//		pChild = pNode->IterateChildren(pChild);
+//		if (NULL == pChild)
+//		{
+//			break;
+//		}
+//		const char* lpszElementName = pChild->Value();
+//		if (_stricmp(lpszElementName, "IWBProjectionMode") == 0)
+//		{
+//			const char* szCoefMode = ((TiXmlElement*)pChild)->Attribute("Mode");
+//			int nModeIndex = 0;
+//			if (_stricmp(szCoefMode, "Desktop") == 0)
+//			{
+//				//载入桌面的设置参数	
+//				nModeIndex = 0;
+//			}
+//			else if (_stricmp(szCoefMode, "Wall") == 0)
+//			{
+//				//载入墙面的设置参数
+//				nModeIndex = 1;
+//			}
+//			UpDateConfig(sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex, nSensorId);
+//		}
+//	} while (pChild);
+//
+//	return TRUE;
+//}
 
-	return TRUE;
-}
-BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID, int VID)
-{
-	if (PID ==13200 && VID == 6380)
-	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
-		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
-	}
-	else if (PID == 37424 && VID == 1443)
-	{
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
-		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.003;
-	}
-	else {
-		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
-		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
-	}
 
-	TiXmlDocument oXMLDoc;
-	if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
-	{
-		return FALSE;
-	}
-
-	TiXmlElement *pRootElement = oXMLDoc.RootElement();
-	if (pRootElement == NULL)
-	{
-		return FALSE;
-	}
-
-	TiXmlNode *pNode = NULL;
-	do
-	{
-		pNode = pRootElement->IterateChildren(pNode);
-		if (NULL == pNode)
-		{
-			break;
-		}
-		const char* lpszElementName = pNode->Value();
-		if (_stricmp(lpszElementName, "IWBSensors") == 0)
-		{
-			//所有传感器的配置信息
-			const char* szSensorCount = ((TiXmlElement*)pNode)->Attribute("count");
-			if (szSensorCount == 0) return FALSE;
-			int nSensorIndex = 0;
-			TiXmlNode * pChild = NULL;
-			do
-			{
-				pChild = pNode->IterateChildren(pChild);
-				if (NULL == pChild)
-				{
-					break;
-				}
-				const char* lpszElementName = pChild->Value();
-				if (_stricmp(lpszElementName, "IWBSensor") == 0)
-				{
-					UpdateConfig(pChild, sysCfgData.vecSensorConfig[nSensorIndex], nSensorIndex);
-					nSensorIndex++;
-					if (nSensorIndex == sysCfgData.vecSensorConfig.size())
-					{
-						break;
-					}
-				}
-			} while (pChild);
-		}
-	} while (pNode);
-
-	return TRUE;
-
-}
+//BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID, int VID)
+//{
+//	if (PID ==13200 && VID == 6380)
+//	{
+//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
+//		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
+//	}
+//	else if (PID == 37424 && VID == 1443)
+//	{
+//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
+//		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.003;
+//	}
+//	else {
+//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
+//		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
+//	}
+//
+//	TiXmlDocument oXMLDoc;
+//	if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
+//	{
+//		return FALSE;
+//	}
+//
+//	TiXmlElement *pRootElement = oXMLDoc.RootElement();
+//	if (pRootElement == NULL)
+//	{
+//		return FALSE;
+//	}
+//
+//	TiXmlNode *pNode = NULL;
+//	do
+//	{
+//		pNode = pRootElement->IterateChildren(pNode);
+//		if (NULL == pNode)
+//		{
+//			break;
+//		}
+//		const char* lpszElementName = pNode->Value();
+//		if (_stricmp(lpszElementName, "IWBSensors") == 0)
+//		{
+//			//所有传感器的配置信息
+//			const char* szSensorCount = ((TiXmlElement*)pNode)->Attribute("count");
+//			if (szSensorCount == 0) return FALSE;
+//			int nSensorIndex = 0;
+//			TiXmlNode * pChild = NULL;
+//			do
+//			{
+//				pChild = pNode->IterateChildren(pChild);
+//				if (NULL == pChild)
+//				{
+//					break;
+//				}
+//				const char* lpszElementName = pChild->Value();
+//				if (_stricmp(lpszElementName, "IWBSensor") == 0)
+//				{
+//					UpdateConfig(pChild, sysCfgData.vecSensorConfig[nSensorIndex], nSensorIndex);
+//					nSensorIndex++;
+//					if (nSensorIndex == sysCfgData.vecSensorConfig.size())
+//					{
+//						break;
+//					}
+//				}
+//			} while (pChild);
+//		}
+//	} while (pNode);
+//
+//	return TRUE;
+//
+//}
 
 
 //@功能:保存屏幕布局数据

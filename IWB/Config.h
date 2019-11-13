@@ -47,12 +47,20 @@ enum EDeviceTouchType
 /////手掌互动触控的类型
 enum EPalmTouchControlType
 {
-	E_PLAM_TOUCHCONTROL_P0,        //手掌互动触控的类型，激光器是放在中间位置的
-	E_PLAM_TOUCHCONTROL_P1,        //手掌互动触控的类型，激光器是放在左上角的位置的。
-	E_PLAM_TOUCHCONTROL_P2,        //保留
-	E_PLAM_TOUCHCONTROL_P3,        //保留
-	E_PLAM_TOUCHCONTROL_P4,        //保留
-	E_PLAM_TOUCHCONTROL_P5,        //保留
+	///////P系列是30帧的，精度需要做偏差
+	///////T系列是60帧的，精度不需要做偏差
+	E_PLAM_TOUCHCONTROL_P0, //保留。   
+	E_PLAM_TOUCHCONTROL_P1, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在左上角的位置的。
+	E_PLAM_TOUCHCONTROL_P2, //保留。
+	E_PLAM_TOUCHCONTROL_P3, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_P4, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_P5, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_T0, //保留。
+	E_PLAM_TOUCHCONTROL_T1, //保留。
+	E_PLAM_TOUCHCONTROL_T2, //保留。
+	E_PLAM_TOUCHCONTROL_T3, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_T4, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_T5, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
 };
 
 enum EHIDDeviceMode
@@ -64,8 +72,8 @@ enum EHIDDeviceMode
 enum EProjectionMode
 {
 	E_PROJECTION_DESKTOP = 0, //桌面模式
-	E_PROJECTION_WALL = 1,    //墙面模式
-
+	E_PROJECTION_WALL   = 1,   //墙面模式
+	E_PROJECTION_COUNT = 2
 };
 
 inline const TCHAR* GetProjectModeString(EProjectionMode eProjectionMode)
@@ -611,7 +619,7 @@ enum ELensType
     E_LENS_TR_0_DOT_55   = 6,//投射比0.55
     E_LENS_TR_0_DOT_70   = 7,//投射比0.70
     E_LENS_TR_0_DOT_86   = 8,//投射比0.86
-    E_LENS_TR_1_DOT_34   = 9,//投射比1.34
+    E_LENS_TR_1_DOT_34   = 9,//投射比1.36
     E_LENS_TYPE_COUNT    = 10
 };
 
@@ -628,7 +636,7 @@ _declspec(selectany) extern const double TRHOW_RATIO_LIST[] =
     0.55,
     0.70,
     0.86,
-    1.34,
+    1.36,
 };
 
 //屏幕区域类型
@@ -650,7 +658,7 @@ struct TSensorModeConfig
 	{
 	    calibParam.szImage.cx = 640;
 	    calibParam.szImage.cy = 480;
-		//投射比1.34镜头的参数配置
+		//投射比1.36镜头的参数配置
 		//==================================
 		{
 			TLensConfig&  lens = lensConfigs[E_LENS_TR_1_DOT_34];
@@ -1041,7 +1049,7 @@ struct TSensorModeConfig
 				lensSpecification.FOV_horz = 36;//水平视角，  单位:度
 				lensSpecification.FOV_vert = 26;//垂直视角，  单位:度
 				lensSpecification.FOV_diagonal = 54;//对角线视角，单位:度
-				lensSpecification.throwRatio = 1.34;//投射比
+				lensSpecification.throwRatio = 1.36;//投射比
 			}
 
 			//自动校正补偿系数
@@ -1058,7 +1066,7 @@ struct TSensorModeConfig
 				//2017/05/29>>
 			}
 
-		}//投射比1.34镜头的参数配置
+		}//投射比1.36镜头的参数配置
 
 		 //投射比0.86镜头的参数配置
 		 //==================================
@@ -5335,11 +5343,19 @@ _declspec(selectany) extern const TCHAR* DEFAULT_DEV_IDS[] = {
 //@参数:lpszConfigFilePath, 配置文件的完整路路径
 BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData,int PID=37254, int VID = 6380);
 
-BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID = 37254, int VID = 6380);
+//BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID = 37254, int VID = 6380);
+
 //@功能:保存配置文件
 //@参数:lpszConfigFilePath, 配置文件的完成路径
 BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData);
 
+//@功能:更新每个传感器的配置信息
+//@参数:sensorModeCfg, 保存配置信息
+//     PID,
+//     VID,
+//     nModeIndex, 桌面或墙面枚举值
+//     nSensorId, SensorID;
+BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int PID, int VID, int nModeIndex, int nSensorId);
 
 extern TSysConfigData g_tSysCfgData;
 

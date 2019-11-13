@@ -68,7 +68,6 @@ public:
 
 				DrawText(lpDrawItem->hDC, menuText, _tcslen(menuText), &rcText, DT_CENTER | DT_VCENTER);
 				
-
 				if(hItemBitmap)
 				{
 					hBmpOld = (HBITMAP)SelectObject(this->m_hMemDC, hItemBitmap);
@@ -250,11 +249,7 @@ public:
 				break;
 
 		}//switch
-
-
-
 	}
-
 
 	//@功能:计算菜单项的尺寸
 	virtual void OnMeasureItem(LPMEASUREITEMSTRUCT lpMeasureItem)
@@ -475,7 +470,6 @@ protected:
 
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-
 
 	LRESULT OnInitialStateDisableOpticalPenForClutter(WPARAM, LPARAM lParam);
 	LRESULT OnChangeGuidelineYPos(WPARAM wParam, LPARAM lParam);
@@ -721,7 +715,7 @@ protected:
 	SIZE m_EraseSize;
 	SIZE m_FillSize;
 
-	CPlayWnd m_PlayWnd;
+//	CPlayWnd m_PlayWnd;
 
 
 	//屏蔽区域编辑操作撤销，重做相关变量和函数

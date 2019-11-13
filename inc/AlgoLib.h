@@ -256,6 +256,8 @@ struct TAutoCalibrateParams
 
 	AutoCalibrateParamsList   autocalibrateparamslist;   //自动校正参数列表
 
+	BOOL   bEnableOnineScreenArea;
+
 };
 
 

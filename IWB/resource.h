@@ -134,7 +134,7 @@
 #define IDS_STRING491                   491
 #define IDS_STRING492                   492
 #define IDS_STRING493                   493
-
+#define IDS_STRING494                   494
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000
@@ -243,7 +243,7 @@
 #define IDC_RADIO_THROW_RATIO_055       1207
 #define IDC_RADIO_THROW_RATIO_070       1208
 #define IDC_RADIO_THROW_RATIO_086       1209
-#define IDC_RADIO_THROW_RATIO_134       1210
+#define IDC_RADIO_THROW_RATIO_136       1210
 #define IDC_STATIC_CAMERA_LIST          10000
 #define IDC_COMBO_CAMERA                10001
 #define IDC_STATIC_IMAGE_FORMAT         10002

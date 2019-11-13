@@ -658,7 +658,8 @@ public:
         m_nMaxTryTimes(MAX_TRY_TIMES),
         m_bRestoreLanguageBar(FALSE),
         m_bUseOldMethod(FALSE),
-        m_bBorderCalibratrPtsIsValid(FALSE)
+        m_bBorderCalibratrPtsIsValid(FALSE),
+		m_bEnableOnLineScreenArea(FALSE)
     {
         
         m_uMonitorWidth  = GetSystemMetrics(SM_CXSCREEN);
@@ -1472,6 +1473,8 @@ protected:
 
     BOOL m_bSaveInermediatFile;//是否保存自动校正中间文件标志
     BOOL m_bRecordVideo;
+
+	BOOL m_bEnableOnLineScreenArea;
     //>>
 
     //<<2013/08/19

@@ -210,7 +210,8 @@ enum EOSDTextType
     E_OSDTEXT_TYPE_ERROR_INFO  = 0,//校正信息
     E_OSDTEXT_TYPE_GUIDE_BOX   = 1,//引导框
     E_OSDTEXT_TYPE_FORMAT_INFO = 2,//视频格式信息
-    E_OSDTEXT_TYPE_COUNT       = 3
+	E_OSDTEXT_TYPE_SHOW_INFO   = 3,
+    E_OSDTEXT_TYPE_COUNT       = 4
 };
 
 class CVideoPlayer

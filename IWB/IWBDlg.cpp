@@ -817,18 +817,28 @@ BOOL CIWBDlg::OnInitDialog()
     LoadConfig();
 
     m_oUSBCameraDeviceList.UpdateDeviceList();
+	
+	this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
 
-	const TCaptureDeviceInstance*  pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance((UINT)0);
-	if (pDevInst)
-	{
-		//再根据PID、VID加载一遍，保证摄像头的数据正确
-		::UpDateConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, pDevInst->m_nPID, pDevInst->m_nVID);
-		//将配置数据设置到传感器中去
-		this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
-	}
+	//CIWBSensor对象分配摄像头设备路径
+	m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
 
-    //CIWBSensor对象分配摄像头设备路径
-    m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
+
+
+	//const TCaptureDeviceInstance*  pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance((UINT)0);
+	//if (pDevInst)
+	//{
+	//	//再根据PID、VID加载一遍，保证摄像头的数据正确
+	//	::UpDateConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, pDevInst->m_nPID, pDevInst->m_nVID);
+
+	//	UpDateConfig(g_tSysCfgData. sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex, nSensorId);
+	//	//将配置数据设置到传感器中去
+	//	
+	//}
+
+	m_oIWBSensorManager.UpdateConfig();
+	
+    
 
     
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
@@ -2864,7 +2874,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 
     if(this->m_oIWBSensorManager.IsRunning())
     {
--        m_oMenu.EnableMenuItem(ID_MENU_RUN, MF_BYCOMMAND| MF_GRAYED );//灰化运行菜单
+        m_oMenu.EnableMenuItem(ID_MENU_RUN, MF_BYCOMMAND| MF_GRAYED );//灰化运行菜单
         m_oMenu.EnableMenuItem(ID_MENU_STOP, MF_BYCOMMAND|MF_ENABLED);//使能停止菜单
 
 
@@ -4917,6 +4927,7 @@ void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 				pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
 				pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+				pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
 
 				//RECT rcGuideRectangle;
 				//DWORD dwRGBColor;
@@ -5098,7 +5109,7 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
     paramsSettingSheet.SetGlobalSettingInfo(g_tSysCfgData.globalSettings);
 
     //DOMODAL_RET ret = paramsSettingSheet.DoModal();
-    
+
 	DOMODAL_RET ret = paramsSettingSheet.DoModal();
 
     if(ret == IDOK)
@@ -5589,8 +5600,24 @@ void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
 
 		 lpSensor->GetInterceptFilter()->SetStartDrawMaskFrame(m_bStartDrawOnlineScreenArea);
 		 /////清除数组中的数据
-		 lpSensor->GetPenPosDetector()->ClearOnLineScreenAreaPt();
+		 lpSensor->GetPenPosDetector()->ClearOnLineScreenArea();
 		 lpSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
+
+		 ///在点击开始画时，如果是禁用状态的话，那么画好之后没有显示，无法判断，因此在开始画时，就要设置为非禁用状态
+		 EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+		 g_tSysCfgData.vecSensorConfig[lpSensor->GetID()].vecSensorModeConfig[eProjectionMode].advanceSettings.bIsOnLineScreenArea = true;
+		 lpSensor->SetOnlineScreenArea(true);
+
+		 RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
+
+		 lpSensor->GetVideoPlayer()->AddOSDText(
+			 E_OSDTEXT_TYPE_SHOW_INFO,
+			 g_oResStr[IDS_STRING494],
+			 textArea,
+			 DT_BOTTOM | DT_LEFT | DT_SINGLELINE,
+			 14L,
+			 _T("Times New Roman"),
+			 -1);
 	}
 }
 

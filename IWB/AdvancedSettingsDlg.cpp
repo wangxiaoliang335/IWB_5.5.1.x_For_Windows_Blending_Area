@@ -43,9 +43,10 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_SPIN_AUTOCALIBRATE_AVERAGE_BRIGHTNESS, m_ctlAutoCalibrationAveBrightness);
     DDX_Text(pDX, IDC_EDIT_AUTOCALIBRATE_HILIGHT_GRAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray);
     DDX_Control(pDX, IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY, m_ctlAutoCalibrateHiLightGray);
+
     DDX_Radio(pDX, IDC_RADIO_PEN_TOUCH,  (int&)TSensorModeConfig->advanceSettings.m_eTouchType);
 
-	DDX_Radio(pDX, IDC_WALLMODE,(int&)m_tGlobalSettings.eProjectionMode);
+	DDX_Radio(pDX, IDC_DESKTOPMODE,(int&)m_tGlobalSettings.eProjectionMode);
 
     //根据手触和笔触的不同设置不同的摄像头亮度参数。
 	//<<add by vera_zhao 2019.10.08
@@ -109,7 +110,7 @@ BEGIN_MESSAGE_MAP(CAdvancedSettingsDlg, CScrollablePropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_REAR_PROJECTOR, &CAdvancedSettingsDlg::OnBnClickedCheckRearProjector)
     ON_CBN_SELCHANGE(IDC_COMBO_MONITOR_LIST, &CAdvancedSettingsDlg::OnCbnSelchangeComboMonitorList)
  
-    ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_THROW_RATIO_015, IDC_RADIO_THROW_RATIO_134, &CAdvancedSettingsDlg::OnBnClickRadioLensType)
+    ON_CONTROL_RANGE(BN_CLICKED, IDC_RADIO_THROW_RATIO_015, IDC_RADIO_THROW_RATIO_136, &CAdvancedSettingsDlg::OnBnClickRadioLensType)
 
 	ON_BN_CLICKED(IDC_WALLMODE, &CAdvancedSettingsDlg::OnBnClickedRadioWallMode)
 	ON_BN_CLICKED(IDC_DESKTOPMODE, &CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode)
@@ -158,8 +159,7 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 		//如果使用类型为笔触,则禁用"相应光斑大小比例输入框"和spin控件。
 		TSensorModeConfig* TSensorModeConfig = NULL;
 		TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
-
-		/////////////////////////////只有手指精确触控的时候才需要光斑大小判断
+		//只有手指精确触控的时候才需要光斑大小判断
 		if (E_DEVICE_FINGER_TOUCH_WHITEBOARD != TSensorModeConfig->advanceSettings.m_eTouchType)
 		{
 			GetDlgItem(IDC_EDIT_SPOTPROPORTION)->EnableWindow(TRUE);
@@ -170,18 +170,17 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 		}
 	}
 	else
-	{
+	{	
 		//如果加密狗为笔触模式, 则禁用"笔触/手触"单选框
 		GetDlgItem(IDC_RADIO_FINGER_TOUCH)->EnableWindow(FALSE);
 		GetDlgItem(IDC_RADIO_PEN_TOUCH)->EnableWindow(FALSE);
-		//光斑相应比例调节禁止。
-		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->EnableWindow(FALSE);
 
 		GetDlgItem(IDC_RADIO_FINGERTOUCHCONTROL)->EnableWindow(FALSE);
 		GetDlgItem(IDC_RADIO_PALMTOUCHCONTROL)->EnableWindow(FALSE);
 
+		//光斑相应比例调节禁止。
+		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->EnableWindow(FALSE);
 	}
-
 
 	 //////////////
 	 if (E_PROJECTION_DESKTOP == m_tGlobalSettings.eProjectionMode)

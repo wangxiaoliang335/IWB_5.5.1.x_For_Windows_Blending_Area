@@ -660,7 +660,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
     TContactInfo penInfo[PEN_NUM];
     int penCount = PEN_NUM;
 	/////add by zhaown 2019.10.09
-	if(GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+	if(GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL && (theApp.GetPalmTouchType() ==E_PLAM_TOUCHCONTROL_P1|| theApp.GetPalmTouchType() ==E_PLAM_TOUCHCONTROL_P3
+	    || theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P4 || theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P5))
 	{
 		/////如果是手掌互动时，那么就不做平滑处理和插值处理。直接是原始的光斑值进行触控
 		int  nScreenX = GetSystemMetrics(SM_CXSCREEN);
@@ -748,11 +749,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
             if (FALSE == bEnableStrokeInterpolateTemp)
             {   //不插值
-			//	if (penCount >0 )
-			//	{
-			//	    AtlTrace(_T("penInfo[0].pt.x ==%d,penInfo[0].pt.y ==%d\r\n"), penInfo[0].pt.x , penInfo[0].pt.y);
-			//	}
-
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
                 DebugContactInfo(penInfo, penCount);
@@ -776,13 +772,11 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 #ifdef _DEBUG
                         DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
-						//AtlTrace(_T("pInterpolateContact.pt.x ==%d,pInterpolateContact.pt.y ==%d\r\n"),pInterpolateContact[0].pt.x , pInterpolateContact[0].pt.y);
 						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
 
                         //延迟1ms
                         Sleep(1);
                     }
-
                 }//for
             }
         }

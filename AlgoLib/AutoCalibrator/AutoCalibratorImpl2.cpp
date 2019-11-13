@@ -269,6 +269,7 @@ BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
           break;
 
      case E_RUN_STAGE_SAMPLE_BLACKBOARD:
+
           m_nStageWaitCount ++;
           //采样黑板图像
          if(BLACK_BOARD_SAMPLE_START_COUNT == m_nStageWaitCount)
@@ -1585,6 +1586,7 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
     m_fpChangeCameraParams = autoCalibrateParams.ChangeCameraParamsProc;
     m_lpCtx                = autoCalibrateParams.lpCtx;
 
+	m_bEnableOnLineScreenArea = autoCalibrateParams.bEnableOnineScreenArea;
 
 //    m_oImageParamsList     = autoCalibrateParams.imageParamsList;
 
@@ -1599,7 +1601,15 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
 	m_AutoBrightnessRegulator.SetAutoCalibrateParamsIndex(0);
 
 	m_AutoBrightnessRegulator.SetFeedbackCtrlFunction(BrightnessCtrlCallback, (LPVOID)this);
-    m_AutoBrightnessRegulator.SetExpectedBrightness(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateExpectedBrightness);
+	if (m_bEnableOnLineScreenArea)
+	{
+		m_AutoBrightnessRegulator.SetExpectedBrightness((m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateExpectedBrightness)>>1);
+	}
+	else
+	{
+         m_AutoBrightnessRegulator.SetExpectedBrightness(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateExpectedBrightness);
+	}
+
 
     m_bTestAutoBrightnessCtrlMode = FALSE; //置非自动亮度调节测试模式
 
@@ -3095,7 +3105,7 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
 
                 //对比度调节到最大值的2/3, 避免取最大对比度时, 对屏幕四个角处的校正图案的亮度抑制。
                 //<<2014/04/21
-                m_fpChangeCameraParams(E_CAMERA_CONTRAST, m_lpCtx,170,0);
+                m_fpChangeCameraParams(E_CAMERA_CONTRAST, m_lpCtx,40,0);  //170
                 //2014/04/21>>
             }
         }
@@ -3196,7 +3206,7 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
 
     case E_AUTO_CHANGE_BRIGHTNESS_2://第二次自动调节画面亮度
         {      
-            m_nStageWaitCount ++;
+          //  m_nStageWaitCount ++;
 
             //自动亮度调节
             //BYTE brightnessDiff = m_AutoBrightnessRegulator.ProcessImage(monoFrame.GetData(), monoFrame.Width(), monoFrame.Height());
@@ -3209,12 +3219,12 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
             //{
             //    break;
             //}
-            if(m_nStageWaitCount < 60)//延时1秒钟
-            {
-                break;
-            }
-            else
-            {
+         //   if(m_nStageWaitCount < 60)//延时1秒钟
+         //   {
+         //       break;
+         //   }
+         //   else
+        //    {
 
                 //2014/04/21,在双液晶屏上拼接环境中测试，意外发现，如果屏幕背景为黑色, 则四角的白色圆圈在画面中显得很暗。
                 /*
@@ -3244,9 +3254,9 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
                 //
                 */
 
-                m_nStageWaitCount = 0;
-                m_eCalibrateStage = E_SEARCH_SCREEN_IMAGE_BOUNDARY;
-            }
+           //     m_nStageWaitCount = 0;
+            //    m_eCalibrateStage = E_SEARCH_SCREEN_IMAGE_BOUNDARY;
+         //   }
         }
         break;
 
@@ -3613,8 +3623,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
                     Debug_SaveImageFrame(monoFrame, _T("FullScreenMask.jpg"));
                 }
 
-
-
                 //将所有角点做旋转操作, 使之在 ↓Y →X坐标系
                 //计算旋转中心
                 m_ptRoationCenter.x = (m_vRotation.ptFrom.x + m_vRotation.ptTo.x)/2;
@@ -3726,11 +3734,11 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
         {
             //选取最清晰的上部图片(即梯度能量最大)的图片
             __int64 liCurrentEnergy = GradientEnergy(monoFrame.GetData(),m_oScreenMaskFrame.GetData(), monoFrame.Width(), monoFrame.Height());
-            if(liCurrentEnergy > m_liImageGrdientEnergy)
+
+			if(liCurrentEnergy > m_liImageGrdientEnergy)
             {
                 m_liImageGrdientEnergy = liCurrentEnergy;
                 m_oPatternFrame = monoFrame;
-
             }
 
             if(m_nStageWaitCount < MAX_STAGE_WAIT_COUNT*2)  break;//等待时间不够,继续等待。
@@ -3764,7 +3772,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
             {
                 m_oDebugWindow.PrintFrame(m_oPatternFrame);
             }
-
 
             //二值化校正图案.
             CBitFrame bitFrame;

@@ -269,7 +269,8 @@ public:
 
     void ApplyScreenLayout();
 
-	
+	//@功能:根据摄像头实际的PID,VID载入合适的参数
+	BOOL UpdateConfig();
 protected:
     void UpdateVideoLayout(const RECT& rcDisplayArea);
 	void DrawSelectBound(HWND hWnd);

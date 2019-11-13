@@ -108,8 +108,6 @@ UINT CUsbCameraDeviceList::GetDeviceInstanceCount()const
 //@功能:枚举所有候选设备
 BOOL CUsbCameraDeviceList::EnumAllCandidateDevice()
 {
-
-
 	return TRUE;
 }
 

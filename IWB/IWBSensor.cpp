@@ -667,6 +667,8 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
     this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
 
+
+
     const NormalUsageSettings* pNormalUsageSettings = NULL;
     //全局配置信息
     if (pGlobalSettings)
@@ -914,6 +916,8 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 
     autoCalibrateParams.bSaveInermediatFile    = g_tSysCfgData.globalSettings.bSaveIntermediateFile;
     autoCalibrateParams.bRecordVideo           = g_tSysCfgData.globalSettings.bRecordVideo;
+
+	autoCalibrateParams.bEnableOnineScreenArea = TSensorModeConfig->advanceSettings.bIsOnLineScreenArea;
 
 	autoCalibrateParams.autocalibrateparamslist.clear();
 	int nCount = lensCfg.autoCalibrateSettingsList.size();
@@ -1790,4 +1794,10 @@ void CIWBSensor::SetOnlineScreenArea(bool bEnableOnlineScreenArea)
 
 	this->m_oPenPosDetector.EnableOnLineScreenArea(bEnableOnlineScreenArea);
 	
+}
+
+void CIWBSensor::GetPidVid(INT* pPID, INT* pVID)const
+{
+	if (pPID) *pPID = m_tDeviceInfo.m_nPID;
+	if (pVID) *pVID = m_tDeviceInfo.m_nVID;
 }

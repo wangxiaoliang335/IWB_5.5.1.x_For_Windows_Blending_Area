@@ -524,7 +524,7 @@ HRESULT CVideoPlayer::PlayVideo(HWND hWnd,  HWND hNotifyWnd)
         //通知停止状态
         CString strStatusText;
         strStatusText.Format(_T("%s,%s"), g_oResStr[IDS_STRING443], lpMsgBuf);
-        SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+        PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
 
         LOG_ERR("(%s) m_pMC->Run() failed with error code: 0x%x, %s", __FUNCTION__, hr, (const char*)CT2CA((LPTSTR)lpMsgBuf));
         LocalFree(lpMsgBuf);
@@ -590,7 +590,7 @@ HRESULT CVideoPlayer::BuildGraph()
     {
       //通知设备丢失
       CString strStatusText = g_oResStr[IDS_STRING445];
-      SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
       return E_FAIL;
        LOG_ERR("FindCaptureDevice return 0x%x", hr);
        return hr;
@@ -607,7 +607,7 @@ HRESULT CVideoPlayer::BuildGraph()
 
       //通知设备丢失
       CString strStatusText = g_oResStr[IDS_STRING445];
-      SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+	  PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
       return E_FAIL;
     }
 
@@ -1016,7 +1016,7 @@ BOOL CVideoPlayer::StopDetect( )
 
       //通知停止状态
       CString strStatusText = g_oResStr[IDS_STRING444];
-      SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
    }
 
    //作废显示下你
@@ -1264,15 +1264,13 @@ BOOL CVideoPlayer::SetImageFormat(const VIDEOINFOHEADER& vih)
         {
             if(pmt-> formattype   ==   FORMAT_VideoInfo)
             {
-
                 VIDEOINFOHEADER   *pvi   = (VIDEOINFOHEADER *)pmt-> pbFormat;
-
                 if(pmt->cbFormat == sizeof(VIDEOINFOHEADER))
                 {
                     *pvi = vih;
                     //int nFrequency = 60;
-                   // int nFrequency = 50;     ////50
-                   // pvi->AvgTimePerFrame = (LONGLONG)(10000000/nFrequency);
+                  //  int nFrequency = 30;     ////50
+                  //  pvi->AvgTimePerFrame = (LONGLONG)(10000000/nFrequency);
                    // pvi->dwBitRate       = 1280*720/10;
                    // pmt->lSampleSize     = 1280*720/4;
                    // pmt->subtype = MEDIASUBTYPE_MJPG;   
@@ -2136,9 +2134,6 @@ BOOL CVideoPlayer::GetCameraParams(TVideoProcAmpProperty& saveParams)
     return TRUE;
  }
 
-
-
-
 //@功能:获取摄像头亮度
 BOOL CVideoPlayer::GetCameraBrightness(long & lValue, long& lMax, long& lMin, long& lSteppingDelta, long& lDefault)
 {
@@ -2470,7 +2465,6 @@ void CVideoPlayer::ClearOSDText(EOSDTextType eOSDTextType)
 	{
 		return;
 	}
-
 	TOSDText& osd = m_osdtext[eOSDTextType];
 	osd.SetText(_T(""));
 }

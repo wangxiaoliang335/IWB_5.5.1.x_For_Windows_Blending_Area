@@ -254,7 +254,7 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="100" default="100" />
+            <Param name="Gain" value="0" default="0" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>

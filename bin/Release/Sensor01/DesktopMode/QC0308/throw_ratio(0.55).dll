@@ -35,6 +35,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-FingerTouchWhiteBoard>
     
@@ -70,6 +72,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-PenTouchWhiteBoard>
     
@@ -86,7 +90,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="60" default="60" />
+            <Param name="Brightness" value="100" default="100" />
             <!--对比度-->
             <Param name="Contrast" value="255" default="255" />
             <!--色调-->
@@ -96,7 +100,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -105,6 +109,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-FingerTouchControl>
     
@@ -121,7 +127,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="60" default="60" />
+            <Param name="Brightness" value="100" default="100" />
             <!--对比度-->
             <Param name="Contrast" value="255" default="255" />
             <!--色调-->
@@ -140,6 +146,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-PalmTouchControl>
        
@@ -167,6 +175,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="13226" default="13226" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </InstallTunning>
     
@@ -194,6 +204,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning-WhiteBoard>
     
@@ -221,6 +233,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning-FingerTouchControl>
     
@@ -248,6 +262,8 @@
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
             <Param name="Gain" value="17578" default="17578" />
+            <!--曝光时间-->
+            <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning-PalmTouchControl>
      
@@ -284,6 +300,8 @@
                 <Param name="BacklightCompensation" value="2" default="2" />
                 <!--增益-->
                 <Param name="Gain" value="13226" default="13226" />
+                <!--曝光时间-->
+                <Param name="Exposure" value="-7" default="-7" />
              </CameraParams>
         </AutoCalibrateParams>
         <!--第(2)组自动校正参数-->
@@ -317,6 +335,8 @@
                 <Param name="BacklightCompensation" value="2" default="2" />
                 <!--增益-->
                 <Param name="Gain" value="13226" default="13226" />
+                <!--曝光时间-->
+                <Param name="Exposure" value="-7" default="-7" />
              </CameraParams>
         </AutoCalibrateParams>
         <!--第(3)组自动校正参数-->
@@ -350,6 +370,8 @@
                 <Param name="BacklightCompensation" value="2" default="2" />
                 <!--增益-->
                 <Param name="Gain" value="13226" default="13226" />
+                <!--曝光时间-->
+                <Param name="Exposure" value="-7" default="-7" />
              </CameraParams>
         </AutoCalibrateParams>
     </AutoCalibrateParamsList>

@@ -172,9 +172,6 @@ VOID CALLBACK  timerProc(
         }
     }
 
-
-
-
 }
 //#endif
 
@@ -826,15 +823,12 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
     BOOL bFoundUSBKey = FALSE;   
     do
     {
-
-        int nAppType = 0;
-
-        float fVersion = 0.0f;
-		int   nPalmType = 0;
         UINT uKeyNum = SDKREG_GetUSBKeyCount();
-
         for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
-        {
+        {    
+			int nAppType = 0;
+			float fVersion = 0.0f;
+			int   nPalmType = 0;
             if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
             {
                 continue;
@@ -854,19 +848,20 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 			//
 			if (SDKREG_GetAppType(&nAppType, uKeyIndex) == S_OK)
 			{
+				EDeviceTouchType  eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
 				switch (nAppType & 0x0000FF)
 				{
 				case 0:
-					m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+					eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
 					break;
 				case 1:
-					m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+					eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
 					break;
 				case 2:
-					m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
+					eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
 					break;
 				case 3:
-					m_eUSBKeyTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
+					eUSBKeyTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
 					nPalmType = SDKREG_GetParamType(uKeyIndex);
 
 					switch (nPalmType)
@@ -886,13 +881,38 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 					case 4:
 						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P4;
 						break;
-					default:
+					case 5:
 						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P5;
+						break;
+					case 6:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T0;
+						break;
+					case 7:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T1;
+						break;
+					case 8:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T2;
+						break;
+					case 9:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T3;
+						break;
+					case 10:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T4;
+						break;
+					case 11:
+						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T5;
+						break;
+					default:
 						break;
 					}
 					break;
 				default:
 					break;
+				}//switch
+
+				if (eUSBKeyTouchType > m_eUSBKeyTouchType)
+				{
+				    m_eUSBKeyTouchType = eUSBKeyTouchType;
 				}
 			}
 
@@ -956,10 +976,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                     bFirstTime = FALSE;
                     continue;
                 }
-
             }
             
-
             BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
             if (status == BIT_SUCCESS)
             {//成功了

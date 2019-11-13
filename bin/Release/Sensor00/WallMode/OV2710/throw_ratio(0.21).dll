@@ -273,22 +273,22 @@
             <!--第(1)组自动校正画面参数-->
             <ImageParams>
                 <!--自动校正亮度自动控制时期望的平均画面亮度(范围0~255)-->
-                <Param name="autoCalibrateExpectedBrightness" value="96" default="100" />
+                <Param name="autoCalibrateExpectedBrightness" value="130" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
             </ImageParams>
             <!--第(1)组自动校正相机参数-->
             <CameraParams>
                 <!--亮度-->
-                <Param name="Brightness" value="0" default="0" />
+                <Param name="Brightness" value="-16" default="-16" />
                 <!--对比度-->
                 <Param name="Contrast" value="38" default="38" />
                 <!--色调-->
                 <Param name="Hue" value="0" default="0" />
                 <!--饱和度-->
-                <Param name="Saturation" value="64" default="64" />
+                <Param name="Saturation" value="0" default="0" />
                 <!--清晰度-->
-                <Param name="Sharpness" value="1" default="1" />
+                <Param name="Sharpness" value="3" default="3" />
                 <!--伽玛值-->
                 <Param name="Gamma" value="72" default="72" />
                 <!--颜色启动-->
@@ -311,7 +311,7 @@
                 <!--自动校正亮度自动控制时期望的平均画面亮度(范围0~255)-->
                 <Param name="autoCalibrateExpectedBrightness" value="100" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
-                <Param name="AutoCalibrateHilightGray" value="180" default="180" />
+                <Param name="AutoCalibrateHilightGray" value="255" default="255" />
             </ImageParams>
             <!--第(2)组自动校正相机参数-->
             <CameraParams>
@@ -322,9 +322,9 @@
                 <!--色调-->
                 <Param name="Hue" value="0" default="0" />
                 <!--饱和度-->
-                <Param name="Saturation" value="64" default="64" />
+                <Param name="Saturation" value="0" default="0" />
                 <!--清晰度-->
-                <Param name="Sharpness" value="1" default="1" />
+                <Param name="Sharpness" value="3" default="3" />
                 <!--伽玛值-->
                 <Param name="Gamma" value="72" default="72" />
                 <!--颜色启动-->
@@ -345,22 +345,22 @@
             <!--第(3)组自动校正画面参数-->
             <ImageParams>
                 <!--自动校正亮度自动控制时期望的平均画面亮度(范围0~255)-->
-                <Param name="autoCalibrateExpectedBrightness" value="70" default="70" />
+                <Param name="autoCalibrateExpectedBrightness" value="50" default="50" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
-                <Param name="AutoCalibrateHilightGray" value="120" default="120" />
+                <Param name="AutoCalibrateHilightGray" value="255" default="255" />
             </ImageParams>
             <!--第(3)组自动校正相机参数-->
             <CameraParams>
                 <!--亮度-->
-                <Param name="Brightness" value="0" default="0" />
+                <Param name="Brightness" value="-24" default="-24" />
                 <!--对比度-->
                 <Param name="Contrast" value="38" default="38" />
                 <!--色调-->
                 <Param name="Hue" value="0" default="0" />
                 <!--饱和度-->
-                <Param name="Saturation" value="64" default="64" />
+                <Param name="Saturation" value="0" default="0" />
                 <!--清晰度-->
-                <Param name="Sharpness" value="1" default="1" />
+                <Param name="Sharpness" value="3" default="3" />
                 <!--伽玛值-->
                 <Param name="Gamma" value="72" default="72" />
                 <!--颜色启动-->
@@ -372,7 +372,7 @@
                 <!--增益-->
                 <Param name="Gain" value="0" default="0" />
                 <!--曝光时间-->
-                <Param name="Exposure" value="-7" default="-7" />
+                <Param name="Exposure" value="-8" default="-8" />
             </CameraParams>
         </AutoCalibrateParams>
     </AutoCalibrateParamsList>

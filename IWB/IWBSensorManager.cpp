@@ -590,6 +590,46 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 
 }
 
+//@功能:根据摄像头实际的PID,VID载入合适的参数
+BOOL CIWBSensorManager::UpdateConfig()
+{
+		
+    size_t nSensorCount = m_vecSensors.size();
+		
+	std::vector<TSensorConfig>& sensorConfigs = g_tSysCfgData.vecSensorConfig;
+	
+	for (size_t i = 0; i < nSensorCount; i++)
+	{
+		if (i >= sensorConfigs.size()) break;
+
+		int nPID, nVID;
+		m_vecSensors[i]->GetPidVid(&nPID, &nVID);
+
+		for (EProjectionMode eMode = EProjectionMode(0); eMode < E_PROJECTION_COUNT; eMode = EProjectionMode((int)eMode + 1))
+		{
+			UpDateConfig(sensorConfigs[i].vecSensorModeConfig[eMode], nPID, nVID, eMode, i);
+		}		
+
+	}
+
+	//保持g_tSysCfgData的设备路径和实际的设备路径一致。
+	for (size_t i = 0; i < nSensorCount; i++)
+	{
+		//g_tSysCfgData.
+		const TCaptureDeviceInstance devInst = m_vecSensors[i]->GetDeviceInfo();
+
+		g_tSysCfgData.vecSensorConfig[i].strFavoriteDevicePath = devInst.m_strDevPath;
+
+	}
+
+	SetCfgData(g_tSysCfgData);
+
+	return TRUE;
+
+
+}
+
+
 //@功能:获取配置数据
 //@参数:allCfgData, 所有图像传感器的配置信息
 BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
@@ -1278,12 +1318,7 @@ void CIWBSensorManager::StartLightSpotSampling(HWND hNotifyWindow, int nSensorID
     m_vecSensors[m_nCurrentSensorID]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
 
     m_hNotifyWindow = hNotifyWindow;
-
-
-
 }
-
-
 
 //@功能:光斑采集结束事件的响应函数
 //@参数:bSuccess, 成功失败标志

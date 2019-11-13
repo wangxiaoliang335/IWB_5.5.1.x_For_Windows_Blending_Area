@@ -197,7 +197,7 @@ public:
 	  void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
 	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea) ;
 
-
+	  void GetPidVid(INT* pPID, INT* pVID)const;
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;
