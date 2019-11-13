@@ -356,7 +356,7 @@ static UINT indicators[] ={
 UINT CIWBDlg::m_uTaskbarRestartMsg = 0;
 UINT CIWBDlg::m_uAppCommMsg = 0U;
 // CIWBDlg dialog
-#define  DEFAULT_CALIBRATE_PATTERN E_CALIBRATE_PATTERN_9_COLS
+#define  DEFAULT_CALIBRATE_PATTERN E_CALIBRATE_PATTERN_5_COLS
 CIWBDlg::CIWBDlg(CWnd* pParent /*=NULL*/)
 : CDialog(CIWBDlg::IDD, pParent),
 m_bAllWndCreated(FALSE),

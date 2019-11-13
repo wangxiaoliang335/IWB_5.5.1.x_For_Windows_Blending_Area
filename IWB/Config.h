@@ -393,6 +393,7 @@ struct AutoCalibrateSettings
 
 		calibrateImageParams.autoCalibrateExpectedBrightness = 100;
 		calibrateImageParams.autoCalibrateHilightGray        = 255;//940 nm 激光器
+        calibrateImageParams.autoCalibrateSpeed = 1;
 
         //缺省参数
         defaultParams.Prop_VideoProcAmp_Brightness           = 120    ;//亮度
@@ -409,6 +410,7 @@ struct AutoCalibrateSettings
 
 		defaultCalibrateImageParams.autoCalibrateExpectedBrightness = 100;
 		defaultCalibrateImageParams.autoCalibrateHilightGray        = 255;//940 nm 激光?
+        defaultCalibrateImageParams.autoCalibrateSpeed = 1;
     }
 
 };

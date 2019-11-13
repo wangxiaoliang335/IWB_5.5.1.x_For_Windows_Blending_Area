@@ -1267,9 +1267,13 @@ public:
 
     int CalculateCalibPatternRadius(E_AutoCalibratePattern ePattern, int nScreenWidth)
     {
-        int nCols = 9;
+        int nCols = 5;
         switch(ePattern)
         {
+        case E_CALIBRATE_PATTERN_5_COLS:
+            nCols = 5;
+            break;
+
 		case E_CALIBRATE_PATTERN_6_COLS:
 			nCols = 6;
 			break;
@@ -1316,7 +1320,7 @@ public:
             break;
 
         default:
-            nCols = 9;
+            nCols = 5;
         }
 
 		int leftMargin  = 10;// (nRadius >> 2) > 10 ? nRadius >> 2): 10;
@@ -1353,6 +1357,19 @@ public:
          m_nColCount  = (nScreenWidth  - leftMargin - rightMargin - nRadius - nRadius) / fourRadius + 1;
          m_nRowCount  = (nScreenHeight - leftMargin - rightMargin - nRadius - nRadius) / fourRadius + 1;
         
+         //如果行*列乘积大于MAX_OBJ_NUMBER,减小行数和列数中的大者。
+         if (m_nColCount * m_nRowCount > MAX_OBJ_NUMBER)
+         {
+             if (m_nColCount > m_nRowCount)
+             {
+                 m_nColCount = MAX_OBJ_NUMBER / m_nRowCount;
+             }
+
+             if (m_nRowCount > m_nColCount)
+             {
+                 m_nRowCount = MAX_OBJ_NUMBER / m_nColCount;
+             }
+         }
         
         int nHorzInterval_integer     = (nScreenWidth - leftMargin - rightMargin - nRadius - nRadius) / (m_nColCount - 1);
         int nHorzInterval_remainder   = (nScreenWidth - leftMargin - rightMargin - nRadius - nRadius) % (m_nColCount - 1);

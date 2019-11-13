@@ -711,7 +711,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
 	pNode->LinkEndChild(pElement);
 
     //调试模式
-    pXmlComment = new TiXmlComment("调试模式");
+    pXmlComment = new TiXmlComment("调试模式(Yes/No)");
     pNode->LinkEndChild(pXmlComment);
 
     pElement = new TiXmlElement("Param");
@@ -1074,35 +1074,35 @@ BOOL SaveConfig(TiXmlNode *pNode, const LaserTunningSettings& laserTunningSettin
 //@功能:载入自动校正时的图像参数列表
 //@参数:pNode, 指向配置文件中<ImageParams>节点的指针
 //      imageParam, 自动校正画面参数
-BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams)
-{
-    if(NULL == pNode) return FALSE;
-    TiXmlNode* pChild = NULL;
-    do
-    {
-        pChild = pNode->IterateChildren(pChild);
-        if(NULL == pChild) break;
-        const char* lpszElementName = pChild->Value();
-
-        if(_stricmp(lpszElementName, "Param") == 0)
-        {
-            const char* paramName  = ((TiXmlElement*)pChild)->Attribute("name");
-            const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
-            if(paramName && paramValue && _stricmp(paramName, "autoCalibrateExpectedBrightness") == 0)
-            {//自动校正亮度自动控制时期望的平均画面亮度(范围0~255)
-                imageParams.autoCalibrateExpectedBrightness = atoi(paramValue);
-            }
-            else if(paramName && paramValue && _stricmp(paramName, "AutoCalibrateHilightGray") == 0)
-            {//自动校正图案中高亮块的灰度值(0~255)
-                imageParams.autoCalibrateHilightGray = atoi(paramValue);
-            }
-
-        }
-
-    }while(pChild);
-
-    return TRUE;
-}
+//BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams)
+//{
+//    if(NULL == pNode) return FALSE;
+//    TiXmlNode* pChild = NULL;
+//    do
+//    {
+//        pChild = pNode->IterateChildren(pChild);
+//        if(NULL == pChild) break;
+//        const char* lpszElementName = pChild->Value();
+//
+//        if(_stricmp(lpszElementName, "Param") == 0)
+//        {
+//            const char* paramName  = ((TiXmlElement*)pChild)->Attribute("name");
+//            const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
+//            if(paramName && paramValue && _stricmp(paramName, "autoCalibrateExpectedBrightness") == 0)
+//            {//自动校正亮度自动控制时期望的平均画面亮度(范围0~255)
+//                imageParams.autoCalibrateExpectedBrightness = atoi(paramValue);
+//            }
+//            else if(paramName && paramValue && _stricmp(paramName, "AutoCalibrateHilightGray") == 0)
+//            {//自动校正图案中高亮块的灰度值(0~255)
+//                imageParams.autoCalibrateHilightGray = atoi(paramValue);
+//            }
+//
+//        }
+//
+//    }while(pChild);
+//
+//    return TRUE;
+//}
 
 
 //@功能:载入自动校正时的图像参数列表
@@ -1139,6 +1139,22 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
                 //缺省值
                 if(paramDefault)defaultParams.autoCalibrateHilightGray = atoi(paramDefault);
             }
+            else if (paramName && paramName && _stricmp(paramName, "AutoCalibrateSpeed") == 0)
+            {
+                int nSpd = atoi(paramValue);
+                if (nSpd <= 0) nSpd = 1;
+                if (nSpd > 10) nSpd = 10;
+                imageParams.autoCalibrateSpeed = nSpd;
+
+                //缺省值
+                if (paramDefault)
+                {
+                    nSpd = atoi(paramDefault);
+                    if (nSpd <= 0) nSpd = 1;
+                    if (nSpd > 10) nSpd = 10;
+                    defaultParams.autoCalibrateSpeed = nSpd;
+                }
+            }
         }
     }while(pChild);
 
@@ -1147,32 +1163,32 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
 
 
 
-//@功能:保存自动校正下的画面参数
-//@参数:pNode, 指向配置文件中<ImageParams>节点的指针
-//      imageParams, 输入参数, 自动校正画面参数
-BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParams& imageParams)
-{
-    if(NULL == pNode) return FALSE;
-
-    TiXmlComment* pXmlComment = new TiXmlComment("自动校正亮度自动控制时期望的平均画面亮度(范围0~255)");
-    pNode->LinkEndChild(pXmlComment);
-
-    TiXmlElement* pElement = new TiXmlElement("Param");
-    pElement->SetAttribute("name", "autoCalibrateExpectedBrightness");
-    pElement->SetAttribute("value", imageParams.autoCalibrateExpectedBrightness);
-    pNode->LinkEndChild(pElement);
-
-    //自动校正图案中高亮块的灰度值(0~255)
-    pXmlComment = new TiXmlComment("自动校正图案中高亮块的灰度值(0~255)");
-    pNode->LinkEndChild(pXmlComment);
-
-    pElement = new TiXmlElement("Param");
-    pElement->SetAttribute("name", "AutoCalibrateHilightGray");
-    pElement->SetAttribute("value", imageParams.autoCalibrateHilightGray);
-    pNode->LinkEndChild(pElement);
-
-    return TRUE;
-}
+////@功能:保存自动校正下的画面参数
+////@参数:pNode, 指向配置文件中<ImageParams>节点的指针
+////      imageParams, 输入参数, 自动校正画面参数
+//BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParams& imageParams)
+//{
+//    if(NULL == pNode) return FALSE;
+//
+//    TiXmlComment* pXmlComment = new TiXmlComment("自动校正亮度自动控制时期望的平均画面亮度(范围0~255)");
+//    pNode->LinkEndChild(pXmlComment);
+//
+//    TiXmlElement* pElement = new TiXmlElement("Param");
+//    pElement->SetAttribute("name", "autoCalibrateExpectedBrightness");
+//    pElement->SetAttribute("value", imageParams.autoCalibrateExpectedBrightness);
+//    pNode->LinkEndChild(pElement);
+//
+//    //自动校正图案中高亮块的灰度值(0~255)
+//    pXmlComment = new TiXmlComment("自动校正图案中高亮块的灰度值(0~255)");
+//    pNode->LinkEndChild(pXmlComment);
+//
+//    pElement = new TiXmlElement("Param");
+//    pElement->SetAttribute("name", "AutoCalibrateHilightGray");
+//    pElement->SetAttribute("value", imageParams.autoCalibrateHilightGray);
+//    pNode->LinkEndChild(pElement);
+//
+//    return TRUE;
+//}
 
 
 //@功能:保存自动校正下的画面参数
@@ -1201,6 +1217,18 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParams& imageParams, c
     pElement->SetAttribute("value", imageParams.autoCalibrateHilightGray);
     pElement->SetAttribute("default", defaultParams.autoCalibrateHilightGray);
     pNode->LinkEndChild(pElement);
+
+
+    //自动校正速度
+    pXmlComment = new TiXmlComment("自动校正速度(1~10), 1最快，10最慢");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "autoCalibrateSpeed");
+    pElement->SetAttribute("value", imageParams.autoCalibrateSpeed);
+    pElement->SetAttribute("default", defaultParams.autoCalibrateSpeed);
+    pNode->LinkEndChild(pElement);
+
 
     return TRUE;
 }

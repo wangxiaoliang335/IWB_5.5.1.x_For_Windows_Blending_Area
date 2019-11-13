@@ -2,7 +2,9 @@
 <!--镜头配置参数-->
 <LensConfig>
     <!--引导框的位置和颜色, value range: left=[0-639]; top=[0-479]; width=[0-640]; height=[0-480]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue-->
+
     <Param name="GuideBox" width="1280" height="720" left="40" top="75" right="1200" bottom="457" color="ff0000" visible="Yes" />
+
     <!--电子白板手指触控模式下的正常使用参数-->
     <NormalUsage-FingerTouchWhiteBoard>
         <!--光斑触发门限-->
@@ -106,7 +108,11 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
+<<<<<<< HEAD
             <Param name="Gain" value="30" default="30" />
+=======
+            <Param name="Gain" value="0" default="0" />
+>>>>>>> 5e59b9107a179267bce89ec3f75c3f0e235b1e63
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -124,6 +130,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
+
             <Param name="Brightness" value="-24" default="-24" />
             <!--对比度-->
             <Param name="Contrast" value="38" default="38" />
@@ -142,7 +149,8 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="100" default="100" />
+            <Param name="Gain" value="0" default="0" />
+
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -226,7 +234,9 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
+
             <Param name="Gain" value="30" default="30" />
+
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -236,7 +246,9 @@
         <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="-24" default="-24" />
+
+            <Param name="Brightness" value="0" default="0" />
+
             <!--对比度-->
             <Param name="Contrast" value="38" default="38" />
             <!--色调-->
@@ -254,7 +266,9 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
+
             <Param name="Gain" value="100" default="100" />
+
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>

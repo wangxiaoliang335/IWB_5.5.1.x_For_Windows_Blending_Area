@@ -332,6 +332,71 @@ inline void AccumulateImageFrame(const CImageFrame& srcFrame, CWordFrame& destFr
     }                
 }
 
+//存在不同帧率的摄像头，以及部分品牌投影机显示延迟问题的存在。
+//将延迟等待的帧数改为绝对时间
+class CWaitTimer
+{
+public:
+    CWaitTimer()
+    {
+        Init(1);
+    }
+
+    //@参数:dwLatencyTimes， 时间延迟倍数
+    void Init(DWORD dwTimeMagnification)
+    {
+        m_dwTimeBegin = GetTickCount();
+
+        if (dwTimeMagnification <= 0 )
+        {
+            dwTimeMagnification = 1;
+        }
+        if (dwTimeMagnification > 10)
+        {
+            dwTimeMagnification = 10;
+        }
+        m_dwTimeMagnification = dwTimeMagnification;
+    }
+
+   
+    void Reset()
+    {
+        m_dwTimeBegin = GetTickCount();
+
+    }
+
+    BOOL IsWaitTimeout(DWORD dwWaitTimeInMs)
+    {
+
+        DWORD dwTimeElapsed = GetTimeElapsed() ;
+
+       return (dwTimeElapsed >= dwWaitTimeInMs*m_dwTimeMagnification) ? TRUE : FALSE;
+    }
+
+protected:
+    DWORD GetTimeElapsed()
+    {
+        DWORD dwNow = GetTickCount();
+        DWORD dwElpase = 0;
+
+        if (dwNow >= m_dwTimeBegin)
+        {
+            dwElpase = dwNow - m_dwTimeBegin;
+        }
+        else
+        {//系统计数器复零了
+            dwElpase = (0xFFFFFFFF - m_dwTimeBegin) + dwNow;
+        }
+        return dwElpase;
+    }
+
+
+protected:
+    DWORD m_dwTimeBegin   ;//计数起始时间
+    DWORD m_dwTimeMagnification;//时间放大倍数
+
+
+};
 
 
 //屏幕区域定位器
@@ -374,14 +439,16 @@ public:
      //@功能:是否定位成功标志
      BOOL IsSuccess()const{return m_bSuccess;}
 
-
-
-
      static const int SUB_AREA_COUNT = 4;
      POINT (&GetSubAreaCentroids())[SUB_AREA_COUNT]
      {
         return  m_SubAreaCentroids;
      }
+
+    CWaitTimer GetWaiterTimer() 
+    {
+        return m_oWaitTimer;
+    }
 protected:
     
     CImageFrame m_oMaskFrame;//屏蔽帧
@@ -411,20 +478,26 @@ protected:
 
     CWordFrame  m_oBlackBoardAccFrame ;//黑屏图案帧累加图
     CWordFrame  m_oWhiteBoardAccFrame ;//白屏图案帧累加图
-    int         m_nStageWaitCount     ;//阶段计数
+    //int         m_nStageWaitCount     ;//阶段计数
 
-    //static const int STAGE_MINIMUM_WAIT_COUNT = 3;//对高亮度投影机没有问题,但对低亮度投影机会出现
-    //<<temp
-    //static const int STAGE_MINIMUM_WAIT_COUNT = 5;//投射比0.25
-    static const int STAGE_MINIMUM_WAIT_COUNT = 20;//投射比0.25
-    //>>
+    //static const int STAGE_MINIMUM_WAIT_COUNT = 5;//最小等待次数
+    CWaitTimer m_oWaitTimer;
+    static const DWORD STAGE_MINIMUM_WAIT_TIME = 100;//等待时间100ms
 
 
-    static const int WHITE_BOARD_SAMPLE_START_COUNT = STAGE_MINIMUM_WAIT_COUNT*2;//开始采样白板时的帧计数值
-    static const int WHITE_BOARD_SAMPLE_END_COUNT   = STAGE_MINIMUM_WAIT_COUNT*3;//结束白板采样时的帧计数值
+    //static const int WHITE_BOARD_SAMPLE_START_COUNT = STAGE_MINIMUM_WAIT_COUNT*2;//开始采样白板时的帧计数值
+    //static const int WHITE_BOARD_SAMPLE_END_COUNT   = STAGE_MINIMUM_WAIT_COUNT*3;//结束白板采样时的帧计数值
 
-    static const int BLACK_BOARD_SAMPLE_START_COUNT = STAGE_MINIMUM_WAIT_COUNT*2;//结束采样时的帧计数值
-    static const int BLACK_BOARD_SAMPLE_END_COUNT   = STAGE_MINIMUM_WAIT_COUNT*3;//结束采样时的帧计数值
+    //static const int BLACK_BOARD_SAMPLE_START_COUNT = STAGE_MINIMUM_WAIT_COUNT*2;//结束采样时的帧计数值
+    //static const int BLACK_BOARD_SAMPLE_END_COUNT   = STAGE_MINIMUM_WAIT_COUNT*3;//结束采样时的帧计数值
+
+
+    static const DWORD  WHITE_BOARD_SAMPLE_START_TIME = STAGE_MINIMUM_WAIT_TIME * 2;//开始采样白板时需等待的时间
+    static const DWORD  WHITE_BOARD_SAMPLE_END_TIME   = STAGE_MINIMUM_WAIT_TIME * 3;//结束采样白板时需等待的时间
+
+    static const DWORD  BLACK_BOARD_SAMPLE_START_TIME = STAGE_MINIMUM_WAIT_TIME * 2;//开始采样黑板时需等待的时间
+    static const DWORD  BLACK_BOARD_SAMPLE_END_TIME   = STAGE_MINIMUM_WAIT_TIME * 3;//结束采样黑板时需等待的时间
+
 
     ECalibDebugLevel m_eDebugLevel;//调试级别
     
@@ -510,6 +583,11 @@ public:
     }
 
     int GetMarkerCount()const;
+
+    CWaitTimer GetWaiterTimer()
+    {
+        return m_oWaitTimer;
+    }
 protected:
     //@功能:初始化边界标记位置坐标
     void InitBoundaryMarkerPositions(int nHorzSideSquareNumber, int nVertSideSquareNumber, int nSquareWidth);
@@ -539,7 +617,7 @@ protected:
     BOOL ProcessDiffImage(const CWordFrame& diffImage);
 
 
-     int m_nRunTimes                ;//运行次数计数
+     //int m_nRunTimes                ;//运行次数计数
      static const int MAX_FLASH_TIMES = 3;
 
      int m_nFlashTimes                ;//闪烁次数
@@ -593,11 +671,12 @@ protected:
     BOOL                   m_bDone           ;//搜索结束标志
 
 
-    //<<temp
-    static const int WAIT_STEADY_SAMPLE_COUNT     = 10;//等待稳定采样时的计数值
-    //static const int WAIT_STEADY_SAMPLE_COUNT = 30;//等待稳定采样时的计数值
-    //temp>>
-    static const int WAIT_SAMPLE_END_STAGE_COUNT  = WAIT_STEADY_SAMPLE_COUNT + 5;//
+    //static const int WAIT_STEADY_SAMPLE_COUNT     = 10;//等待稳定采样时的计数值
+
+    //static const int WAIT_SAMPLE_END_STAGE_COUNT  = WAIT_STEADY_SAMPLE_COUNT + 5;//
+    CWaitTimer m_oWaitTimer;
+    const int WAIT_STEDAY_SAMPLE_TIME = 160;//等待稳定采样时的时间,单位:ms
+    const int WAIT_SAMPLE_END_TIME    = 330;//阶段结束的时间,单位:ms
 
     //水平方向的边界点个数
     int m_nHorzSideMarkerNumber;
@@ -609,7 +688,6 @@ protected:
     //每条边上的边界符号的数目。
     //static const int HORZ_SIDE_MARKER_NUMBER  = 7;
     //static const int VERT_SIDE_MARKER_NUMBER  = 5;
-
     //static const int BORDER_MARKER_NUMBER = (HORZ_SIDE_MARKER_NUMBER  - 1)*2 + (VERT_SIDE_MARKER_NUMBER - 1)*2;
 
     static const int MINIMUM_SIDE_MARKER_NUMBER = 5;
@@ -774,9 +852,7 @@ public:
     //@功能：返回自动校正后失败的中间结果图片路径
     virtual CAtlString  GetCalibrateIntermediataDirName();
 
-
-
-
+    
     //@功能:模拟校正
     BOOL DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNotifyWnd,  UINT uCx, UINT uCy, BYTE cBrightness, E_AutoCalibratePattern eGridsNumber=E_CALIBRATE_PATTERN_11_COLS);
     struct TNeighbourVector
@@ -1257,7 +1333,6 @@ public:
 
     virtual SIZE GetImageSize()const
     {
-
         SIZE szImage;
         szImage.cx = m_oAllMonitorMaskFrame.Width() ;
         szImage.cy = m_oAllMonitorMaskFrame.Height();
@@ -1363,58 +1438,52 @@ protected:
     //>>调试变量
 
 
-    
-    int m_nStageWaitCount ;//阶段检测计数。
-    //int m_nStageTryTimes ;//阶段尝试次数
-
-    static const int MAX_STAGE_WAIT_COUNT = 15                       ;//每个阶段的最大等待帧数
-    //static const int MAX_STAGE_WAIT_COUNT = 45;//每个阶段的最大等待帧数
-    static const int SAMPLE_START_COUNT   = MAX_STAGE_WAIT_COUNT     ;//开始采样时的帧计数值
-    static const int SAMPLE_END_COUNT     = MAX_STAGE_WAIT_COUNT << 1;//结束采样时的帧计数值
-    
-    static const int WHITE_AREA_SAMPLE_START_COUNT = MAX_STAGE_WAIT_COUNT*2;//结束采样时的帧计数值
-    static const int WHITE_AREA_SAMPLE_END_COUNT   = MAX_STAGE_WAIT_COUNT*3;//结束采样时的帧计数值
-
-    static const int BLACK_AREA_SAMPLE_START_COUNT = MAX_STAGE_WAIT_COUNT*2;//结束采样时的帧计数值
-    static const int BLACK_AREA_SAMPLE_END_COUNT   = MAX_STAGE_WAIT_COUNT*3;//结束采样时的帧计数值
 
     static const int MAX_STAGE_TRY_TIMES = 2;
     static const int DISPLAY_AREA_MININUM_LUMA = 20;//显示区域最小亮度
 
-    //<<added by toxuke@gmail.com, 2015/04/20
-    static const int IR_LED_FLASH_COUNT = 60*3  ;//红外通信LED灯,在通信时的闪烁时间2秒钟,以后硬件修改后可以将该值改小
-    //>>
+    //<<2019/11/11, 存在不同帧率的摄像头，以及部分品牌投影机显示延迟问题的存在。
+    //将延迟等待的帧数改为绝对时间
+    CWaitTimer m_oWaitTimer;
+    static const DWORD MAX_NEED_WAIT_TIME = 250;//校正阶段之间需要等待的时间间隔, 单位:ms
+    static const DWORD IR_LED_FLASH_TIME   = 3000;//红外通信灯闪烁时间
+
+    void SetTimeMagnification(DWORD dwTimeMagnification);
+
 
 
     //校正阶段枚举值
     enum E_CalibrateStage
     {
-        E_AUTO_CALIBRATE_START               = 0,//自动校正开始
-        E_AUTO_CHANGE_BRIGHTNESS_1           = 1,//自动调整亮度
+        E_AUTO_CALIBRATE_START = 0,//自动校正开始
+        E_AUTO_CHANGE_BRIGHTNESS_1 = 1,//自动调整亮度
         //E_SEARCH_FULL_SCREEN_MASK_WHITEBOARD = 2,//搜索屏幕区域, 打印黑屏
         //E_SEARCH_FULL_SCREEN_MASK_BLACKBOARD = 3,//搜索屏幕区域, 打印白屏
 
-        E_SEARCH_SCREEN_AREA                 = 2, //定位屏幕区域
+        E_SEARCH_SCREEN_AREA = 2, //定位屏幕区域
 
-        E_AUTO_CHANGE_BRIGHTNESS_2           = 4,//自动调整亮度
+        E_AUTO_CHANGE_BRIGHTNESS_2 = 4,//自动调整亮度
 
         //E_SEARCH_SCREEN_UPPER_MASK_AREA      = 5,//采用打印出上半部边界白点的方式，搜索上半部屏蔽区
         //E_SEARCH_SCREEN_LOWER_MASK_AREA      = 6,//采用打印出下半部边界白点的方式，搜索下半部屏蔽区
-        E_SEARCH_SCREEN_IMAGE_BOUNDARY       = 5,//搜索屏幕图像的边界
+        E_SEARCH_SCREEN_IMAGE_BOUNDARY = 5,//搜索屏幕图像的边界
 
-        E_SEARCH_BACKGROUND                  = 7,//搜索背景
-        
-        E_DETECT_ROTATION_1                  = 8,//采用采用打出上部白块的方式, 搜寻上半部屏蔽区
-        E_DETECT_ROTATION_2                  = 9,//采用采用打出下部白块的方式, 搜寻下半部屏蔽区
+        E_SEARCH_BACKGROUND = 7,//搜索背景
 
+        E_DETECT_ROTATION_1 = 8,//采用采用打出上部白块的方式, 搜寻上半部屏蔽区
+        E_DETECT_ROTATION_2 = 9,//采用采用打出下部白块的方式, 搜寻下半部屏蔽区
 
-        E_PRINT_PATTERN                      = 10,//打印校图案
+        E_PRINT_PATTERN   = 10,//打印显示图案
+        E_WAIT_PATTERN    = 11,//等待图案
+        E_PROCESS_PATTERN                  = 12,//处理校图案
 
-        E_STATIC_MASKING                    =  11,//静态屏蔽
+        E_START_MASKING                    = 13,//开始静态屏蔽
+        E_WAIT_MASKING                     = 14,//等待静态屏蔽
+        E_END_MASKING                      = 15,//结束静态屏蔽
 
-        E_AUTO_CALIBRATE_END                = 12,//自动校正结束
-        E_AUTO_CALIBRATE_STOPPED            = 13,//自动校正完成
-        E_AUTO_CALIBRATE_UNDEF              = -1,
+        E_AUTO_CALIBRATE_END               = 16,//自动校正结束
+        E_AUTO_CALIBRATE_STOPPED           = 17,//自动校正完成
+        E_AUTO_CALIBRATE_UNDEF             = -1,
     };
 
 
@@ -1444,14 +1513,6 @@ protected:
 
 
     UINT m_nCurrentSubAreaIndex;
-
-    //static const int FRAME_BUF_NUMBER = 10;
-    // CImageFrame m_aryFrameBuf[FRAME_BUF_NUMBER];
-    //int m_nFrameBufferedCount;//缓冲的图片计数器
-    //CImageFrame m_oSrcFrame;//校正源图片
-    //CImageFrame m_oUpperPatternFrame;//预处理过后的上部校正图案
-    //CImageFrame m_oLowerPatternFrame;//预处理过后的下部校正图案
-
 
     ECalibDebugLevel m_eDebugLevel;
 
@@ -1553,7 +1614,6 @@ protected:
     int m_nTryTimes   ;//校正次数,从1开始计数
     int m_nMaxTryTimes;//最大尝试次数
     static const int MAX_TRY_TIMES = 4;
-
 
      std::vector<PolygonVertices> m_vecPolygons;
 

@@ -3,7 +3,7 @@
 //@Author: toxuke@gmail.com
 
 #ifdef ALGOLIB_EXPORTS
-	#define ALGOLIB_API _declspec(dllexport)
+    #define ALGOLIB_API _declspec(dllexport)
 #else
     #define ALGOLIB_API _declspec(dllimport)
 #endif
@@ -33,18 +33,20 @@
 //Part 1. 自动校正图像模式
 enum E_AutoCalibratePattern
 {
-	E_CALIBRATE_PATTERN_6_COLS  = 0,
-	E_CALIBRATE_PATTERN_7_COLS  = 1,
-	E_CALIBRATE_PATTERN_8_COLS  = 2,
-	E_CALIBRATE_PATTERN_9_COLS  = 3,
-    E_CALIBRATE_PATTERN_10_COLS = 4,
-	E_CALIBRATE_PATTERN_11_COLS = 5,
-	E_CALIBRATE_PATTERN_12_COLS = 6,
-	E_CALIBRATE_PATTERN_13_COLS = 7,
-    E_CALIBRATE_PATTERN_14_COLS = 8,
-	E_CALIBRATE_PATTERN_15_COLS = 9,
-	E_CALIBRATE_PATTERN_16_COLS = 10,
-	E_CALIBRATE_PATTERN_17_COLS = 11,
+
+    E_CALIBRATE_PATTERN_5_COLS =  0,
+    E_CALIBRATE_PATTERN_6_COLS  = 1,
+    E_CALIBRATE_PATTERN_7_COLS  = 2,
+    E_CALIBRATE_PATTERN_8_COLS  = 3,
+    E_CALIBRATE_PATTERN_9_COLS  = 4,
+    E_CALIBRATE_PATTERN_10_COLS = 5,
+    E_CALIBRATE_PATTERN_11_COLS = 6,
+    E_CALIBRATE_PATTERN_12_COLS = 7,
+    E_CALIBRATE_PATTERN_13_COLS = 8,
+    E_CALIBRATE_PATTERN_14_COLS = 9,
+    E_CALIBRATE_PATTERN_15_COLS = 10,
+    E_CALIBRATE_PATTERN_16_COLS = 11,
+    E_CALIBRATE_PATTERN_17_COLS = 12,
     //E_CALIBRATE_SEARCH_SCREEN_AREA_ONLY = 9//只搜索屏幕区域模式
 };
 
@@ -56,25 +58,25 @@ inline int GetPatternCols(E_AutoCalibratePattern pattern)
 //自动校正错误代码
 enum EAutoCalibrateError
 {
-	E_AUTO_CALIBRATOR_OK,
-	E_AUTO_CALIBRATOR_ERROR_DETECT_DISPLAY_AREA_FAILED,//未检测到屏幕区域
-	E_AUTO_CALIBRATOR_ERROR_CORNER_DETECT_FAILED,//角点检测失败
-	E_AUTO_CALIBRATOR_ERROR_CORNER_MATCH_FAILED,//角点匹配失败
-	E_AUTO_CALIBRATOR_ERROR_UNDEF,//未知错误    
+    E_AUTO_CALIBRATOR_OK,
+    E_AUTO_CALIBRATOR_ERROR_DETECT_DISPLAY_AREA_FAILED,//未检测到屏幕区域
+    E_AUTO_CALIBRATOR_ERROR_CORNER_DETECT_FAILED,//角点检测失败
+    E_AUTO_CALIBRATOR_ERROR_CORNER_MATCH_FAILED,//角点匹配失败
+    E_AUTO_CALIBRATOR_ERROR_UNDEF,//未知错误    
 
     E_AUTO_MASK_ERROR_SEARCH_UPPER_SCREEN_BORDER_FAILED,
     E_AUTO_MASK_ERROR_SEARCH_LOWER_SCREEN_BORDER_FAILED,
-	E_AUTO_CALIBRATOR_ERROR_NOT_FOUND_DEVICE,
+    E_AUTO_CALIBRATOR_ERROR_NOT_FOUND_DEVICE,
 };
 
 
 //自动校正错误代码
 enum EAutoMaskingError
 {
-	E_AUTO_MASKING_OK,
-	E_AUTO_MASKING_ERROR_DETECT_DISPLAY_AREA_FAILED,//未检测到屏幕区域
-	E_AUTO_MASKING_ERROR_UNDEF,//未知错误
-	E_AUTO_MASKING_NOT_FOUND_DEVICE,
+    E_AUTO_MASKING_OK,
+    E_AUTO_MASKING_ERROR_DETECT_DISPLAY_AREA_FAILED,//未检测到屏幕区域
+    E_AUTO_MASKING_ERROR_UNDEF,//未知错误
+    E_AUTO_MASKING_NOT_FOUND_DEVICE,
 
 };
 
@@ -148,18 +150,18 @@ struct TCalibParams
 
 struct TMonitorCalibData
 {
-	int radius;//校正圆的半径
+    int radius;//校正圆的半径
     RECT rcMonitor;//显示器矩形区域
     std::vector<TCalibCoordPair> calibData;
 
-	TMonitorCalibData()
-	{
-		radius = 0;
-		rcMonitor.left   = 0;
-		rcMonitor.top    = 0;
-		rcMonitor.right  = 0;
-		rcMonitor.bottom = 0;
-	}
+    TMonitorCalibData()
+    {
+        radius = 0;
+        rcMonitor.left   = 0;
+        rcMonitor.top    = 0;
+        rcMonitor.right  = 0;
+        rcMonitor.bottom = 0;
+    }
 };
 
 typedef  std::vector<TMonitorCalibData> ALL_MOITOR_CALIB_DATA ;
@@ -214,13 +216,14 @@ typedef BOOL   (CALLBACK *PRE_STATIC_MASKING_ROUTINE)(LPVOID lpCtx);
 struct AutoCalibrateImageParams
 {
     BYTE autoCalibrateExpectedBrightness; //自动校正亮度自动控制时期望的平均画面亮度(范围0~255)
-    BYTE autoCalibrateHilightGray       ; //自动校正图案中高亮块的灰度值(0~255)   	
+    BYTE autoCalibrateHilightGray       ; //自动校正图案中高亮块的灰度值(0~255)
+    BYTE autoCalibrateSpeed             ; //自动校正速度(1~10), 1最快，10最慢
 };
 
 struct AutoCalibrateParams
 {
-	AutoCalibrateImageParams  autoCalibrateImageParams;
-	TVideoProcAmpProperty     videoprocampproperty;
+    AutoCalibrateImageParams  autoCalibrateImageParams;
+    TVideoProcAmpProperty     videoprocampproperty;
 };
 
 //画面参数列表, 每一组参数对应一次校正尝试的画面参数
@@ -232,7 +235,7 @@ typedef std::vector<AutoCalibrateParams> AutoCalibrateParamsList;
 //@功能:屏幕信息
 struct TScreenInfo
 {
-	RECT rcArea;
+    RECT rcArea;
 };
 //@功能:检索扩展的显示器信息
 //自动校正参数
@@ -254,7 +257,7 @@ struct TAutoCalibrateParams
 
 //    AutoCalibrateImageParamsList imageParamsList ;//画面参数列表,
 
-	AutoCalibrateParamsList   autocalibrateparamslist;   //自动校正参数列表
+    AutoCalibrateParamsList   autocalibrateparamslist;   //自动校正参数列表
 
 	BOOL   bEnableOnineScreenArea;
 
@@ -271,14 +274,14 @@ struct TAutoMaskingParams
     ECalibDebugLevel eDebugLevel                 ;//调试级别
     BOOL bSaveInermediatFile                     ;//是否保存校正的中间结果图片
     BOOL bRecordVideo                            ;//是否记录校正过程中的原始视频
-	std::vector<TScreenInfo> vecScreenInfos       ;//关联的显示器信息
+    std::vector<TScreenInfo> vecScreenInfos       ;//关联的显示器信息
 
 
     //BYTE cAvgBrightness                        ;//校正时的平均亮度
     //COLORREF clrGridHighlight                  ;//校正图案中高亮块的颜色值
 
 //    AutoCalibrateImageParamsList imageParamsList ;//画面参数列表,
-	AutoCalibrateParamsList       autocalibrateparamslist;   //自动校正参数列表
+    AutoCalibrateParamsList       autocalibrateparamslist;   //自动校正参数列表
 
     BOOL                    bDoStaticMaskingOnly ;//只作静态屏蔽标志
 
@@ -311,7 +314,7 @@ class CAutoCalibratorImpl2;
 class ALGOLIB_API CAutoCalibrator
 {
 public:
-	CAutoCalibrator();
+    CAutoCalibrator();
 
     ~CAutoCalibrator();
     //@功能:开始校正, 供外部模块调用
@@ -325,8 +328,8 @@ public:
     //      eDebugLevel, 调试级别
     //      bSaveInermediatFile, 是否保存校正的中间结果图片
     //      bRecordVideo，是否记录校正过程中的原始视频
-	//@返回值:成功返回 0;
-	//@说明:开始自动校正后, 会生成校正窗体, "自动校正"状态机回到初始状态。
+    //@返回值:成功返回 0;
+    //@说明:开始自动校正后, 会生成校正窗体, "自动校正"状态机回到初始状态。
    // HRESULT StartCalibrating(HWND hNotifyWnd, E_AutoCalibratePattern eGridPattern=E_CALIBRATE_PATTERN_11_COLS, BYTE cBrightness = 50, CHANGECAMERAPARAMSPROC ChangeCameraParamsProc = NULL, LPVOID lpCtx = NULL, COLORREF clrGridHighlight=RGB(255,255,255),ECalibDebugLevel eDebugLevel=E_CALIB_DEBUG_LEVEL_CONCISE, BOOL bSaveInermediatFile = FALSE ,BOOL bRecordVideo = FALSE);
     
     //@功能:开始校正, 供外部模块调用
@@ -337,23 +340,23 @@ public:
      //@功能:开始自动屏蔽,供外部模块调用
      BOOL StartMasking(const TAutoMaskingParams& autoMaskingParams, const TStaticMaskingParams& staticMaskingParams, int nSrcWidth, int nSrcHeight);
 
-	
-	////@功能:外部程序开启自动校正后, 将来自摄像头的图片帧送入自动校正模块, 驱动自动校正状态机的运行。
-	////@参数:pYUVFrame, 指向YUY2格式的位图帧
-	////@返回值:成功返回TRUE
-	////        失败返回FALSE
-	//BOOL ProcessImage(const CImageFrame* pYUVFrame);
+    
+    ////@功能:外部程序开启自动校正后, 将来自摄像头的图片帧送入自动校正模块, 驱动自动校正状态机的运行。
+    ////@参数:pYUVFrame, 指向YUY2格式的位图帧
+    ////@返回值:成功返回TRUE
+    ////        失败返回FALSE
+    //BOOL ProcessImage(const CImageFrame* pYUVFrame);
 
-	//@功能:结束自动校正,
-	//@说明:
-	//void EndCalibrating();
-	
+    //@功能:结束自动校正,
+    //@说明:
+    //void EndCalibrating();
+    
 
-	 //@功能:获取自动校正生成的计算屏幕影像的屏蔽图
-	 //@说明:自动校正算法会自动识别出计算机屏幕在摄像头图像中所占的区域
-	//       屏蔽图是一个黑白二值图, 值为0XFF的区域对应屏幕区域，0x00为
-	//       需要遮蔽区域。
-	 const CImageFrame& GetMaskFrame()const;
+     //@功能:获取自动校正生成的计算屏幕影像的屏蔽图
+     //@说明:自动校正算法会自动识别出计算机屏幕在摄像头图像中所占的区域
+    //       屏蔽图是一个黑白二值图, 值为0XFF的区域对应屏幕区域，0x00为
+    //       需要遮蔽区域。
+     const CImageFrame& GetMaskFrame()const;
 
 
       //@功能:返回光点位置到屏幕编号的映射数组,以决定光斑处于哪个屏幕上
@@ -363,16 +366,16 @@ public:
     //@功能:返回屏幕个数
     int GetMonitorCount()const;
 
-	 //@功能:获取指定屏幕的校正数据
-	 //@参数:nMonitorID， 显示器Id
-	 //@说明:
-	 //const TMonitorCalibData& GetMonitorCalibData(int nMonitorID) const;
+     //@功能:获取指定屏幕的校正数据
+     //@参数:nMonitorID， 显示器Id
+     //@说明:
+     //const TMonitorCalibData& GetMonitorCalibData(int nMonitorID) const;
 
 
-	//@功能:获取校正窗体的句柄
-	//@说明:外部程序获取的校正图片帧通过发送消息WM_MANUAL_CALIBRATE_DATA通知给校正窗体, 校正窗体
-	//      将数据送进"校正状态机", 驱动状态机的运行。
-	HWND GetCalibrateHWnd()const;
+    //@功能:获取校正窗体的句柄
+    //@说明:外部程序获取的校正图片帧通过发送消息WM_MANUAL_CALIBRATE_DATA通知给校正窗体, 校正窗体
+    //      将数据送进"校正状态机", 驱动状态机的运行。
+    HWND GetCalibrateHWnd()const;
 
     //@功能:获取校正时的屏幕尺寸
     //@说明:在模拟校正时,校正时的屏幕尺寸和计算机当前屏幕尺寸可能不同。
@@ -384,14 +387,14 @@ public:
     SIZE GetImageSize()const;
 
 
-	CAtlString  GetCalibrateIntermediataDirName();
-	//调试函数
-	//@功能:通过分析校正过程中录制的录像文件, 再现校正过程, 以便于调试校正算法。
-	//@参数:lpszAVIFilePath, 录制下的AVI文件路径
-	//      hNotifyWnd,  当校正结束后, 接收校正完毕消息WM_AUTO_CALIBRATE_DONE的窗体句柄。
-	//      eGridNumber, 自动校正时, 显示的棋盘格校正图案的模式
+    CAtlString  GetCalibrateIntermediataDirName();
+    //调试函数
+    //@功能:通过分析校正过程中录制的录像文件, 再现校正过程, 以便于调试校正算法。
+    //@参数:lpszAVIFilePath, 录制下的AVI文件路径
+    //      hNotifyWnd,  当校正结束后, 接收校正完毕消息WM_AUTO_CALIBRATE_DONE的窗体句柄。
+    //      eGridNumber, 自动校正时, 显示的棋盘格校正图案的模式
 
-	BOOL DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNotifyWnd,  UINT uCx, UINT uCy, BYTE cBrightness, E_AutoCalibratePattern eGridsNumber=E_CALIBRATE_PATTERN_11_COLS,  ECalibDebugLevel eDebugLevel=E_CALIB_DEBUG_LEVEL_DEBUG);
+    BOOL DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNotifyWnd,  UINT uCx, UINT uCy, BYTE cBrightness, E_AutoCalibratePattern eGridsNumber=E_CALIBRATE_PATTERN_11_COLS,  ECalibDebugLevel eDebugLevel=E_CALIB_DEBUG_LEVEL_DEBUG);
 
 
     //调试函数:测试亮度自动调节功能
@@ -407,7 +410,7 @@ public:
     //@功能:返回调试用录像文件完整路径
      const TCHAR* GetDebugVideoFilePath()const;
 
-	 void OnDeviceMissing();
+     void OnDeviceMissing();
 
 protected:
     CAutoCalibratorImpl2* m_pAutoCalibratorImpl;//指向自动校正对象的实例
@@ -420,26 +423,26 @@ protected:
 //如果偏向被设置的话，那么光斑是需要被分割的，如果偏向没有被设置的话，光斑是不需要被分割的。
 enum E_SpotDirection
 {
-	E_SPOT_NODIRECTION,
-	E_SPOT_LEFTDIRECTION,
-	E_SPOT_RIGHTDIRECTION,
+    E_SPOT_NODIRECTION,
+    E_SPOT_LEFTDIRECTION,
+    E_SPOT_RIGHTDIRECTION,
 };
 
 struct TObjDimension
 {
-	RECT rcArea;
-	int radius;
+    RECT rcArea;
+    int radius;
 };
 
 struct  TInvalidSpotList
 {
-	RECT  rOriginalArea;    //最初的无效面积
-	RECT  rExpansionInvalidArea ;    //扩展后无效面积
-	int   nCount ;          //计数
+    RECT  rOriginalArea;    //最初的无效面积
+    RECT  rExpansionInvalidArea ;    //扩展后无效面积
+    int   nCount ;          //计数
     bool  bMatch   ;   //有效和无效是否匹配。如果是匹配的，count加2，如果不是匹配的话，计数减1
-	bool  bInvalid ;   //重复的标记为无效的。
-	E_SpotDirection   eSplitDirection;
-	int   nSplitNum;  //被分割的个数
+    bool  bInvalid ;   //重复的标记为无效的。
+    E_SpotDirection   eSplitDirection;
+    int   nSplitNum;  //被分割的个数
 
 };
 //struct TMatchSpot
@@ -453,43 +456,43 @@ struct  TInvalidSpotList
 //目标信息
 struct TBlobObject
 {
-	//int nObjectId      ;//目标Id
-	unsigned int mass    ;//质量
+    //int nObjectId      ;//目标Id
+    unsigned int mass    ;//质量
     unsigned int mx      ;//对x轴的力矩
     unsigned int my      ;//对y轴的力矩
 
-	POINT GPos         ;//重心坐标
-	RECT rcArea        ;//区域
-	BOOL bIsValid      ;//正确标志
-	BOOL bReferenced   ;//是否用来作为参考点。//过小的光斑和外部的光斑不能用来作为无效光斑的参考
-	int  objToInvalidNumber;   //无效光斑列表对应
-	E_SpotDirection   eSplitDirection;  //被分割的方向
-	int   nSplitNum   ;  //被分割的个数
+    POINT GPos         ;//重心坐标
+    RECT rcArea        ;//区域
+    BOOL bIsValid      ;//正确标志
+    BOOL bReferenced   ;//是否用来作为参考点。//过小的光斑和外部的光斑不能用来作为无效光斑的参考
+    int  objToInvalidNumber;   //无效光斑列表对应
+    E_SpotDirection   eSplitDirection;  //被分割的方向
+    int   nSplitNum   ;  //被分割的个数
     //
-	//LONG ActualArea    ;//光斑的实际面积    
-	//LONG CalculateArea ;//计算的面积=
+    //LONG ActualArea    ;//光斑的实际面积    
+    //LONG CalculateArea ;//计算的面积=
     //POINT debugPtContourCross[2];//
 
-	bool operator < (TBlobObject& right)
-	{
-		return (mass < right.mass);
-	}
+    bool operator < (TBlobObject& right)
+    {
+        return (mass < right.mass);
+    }
 
-	bool operator <= (TBlobObject& right)
-	{
-		return (mass <= right.mass);
-	}
+    bool operator <= (TBlobObject& right)
+    {
+        return (mass <= right.mass);
+    }
 
 
-	bool operator > (TBlobObject& right)
-	{
-		return (mass > right.mass);
-	}
+    bool operator > (TBlobObject& right)
+    {
+        return (mass > right.mass);
+    }
 
-	bool operator >= (TBlobObject& right)
-	{
-		return (mass >= right.mass);
-	}
+    bool operator >= (TBlobObject& right)
+    {
+        return (mass >= right.mass);
+    }
 
 };
 
@@ -507,20 +510,20 @@ public:
 
     ~CBlobDetector();
 
-	//@功能:检测位图中亮度大于指定门限值的不规则区域的最大外接矩形, 并计算此区域的重心。
-	//@参数:frame, YUY2格式的位图帧
-	//      YThreshold, 检测的亮度门限
+    //@功能:检测位图中亮度大于指定门限值的不规则区域的最大外接矩形, 并计算此区域的重心。
+    //@参数:frame, YUY2格式的位图帧
+    //      YThreshold, 检测的亮度门限
     //      pClipArea, 可选参数, 屏蔽裁减区域尺寸
-	//@返回:检测到的目标的个数
-	//@说明:
-	//UINT operator() (const CYUY2Frame& YUY2Frame, BYTE YThreshold, CYUY2Frame& StatisticalFrame,CYUY2Frame& DynamicFrame, UINT FixedSpotTime,const RECT* pClipArea=NULL/* const CBitFrame** ppBitFrame=NULL*/);
-	//UINT CBlobDetector::operator() (const CYUY2Frame& YUY2Frame, BYTE YThreshold, CImageFrame& StatisticalFrame, const CYUY2Frame& DynamicMaskFrame, int StatisticStep = 1);
+    //@返回:检测到的目标的个数
+    //@说明:
+    //UINT operator() (const CYUY2Frame& YUY2Frame, BYTE YThreshold, CYUY2Frame& StatisticalFrame,CYUY2Frame& DynamicFrame, UINT FixedSpotTime,const RECT* pClipArea=NULL/* const CBitFrame** ppBitFrame=NULL*/);
+    //UINT CBlobDetector::operator() (const CYUY2Frame& YUY2Frame, BYTE YThreshold, CImageFrame& StatisticalFrame, const CYUY2Frame& DynamicMaskFrame, int StatisticStep = 1);
     UINT CBlobDetector::operator() (const CImageFrame& GrayFrame, BYTE YThreshold, CImageFrame& StatisticalFrame, const CImageFrame& DynamicMaskFrame, int StatisticStep = 1, BYTE YStatisicThreshold = 0,bool bDesktopMode= true);
 
-	//@功能:获取目标列表
-	const TBlobObject* GetObjs()const;
-	//@功能：获得目标列表，不是静态的
-	TBlobObject* GetObjs();
+    //@功能:获取目标列表
+    const TBlobObject* GetObjs()const;
+    //@功能：获得目标列表，不是静态的
+    TBlobObject* GetObjs();
 
     //	void AnalysisFixedBolb(CYUY2Frame& YUY2Frame);
     const CImageFrame* GetBinarizedImage()const;
@@ -585,7 +588,7 @@ public:
 
        //@功能:根据摄像头的视频坐标计算得出屏幕坐标
        BOOL GetScreenCoord(const TPoint2D& ptVideo, TPoint2D* ptScreen, int nMonitorId = 0,BOOL bWithoutAutoCalibCompensate = FALSE, TCameraDebugData* pDebugOutput = NULL);
-	   
+       
        /*
        //@功能:根据摄像头的视频坐标计算得出屏幕坐标
        //@参数:pImgPts, 指向光斑的相机坐标点数组的指针
@@ -616,8 +619,8 @@ public:
     //@功能:设置自动校正补偿数据
     void SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs);
 
-	//@功能:设置镜头的已知的内部参数和对称畸变参数
-	void SetLensInternalAndSymmmetricDistortParams(const TInternalAndSymmetricDistortParams* pParams);
+    //@功能:设置镜头的已知的内部参数和对称畸变参数
+    void SetLensInternalAndSymmmetricDistortParams(const TInternalAndSymmetricDistortParams* pParams);
 
 
      //@功能:返回校正方程参数
@@ -639,21 +642,21 @@ protected:
 class ALGOLIB_API CScreenAreaDetector
 {
 public:
-	//@功 能:开启侦测,同时显示全屏窗口
-	//@参 数:hNotifyWnd, 接收侦测结束通知的窗体句柄
-	//@返回值;	
-	BOOL StartDetect(HWND hNotifyWnd);
+    //@功 能:开启侦测,同时显示全屏窗口
+    //@参 数:hNotifyWnd, 接收侦测结束通知的窗体句柄
+    //@返回值;	
+    BOOL StartDetect(HWND hNotifyWnd);
 
-	//@功  能:结束侦测功能,
-	//@参  数:
-	//@返回指:
-	BOOL End();
+    //@功  能:结束侦测功能,
+    //@参  数:
+    //@返回指:
+    BOOL End();
 
 
-	//@功能:返回屏幕区域屏蔽位图
-	const CImageFrame& GetMaskFrame()const;
+    //@功能:返回屏幕区域屏蔽位图
+    const CImageFrame& GetMaskFrame()const;
 
-	operator INewFrameEventSink*();
+    operator INewFrameEventSink*();
     operator INewFrameEventSink&();
 
 };
