@@ -772,20 +772,7 @@ BOOL CIWBDlg::OnInitDialog()
 
 
     InitMenu();
-    /*
-    this->SetMenu(&m_oMenu);
 
-    m_oOwnerDrawMenu.Attach(m_oMenu.GetSafeHmenu());
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_1X   , (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_1X ] , RGB(1,0,0));
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_1D5X , (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_1D5X], RGB(1,0,0));
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_2X   , (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_2X ] , RGB(1,0,0));
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ADD_MASK_RECTANGLE_3X   , (HBITMAP)m_aryMenuBmp[e_BMP_BRUSH_4X ] , RGB(1,0,0));
-
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_1X   , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_1X ] , RGB(1,0,0));
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_1D5X , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_1D5X], RGB(1,0,0));
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_2X   , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_2X ] , RGB(1,0,0));
-    m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_3X   , (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_3X ] , RGB(1,0,0));
-    */
 
     CreateOwnerCursor();
 
@@ -2921,8 +2908,8 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 			    }
 
                 //使能"手动编辑屏蔽区"子菜单
-                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_ENABLED);
-                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_ENABLED); 
+                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_ENABLED);
+                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND| MF_ENABLED); 
                 m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_ENABLED);
                 //使能"手动校正"子菜单
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_ENABLED);
@@ -2946,8 +2933,8 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_GRAYED);
 
                //灰化"手动编辑屏蔽区"子菜单
-               m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
-               m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
+               m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_GRAYED);
+               m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND| MF_GRAYED); 
                m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
 
                //灰化"手动校正"子菜单
@@ -2971,8 +2958,8 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_GRAYED);
 
                 //灰化"手动编辑屏蔽区"子菜单
-                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
-                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
+                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND| MF_GRAYED); 
                 m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
 
                 //灰化"手动校正"子菜单
@@ -3005,11 +2992,6 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //灰化"手动校正"菜单项
         m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND| MF_GRAYED);
         //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36, MF_BYCOMMAND| MF_GRAYED);
-
-
-        //灰化"手动编辑屏蔽区"子菜单
-        //m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_1D5X,   MF_BYCOMMAND| MF_GRAYED);
-        //m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_1D5X, MF_BYCOMMAND| MF_GRAYED); 
 
         m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X, MF_BYCOMMAND | MF_GRAYED);
         m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND | MF_GRAYED);
@@ -3711,10 +3693,7 @@ BOOL CIWBDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
         {
             nDebug = 1;
         }
-       
-
     }
-
     return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 

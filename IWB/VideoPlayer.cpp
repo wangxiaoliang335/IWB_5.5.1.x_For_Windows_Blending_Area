@@ -589,8 +589,8 @@ HRESULT CVideoPlayer::BuildGraph()
     if(FAILED(hr))
     {
       //通知设备丢失
-      CString strStatusText = g_oResStr[IDS_STRING445];
-      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+    //  CString strStatusText = g_oResStr[IDS_STRING445];
+      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING445], (LPARAM)m_nID);
       return E_FAIL;
        LOG_ERR("FindCaptureDevice return 0x%x", hr);
        return hr;
@@ -606,8 +606,8 @@ HRESULT CVideoPlayer::BuildGraph()
         LOG_ERR("Capture Filter is NULL");
 
       //通知设备丢失
-      CString strStatusText = g_oResStr[IDS_STRING445];
-	  PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+     // CString strStatusText = g_oResStr[IDS_STRING445];
+	  PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING445], (LPARAM)m_nID);
       return E_FAIL;
     }
 
@@ -1015,8 +1015,8 @@ BOOL CVideoPlayer::StopDetect( )
       m_eVideoState = E_VIDEO_STOP;
 
       //通知停止状态
-      CString strStatusText = g_oResStr[IDS_STRING444];
-      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+     // CString strStatusText = g_oResStr[IDS_STRING444];
+      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING444], (LPARAM)m_nID);
    }
 
    //作废显示下你
@@ -2581,8 +2581,8 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
                    _T("Times New Roman"),
                   -1 );
 
-	   PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)(""), (LPARAM)nId);
-	   PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, 0, (LPARAM)nId);
+//	   PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)(""), (LPARAM)nId);
+//	   PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, 0, (LPARAM)nId);
 
 	}
 }
