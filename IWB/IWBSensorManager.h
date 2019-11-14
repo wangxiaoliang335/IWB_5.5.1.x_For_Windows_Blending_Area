@@ -207,7 +207,7 @@ public:
     void LoadSrcFromAVI(LPCTSTR lpszVideoPath1, LPCTSTR lpszVideoPath2);
 
     //@功能:交换两个图像传感器的显示画面
-    void SwapSensorImage();
+    //void SwapSensorImage();
 
 
     //@功能:交换两个图像传感器的显示画面

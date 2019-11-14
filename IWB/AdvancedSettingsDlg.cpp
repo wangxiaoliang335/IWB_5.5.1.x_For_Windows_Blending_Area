@@ -17,6 +17,7 @@ IMPLEMENT_DYNAMIC(CAdvancedSettingsDlg, CScrollablePropertyPage)
 CAdvancedSettingsDlg::CAdvancedSettingsDlg()
 : CScrollablePropertyPage(CAdvancedSettingsDlg::IDD)
  ,m_bInitDone(FALSE)
+ ,m_pSensor(NULL)
 {
 
 }
@@ -33,7 +34,7 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 
 	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 	
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
     DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, TSensorModeConfig->advanceSettings.nSpotProportion);
     DDX_Control(pDX, IDC_SPIN_SPOTPROPORTION, m_ctlSpotProportion);
@@ -256,7 +257,7 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
 	TSensorModeConfig* TSensorModeConfig = NULL;
 	TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 	
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 	TSensorModeConfig->advanceSettings.nSpotProportion = SPOT_DEFAULT_POS;
 
@@ -529,7 +530,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioFingerTouch()
 	 ///m_tGlobalSettings.eProjectionMode=0是桌面，m_tGlobalSettings.eProjectionMode=1是墙面
 	 TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
+     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 	 if (IsDlgButtonChecked(IDC_RADIO_FINGER_TOUCH) == BST_CHECKED)
 	 {
@@ -559,7 +560,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->SetWindowText(strText);
 
 		//更新正常使用时的亮度系数
-		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[1].lensConfigs[m_tSensorConfig.eSelectedLensType];
+		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[1].lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 		m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.m_eTouchType = GetActualTouchType();
 
@@ -685,7 +686,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->SetWindowText(strText);
 
 		//更新正常使用时的亮度系数
-		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].lensConfigs[m_tSensorConfig.eSelectedLensType];
+		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 		m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType = GetActualTouchType();
 
@@ -802,7 +803,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioPenTouch()
 	TSensorModeConfig* TSensorModeConfig = NULL;
 	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 	if (IsDlgButtonChecked(IDC_RADIO_PEN_TOUCH) == BST_CHECKED)
 	{
         //笔触模式下,不能够设置光斑比例
@@ -839,7 +840,7 @@ void CAdvancedSettingsDlg::OnEnChangeEditAutomaskdetectthreshold()
 
 	TSensorModeConfig = & m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 	CString StrText;
 

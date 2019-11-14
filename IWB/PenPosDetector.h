@@ -164,7 +164,7 @@ public:
 
 
 	//开始侦测
-	BOOL StartDetect(HWND hNotifyWnd, int nSrcImageWidth, int nSrcImageHeight);
+	BOOL StartDetect(HWND hNotifyWnd, int nSrcImageWidth, int nSrcImageHeight, CIWBSensor* pSensor);
 
 	//停止侦测
 	BOOL StopDetect();
@@ -246,10 +246,10 @@ public:
 	void UpdateScreenMaskArea(const RECT& rcNewArea);
 
 	//@功能:返回是否禁用静态屏蔽区
-	BOOL IsDisableStaticScreenMask()const;
+//	BOOL IsDisableStaticScreenMask()const;
 
 	//@功能:禁用手动指定的屏幕区域
-    void DisableManualScreenArea(BOOL bDisable);
+//    void DisableManualScreenArea(BOOL bDisable);
 
 
 	//@功能:返回手动指定的屏幕区域当前模式

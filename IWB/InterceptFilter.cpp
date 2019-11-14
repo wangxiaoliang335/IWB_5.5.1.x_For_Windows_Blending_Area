@@ -589,16 +589,16 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetStaticMaskFrame());
     }
 
-	if(m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+	if(this->m_pPenPosDetector->IsEnableOnLineScreenArea())
 	{
 		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
 	}
 
 	//如果是在手动校正并且要求使用绘制的屏蔽图，那么就需要用绘制的屏蔽图进行与运算
-	if ((this->m_pPenPosDetector->IsManualCalibrating()|| this->m_pPenPosDetector->IsAutoCalibrating()) && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
-	{
-		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
-	}
+//	if ((this->m_pPenPosDetector->IsManualCalibrating()|| this->m_pPenPosDetector->IsAutoCalibrating()) && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+//	{
+//		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
+//	}
 
 
     if (m_nFrameSkipCount > 0)
@@ -842,7 +842,7 @@ BOOL CInterceptFilter::StartDetect(HWND hDisplayWnd, int nSrcImageWidth, int nSr
 
     m_oFpsDetector.Reset();
 
-    return m_pPenPosDetector->StartDetect(hDisplayWnd, nSrcImageWidth, nSrcImageHeight);
+    return m_pPenPosDetector->StartDetect(hDisplayWnd, nSrcImageWidth, nSrcImageHeight,m_pSensor);
 
 }
 

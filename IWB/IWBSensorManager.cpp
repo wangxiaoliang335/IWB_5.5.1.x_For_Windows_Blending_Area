@@ -1563,24 +1563,24 @@ void CIWBSensorManager::LoadSrcFromAVI(LPCTSTR lpszVideoPath1, LPCTSTR lpszVideo
 
 }
 
-//@功能:交换两个图像传感器的显示画面
-void CIWBSensorManager::SwapSensorImage()
-{
-    //传感器数目少于2,则不作任何操作。
-    if(m_vecSensors.size() < 2) return;
-
-    TSensorConfig  cfgForSensor0 = this->m_vecSensors[0]->GetCfgData();
-    TSensorConfig  cfgForSensor1 = this->m_vecSensors[1]->GetCfgData();
-    
-    //两个传感器交换配置数据
-    //说明:关键这里通过交换配置数据，使得两个传感器对象的设备路径发生交换, 
-    this->m_vecSensors[0]->SetCfgData(cfgForSensor1);
-    this->m_vecSensors[1]->SetCfgData(cfgForSensor0);
-    //停止
-    StopRunning();
-    //重新运行
-    StartRunning();
-}
+////@功能:交换两个图像传感器的显示画面
+//void CIWBSensorManager::SwapSensorImage()
+//{
+//    //传感器数目少于2,则不作任何操作。
+//    if(m_vecSensors.size() < 2) return;
+//
+//    TSensorConfig  cfgForSensor0 = this->m_vecSensors[0]->GetCfgData();
+//    TSensorConfig  cfgForSensor1 = this->m_vecSensors[1]->GetCfgData();
+//    
+//    //两个传感器交换配置数据
+//    //说明:关键这里通过交换配置数据，使得两个传感器对象的设备路径发生交换, 
+//    this->m_vecSensors[0]->SetCfgData(cfgForSensor1);
+//    this->m_vecSensors[1]->SetCfgData(cfgForSensor0);
+//    //停止
+//    StopRunning();
+//    //重新运行
+//    StartRunning();
+//}
 
 
 //@功能:交换两个图像传感器的显示画面
@@ -1592,14 +1592,23 @@ void CIWBSensorManager::SwapSensorImage(UINT nFirstSensorId, UINT nSecondSensorI
     if (nSecondSensorId < 0 || nSecondSensorId >= m_vecSensors.size()) return;
 
 
-    const TSensorConfig&  cfgForSensorFirst  = this->m_vecSensors[nFirstSensorId ]->GetCfgData();
-    const TSensorConfig&  cfgForSensorSecond = this->m_vecSensors[nSecondSensorId]->GetCfgData();
+    TSensorConfig  cfgForSensorFirst  = this->m_vecSensors[nFirstSensorId ]->GetCfgData();
+    TSensorConfig  cfgForSensorSecond = this->m_vecSensors[nSecondSensorId]->GetCfgData();
+	
+	TCaptureDeviceInstance devInstFirst = this->m_vecSensors[nFirstSensorId]->GetDeviceInfo();
+	TCaptureDeviceInstance devInstSecond = this->m_vecSensors[nSecondSensorId]->GetDeviceInfo();
 
     //两个传感器交换配置数据
     //说明:关键这里通过交换配置数据，使得两个传感器对象的设备路径发生交换, 
     this->m_vecSensors[nFirstSensorId ]->SetCfgData (cfgForSensorSecond);
     this->m_vecSensors[nSecondSensorId]->SetCfgData (cfgForSensorFirst );
 
+	
+	this->m_vecSensors[nFirstSensorId ]->SetDeviceInfo(devInstSecond);
+	this->m_vecSensors[nSecondSensorId]->SetDeviceInfo(devInstFirst);
+
+
+	//
 
     //停止
     StopRunning();

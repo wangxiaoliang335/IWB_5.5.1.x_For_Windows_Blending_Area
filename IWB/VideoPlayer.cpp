@@ -2580,6 +2580,10 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
                    10L,
                    _T("Times New Roman"),
                   -1 );
+
+	   PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)(""), (LPARAM)nId);
+	   PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, 0, (LPARAM)nId);
+
 	}
 }
 

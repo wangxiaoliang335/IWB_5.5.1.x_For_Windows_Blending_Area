@@ -836,11 +836,9 @@ BOOL CIWBDlg::OnInitDialog()
 	//	
 	//}
 
-	m_oIWBSensorManager.UpdateConfig();
+//	m_oIWBSensorManager.UpdateConfig();
 	
-    
-
-    
+       
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
     
@@ -2287,14 +2285,9 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                     ); 
                     AtlTrace(_T("\t\tInterface name %s\r\n"), pDevInterface->dbcc_name);
 					
-					/////把前面的VIP和PID读出来，如果上次的PID和VID这次的PID一致的话就不用再重新加载配置文件了
-					CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-					const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
 
-					if (theApp.GetScreenMode() == EScreenModeSingle)
-					{
-						if (pSensor->IsDetecting()) break;
-					}
+
+
 
                     if(m_oUSBCameraDeviceList.IsCandidateDevice(pDevInterface->dbcc_name))
                     {
@@ -2308,11 +2301,20 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             theApp.ReadUSBKey();
 							UpdateInfoAboutDongle();
 
-							if (devInfo.m_nPID != pDevInst->m_nPID || devInfo.m_nVID != pDevInst->m_nVID)
-							{
-							    LoadConfig(pDevInst->m_nPID, pDevInst->m_nVID);
-							    this->m_oIWBSensorManager.SetCfgData(::g_tSysCfgData);
-							}
+						//	///把前面的VIP和PID读出来，如果上次的PID和VID这次的PID一致的话就不用再重新加载配置文件了
+						//	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+						//	const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+						//	if (theApp.GetScreenMode() == EScreenModeSingle)
+						//	{
+						//		//单屏模式下已经有Sensor正在运行，则跳过
+						//		if (pSensor->IsDetecting()) break;
+						//	}
+
+							//if (devInfo.m_nPID != pDevInst->m_nPID || devInfo.m_nVID != pDevInst->m_nVID)
+							//{
+							//    LoadConfig(pDevInst->m_nPID, pDevInst->m_nVID);
+							//    this->m_oIWBSensorManager.SetCfgData(::g_tSysCfgData);
+							//}
 
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
                         }
@@ -2378,6 +2380,8 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         
 						//在检测到新设备时重新读取加密狗
 						theApp.ReadUSBKey();
+
+						//
 						UpdateInfoAboutDongle();
                     }
 
@@ -3045,7 +3049,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //AtlTrace(_T("OnInitMenuPopup, MF_CHECKED\r\n"));
     }
 
-	if (g_tSysCfgData.globalSettings.eCameraType == E_CAMERA_MODEL_2)
+	if (this->m_oIWBSensorManager.GetSensor()->GetCameraType() == E_CAMERA_MODEL_2)
 	{
 		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
 	}
@@ -5301,7 +5305,7 @@ HRESULT CIWBDlg::OnStopDetectBackSplashVanished(WPARAM wParam,LPARAM lParam)
 
 void CIWBDlg::OnSwapSensorImage()
 {
-    this->m_oIWBSensorManager.SwapSensorImage();
+    this->m_oIWBSensorManager.SwapSensorImage(0, 1);
 }
 
 

@@ -31,7 +31,7 @@ BOOL  CALLBACK CIWBSensor::OnPreStaticMasking(LPVOID lpCtx)
     TSensorModeConfig = &lpSensor->m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
-    TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
+    TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_eCameraType][lpSensor->m_tCfgData.eSelectedLensType];
 	switch(eTouchType)
 	{
 		case E_DEVICE_PEN_TOUCH_WHITEBOARD:
@@ -51,16 +51,7 @@ BOOL  CALLBACK CIWBSensor::OnPreStaticMasking(LPVOID lpCtx)
 			break;
 
 	}
-//    if(eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//    {
-//		TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
-//        lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams);
-//    }
-//    else
-//    {
-//        TLensConfig lensCfg = TSensorModeConfig->lensConfigs[lpSensor->m_tCfgData.eSelectedLensType];
-//        lpSensor->m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams);
-//    }  
+
 	return TRUE;
 }
 
@@ -77,7 +68,7 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
     TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[lpThis->m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[lpThis->m_eCameraType][lpThis->m_tCfgData.eSelectedLensType];
 
     TVideoProcAmpProperty cameraParams;
 
@@ -278,15 +269,15 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
 
 CIWBSensor::CIWBSensor(int nID)
-    :
-    m_tFavoriteMediaType(DEFAULT_VIDEO_FORMAT),
-    m_nID(nID),
-    m_oPenPosDetector(nID),
-    m_oVideoPlayer(nID),
-    m_oTimerActionExecuter(*this)//,
+	:
+	m_tFavoriteMediaType(DEFAULT_VIDEO_FORMAT),
+	m_nID(nID),
+	m_oPenPosDetector(nID),
+	m_oVideoPlayer(nID),
+	m_oTimerActionExecuter(*this),//,
+	m_eCameraType(E_CAMERA_MODEL_0)
     //m_hVideoDispWnd(NULL),
     //m_hNotifyWnd(NULL)
-
 {
     //memset(&m_rcVideoDispArea, 0, sizeof(RECT));
 
@@ -296,8 +287,8 @@ CIWBSensor::CIWBSensor(int nID)
 
     this->m_oVideoPlayer.SetInterceptFilter(m_pInterceptFilter);
 
-    m_tDeviceInfo.m_nPID = 37254;
-    m_tDeviceInfo.m_nVID = 6380;
+    m_tDeviceInfo.m_nPID = 0x9186;
+    m_tDeviceInfo.m_nVID = 0x18ec;
     m_tDeviceInfo.m_strDevPath = "";
     m_tDeviceInfo.m_strName = "";
 
@@ -416,7 +407,7 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
     TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
     BOOL bRet = FALSE;
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
     switch (eMode)
     {
@@ -628,6 +619,9 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
     m_tCfgData.strFavoriteDevicePath = m_tDeviceInfo.m_strDevPath;
     m_tCfgData.strFavoriteMediaType = GetVideoFormatName(m_tFavoriteMediaType);
 
+
+	this->m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+
 }
 
 //@功能:返回视频捕获设备信息
@@ -643,7 +637,17 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 {
     m_tCfgData = cfgData;
 
+	
     m_tDeviceInfo.m_strDevPath = cfgData.strFavoriteDevicePath;
+
+	int nPID = 0, nVID = 0;
+	int ret = _stscanf_s(m_tDeviceInfo.m_strDevPath, _T("\\\\?\\usb#vid_%04x&pid_%04x"), &nVID, &nPID);
+	if (2 == ret)
+	{
+		m_tDeviceInfo.m_nPID = nPID;
+		m_tDeviceInfo.m_nVID = nVID;
+	}
+
 
     //选取最合适的视频格式
     for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)
@@ -663,7 +667,7 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 
     TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
     this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
 
@@ -826,7 +830,7 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 
 //@功能:获取配置数据
 //@参数:cfgData, 图像传感器的配置信息
-TSensorConfig CIWBSensor::GetCfgData()const
+const TSensorConfig& CIWBSensor::GetCfgData()const
 {
     return m_tCfgData;
 }
@@ -866,7 +870,7 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
     TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
     //设置自动校正时的参数
 	//刚开始摄像头参数是第一个参数
@@ -1018,7 +1022,7 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
     TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
     //设置自动校正时的参数
     //m_oVideoPlayer.SetCameraParams(lensCfg.autoCalibrateSettings.cameraParams);
@@ -1281,7 +1285,7 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
 
             LOG_INF("maskFrameWidth=%d，maskFrameHeight=%d", maskFrame.Width(), maskFrame.Height());
 
-            const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+            const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
             //适当腐蚀屏蔽区，扩到屏幕区域
             for (int r = 0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r++)
@@ -1770,7 +1774,7 @@ void CIWBSensor::SetlenCfgData(const TLensConfig& lencfgData)
 	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
     TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_tCfgData.eSelectedLensType];
+    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
     lensCfg = lencfgData;
 }
 

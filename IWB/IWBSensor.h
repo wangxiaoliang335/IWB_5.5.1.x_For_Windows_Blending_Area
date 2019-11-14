@@ -71,7 +71,7 @@ public:
     //@功能:获取配置数据
     //@参数:cfgData, 输出参数, 图像传感器的配置信息
     //void GetCfgData(TSensorConfig& cfgData)const;
-    TSensorConfig GetCfgData()const;
+    const TSensorConfig& GetCfgData()const;
 
     //@功能:判断传感器是否正在工作
     BOOL IsDetecting();//
@@ -198,6 +198,9 @@ public:
 	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea) ;
 
 	  void GetPidVid(INT* pPID, INT* pVID)const;
+
+	  ECameraType GetCameraType()const { return m_eCameraType; }
+
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;
@@ -248,8 +251,6 @@ protected:
    //手动校校正对象
    CManualCalibrateWnd   m_oManualCalibrator;
 
-
-  
   //屏幕查找器
   //static CDispMonitorFinder m_oDispMonitorFinder;
 
@@ -260,7 +261,7 @@ protected:
 
   //传感器镜头模式
   ESensorLensMode m_eLensMode;
-
+  ECameraType     m_eCameraType;
 
   //<<调试工具, 查看校正点
   //2015/09/09, by 15077726@qq.com
