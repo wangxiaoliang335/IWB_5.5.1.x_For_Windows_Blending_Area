@@ -620,7 +620,7 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
     m_tCfgData.strFavoriteMediaType = GetVideoFormatName(m_tFavoriteMediaType);
 
 
-	this->m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+	m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
 }
 

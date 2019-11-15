@@ -1270,19 +1270,15 @@ BOOL CAdvancedSettingsDlg::OnApply()
 	CPropertyPage::OnApply();
 	SetModified(FALSE);
 
-
 	//通知主窗体应用设置
 	::SendMessage(
 		AfxGetMainWnd()->GetSafeHwnd(),
 		WM_APPLY_SENSOR_CONFIG,
 		(WPARAM)this,
 		(LPARAM)m_pSensor);
-
 	//
-
 	return TRUE;
 }
-
 
 void CAdvancedSettingsDlg::OnBnClickedCheckDynamicmaskframecontrol()
 {

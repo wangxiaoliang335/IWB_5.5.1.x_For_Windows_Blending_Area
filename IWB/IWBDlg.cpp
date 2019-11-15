@@ -811,22 +811,7 @@ BOOL CIWBDlg::OnInitDialog()
 	//CIWBSensor对象分配摄像头设备路径
 	m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
 
-
-
-	//const TCaptureDeviceInstance*  pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance((UINT)0);
-	//if (pDevInst)
-	//{
-	//	//再根据PID、VID加载一遍，保证摄像头的数据正确
-	//	::UpDateConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, pDevInst->m_nPID, pDevInst->m_nVID);
-
-	//	UpDateConfig(g_tSysCfgData. sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex, nSensorId);
-	//	//将配置数据设置到传感器中去
-	//	
-	//}
-
-//	m_oIWBSensorManager.UpdateConfig();
-	
-       
+    
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
     
@@ -2091,19 +2076,20 @@ const char* CONFIG_ROOT_ELMENTS_NAME = "Settings";
 
 //@功能:载入配置文件
 //@参数:lpszConfigFilePath, 配置文件的完整路路径
-BOOL CIWBDlg::LoadConfig(int PID,int VID)
+BOOL CIWBDlg::LoadConfig()
 {
     //载入配置数据
-    ::LoadConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData,PID,VID);
+    ::LoadConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
 
     //根据加密狗设置实际的笔触和手触模式
-	if (::g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP) 
+	//所有的整成一個加密狗信息
+	for (int i = 0 ; i <::g_tSysCfgData.vecSensorConfig.size() ; i++ )
 	{
-       ::g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType = GetActualTouchType();
-	}
-	else
-    {
-		::g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType = GetActualTouchType();
+		TSensorConfig& sensorConfig = ::g_tSysCfgData.vecSensorConfig[i];
+		for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
+		{
+			sensorConfig.vecSensorModeConfig[eProjectionMode].advanceSettings.m_eTouchType = GetActualTouchType();
+		}
 	}
 
 //    //将配置数据设置到传感器中去
@@ -2367,7 +2353,6 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
 						//在检测到新设备时重新读取加密狗
 						theApp.ReadUSBKey();
 
-						//
 						UpdateInfoAboutDongle();
                     }
 
@@ -2432,43 +2417,37 @@ void CIWBDlg::OnMenuParameterSettings()
 		}
 
 		////////////把设置的是否动态屏蔽传到需要的地方去
-		///////////如果图像模式等于正常模式的话，那么动态屏蔽才能起作用，其他两种模式都是不可操作的
-		//////////Modify by vera_zhao 2019.10.24
-		if (this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE)
-		{
-		     TSensorModeConfig* TSensorModeConfig = NULL;
-			 EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+		TSensorModeConfig* TSensorModeConfig = NULL;
+		EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
-			 int nIndex = pSensor->GetID();
-			 TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[nIndex].vecSensorModeConfig[eProjectionMode];
+		TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
 	
-			 /////设置是否开启自动屏蔽功能
-		     if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
-		     {
-		         pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
-		     }
-		     else
-		     {
-			     pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
-		     }
-			 ////////////设置是否开启抗干扰功能
-			 if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
-			 {
-				 pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
-			 }
-			 else
-			 {
-				 pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
-			 }
-			 /////////设置是否启用手动绘制的静态屏蔽图
-			 if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
-			 {
-				 pSensor->GetPenPosDetector()->EnableOnLineScreenArea(TRUE);
-			 }
-			 else
-			 {
-				 pSensor->GetPenPosDetector()->EnableOnLineScreenArea(FALSE);
-			 }
+		/////设置是否开启自动屏蔽功能
+		if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
+		{
+		    pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
+		}
+		else
+		{
+			pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
+		}
+		////////////设置是否开启抗干扰功能
+		if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
+		{
+			pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
+		}
+		else
+		{
+			pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
+		}
+		/////////设置是否启用手动绘制的静态屏蔽图
+		if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
+		{
+			pSensor->GetPenPosDetector()->EnableOnLineScreenArea(TRUE);
+		}
+		else
+		{
+			pSensor->GetPenPosDetector()->EnableOnLineScreenArea(FALSE);
 		}
     }//if
 }
@@ -2733,7 +2712,6 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
 			szWorkingDirectory,
 			PathFindFileName(szFileBaseName));
 		//>>
-
 
         CString strCmdLine;
         strCmdLine.Format(_T("-AutoRun -%s"),theApp.IsForAllUsers()?_T("AllUsers"):_T("CurrentUser"));
@@ -5712,13 +5690,6 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     //载入配置信息
     //LoadConfig();
 
-    //const TCaptureDeviceInstance*  pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance((UINT)0);
-    //if (pDevInst)
-    //{
-    //    //再根据设备的实际PID、VID加载一遍，保证摄像头的数据正确
-    //    ::UpDateConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, pDevInst->m_nPID, pDevInst->m_nVID);
-
-    //}
     //将配置数据设置到传感器中去
     this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
 

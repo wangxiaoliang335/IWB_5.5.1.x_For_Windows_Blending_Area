@@ -2148,21 +2148,10 @@ _declspec(selectany) extern const TCHAR* DEFAULT_DEV_IDS[] = {
 
 //@功能:载入配置文件
 //@参数:lpszConfigFilePath, 配置文件的完整路路径
-BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData,int PID=37254, int VID = 6380);
-
-//BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID = 37254, int VID = 6380);
-
+BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData);
 //@功能:保存配置文件
 //@参数:lpszConfigFilePath, 配置文件的完成路径
 BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData);
-
-//@功能:更新每个传感器的配置信息
-//@参数:sensorModeCfg, 保存配置信息
-//     PID,
-//     VID,
-//     nModeIndex, 桌面或墙面枚举值
-//     nSensorId, SensorID;
-BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int PID, int VID, int nModeIndex, int nSensorId);
 
 extern TSysConfigData g_tSysCfgData;
 

@@ -2825,38 +2825,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 	} while(pChild);
 
 
-	for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
-	{
-		TCHAR szPath[MAX_PATH];
-		_stprintf_s(
-			szPath,
-			_countof(szPath),
-			_T("%s\\Sensor%02d\\%s\\%s"),
-			(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-			nSensorId,
-			GetProjectModeString(EProjectionMode(nModeIndex)),
-			GetCameraTypeString(eCameraType));
-
-
-		//CreateFullDirectory(CA2CT(szPath));
-		CreateFullDirectory(szPath);
-		for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
-		{
-			//载入各种镜头的配置参数
-			//char szPathRatio[MAX_PATH];
-			TCHAR szPathRatio[MAX_PATH];
-			memset(szPathRatio, 0, sizeof(szPathRatio));
-			//sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
-			_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
-
-			//if (PathFileExists(CA2CT(szPathRatio)))
-			if (PathFileExists(szPathRatio))
-			{
-				LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[eCameraType][i]);
-			}
-		}//for(i)
-
-	}//for(eCameraType)
+	
 
 	return TRUE;
 }
@@ -2954,6 +2923,11 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
 		}
 
     }while(pChild);
+
+
+
+
+
     return TRUE;
 }
 
@@ -3056,63 +3030,6 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
     return TRUE;
 }
 
-//@功能:载入所有图像传感器的配置信息
-//@参数:pNode, 指向<IWBSensors>节点的指针
-//      allSensorCfg, 配置信息数组
-BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg,int nModeIndex)
-{
-    if(pNode == NULL) return FALSE;
-    const char* szSensorCount  = ((TiXmlElement*)pNode)->Attribute("count");
-    if(szSensorCount == 0) return FALSE;
-
-    //暂时不用"count"属性
-    int nSensorCount = atoi(szSensorCount);
-    //
-    allSensorCfg.resize(SENSOR_NUMBER);
-    TiXmlNode * pChild = NULL;
-
-    int nSensorIndex = 0;
-    do
-    {
-        pChild = pNode->IterateChildren(pChild);
-        if(NULL == pChild)
-        {
-            break;
-        }
-        const char* lpszElementName = pChild->Value();
-        if(_stricmp(lpszElementName, "IWBSensor") == 0)
-        {
-            LoadConfig(pChild, allSensorCfg[nSensorIndex], nModeIndex);
-            nSensorIndex ++;
-            if(nSensorIndex == allSensorCfg.size())
-            {
-                break;
-            }
-        }
-    }while(pChild);
-    return TRUE;
-}
-
-//@功能:载入配置文件
-//@参数:pNode,
-//      allSensorCfg,
-BOOL SaveConfig(TiXmlNode *pNode, const std::vector<TSensorConfig>& allSensorCfg, int nModeIndex)
-{
-
-    for(size_t i=0; i< allSensorCfg.size(); i++)
-    {
-        TiXmlComment* pXmlComment = new TiXmlComment("摄像头传感器的配置参数");
-        pNode->LinkEndChild(pXmlComment);
-
-        TiXmlElement * pIWBSensor = new TiXmlElement("IWBSensor");
-        pIWBSensor->SetAttribute("id", i);
-        pNode->LinkEndChild(pIWBSensor);
-
-        SaveConfig(pIWBSensor, allSensorCfg[i], nModeIndex);
-    }//for
-
-    return TRUE;
-}
 
 //@功能:载入配置文件
 //@参数:pNode,
@@ -3142,15 +3059,57 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
 {
 	if (pNode == NULL) return FALSE;
 	const char* szSensorCount = ((TiXmlElement*)pNode)->Attribute("count");
-	if (szSensorCount == 0) return FALSE;
+	//if (szSensorCount == 0) return FALSE;
 
 	//暂时不用"count"属性
-	int nSensorCount = atoi(szSensorCount);
+	//int nSensorCount = atoi(szSensorCount);
 	//
 	allSensorCfg.resize(SENSOR_NUMBER);
 
-	TiXmlNode * pChild = NULL;
+	for (int nSensorId = 0; nSensorId < SENSOR_NUMBER; nSensorId++)
+	{
+		TSensorConfig& sensorConfig = allSensorCfg[nSensorId];
+		for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
+		{
+			TSensorModeConfig& sensorModeCfg = sensorConfig.vecSensorModeConfig[eProjectionMode];
 
+			for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
+			{
+				TCHAR szPath[MAX_PATH];
+				_stprintf_s(
+					szPath,
+					_countof(szPath),
+					_T("%s\\Sensor%02d\\%s\\%s"),
+					(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+					nSensorId,
+					GetProjectModeString(eProjectionMode),
+					GetCameraTypeString(eCameraType));
+
+
+				//CreateFullDirectory(CA2CT(szPath));
+				CreateFullDirectory(szPath);
+				for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
+				{
+					//载入各种镜头的配置参数
+					//char szPathRatio[MAX_PATH];
+					TCHAR szPathRatio[MAX_PATH];
+					memset(szPathRatio, 0, sizeof(szPathRatio));
+					//sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
+					_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
+
+					//if (PathFileExists(CA2CT(szPathRatio)))
+					if (PathFileExists(szPathRatio))
+					{
+						LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[eCameraType][i]);
+					}
+				}//for(i)
+
+			}//for(eCameraType)
+
+		}//for(SensorMode)
+	}
+
+	TiXmlNode * pChild = NULL;
 
 	int nSensorIndex = 0;
 	do
@@ -3178,32 +3137,18 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
 
 //@功能:载入配置文件
 //@参数:lpszConfigFilePath, 配置文件的完整路路径
-BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID,int VID)
+BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData)
 {
-//	if (PID == 13200 && VID == 6380)
-//	{
-//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
-//	}
-//	else if (PID == 37424 && VID == 1443)
-//	{
-//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
-//	}
-//	else {
-//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
-//	}
-
     TiXmlDocument oXMLDoc;
     if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath),TIXML_ENCODING_UTF8))
     {
         return FALSE;
     }
-
     TiXmlElement *pRootElement = oXMLDoc.RootElement();
     if(pRootElement == NULL)
     {
         return FALSE;
     }
-
     TiXmlNode *pNode = NULL;
     do
     {
@@ -3334,169 +3279,6 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
     return TRUE;
 }
 
-BOOL  UpDateConfig(TSensorModeConfig & sensorModeCfg, int PID, int VID, int nModeIndex, int nSensorId)
-{
-	ECameraType eCameraType = E_CAMERA_MODEL_1;
-
-	if (PID == 13200 && VID == 6380)
-	{
-		eCameraType = E_CAMERA_MODEL_1;
-
-		//sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
-		g_tSysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
-	}
-	else if (PID == 37424 && VID == 1443)
-	{
-		eCameraType = E_CAMERA_MODEL_2;
-
-		//sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
-		g_tSysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.003;
-	}
-	else 
-	{
-		eCameraType = E_CAMERA_MODEL_0;
-		//sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
-		g_tSysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
-	}
-
-
-	///保存各种镜头的配置参数
-    TCHAR szPath[MAX_PATH];
-    _stprintf_s(
-        szPath,
-        _countof(szPath),
-        _T("%s\\Sensor%02d\\%s\\%s"),
-        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-        nSensorId,
-        GetProjectModeString(EProjectionMode(nModeIndex)),
-        GetCameraTypeString(eCameraType));
-
-	//CreateFullDirectory(CA2CT(szPath));
-
-    CreateFullDirectory(szPath);
-
-	for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
-	{
-		//载入各种镜头的配置参数
-		//char szPathRatio[MAX_PATH];
-        TCHAR szPathRatio[MAX_PATH];
-		memset(szPathRatio, 0, sizeof(szPathRatio));
-		//sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
-        _stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
-        
-		//if (PathFileExists(CA2CT(szPathRatio)))
-        if (PathFileExists(szPathRatio))
-		{
-			//LoadConfig(CA2CT(szPathRatio), sensorModeCfg.lensConfigs[i]);
-//            LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[i]);
-		}
-	}
-	return true;
-}
-
-//BOOL UpdateConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
-//{
-//	if (pNode == NULL) return FALSE;
-//	TiXmlNode* pChild = NULL;
-//	do
-//	{
-//		pChild = pNode->IterateChildren(pChild);
-//		if (NULL == pChild)
-//		{
-//			break;
-//		}
-//		const char* lpszElementName = pChild->Value();
-//		if (_stricmp(lpszElementName, "IWBProjectionMode") == 0)
-//		{
-//			const char* szCoefMode = ((TiXmlElement*)pChild)->Attribute("Mode");
-//			int nModeIndex = 0;
-//			if (_stricmp(szCoefMode, "Desktop") == 0)
-//			{
-//				//载入桌面的设置参数	
-//				nModeIndex = 0;
-//			}
-//			else if (_stricmp(szCoefMode, "Wall") == 0)
-//			{
-//				//载入墙面的设置参数
-//				nModeIndex = 1;
-//			}
-//			UpDateConfig(sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex, nSensorId);
-//		}
-//	} while (pChild);
-//
-//	return TRUE;
-//}
-
-
-//BOOL UpDateConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData, int PID, int VID)
-//{
-//	if (PID ==13200 && VID == 6380)
-//	{
-//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_1;
-//		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
-//	}
-//	else if (PID == 37424 && VID == 1443)
-//	{
-//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_2;
-//		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.003;
-//	}
-//	else {
-//		sysCfgData.globalSettings.eCameraType = E_CAMERA_MODEL_0;
-//		sysCfgData.globalSettings.CMOSChipSpecification.pixel_size = 0.006;
-//	}
-//
-//	TiXmlDocument oXMLDoc;
-//	if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
-//	{
-//		return FALSE;
-//	}
-//
-//	TiXmlElement *pRootElement = oXMLDoc.RootElement();
-//	if (pRootElement == NULL)
-//	{
-//		return FALSE;
-//	}
-//
-//	TiXmlNode *pNode = NULL;
-//	do
-//	{
-//		pNode = pRootElement->IterateChildren(pNode);
-//		if (NULL == pNode)
-//		{
-//			break;
-//		}
-//		const char* lpszElementName = pNode->Value();
-//		if (_stricmp(lpszElementName, "IWBSensors") == 0)
-//		{
-//			//所有传感器的配置信息
-//			const char* szSensorCount = ((TiXmlElement*)pNode)->Attribute("count");
-//			if (szSensorCount == 0) return FALSE;
-//			int nSensorIndex = 0;
-//			TiXmlNode * pChild = NULL;
-//			do
-//			{
-//				pChild = pNode->IterateChildren(pChild);
-//				if (NULL == pChild)
-//				{
-//					break;
-//				}
-//				const char* lpszElementName = pChild->Value();
-//				if (_stricmp(lpszElementName, "IWBSensor") == 0)
-//				{
-//					UpdateConfig(pChild, sysCfgData.vecSensorConfig[nSensorIndex], nSensorIndex);
-//					nSensorIndex++;
-//					if (nSensorIndex == sysCfgData.vecSensorConfig.size())
-//					{
-//						break;
-//					}
-//				}
-//			} while (pChild);
-//		}
-//	} while (pNode);
-//
-//	return TRUE;
-//
-//}
 
 
 //@功能:保存屏幕布局数据
@@ -3719,17 +3501,9 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScre
                     {
                         mergeArea.bottom = atof(paramValue);
                     }
-
-                    layout.vecMergeAreas.push_back(mergeArea);
-                    
+                    layout.vecMergeAreas.push_back(mergeArea);                   
                 }
-
-
-
             } while (pChild_L2);
-
-
-
             allScreenLayouts.push_back(layout);
         }//if
 

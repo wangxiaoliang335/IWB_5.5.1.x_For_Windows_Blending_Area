@@ -434,7 +434,7 @@ protected:
 
     //@功能:载入配置文件
     //@参数:lpszConfigFilePath, 配置文件的完整路路径
-    BOOL LoadConfig(int PID = 37254,int VID= 6380);
+    BOOL LoadConfig();
 
     //@功能:保存配置文件
     //@参数:lpszConfigFilePath, 配置文件的完成路径

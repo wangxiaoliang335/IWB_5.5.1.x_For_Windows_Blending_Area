@@ -39,24 +39,21 @@ EDeviceTouchType GetActualTouchType()
 		default:
 			//加密狗为手触模式, 选用用户选择的触控模式
 			EDeviceTouchType eTouchType;
-			if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
-			{
-				eTouchType = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[0].advanceSettings.m_eTouchType;
-			}
-			else
-			{
-				eTouchType = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[1].advanceSettings.m_eTouchType;
-			}
+
+			TSensorModeConfig* TSensorModeConfig = NULL;
+			EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+			TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[eProjectionMode];
+
+			eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
 
 			if (eTouchType == E_DEVICE_FINGER_TOUCH_CONTROL || eTouchType == E_DEVICE_PALM_TOUCH_CONTROL)
 			{
 				return E_DEVICE_FINGER_TOUCH_WHITEBOARD;
 			}
-			else
-			{
-				return eTouchType;
-			}
-			break;
+
+			return eTouchType;
+
+	        break;
 	}
 
 //    if(theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
@@ -280,170 +277,6 @@ BOOL CIWBApp::InitInstance()
     int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
 
     ReadUSBKey(TRUE);
-
-    //BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
-    //#ifndef _DEBUG
-
-    //DWORD dwStartTick = GetTickCount();
-    //BOOL bFoundUSBKey = FALSE;
-
-    //#ifdef NDEBUG
-
-    //do
-    //{
-    //    UINT uKeyNum = SDKREG_GetUSBKeyCount();
-
-    //    LOG_DBG("uKeyNum=%d", uKeyNum);
-
-    //    int nAppType = 0;
-    //    float fVersion = 0.0f;
-
-    //    for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
-    //    {
-
-    //        if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
-    //        {
-    //            continue;
-    //        }
-
-    //        if (fVersion < 0.20111018f)
-    //        {
-    //            continue;
-    //        }
-
-    //        AppType各位描述
-    //        
-    //        bit9 bit8 bit7 bit6 bit5 bit4 bit3 bit2 bit1 bit0
-    //              │                                      │
-    //              │                                      └─0:3D Touch；1:手指触控
-    //              └─1:使能双屏拼接功能                                                 
-    //        
-    //        
-
-    //        if (SDKREG_GetAppType(&nAppType, uKeyIndex) != S_OK)
-    //        {
-    //            if ((nAppType & 0x00000FF) != 0 && (nAppType & 0x0000FF) != 1)
-    //            {
-    //                nAppType
-    //                1:为手指触控
-    //                0:为3DTouch
-    //                既不为手指触控也不为3D-Touch,则继续搜索下一个加密狗。
-    //                continue;
-    //            }
-
-    //        }
-
-    //        bDoubleScreenTouchMerge = (nAppType >> 8) & 0x00000001;
-
-
-
-
-
-    //        bFoundUSBKey = TRUE;//找到加密狗退出
-    //        break;
-    //    }//for
-
-
-    //    if (!bFoundUSBKey || SDKREG_IsBasicFunctionEnabled(14) != S_OK)
-    //    {
-
-    //        LOG_DBG("bFoundUSBKey=%s,SDKREG_IsBasicFunctionEnabled=%d\n",
-    //            bFoundUSBKey ? "TRUE" : "FALSE",
-    //            SDKREG_IsBasicFunctionEnabled(14)
-    //        );
-    //        DWORD dwNow = GetTickCount();
-    //        DWORD dwElapse = dwNow - dwStartTick;
-
-    //        if (dwElapse < g_tSysCfgData.globalSettings.nMaxTimeInSearchDevice)
-    //        {
-    //            LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse / 1000.0);
-    //            Sleep(1000);//延迟等待1秒钟
-
-    //            continue;
-    //        }
-    //        else if (g_tSysCfgData.globalSettings.bEnableOnlineRegister)
-    //        {
-    //            如果使能了在线注册
-    //            判断是否已经在线注册过了。
-    //            if (nDeviceCount > 0)///说明发现摄像头设备
-    //            {
-    //                BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
-    //                if (status != BIT_SUCCESS)
-    //                {
-    //                    LOG_ERR("bitAnswer login in returns 0x%x\n", status);
-    //                    COnlineRegisterDlg onlineRegisterDlg;
-    //                    onlineRegisterDlg.DoModal();
-
-    //                    if (onlineRegisterDlg.IsRegisteredOk())
-    //                    {
-    //                        m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
-    //                        bDoubleScreenTouchMerge = onlineRegisterDlg.GetScreenType() == EDoubleScreenMode ? TRUE : FALSE;
-    //                        break;
-    //                    }
-    //                }
-    //                else
-    //                {    //成功了
-    //                     Read Features
-    //                    BIT_UINT32 value;
-    //                    BIT_STATUS status = g_bitanswer.ReadFeature(FEATURE_TOUCH_TYPE, &value);
-    //                    if (status == BIT_SUCCESS)
-    //                    {
-    //                        m_eUSBKeyTouchType = (value == 0) ? E_DEVICE_PEN_TOUCH : E_DEVICE_FINGER_TOUCH;
-    //                    }
-
-    //                    status = g_bitanswer.ReadFeature(FEATURE_SCREEN_TYPE, &value);
-    //                    if (status == BIT_SUCCESS)
-    //                    {
-    //                        bDoubleScreenTouchMerge = (value == 1) ? TRUE : FALSE;
-    //                    }
-
-    //                    m_bIsOnlineRegistered = TRUE;
-    //                    break;
-    //                }
-    //            }
-
-    //            开启试用版超时检测器。
-    //            SetTimer(NULL, 0, 1000, timerProc);
-    //            g_dwBeginTime = GetTickCount();
-    //            m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH;
-
-    //            LOG_INF("Start Evaluation Timer\n");
-    //            break;
-
-
-    //        }
-    //        else
-    //        {//
-    //            MessageBox(NULL, g_oResStr[IDS_STRING125], g_oResStr[IDS_STRING103], MB_ICONERROR | MB_OK);
-    //            return FALSE;
-    //        }
-
-    //    }
-    //    else
-    //    {
-    //        LOG_INF("find USBKey\n");
-    //        m_eUSBKeyTouchType = (nAppType & 0x00000001) ? E_DEVICE_FINGER_TOUCH : E_DEVICE_PEN_TOUCH;
-    //        m_bFoundHardwareUSBKey = TRUE;
-
-    //    }
-
-
-    //} while (!bFoundUSBKey);
-
-    //#endif
-
-
-    //#endif
-    //m_eScreenType = bDoubleScreenTouchMerge ? EDoubleScreenMode : ESingleScreenMode;
-
-    //<<debug
-    //m_eScreenType = EDoubleScreenMode;
-    //debug>>
-
-
-
-
-    //LOG_INF("Usb Key Support Screen Merge:%s\n", bDoubleScreenTouchMerge ? "Yes" : "No");
 
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
