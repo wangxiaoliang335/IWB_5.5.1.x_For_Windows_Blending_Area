@@ -363,7 +363,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING464           "Merged Screen"
+    IDS_STRING464           "%d Screens Fusion"
     IDS_STRING465           "Please align the video image of the projector in the red guide box during installation."
     IDS_STRING466           "No UVC device exists!"
     IDS_STRING467           "Firmware file %s not found!"
