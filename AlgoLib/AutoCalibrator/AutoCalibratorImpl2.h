@@ -90,10 +90,6 @@ typedef std::vector<POINT> PolygonVertices;
 //2.1:对外圈的校正点, 屏幕上每次只打出一个点的校正团
 //2.2:对内部校正点, 屏幕上将校正图案分成上下两部分分别显示。
 //    由于校正图案分为上下两部分显示, 因此无需查找上下两部分的屏蔽图了。
-//
-
-
-
 //@说明:pRect，以窗体左上角为坐标原点(删除)
 //      pRect, 以主屏幕左上角为坐标原点
 inline void FillBoard(HWND hWnd, COLORREF clr, const RECT* pRect=NULL)

@@ -274,10 +274,6 @@ HRESULT CVideoPlayer::FindCaptureDevice(IBaseFilter **ppSrcFilter)
     // CreateClassEnumerator will succeed, but pClassEnum will be NULL.
     if (pClassEnum == NULL)
     {
-        //       MessageBox(m_hApp,TEXT("No video capture device was detected.\r\n\r\n")
-        //                TEXT("This sample requires a video capture device, such as a USB WebCam,\r\n")
-        //                TEXT("to be installed and working properly.  The sample will now close."),
-        //                TEXT("No Video Capture Hardware"), MB_OK | MB_ICONINFORMATION);
         return E_FAIL;
     }
 
@@ -341,27 +337,6 @@ HRESULT CVideoPlayer::FindCaptureDevice(IBaseFilter **ppSrcFilter)
 
         }
 
-
-        //hr = ptrPropBag->Read(L"FriendlyName", &varName, 0);
-
-        ////If specified device name is not empty, then check whether the device name is matched
-        //if(!m_strCaptureDeviceName.IsEmpty())
-        //{
-        //	if(m_strCaptureDeviceName != OLE2CT(varName.bstrVal))
-        //	{
-        //		pMoniker = NULL;
-        //		continue;
-        //	}
-
-        //	nFoundDeviceInstNo ++;
-        //	//
-        //	if(nFoundDeviceInstNo != m_nCaptureDeviceInstNo)
-        //	{
-        //		pMoniker = NULL;
-        //		continue;
-        //	}
-        //}
-
         // Bind Moniker to a filter object
         hr = pMoniker->BindToObject(0,0,IID_IBaseFilter, (void**)&pSrc);
         if (FAILED(hr))
@@ -372,47 +347,8 @@ HRESULT CVideoPlayer::FindCaptureDevice(IBaseFilter **ppSrcFilter)
             LOG_INF("Open Caputre Device %s", (const char*) CT2CA(m_strCaptureDevicePath));
 #endif
         break;
-        //if(SUCCEEDED(pSrc->EnumPins(&pins)))
-        //{     
-        //	while(!Found && (S_OK == pins->Next(1, &pP, &n)))
-        //	{
-        //		if(S_OK == pP->QueryPinInfo(&pinInfo))
-        //		{
-
-        //			if(pinInfo.dir == PINDIR_INPUT)
-        //			{
-        //				// is this pin an ANALOGVIDEOIN input pin?
-        //				if(pP->QueryInterface(IID_IKsPropertySet,
-        //					(void **)&pKs) == S_OK)
-        //				{
-        //					if(pKs->Get(AMPROPSETID_Pin,
-        //						AMPROPERTY_PIN_CATEGORY, NULL, 0,
-        //						&guid, sizeof(GUID), &dw) == S_OK)
-        //					{
-        //						//if(guid == PIN_CATEGORY_ANALOGVIDEOIN)
-        //						fMatch = TRUE;
-        //					}
-        //					pKs->Release();
-        //				}
-
-        //				if(fMatch)
-        //				{
-        //					Found = TRUE;
-
-        //					break;
-        //				}
-        //			}
-        //			pinInfo.pFilter->Release();
-        //		}
-        //		pP->Release();
-        //	}
-        //	pins->Release();
-        //}
 
 
-
-
-        //pMoniker = NULL;
     }//while
 
     // Copy the found filter pointer to the output parameter.
@@ -669,15 +605,6 @@ HRESULT CVideoPlayer::BuildGraph()
 
     //Create VMR
     CComPtr<IBaseFilter> ptrVMR;
-    //hr = CoCreateInstance(CLSID_VideoMixingRenderer, NULL, 
-    //	//hr = CoCreateInstance(CLSID_VideoMixingRenderer9, NULL,
-    //	CLSCTX_INPROC, IID_IBaseFilter, (void**)&ptrVMR); 
-    //if (FAILED(hr))
-    //{
-    //	LOG_ERR("Create Video Mixing Render failed with error 0x%x.", hr);
-    //	return hr;
-    //}
-
 
 
     hr = CoCreateInstance(CLSID_NullRenderer, NULL,
@@ -2254,8 +2181,6 @@ BOOL CVideoPlayer::GetCameraGamma(long & lValue, long& lMax, long& lMin, long& l
 
 }
 
-
-
 /*
 //@功能:设置摄像头的放大增益系数
 BOOL CVideoPlayer::SetCameraGain(const long& lGain)
@@ -2377,6 +2302,7 @@ BOOL CVideoPlayer::DisplayFrame(const BYTE* pARGBFrame, int nImageWidth, int nIm
     int nHeight = m_rcDispArea.bottom - m_rcDispArea.top ;
 
 	SetStretchBltMode(m_oMemFrame.GetDC(), HALFTONE);
+    
 	//在窗体上显示图片
     ::StretchBlt(
         m_oMemFrame.GetDC(),
@@ -2404,6 +2330,7 @@ BOOL CVideoPlayer::DisplayFrame(const BYTE* pARGBFrame, int nImageWidth, int nIm
         0,
         0,
         SRCCOPY);
+
     ReleaseDC(m_hPlayWnd, hDC);
 
 	return TRUE;
@@ -2485,9 +2412,6 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
         //TOSDText::RectF normalized_text_area  = osd.GetDisplayArea();
         RectF normalized_text_area = osd.GetDisplayArea();
 
-		//int nTextWidthInImageFrame  = rcTextArea.right  - rcTextArea.left;
-		//int nTextHeightInImageFrame = rcTextArea.bottom - rcTextArea.top ;
-
         int nDispAreaWidth  = m_rcDispArea.right  - m_rcDispArea.left;
         int nDispAreaHeight = m_rcDispArea.bottom - m_rcDispArea.top ;
 
@@ -2501,7 +2425,6 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 
 		UINT dwFormat = osd.GetDrawTextFormat();
 		
-		//DrawText(hDC, (LPCTSTR)osd.GetText(), _tcsclen(osd.GetText()), &rcTextArea, dwFormat);
 		RECT rcNeedArea;
 		DrawText(hDC, (LPCTSTR)osd.GetText(), _tcsclen(osd.GetText()), &rcNeedArea, dwFormat|DT_CALCRECT);
 		int nNeedArea_Width = rcNeedArea.right - rcNeedArea.left;
@@ -2516,15 +2439,12 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 
 		DrawText(hDC, (LPCTSTR)osd.GetText(), _tcsclen(osd.GetText()), &rcTextArea, dwFormat);
 		
-  //      CBrush brush;
-  //      brush.CreateSolidBrush(RGB(255,0,0));
-  //      FrameRect(hDC, &rcTextArea, brush);
 		SelectObject(hDC, hFontOld);
 
 		if (osd.GetDisplayTimesCounter() != -1)
 		{
 			osd.DecDisplayTimesCounter();
-		}	
+        }
 
 	}//for
     
@@ -2533,7 +2453,7 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight, DWORD ImageType, float fps, int nId)
 {
 
-	 ////视频压缩格式,
+     //视频压缩格式,
 	 CString  Compress;
 	 Compress.Format(_T("%c%c%c%c"), ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF);
 	 ////这个是需要在高级设置的对话框中进行显示的，每个摄像头的所有格式都需要各自显示的，这个只是当前选中的格式而已

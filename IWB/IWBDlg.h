@@ -831,4 +831,5 @@ public:
 	bool    m_bStartDrawOnlineScreenArea;
 	bool    m_bPreGuideRectangleVisible;
 
+    afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 };
