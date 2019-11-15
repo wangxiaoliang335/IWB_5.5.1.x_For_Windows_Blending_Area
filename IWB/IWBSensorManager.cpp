@@ -593,10 +593,9 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 //@功能:根据摄像头实际的PID,VID载入合适的参数
 BOOL CIWBSensorManager::UpdateConfig()
 {
-		
     size_t nSensorCount = m_vecSensors.size();
-		
-	std::vector<TSensorConfig>& sensorConfigs = g_tSysCfgData.vecSensorConfig;
+
+    std::vector<TSensorConfig>& sensorConfigs = g_tSysCfgData.vecSensorConfig;
 	
 	for (size_t i = 0; i < nSensorCount; i++)
 	{
@@ -818,11 +817,11 @@ int  CIWBSensorManager::CurrentSelectSensor()
 	return m_uCurrentSelectSensordId;
 }
 
-CIWBSensor* CIWBSensorManager::GetSensor0()
-{
-	if (m_vecSensors.size() == 0) return NULL;
-	return m_vecSensors[0];
-}
+//CIWBSensor* CIWBSensorManager::GetSensor0()
+//{
+//	if (m_vecSensors.size() == 0) return NULL;
+//	return m_vecSensors[0];
+//}
 
 CIWBSensor* CIWBSensorManager::GetSensor()
 {

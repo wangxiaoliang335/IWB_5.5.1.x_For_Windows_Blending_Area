@@ -108,7 +108,7 @@ public:
     CIWBSensor* SensorFromPt(const POINT& ptPos);
 
     CIWBSensor* GetSensor();
-	CIWBSensor* GetSensor0();
+	//CIWBSensor* GetSensor0();
 	void SelectAsCurrentSensor(CIWBSensor* pSensor);
 
 	int   CurrentSelectSensor();

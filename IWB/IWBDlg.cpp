@@ -599,7 +599,8 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
     ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
 
- END_MESSAGE_MAP()
+        ON_WM_RBUTTONUP()
+        END_MESSAGE_MAP()
 
 
 void CIWBDlg::InitMenu()
@@ -2729,7 +2730,8 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
 		_stprintf_s(
 			szModuleFileName,
 			_countof(szModuleFileName),
-			_T("%s\\%sProxy.exe"),
+			//_T("%s\\%sProxy.exe"),
+            _T("%s\\%s.exe"),
 			szWorkingDirectory,
 			PathFindFileName(szFileBaseName));
 		//>>
@@ -3435,6 +3437,16 @@ void CIWBDlg::OnCaptureChanged(CWnd *pWnd)
 
 
     CDialog::OnCaptureChanged(pWnd);
+}
+
+void CIWBDlg::OnRButtonUp(UINT nFlags, CPoint point)
+{
+    // TODO: Add your message handler code here and/or call default
+    CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(point);
+    if (pSensor == NULL) return;
+
+    m_oIWBSensorManager.SelectAsCurrentSensor(pSensor);
+    CDialog::OnRButtonUp(nFlags, point);
 }
 
 void CIWBDlg::OnLButtonDown(UINT nFlags, CPoint point)
@@ -5290,13 +5302,17 @@ void CIWBDlg::OnSwapSensorImage()
 
 void CIWBDlg::OnSwapImageWithSensor(UINT uID)
 {
+    /*注意到有时菜单项在窗体客户区以外了。
     POINT ptCursor;
     GetCursorPos(&ptCursor);
-
     ScreenToClient(&ptCursor);
-
     CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(ptCursor);
-    if (pSensor == NULL) return;
+    */
+    CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
+    if (pSensor == NULL)
+    {
+        return;
+    }
 
     UINT uSensorID = uID - ID_SWAP_WITH_SENSOR0;
     if (uSensorID < 0 || uSensorID >= m_oIWBSensorManager.GetSensorCount()) return;
@@ -5726,3 +5742,5 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
 
 
 }
+
+
