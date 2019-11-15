@@ -49,13 +49,18 @@ BOOL COnlineRegisterDlg::OnInitDialog()
    {
        GetDlgItem(IDC_EDIT_SN_NUMBER)->EnableWindow(FALSE);
        GetDlgItem(IDC_BUTTON_ONLINE_REGISTER)->EnableWindow(FALSE);
+
+       CString strFusionInfo;
+       //"%d Screens Fusion"
+       strFusionInfo.Format(g_oResStr[IDS_STRING464], theApp.GetScreenCount());
+
        m_strText.Format(
            _T("%s\r\n%s:%s\r\n%s:%s"), 
            g_oResStr[IDS_STRING458],//"使用硬件加密狗"信息
            g_oResStr[IDS_STRING459],
            theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD ? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
            g_oResStr[IDS_STRING462],
-           theApp.GetScreenMode() >= EScreenModeDouble? g_oResStr[IDS_STRING464] :g_oResStr[IDS_STRING463]);
+           theApp.GetScreenMode() >= EScreenModeDouble? (LPCTSTR)strFusionInfo :g_oResStr[IDS_STRING463]);
            
    }
    else
