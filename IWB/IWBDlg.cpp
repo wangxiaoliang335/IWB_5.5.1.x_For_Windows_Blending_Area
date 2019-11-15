@@ -346,7 +346,7 @@ static UINT indicators[] ={
     IDS_STRING440,
 	IDS_STRING438,
 	IDS_STRING439,
-	IDS_STRING440
+	IDS_STRING440,
 };
 
 
@@ -1177,12 +1177,9 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
 	//当窗体很小时,可能为负值。
     if(nPaneWidth_3 < 0) nPaneWidth_3 = 0;
 
-
-
     //for(int i=0; i < nSensorCount; i++)
     for (int i = 0; i < 1; i++)
-    {
-		
+    {		
         this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 0, indicators[i*StatusPaneCountEachSensor + 0], SBPS_NORMAL,    nPaneWidth_1);
         this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 1, indicators[i*StatusPaneCountEachSensor + 1], SBPS_NORMAL,    nPaneWidth_2);
 		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 2, indicators[i*StatusPaneCountEachSensor + 2], SBPS_OWNERDRAW, nPaneWidth_3);
@@ -1194,7 +1191,8 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     this->InvalidateRect(&rcClient,FALSE);
 
     if (m_hDispWnd == this->GetSafeHwnd())
-    {//在当前窗口上显示视频时
+    {    
+		//在当前窗口上显示视频时
         this->m_oIWBSensorManager.SetVideoDisplayArea(rcClient);
     }    
 }
@@ -2141,10 +2139,10 @@ HRESULT CIWBDlg::OnFpsNotify (WPARAM wParam,LPARAM lParam)
     {
         this->m_ctlStatusBar.SetPaneText(PANE_FPS, strFPS, TRUE);
     }
-    else if( 1 == nCameraID)
-    {
-        this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_FPS, strFPS, TRUE);
-    }
+//    else if( 1 == nCameraID)
+//    {
+//        this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_FPS, strFPS, TRUE);
+//    }
 
     return 0;
 }

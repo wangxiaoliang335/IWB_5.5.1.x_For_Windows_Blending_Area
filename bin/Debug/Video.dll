@@ -16,10 +16,10 @@
 		ITA:意大利语
 		RUS:俄语
 		PTG:葡萄牙语-->
-        <Param name="Language" value="EN" />
+        <Param name="Language" value="CHS" />
         <!--投影模式-->
         <Param name="ProjectionMode" value="Wall" />
-        <!--调试模式-->
+        <!--调试模式(Yes/No)-->
         <Param name="DebugMode" value="No" />
         <!--调试级别(0~2)-->
         <Param name="DebugLevel" value="0" />
@@ -28,7 +28,7 @@
         <!--启动时的工作模式。0:图像调试模式;1:激光器调试模式;2:正常使用模式-->
         <Param name="LensMode" value="0" />
         <!--是否打开TUIO触控方式-->
-        <Param name="TouchTUIOMode" value="Yes" />
+        <Param name="TouchTUIOMode" value="No" />
         <!--是否打开HID触控方式-->
         <Param name="TouchHIDMode" value="Yes" />
         <!--HID工作方式(Mouse; Touch Screen)-->
@@ -48,7 +48,7 @@
         <!--CMOS芯片信息-->
         <CMOS_CHIP>
             <!--像素尺寸，单位:mm-->
-            <Param name="PixelSize" value="0.006" />
+            <Param name="PixelSize" value="0.003" />
             <!--CMOS传感器图像区域物理宽度, 单位:mm-->
             <Param name="WidthInMM" value="3.984" />
             <!--CMOS传感器图像区域物理高度, 单位:mm-->
@@ -62,26 +62,15 @@
         <Param name="ScreenCount" value="-1" />
     </Global>
     <!--全部摄像头传感器的配置参数-->
-<<<<<<< HEAD
     <IWBSensors count="2">
         <!--摄像头传感器的配置参数-->
         <IWBSensor id="0">
             <!--设备路径-->
-            <Param name="DevicePath" value="\\?\usb#vid_05a3&amp;pid_9230&amp;mi_00#7&amp;27084c07&amp;0&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
+            <Param name="DevicePath" value="\\?\usb#vid_18ec&amp;pid_9186&amp;mi_00#7&amp;32333b67&amp;0&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
             <!--视频格式-->
             <Param name="VideoFormat" value="640 X 480 YUY2" />
             <!--镜头类型)-->
             <Param name="LensType" value="throw ratio: 0.15" />
-=======
-    <IWBSensors count="3">
-        <!--摄像头传感器的配置参数-->
-        <IWBSensor id="0">
-            <!--设备路径-->
-            <Param name="DevicePath" value="\\?\usb#vid_18ec&amp;pid_9186&amp;mi_00#6&amp;320b27b4&amp;0&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
-            <!--视频格式-->
-            <Param name="VideoFormat" value="640 X 480 YUY2" />
-            <!--镜头类型)-->
-            <Param name="LensType" value="throw ratio: 0.34" />
             <!--传感器与屏幕关联方法(Auto/Manual)-->
             <Param name="AutoAttachMonitor" value="Auto" />
             <!--传感器关联的屏幕id-->
@@ -165,166 +154,6 @@
                 <!--校正方程参数-->
                 <CalibateEquationParams>
                     <!--校正图片尺寸-->
-                    <Param name="ImageWidth" value="1280" />
-                    <Param name="ImageHeight" value="720" />
-                    <!--校正类型(手动:Manual, 自动:Auto)-->
-                    <Param name="CalibrateType" value="Auto" />
-                    <!--所有监视器校正参数-->
-                    <AllMonitorCalibCoefficients count="1">
-                        <MonitorCalibCoefficients id="0">
-                            <!--显示器尺寸-->
-                            <RECT name="Monitor" left="0" right="1024" top="0" bottom="768" />
-                            <!--系数-->
-                            <Coefficients count="43">
-                                <Param name="Coefficient" value="3.82741204455117269845e+02" />
-                                <Param name="Coefficient" value="3.44622538513672338922e+02" />
-                                <Param name="Coefficient" value="7.02736922892601342028e+02" />
-                                <Param name="Coefficient" value="4.50062318795376882008e+02" />
-                                <Param name="Coefficient" value="1.81140100170460671691e+00" />
-                                <Param name="Coefficient" value="-3.62021108457898976862e-01" />
-                                <Param name="Coefficient" value="5.53708013095082773880e-01" />
-                                <Param name="Coefficient" value="-1.54073498077846959831e+00" />
-                                <Param name="Coefficient" value="8.25934651573663303203e-01" />
-                                <Param name="Coefficient" value="3.50458334073609897516e-03" />
-                                <Param name="Coefficient" value="3.08224487501909838461e-01" />
-                                <Param name="Coefficient" value="-6.85183643024917965469e-01" />
-                                <Param name="Coefficient" value="-7.89443679797714320534e-02" />
-                                <Param name="Coefficient" value="8.79918744949303333058e-01" />
-                                <Param name="Coefficient" value="-6.12265891194401778996e-01" />
-                                <Param name="Coefficient" value="-1.29733940252304419394e-01" />
-                                <Param name="Coefficient" value="4.45541215586091939732e-03" />
-                                <Param name="Coefficient" value="3.49039899221595284473e-01" />
-                                <Param name="Coefficient" value="-3.50616592059839526918e-01" />
-                                <Param name="Coefficient" value="-2.07159042563054784925e-01" />
-                                <Param name="Coefficient" value="8.71319418275668389207e-02" />
-                                <Param name="Coefficient" value="-5.46707863247127417994e-02" />
-                                <Param name="Coefficient" value="1.00805399092196934507e-01" />
-                                <Param name="Coefficient" value="9.99956380242841391670e-01" />
-                                <Param name="Coefficient" value="-1.04116501779533002572e-03" />
-                                <Param name="Coefficient" value="9.28189565981181290144e-03" />
-                                <Param name="Coefficient" value="7.70236381362549796942e-03" />
-                                <Param name="Coefficient" value="6.54033444238611205712e-01" />
-                                <Param name="Coefficient" value="-7.56426419031660968173e-01" />
-                                <Param name="Coefficient" value="-5.28310546141818118682e-03" />
-                                <Param name="Coefficient" value="7.56464916432206369024e-01" />
-                                <Param name="Coefficient" value="6.54012934890357056084e-01" />
-                                <Param name="Coefficient" value="-5.60403671742488313612e+02" />
-                                <Param name="Coefficient" value="-2.56708465337452025778e+02" />
-                                <Param name="Coefficient" value="5.22366612769742118871e+02" />
-                                <Param name="Coefficient" value="1.07257130963590285866e+00" />
-                                <Param name="Coefficient" value="3.40000000000000024425e-01" />
-                                <Param name="Coefficient" value="1.28000000000000000000e+03" />
-                                <Param name="Coefficient" value="7.20000000000000000000e+02" />
-                                <Param name="Coefficient" value="0.00000000000000000000e+00" />
-                                <Param name="Coefficient" value="1.02400000000000000000e+03" />
-                                <Param name="Coefficient" value="0.00000000000000000000e+00" />
-                                <Param name="Coefficient" value="7.68000000000000000000e+02" />
-                            </Coefficients>
-                        </MonitorCalibCoefficients>
-                    </AllMonitorCalibCoefficients>
-                </CalibateEquationParams>
-            </IWBProjectionMode>
-        </IWBSensor>
-        <!--摄像头传感器的配置参数-->
-        <IWBSensor id="1">
-            <!--设备路径-->
-            <Param name="DevicePath" value="" />
-            <!--视频格式-->
-            <Param name="VideoFormat" value="640 X 480 MJPG" />
-            <!--镜头类型)-->
-            <Param name="LensType" value="throw ratio: 0.34" />
->>>>>>> 5e59b9107a179267bce89ec3f75c3f0e235b1e63
-            <!--传感器与屏幕关联方法(Auto/Manual)-->
-            <Param name="AutoAttachMonitor" value="Auto" />
-            <!--传感器关联的屏幕id-->
-            <Param name="AttachedMonitorId" value="0" />
-            <!--关联的屏幕区域类型(Full Screen|Left Half|Right Half-->
-            <Param name="AttachedMonitorAreaType" value="Full Screen" />
-            <!--投影机放置方式("Desktop":桌面模式; "Wall":墙面模式-->
-            <IWBProjectionMode Mode="Desktop">
-                <!--高级设置参数-->
-                <AdvanceSettings>
-                    <!--设备触控类型("Finger_Touch_WhiteBoard":手触控电子白板; "Pen_Touch_WhiteBoard":笔触控电子白板; "Finger_Touch_Control":手指触控;"Palm_Touch_Control":手掌互动;-->
-                    <Param name="DeviceTouchType" value="Pen_Touch_WhiteBoard" />
-                    <!--是否是背投设备-->
-                    <Param name="RearProjectionDevice" value="No" />
-                    <!--干扰光斑屏蔽区膨胀半径-->
-                    <Param name="ClutterMaskingAreaInflationRadius" value="1" />
-                    <!--响应光斑大小比例-->
-                    <Param name="SpotProportion" value="30" />
-                    <!--板擦与光斑的倍数-->
-                    <Param name="EraserMultiples" value="3" />
-                    <!--检测为固定光斑的时间-->
-                    <Param name="SetFixedBlobTime" value="5" />
-                    <!--使能笔迹插值(Yes/No)-->
-                    <Param name="EnableStrokeInterpolate" value="No" />
-                    <!--是否打开动态屏蔽功能-->
-                    <Param name="DynamicMaskFrame" value="No" />
-                    <!--是否打开抗干扰功能-->
-                    <Param name="AntiJamming" value="No" />
-                    <!--是否启用手动绘制屏幕区域-->
-                    <Param name="OnLineScreenArea" value="No" />
-                </AdvanceSettings>
-                <!--手动校正参数-->
-                <ManualCalibrate>
-                    <!--手动校正每行的校正点个数(=列数),最小值=2-->
-                    <Param name="ManualCalibratePtNumInEachRow" value="5" />
-                    <!--//手动校正每行的校正点个数(=列数),最小值=2-->
-                    <Param name="ManualCalibratePtNumInEachCol" value="5" />
-                </ManualCalibrate>
-                <!--校正方程参数-->
-                <CalibateEquationParams>
-                    <!--校正图片尺寸-->
-                    <Param name="ImageWidth" value="640" />
-                    <Param name="ImageHeight" value="480" />
-                    <!--校正类型(手动:Manual, 自动:Auto)-->
-                    <Param name="CalibrateType" value="Auto" />
-                    <!--所有监视器校正参数-->
-                    <AllMonitorCalibCoefficients count="0" />
-                </CalibateEquationParams>
-            </IWBProjectionMode>
-            <IWBProjectionMode Mode="Wall">
-                <!--高级设置参数-->
-                <AdvanceSettings>
-                    <!--设备触控类型("Finger_Touch_WhiteBoard":手触控电子白板; "Pen_Touch_WhiteBoard":笔触控电子白板; "Finger_Touch_Control":手指触控;"Palm_Touch_Control":手掌互动;-->
-                    <Param name="DeviceTouchType" value="Pen_Touch_WhiteBoard" />
-                    <!--是否是背投设备-->
-                    <Param name="RearProjectionDevice" value="No" />
-                    <!--干扰光斑屏蔽区膨胀半径-->
-                    <Param name="ClutterMaskingAreaInflationRadius" value="1" />
-                    <!--响应光斑大小比例-->
-                    <Param name="SpotProportion" value="30" />
-                    <!--板擦与光斑的倍数-->
-                    <Param name="EraserMultiples" value="3" />
-                    <!--检测为固定光斑的时间-->
-                    <Param name="SetFixedBlobTime" value="5" />
-                    <!--使能笔迹插值(Yes/No)-->
-                    <Param name="EnableStrokeInterpolate" value="No" />
-                    <!--是否打开动态屏蔽功能-->
-<<<<<<< HEAD
-                    <Param name="DynamicMaskFrame" value="Yes" />
-                    <!--是否打开抗干扰功能-->
-                    <Param name="AntiJamming" value="No" />
-                    <!--是否启用手动绘制屏幕区域-->
-                    <Param name="OnLineScreenArea" value="Yes" />
-=======
-                    <Param name="DynamicMaskFrame" value="No" />
-                    <!--是否打开抗干扰功能-->
-                    <Param name="AntiJamming" value="No" />
-                    <!--是否启用手动绘制屏幕区域-->
-                    <Param name="OnLineScreenArea" value="No" />
->>>>>>> 5e59b9107a179267bce89ec3f75c3f0e235b1e63
-                </AdvanceSettings>
-                <!--手动校正参数-->
-                <ManualCalibrate>
-                    <!--手动校正每行的校正点个数(=列数),最小值=2-->
-                    <Param name="ManualCalibratePtNumInEachRow" value="5" />
-                    <!--//手动校正每行的校正点个数(=列数),最小值=2-->
-                    <Param name="ManualCalibratePtNumInEachCol" value="5" />
-                </ManualCalibrate>
-                <!--校正方程参数-->
-                <CalibateEquationParams>
-                    <!--校正图片尺寸-->
                     <Param name="ImageWidth" value="640" />
                     <Param name="ImageHeight" value="480" />
                     <!--校正类型(手动:Manual, 自动:Auto)-->
@@ -335,15 +164,11 @@
             </IWBProjectionMode>
         </IWBSensor>
         <!--摄像头传感器的配置参数-->
-<<<<<<< HEAD
         <IWBSensor id="1">
-=======
-        <IWBSensor id="2">
->>>>>>> 5e59b9107a179267bce89ec3f75c3f0e235b1e63
             <!--设备路径-->
-            <Param name="DevicePath" value="\\?\usb#vid_05a3&amp;pid_9230&amp;mi_00#6&amp;253504c5&amp;1&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
+            <Param name="DevicePath" value="\\?\usb#vid_05a3&amp;pid_9230&amp;mi_00#7&amp;27084c07&amp;0&amp;0000#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\global" />
             <!--视频格式-->
-            <Param name="VideoFormat" value="640 X 480 MJPG" />
+            <Param name="VideoFormat" value="1280 X 720 MJPG" />
             <!--镜头类型)-->
             <Param name="LensType" value="throw ratio: 0.34" />
             <!--传感器与屏幕关联方法(Auto/Manual)-->

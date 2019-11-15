@@ -1028,8 +1028,8 @@ BOOL CVideoPlayer::StopDetect( )
 
 void CVideoPlayer::MissStatusInfo()
 {
-	CString strStatusText = g_oResStr[IDS_STRING445];
-	SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+	//CString strStatusText = g_oResStr[IDS_STRING445];
+	PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING445], (LPARAM)m_nID);
 }
 
 
@@ -2553,7 +2553,6 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 		            (ImageType >> 24) & 0xFF
 		             );
 
-	      //m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
 	      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)m_szStatusText, (LPARAM)nId);
 		  PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, (WPARAM)(fps*2), (LPARAM)nId);
 	     ////SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
@@ -2561,7 +2560,6 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 	else
 	{
          CString strVideoInfo;
-
         strVideoInfo.Format(
                            _T("#%d %c%c%c%c %d*%d@%.0f"),
                            m_nID+1,
@@ -2580,9 +2578,6 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
                    10L,
                    _T("Times New Roman"),
                   -1 );
-
-//	   PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)(""), (LPARAM)nId);
-//	   PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, 0, (LPARAM)nId);
 
 	}
 }
