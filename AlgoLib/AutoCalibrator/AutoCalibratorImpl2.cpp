@@ -3876,7 +3876,7 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
        
         if (m_oWaitTimer.IsWaitTimeout(MAX_NEED_WAIT_TIME))
         {//静态屏蔽处理
-            if(this->m_oStaticMaskFinder.Process(monoFrame,false))
+            if(this->m_oStaticMaskFinder.Process(monoFrame,true))
             {
                 //自动屏蔽结束
                 m_eCalibrateStage = E_AUTO_CALIBRATE_END;
