@@ -5,26 +5,18 @@
     #define EASI_TOUCHSCREEN_API _declspec(dllimport)
 #endif
 
-
-//#define TIP_DOWN 0x07   //下笔, tip switch, in range, confidence
-//#define TIP_DOWN 0x07     //下笔, tip switch, in range, confidence
-//#define TIP_UP   0x06   //提笔, in range, confidence
-//#define TIP_UP   0x06     //提笔, in range, confidence
-//bit0: tip switch
-//bit1: confidence
-#define TIP_UP    0x02 //下笔
-#define TIP_DOWN  0x03 //提笔
+#define TIP_DOWN 0x02   //下笔
+#define TIP_UP   0x03   //提笔
 
 //#define EASI_TOUCH_MAXIMUM_X 0x7FFF
 //#define EASI_TOUCH_MAXIMUM_Y 0x7FFF
+#define EASI_TOUCH_MAXIMUM_X (1920*8)
+#define EASI_TOUCH_MAXIMUM_Y (1080*8)
 
-#define EASI_TOUCH_MAXIMUM_X 1920
-#define EASI_TOUCH_MAXIMUM_Y 1080
 
 struct EASI_TouchPoint
 {
-    //UCHAR  bStatus  ;//bit0: Tip Switch; bit1:In Range; bit2:Confidence bit3...7: Padding bits
-    UCHAR  bStatus  ;//bit0: Tip Switch; bit1:Confidence bit3...7: Padding bits
+    UCHAR  bStatus  ;//bit0: Tip Switch; bit1:In Range; bit2...7: Padding bits
     UCHAR  ContactId;//contact indentifiers
     USHORT wXData   ;//水平坐标,取值范围:0~0x7FFF(EASI_TOUCH_MAXIMUM_X)
     USHORT wYData   ;//垂直坐标,取值范围:0~0x7FFF(EASI_TOUCH_MAXIMUM_Y
@@ -88,3 +80,5 @@ extern "C" EASI_TOUCHSCREEN_API BOOL    EASI_WriteVirtualMouse(HANDLE hDevice, c
 //@参数:hDevice, 调用函数EASI_OpenDevice返回的设备句柄
 extern "C" EASI_TOUCHSCREEN_API BOOL    EASI_CloseDevice(HANDLE hDevice);
 
+
+extern "C" EASI_TOUCHSCREEN_API const GUID  GUID_DEVINTERFACE_EASI_UMDF_TouchScreen;

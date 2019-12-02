@@ -72,8 +72,9 @@ protected:
 
 //@功能:根据三个结点的坐标，计算出Bezier曲线的两个控制点坐标。
 //@参数:
-//      ratio_bottom, ∈(0,1), the minimum length of a control point handle as a
-//          percentage of length of a curve that control point handle describes
+//      ratio_bottom, ∈(0,1),The  percentage between  the minimum length of a control point handle and
+//                    the length of a curve which the control point handle describes
+//
 //      ratio_top, ∈(0,1), the maximum lengt of such a control point handle.
 //
 inline BOOL CalculateControlPoint(double ratio_bottom, double ratio_top, const TPoint2D junctionPoints[3], TPoint2D controlPoints[2])

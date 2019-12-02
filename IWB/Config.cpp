@@ -1139,7 +1139,7 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
                 //缺省值
                 if(paramDefault)defaultParams.autoCalibrateHilightGray = atoi(paramDefault);
             }
-            else if (paramName && paramName && _stricmp(paramName, "AutoCalibrateSpeed") == 0)
+            else if (paramName && paramValue && _stricmp(paramName, "AutoCalibrateSpeed") == 0)
             {
                 int nSpd = atoi(paramValue);
                 if (nSpd <= 0) nSpd = 1;

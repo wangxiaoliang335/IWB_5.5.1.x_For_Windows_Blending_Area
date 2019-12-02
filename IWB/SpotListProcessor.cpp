@@ -49,7 +49,7 @@ void CSpotListProcessor::Init(UINT uCameraCount)
 
 }
 
-FILE * g_hDebugSampleFile   = NULL;
+FILE * g_hDebugSampleFile1   = NULL;
 FILE * g_hDebugSampleFile2  = NULL;
 FILE * g_hDebugRawInputData = NULL;
 
@@ -73,7 +73,7 @@ void CSpotListProcessor::StartProcess()
         sprintf_s(
             szFileName,
             _countof(szFileName),
-            "SampleData_%04d%02d%02d_%02d%02d%02d%03d_BeforeMerge.txt",
+            "SampleData_%04d%02d%02d_%02d%02d%02d%03d_InputVertex.txt",
             sysTime.wYear,
             sysTime.wMonth,
             sysTime.wDay,
@@ -82,13 +82,13 @@ void CSpotListProcessor::StartProcess()
             sysTime.wSecond,
             sysTime.wMilliseconds);
 
-        fopen_s(&g_hDebugSampleFile, szFileName, "w");
+        fopen_s(&g_hDebugSampleFile1, szFileName, "w");
 
 
         sprintf_s(
             szFileName,
             _countof(szFileName),
-            "SampleData_%04d%02d%02d_%02d%02d%02d%03d_AfterMerge.txt",
+            "SampleData_%04d%02d%02d_%02d%02d%02d%03d_SmoothVertex.txt",
             sysTime.wYear,
             sysTime.wMonth,
             sysTime.wDay,
@@ -140,10 +140,10 @@ void CSpotListProcessor::StopProcess()
 
         //<<debug
 #ifdef _DEBUG
-        if(g_hDebugSampleFile)
+        if(g_hDebugSampleFile1)
         {
-            fclose(g_hDebugSampleFile);
-            g_hDebugSampleFile = NULL;
+            fclose(g_hDebugSampleFile1);
+            g_hDebugSampleFile1 = NULL;
         }
 
         if(g_hDebugSampleFile2)
@@ -630,17 +630,30 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         }
 
 
-        TCHAR szDebug[1024];
-        _stprintf_s(
-            szDebug,
-            _countof(szDebug),
-            _T("<x,y>=<%d,%d>,%s\n"),
-            contactInfos[i].pt.x,
-            contactInfos[i].pt.y,
-            szEvent);
+        //TCHAR szDebug[1024];
+        //_stprintf_s(
+        //    szDebug,
+        //    _countof(szDebug),
+        //    _T("<x,y>=<%d,%d>,%s\n"),
+        //    contactInfos[i].pt.x,
+        //    contactInfos[i].pt.y,
+        //    szEvent);
 
-        OutputDebugString(szDebug);
-    }
+        //OutputDebugString(szDebug);
+
+
+
+        char szData[128];
+        sprintf_s(
+            szData,
+            _countof(szData),
+            "%d,%d\n",
+            contactInfos[i].pt.x,
+            contactInfos[i].pt.y);
+ 
+        fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
+
+    }//for-each(i)
 }
 //@功能:所有光斑的后续处理程序
 //@参数:pLightSpots, 指向光斑列表的指针
@@ -701,7 +714,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
 #ifdef _DEBUG
 
-    if(g_hDebugSampleFile2)
+    if(g_hDebugSampleFile1)
     {       
         for(int i = 0; i < nLightSpotCount; i++)
         {
@@ -716,7 +729,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                 pLightSpots[i].ptPosInScreen.x,
                 pLightSpots[i].ptPosInScreen.y);
 
-            fwrite(szData,1,strlen(szData),g_hDebugSampleFile2);
+            fwrite(szData,1,strlen(szData),g_hDebugSampleFile1);
         }
     }
 #endif
@@ -739,6 +752,26 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         {
            //平滑笔迹
             m_oStrokFilter.DoFilter(penInfo, penCount);
+
+#ifdef _DEBUG
+
+            if (g_hDebugSampleFile2)
+            {
+                for (int i = 0; i < nLightSpotCount; i++)
+                {
+                    char szData[128];
+
+                    sprintf_s(
+                        szData,
+                        _countof(szData),
+                        "%d,%d\n",
+                        penInfo[i].pt.x,
+                        penInfo[i].pt.y);
+
+                    fwrite(szData, 1, strlen(szData), g_hDebugSampleFile2);
+                }
+            }
+#endif
 
 			TSensorModeConfig* TSensorModeConfig = NULL;
 			EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;

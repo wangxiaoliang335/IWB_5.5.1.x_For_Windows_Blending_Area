@@ -10,6 +10,16 @@
 //D=0时，     λ = λmax
 //D=D_max时， λ = λmin
 
+//2019/11/29
+//实践表明:
+//快速书写时，无需平滑，只需插值即可。
+//为此需要一个跟速度相关的系数来调节平滑系数
+//速度越大，采用越小的滤波系数；速度越小，采用越大的滤波系数
+//如何计算速度呢?
+//因为CPU的处理时间的变化不定，导致帧率时快时慢, 因此采用
+//移动距离的移动平均距离来标示速度。
+//调制系数
+//Beta(x) =  a/(a+x)
 template <int MAX_STROKE_NUM>
 class CStrokeFilter
 {
@@ -44,6 +54,7 @@ public:
         int nScreenDialgonalLogicalLength = (int)sqrt((float)(nCx*nCx + nCy*nCy));
 
         m_nMaxDistance = (KD2PhysicalDistance * nScreenDialgonalLogicalLength)/nPhysicalDiagonalLength;
+        m_nMaxDistance *= (HISTORY_DISTANCE_LENGTH >>1);
 
         InitFilter();
     }
@@ -79,6 +90,9 @@ public:
 
                     filter.m_LastInputPoint  = filter.m_LastSmoothPoint;
                     filter.m_uRepeatSampleCount = 0;
+
+                    filter.m_nHistoryDistanceLength = 0;
+                    filter.m_dbTotalDistance = 0.0;
                 }
                  
                 break;
@@ -98,13 +112,59 @@ public:
                 {
                     const TPoint2D& ptLastInput   = filter.m_LastInputPoint;
                     const TPoint2D& ptLastSmooth  = filter.m_LastSmoothPoint;
-                    const POINT& ptNewInput      = contactInfo.pt;
+                    TPoint2D  ptNewInput;
+                    ptNewInput.d[0] = contactInfo.pt.x;
+                    ptNewInput.d[1] = contactInfo.pt.y;
 
 
-                    //int dx = ptNewInput.x - ptLastInput.x;
-                    //int dy = ptNewInput.y - ptLastInput.y;
-                    double dx = double(ptNewInput.x) - ptLastSmooth.d[0];
-                    double dy = double(ptNewInput.y) - ptLastSmooth.d[1];
+                    double dx = ptNewInput.d[0] - ptLastInput.d[0];
+                    double dy = ptNewInput.d[1] - ptLastInput.d[1];
+                    double dbNewDistance = sqrt(dx*dx + dy*dy);
+
+
+                    //记录历史距离
+                    if (filter.m_nHistoryDistanceLength < _countof(filter.m_HistoryDistance))
+                    {//距离数组未满
+                        double dx = ptNewInput.d[0] - ptLastInput.d[0];
+                        double dy = ptNewInput.d[1] - ptLastInput.d[1];
+                        double dbNewDistance = sqrt(dx*dx + dy*dy);
+
+                        filter.m_HistoryDistance[filter.m_nHistoryDistanceLength] = dbNewDistance;
+
+                        filter.m_dbTotalDistance += dbNewDistance;
+
+                        filter.m_nHistoryDistanceLength++;
+                    }
+                    else
+                    {//距离数组未满
+
+                        filter.m_dbTotalDistance -= filter.m_HistoryDistance[0];
+
+                        //移出一个老的数据，补充一个新的数据
+                        for (int k = 1; k < _countof(filter.m_HistoryDistance); k++)
+                        {
+                            filter.m_HistoryDistance[k - 1] = filter.m_HistoryDistance[k];
+                        }
+
+
+                        filter.m_HistoryDistance[_countof(filter.m_HistoryDistance) - 1] = dbNewDistance;
+                        filter.m_dbTotalDistance += dbNewDistance;
+
+                    }
+
+#ifdef _DEBUG
+                    AtlTrace(_T("newDistance=%f,TotalDistance=%f\n"), dbNewDistance, filter.m_dbTotalDistance);
+#endif
+
+
+
+                    //double dx = ptNewInput.d[0] - ptLastSmooth.d[0];
+                    //double dy = ptNewInput.d[1] - ptLastSmooth.d[1];
+                    //double dx2 = dx*dx;
+                    //double dy2 = dy*dy;
+
+                    //double d2 = dx2 + dy2;
+                    //double distance = sqrt(d2);
 
                     if(dx == 0 && dy == 0)
                     {
@@ -115,21 +175,19 @@ public:
                         filter.m_uRepeatSampleCount = 0;
                     }
 
-                    double dx2 = dx*dx;
-                    double dy2 = dy*dy;
-
-                    double d2   = dx2 + dy2;
-                    double distance = sqrt(d2);
-
+                    //Beta(x) = a / (a + x)
+                    //double Beta = 1 / (1 + filter.m_dbTotalDistance);
+                    //Beta = 1.0;
 
                     TPoint2D ptSmooth;
 
                     if(filter.m_uRepeatSampleCount >= 3)//连续多次是同一个输入点,则给输入点就是实际输入点,跳过平滑处理
                     {
-                        ptSmooth.d[0] = double(ptNewInput.x);
-                        ptSmooth.d[1] = double(ptNewInput.y);
+                        ptSmooth = ptNewInput;
+                        //ptSmooth.d[0] = double(ptNewInput.x);
+                        //ptSmooth.d[1] = double(ptNewInput.y);
                     }
-                    else if(distance < m_nMaxDistance)
+                    else if(filter.m_dbTotalDistance < m_nMaxDistance)
                     {
                         
                         //计算平滑系数
@@ -139,17 +197,17 @@ public:
 
                         //抛物线模型
                         //λ = λmin + (λmax - λmin) * sqrt(1 - D/D_max)
-                        double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - distance / m_nMaxDistance);
-                       
-                        ptSmooth.d[0] = smooth_coef * double(ptLastSmooth.d[0]) + (1.0 - smooth_coef) * double(ptNewInput.x);
-                        ptSmooth.d[1] = smooth_coef * double(ptLastSmooth.d[1]) + (1.0 - smooth_coef) * double(ptNewInput.y);
+                        //double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - distance / m_nMaxDistance);
+                        double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - filter.m_dbTotalDistance / m_nMaxDistance);
+
+                        ptSmooth.d[0] = smooth_coef * ptLastSmooth.d[0] + (1.0 - smooth_coef) * ptNewInput.d[0];
+                        ptSmooth.d[1] = smooth_coef * ptLastSmooth.d[1] + (1.0 - smooth_coef) * ptNewInput.d[1];
                     }
                     else
                     {
                         double smooth_coef =  m_dbMinSmoothCoef;
-
-                        ptSmooth.d[0] = smooth_coef * double(ptLastSmooth.d[0]) + (1.0 - smooth_coef) * double(ptNewInput.x);
-                        ptSmooth.d[1] = smooth_coef * double(ptLastSmooth.d[1]) + (1.0 - smooth_coef) * double(ptNewInput.y);
+                        ptSmooth.d[0] = smooth_coef * ptLastSmooth.d[0] + (1.0 - smooth_coef) * ptNewInput.d[0];
+                        ptSmooth.d[1] = smooth_coef * ptLastSmooth.d[1] + (1.0 - smooth_coef) * ptNewInput.d[1];
                     }
 
 
@@ -165,8 +223,9 @@ public:
                     contactInfo.pt.y = long(ptSmooth.d[1] + .5);
 
                     filter.m_LastSmoothPoint = ptSmooth;
-                    filter.m_LastInputPoint.d[0] = double(ptNewInput.x);
-                    filter.m_LastInputPoint.d[1] = double(ptNewInput.y);
+                    //filter.m_LastInputPoint.d[0] = double(ptNewInput.x);
+                    //filter.m_LastInputPoint.d[1] = double(ptNewInput.y);
+                    filter.m_LastInputPoint   = ptNewInput;
                 }
 
                 break;
@@ -183,8 +242,6 @@ private:
     //<added by Jiqw 201505191136
     void InitFilter()
     {
-
-
         //初始化滤波器状态
         for(UINT32 i = 0; i < _countof(m_aryFilters); i++)
         {
@@ -213,14 +270,20 @@ protected:
     static const int DEBOUCNE_DELAY = 2;//消抖延迟
     static const int MAGINIFY = 1024;
 
+    static const int HISTORY_DISTANCE_LENGTH = 5;
     //滤波状态
-    struct TFilterState{
-    //POINT         m_LastPoints[DEBOUCNE_DELAY] ;//笔迹上一个点的位置。
-    TPoint2D       m_LastSmoothPoint  ;//笔迹上一个平滑点的位置。
-    TPoint2D       m_LastInputPoint   ;//笔迹上一个平滑点的位置。
-    UINT           m_uRepeatSampleCount;//同一点重复采样计数
-    E_FilterState m_eFilterState ;//滤波状态机状态
+    struct TFilterState
+    {
+        //POINT        m_LastPoints[DEBOUCNE_DELAY] ;//笔迹上一个点的位置。
+        TPoint2D       m_LastSmoothPoint  ;//笔迹上一个平滑点的位置。
+        TPoint2D       m_LastInputPoint   ;//笔迹上一个平滑点的位置。
+        UINT           m_uRepeatSampleCount;//同一点重复采样计数
+        E_FilterState  m_eFilterState;//滤波状态机状态
 
+       //记录移动的历史距离的数组
+        double        m_HistoryDistance[HISTORY_DISTANCE_LENGTH];
+        int           m_nHistoryDistanceLength;
+        double        m_dbTotalDistance;//总的平均移动距离
     };//
 
     TFilterState m_aryFilters[MAX_STROKE_NUM];//记录过滤器状态的数组,每支笔对应一个滤波器
@@ -242,6 +305,9 @@ protected:
 #else
     static const int KD1PhysicalDistance = 2; //D1对应的物理距离，其只和物理尺寸相关,单位为mm，即物理在任何投影区域，只要物理移动距离<m_nD1PhysicalDistance，则认为其未移动
     static const int KD2PhysicalDistance = 14*2; //D2对应的物理距离，其只和物理尺寸相关,单位为mm，即物理在任何投影区域，只要物理移动距离>m_nD2PhysicalDistance，则认为不需要作平滑操作
+    //static const int KD1PhysicalDistance = 1; //D1对应的物理距离，其只和物理尺寸相关,单位为mm，即物理在任何投影区域，只要物理移动距离<m_nD1PhysicalDistance，则认为其未移动
+    //static const int KD2PhysicalDistance = 14; //D2对应的物理距离，其只和物理尺寸相关,单位为mm，即物理在任何投影区域，只要物理移动距离>m_nD2PhysicalDistance，则认为不需要作平滑操作
+
 #endif
 
 
