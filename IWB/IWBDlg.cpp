@@ -2443,11 +2443,11 @@ void CIWBDlg::OnMenuParameterSettings()
 		/////////设置是否启用手动绘制的静态屏蔽图
 		if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
 		{
-			pSensor->GetPenPosDetector()->EnableOnLineScreenArea(TRUE);
+			pSensor->GetPenPosDetector()->EnableOnlineScreenArea(TRUE);
 		}
 		else
 		{
-			pSensor->GetPenPosDetector()->EnableOnLineScreenArea(FALSE);
+			pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
 		}
     }//if
 }
@@ -3086,7 +3086,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	*/
 	///////插值标志
 	BOOL bEnableStrokeInterpolateTemp= FALSE ;
-	BOOL bEnableOnLineScreenArea = FALSE;
+	BOOL bEnableOnlineScreenArea = FALSE;
 
 	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
@@ -3110,9 +3110,9 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	{
 		UINT nSensorIndex = lpSensor->GetID();
 		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[nSensorIndex].vecSensorModeConfig[eProjectionMode].advanceSettings;	
-		bEnableOnLineScreenArea = advanceSettings.bIsOnLineScreenArea;
+		bEnableOnlineScreenArea = advanceSettings.bIsOnLineScreenArea;
 	}
-	if (bEnableOnLineScreenArea)
+	if (bEnableOnlineScreenArea)
 	{
 		m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);		
 	}

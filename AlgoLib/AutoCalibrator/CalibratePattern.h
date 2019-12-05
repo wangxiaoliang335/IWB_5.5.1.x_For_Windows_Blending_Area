@@ -1351,8 +1351,6 @@ public:
 
         int fourRadius = 4*nRadius;
 
-		//int threeRadius = 3 * nRadius;
-
 
          m_nColCount  = (nScreenWidth  - leftMargin - rightMargin - nRadius - nRadius) / fourRadius + 1;
          m_nRowCount  = (nScreenHeight - leftMargin - rightMargin - nRadius - nRadius) / fourRadius + 1;

@@ -1,7 +1,11 @@
 #pragma once
 #include <atlstr.h>
 #include <limits>
+#include <fstream>
 #include <assert.h>
+//#include <pathcch.h>
+//#pragma comment(lib, "Pathcch.lib")
+
 #include "SIMD.h"
 #include <mmintrin.h>
 #include "MyAPI.h"
