@@ -153,7 +153,7 @@ public:
                     }
 
 #ifdef _DEBUG
-                    AtlTrace(_T("newDistance=%f,TotalDistance=%f\n"), dbNewDistance, filter.m_dbTotalDistance);
+                    //AtlTrace(_T("newDistance=%f,TotalDistance=%f\n"), dbNewDistance, filter.m_dbTotalDistance);
 #endif
 
 

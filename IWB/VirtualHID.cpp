@@ -660,11 +660,10 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         }
 
 
-
-
     }//for
 
     BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
+
 
     return bRet;
 }
