@@ -903,10 +903,26 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     autoCalibrateParams.bSaveInermediatFile    = g_tSysCfgData.globalSettings.bSaveIntermediateFile;
     autoCalibrateParams.bRecordVideo           = g_tSysCfgData.globalSettings.bRecordVideo;
 
-	autoCalibrateParams.bEnableOnineScreenArea = TSensorModeConfig->advanceSettings.bIsOnLineScreenArea;
 
+
+	//在线手动设置的屏蔽区域
+     autoCalibrateParams.bEnableOnlineScreenArea = this->m_oPenPosDetector.IsEnableOnlineScreenArea();
+    std::vector<CPoint> vecOnlineVertices;
+    this->m_oPenPosDetector.GetCurrentOnLineScreenAreaPt(vecOnlineVertices);
+    int nOnlineVerticesCount = vecOnlineVertices.size();
+
+    autoCalibrateParams.vecOnlineAreaVertices.resize(nOnlineVerticesCount);
+    for (int i = 0; i < nOnlineVerticesCount; i++)
+    {
+        autoCalibrateParams.vecOnlineAreaVertices[i].x = vecOnlineVertices[i].x;
+        autoCalibrateParams.vecOnlineAreaVertices[i].y = vecOnlineVertices[i].y;
+
+    }
+    
 	autoCalibrateParams.autocalibrateparamslist.clear();
 	int nCount = lensCfg.autoCalibrateSettingsList.size();
+
+
 	for (int i = 0 ; i < nCount; i++ )
 	{
 		AutoCalibrateParams  params;
@@ -916,52 +932,7 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 		autoCalibrateParams.autocalibrateparamslist.push_back(params);
 	}
 
-	//m_tCfgData.advanceSettings.bRecordVideo;
-    //autoCalibrateParams.monitors.resize(m_tCfgData.attachedMonitorIds.size());
 
-    //m_oDispMonitorFinder.SearchDisplayDev();
-    //for(size_t i =0; i < m_tCfgData.attachedMonitorIds.size(); i++)
-    //{
-    //      unsigned int uMonitorID = m_tCfgData.attachedMonitorIds[i];
-    //      
-    //      //const DisplayDevInfo* pDisplayDevInfo = m_oDispMonitorFinder.GetMointorInfo(uMonitorID);
-    //      const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetMointorInfo(uMonitorID);
-    //      if(pDisplayDevInfo)
-    //      {
-    //          autoCalibrateParams.monitors.push_back(*pDisplayDevInfo);
-    //      }
-
-    //}
-
-    ////搜索系统屏幕个数
-    //theApp.GetMonitorFinder().SearchDisplayDev();
-
-
-
-    //if(this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return;
-
-    //{
-    //    LOG_INF("Virtual Screen Info=(l=%d,t=%d, cx=%d, cy=%d)", GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN), GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
-    //}
-
-    //for (int i = 0; i < theApp.GetMonitorFinder().GetDisplayDevCount(); i++)
-    //{
-
-    //    const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(i);
-
-    //    if (pDisplayDevInfo)
-    //    {
-    //        LOG_INF("monitorinfo id= %d rect=(l=%d,t=%d,r=%d,b=%d)", i, pDisplayDevInfo->rcMonitor.left, pDisplayDevInfo->rcMonitor.top, pDisplayDevInfo->rcMonitor.right, pDisplayDevInfo->rcMonitor.bottom);
-    //    }          
-    //}
-
-    //const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_nID);
-
-
-    //if(pDisplayDevInfo)
-    //{
-      //autoCalibrateParams.monitors.push_back(*pDisplayDevInfo);
-    //}
 
     TScreenInfo tScreenInfo;
     BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
@@ -977,8 +948,7 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     staticMaskingParams.nMaskEroseSize = lensCfg.autoMaskSettings.nMaskAreaEroseSize;
 
     m_oAutoCalibrator.StartCalibrating(autoCalibrateParams, staticMaskingParams);
-
-    m_oPenPosDetector.EnterCalibrateMode(m_oAutoCalibrator.GetCalibrateHWnd(), CALIBRATE_MODE_AUTO);
+     
 
     BOOL bRecordVideoTemp;
 
@@ -989,6 +959,8 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
     {
         this->m_pInterceptFilter->StartRecording(m_oAutoCalibrator.GetDebugVideoFilePath());
     }
+
+    m_oPenPosDetector.EnterCalibrateMode(m_oAutoCalibrator.GetCalibrateHWnd(), CALIBRATE_MODE_AUTO);
 
 }
 
@@ -1778,7 +1750,7 @@ void CIWBSensor::SetOnlineScreenArea(bool bEnableOnlineScreenArea)
 
 	m_tCfgData.vecSensorModeConfig[eProjectionMode].advanceSettings.bIsOnLineScreenArea = bEnableOnlineScreenArea;
 
-	this->m_oPenPosDetector.EnableOnLineScreenArea(bEnableOnlineScreenArea);
+	this->m_oPenPosDetector.EnableOnlineScreenArea(bEnableOnlineScreenArea);
 	
 }
 

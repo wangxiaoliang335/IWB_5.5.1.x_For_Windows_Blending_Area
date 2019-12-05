@@ -5,6 +5,7 @@
 #include <limits>
 #include "..\inc\SortVertex.h"
 #include "..\inc\ExpandPolygon.h"
+
 //@功能:返回画面的梯度能量
 //@参数:pImageData, 指向图像像素数据的指针
 //      nWidth, 图像宽度
@@ -267,6 +268,8 @@ static BOOL GenMaskFrame(const CWordFrame& refBkgndFrame, const CWordFrame& refS
 //        FALSE,处理错误。
 BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
 {
+    m_oWaitTimer.Trigger();
+
     switch(m_eRunStage)
     {
 
@@ -286,8 +289,8 @@ BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
           break;
 
      case E_RUN_STAGE_SAMPLE_BLACKBOARD:
-
-         if(m_oWaitTimer.IsWaitTimeout(BLACK_BOARD_SAMPLE_START_TIME) && !m_oWaitTimer.IsWaitTimeout(BLACK_BOARD_SAMPLE_END_TIME))
+         
+         if(m_oWaitTimer.IsWaitTimeout(BLACK_BOARD_SAMPLE_START_TIME) && !m_oWaitTimer.IsWaitTimeout(BLACK_BOARD_SAMPLE_END_TIME) )
          {
             //累加图片
             AccumulateImageFrame(srcFrame, m_oBlackBoardAccFrame);
@@ -730,7 +733,6 @@ void CMonitorBoundaryFinder::Reset(const CImageFrame& frameInitalScreenMask, HWN
 
     InitBoundaryMarkerPositions(m_nHorzSideMarkerNumber, m_nVertSideMarkerNumber, nMarkDiameter);
 
-   //m_nRunTimes   = 0;
     m_oWaitTimer.Reset();
 
     m_nFlashTimes = 0;
@@ -741,11 +743,8 @@ void CMonitorBoundaryFinder::Reset(const CImageFrame& frameInitalScreenMask, HWN
     m_frameForeground.Clear();
     m_frameBackground.Clear();
 
-    //m_eScreenPart = E_SEARCH_SCREEN_UPPER;
-
     if(!bSimulate)
     {
-        //FillBoard(m_hDispWnd, RED, &m_rcMonitor);
         FillBoard(m_hDispWnd, BACKGROUND_COLOR, &m_rcMonitor);
     }
 
@@ -957,6 +956,8 @@ BOOL CMonitorBoundaryFinder::Process(const CImageFrame& grayImage, BOOL bSimulat
 
     int nVideoWidth  = grayImage.Width ();
     int nVideoHeight = grayImage.Height();
+
+    m_oWaitTimer.Trigger();
 
     //if(WAIT_STEADY_SAMPLE_COUNT < m_nRunTimes && m_nRunTimes  <= WAIT_SAMPLE_END_STAGE_COUNT)
     if (m_oWaitTimer.IsWaitTimeout(WAIT_STEDAY_SAMPLE_TIME) && !m_oWaitTimer.IsWaitTimeout(WAIT_SAMPLE_END_TIME))
@@ -1406,7 +1407,7 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
     m_fpChangeCameraParams = autoCalibrateParams.ChangeCameraParamsProc;
     m_lpCtx                = autoCalibrateParams.lpCtx;
 
-	m_bEnableOnLineScreenArea = autoCalibrateParams.bEnableOnineScreenArea;
+	m_bEnableOnlineScreenArea = autoCalibrateParams.bEnableOnlineScreenArea;
 
     m_oautocalibrateparamslist = autoCalibrateParams.autocalibrateparamslist;
 
@@ -1424,7 +1425,7 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
 
 
 	m_AutoBrightnessRegulator.SetFeedbackCtrlFunction(BrightnessCtrlCallback, (LPVOID)this);
-	if (m_bEnableOnLineScreenArea)
+	if (m_bEnableOnlineScreenArea)
 	{
 		m_AutoBrightnessRegulator.SetExpectedBrightness((m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateExpectedBrightness)>>1);
 	}
@@ -1600,6 +1601,14 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
 
     m_eWorkMode = E_WORK_MODE_AUTO_CALIBRATE;
 
+
+    if (m_eDebugLevel >= E_CALIB_DEBUG_LEVEL_DEBUG)
+    {
+        //模拟校正用数据
+        DbgDumpSimulateParams(autoCalibrateParams);
+    }
+
+    m_nDbgFrameCount = 0;
     return TRUE;
 }
 
@@ -2239,7 +2248,6 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
     }
 
 
-    //int nLeftTopIndex = MatchLeftTopCorner(turnPts, m_ptRoationCenter, _countof(turnPts));
     int nLeftTopIndex = MatchLeftTopCorner(turnPts, _countof(turnPts));
     if(nLeftTopIndex == -1)
     {
@@ -2247,8 +2255,7 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
     }
 
 
-    //
-    //m_vecBorderCalibMap.resize(CMonitorBoundaryFinder::BORDER_MARKER_NUMBER);
+
     m_vecBorderCalibMap.resize(m_oMonitorBoundaryFinder.GetMarkerCount());
     
 
@@ -2256,7 +2263,6 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
 
     const std::vector<RECT>& borderMarkers = this->m_oMonitorBoundaryFinder.GetBorderMarkerPositions();
 
-    //for(size_t nScreenPtIndex=0; nScreenPtIndex < CMonitorBoundaryFinder::BORDER_MARKER_NUMBER; nScreenPtIndex++)
     for (int nScreenPtIndex = 0; nScreenPtIndex < m_oMonitorBoundaryFinder.GetMarkerCount(); nScreenPtIndex++)
     {
 
@@ -2337,6 +2343,28 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
             nImagePtIndex = 0;
         }
     }
+
+    if (m_eDebugLevel >= E_CALIB_DEBUG_LEVEL_DEBUG)
+    {
+        CImageFrame debugFrame = m_oScreenMaskFrame;
+
+        for (size_t i = 0; i < vecBorderPts.size(); i++)
+        {
+            long x = vecBorderPts[i].x + 5;
+            long y = vecBorderPts[i].y + 5;
+
+            debugFrame.SetPixel(vecBorderPts[i], 0xFF);
+
+            char szNo[32];
+            sprintf_s(szNo, _countof(szNo), "%d", i+1);
+            debugFrame.PutStr(x, y, szNo, 0x80);
+
+        }
+
+
+        Debug_SaveImageFrame(debugFrame, _T("BorderVertices.jpg"));
+
+    }
     
     std::vector<POINT> vecBorderPtsReduced = vecBorderPts;
     
@@ -2397,7 +2425,10 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
                 debugFrame.SetPixel(vecBorderPts[i], 0x40);
             }
 
-            Debug_SaveImageFrame(debugFrame, _T("FullScrenMask.jpg"));
+            if (m_eDebugLevel >= E_CALIB_DEBUG_LEVEL_DEBUG)
+            {
+                Debug_SaveImageFrame(debugFrame, _T("FullScrenMask.jpg"));
+            }
         }
     }
     else
@@ -2829,34 +2860,36 @@ void CAutoCalibratorImpl2::OnMonitorCollectDataFail()
         if(m_eCalibrateError == E_AUTO_CALIBRATOR_ERROR_DETECT_DISPLAY_AREA_FAILED)
         {  //如果是检查屏幕边界错误, 则将边界标志直径加倍
             //SQUARE_SIZE += (SQUARE_SIZE>>1);
-
         }
 
-        //选取下一组画面数据
-        int nIndex = m_nTryTimes % this->m_oautocalibrateparamslist.size();
-
-        if(this->m_ePattern  > E_CALIBRATE_PATTERN_9_COLS)
+        if (FALSE == this->m_bIsSimulatedCalibrating)
         {
-            this->m_ePattern = E_AutoCalibratePattern((int)this->m_ePattern - 1);
+            //选取下一组画面数据
+            int nIndex = m_nTryTimes % this->m_oautocalibrateparamslist.size();
+
+            if (this->m_ePattern > E_CALIBRATE_PATTERN_9_COLS)
+            {
+                this->m_ePattern = E_AutoCalibratePattern((int)this->m_ePattern - 1);
+            }
+
+            ///////更改摄像头的
+            if (m_fpChangeCameraParams)
+            {
+                m_fpChangeCameraParams(E_CAMERA_AUTO_CALIBRATE, m_lpCtx, 0, nIndex);
+            }
+
+            ///摄像头参数需要修改
+            m_AutoBrightnessRegulator.SetAutoCalibrateParamsIndex(nIndex);
+            //修改校正时期望的画面平均亮度
+            m_AutoBrightnessRegulator.SetExpectedBrightness(m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateExpectedBrightness);
+
+            //自动校正时的校正图案中白色块的亮度值(0~255)        
+            BYTE gray = m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateHilightGray;
+            m_clrGridHighlight = RGB(gray, gray, gray);
+
+            //设置自动校正时间放大倍数
+            SetTimeMagnification(m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateSpeed);
         }
-
-        ///////更改摄像头的
-        if (m_fpChangeCameraParams)
-        {
-            m_fpChangeCameraParams(E_CAMERA_AUTO_CALIBRATE, m_lpCtx, 0, nIndex);
-        }
-
-        ///摄像头参数需要修改
-        m_AutoBrightnessRegulator.SetAutoCalibrateParamsIndex(nIndex);
-        //修改校正时期望的画面平均亮度
-        m_AutoBrightnessRegulator.SetExpectedBrightness(m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateExpectedBrightness);
-
-        //自动校正时的校正图案中白色块的亮度值(0~255)        
-        BYTE gray = m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateHilightGray;
-        m_clrGridHighlight = RGB(gray, gray, gray);
-
-        //设置自动校正时间放大倍数
-        SetTimeMagnification(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateSpeed);
 
         //复位用旧法搜索屏幕上下半区的标志
         m_bUseOldMethod = FALSE;
@@ -2897,6 +2930,12 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
             //m_oAVIRecorder.Write((const BYTE*)pYUVFrame->GetData(), pYUVFrame->Size());
         }
     }
+    else
+    {
+        m_oDebugWindow.PrintFrame(*pGrayFrame);
+    }
+
+    m_nDbgFrameCount++;
 
     CImageFrame monoFrame = *pGrayFrame;
 
@@ -2911,11 +2950,13 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
     {
         m_AutoBrightnessRegulator.ProcessImage(monoFrame.GetData(), monoFrame.Width(), monoFrame.Height());
         return TRUE;
-
     }
 
-    //RECT rc;
+
     BOOL bRet = FALSE;
+
+    m_oWaitTimer.Trigger();
+
     switch(m_eCalibrateStage)
     {
     case E_AUTO_CALIBRATE_START://开始校正
@@ -2933,14 +2974,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
                 //2014/04/21>>
             }
         }
-
-        //InitBoundryMarkerPositions(HORZ_SIDE_MARKER_NUMBER, VERT_SIDE_MARKER_NUMBER, SQUARE_SIZE);//初始化
-
-
-        //<<debug
-        //m_oDebugBorderSquareFrame.SetSize(monoFrame.Width(), monoFrame.Height(), 1);
-        //m_oDebugBorderSquareFrame.Clear();
-        //debug>>
 
         //显示全屏白色
         if(FALSE == this->m_bIsSimulatedCalibrating)//非仿真模式
@@ -3038,17 +3071,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
 
     case E_AUTO_CHANGE_BRIGHTNESS_2://第二次自动调节画面亮度
         {      
-           //自动亮度调节
-            //BYTE brightnessDiff = m_AutoBrightnessRegulator.ProcessImage(monoFrame.GetData(), monoFrame.Width(), monoFrame.Height());
-            //if(m_nStageWaitCount < 1*60)//至少调节1秒钟。
-            //{
-            //    break;
-            //}
-
-            //if(brightnessDiff > 10 && m_nStageWaitCount < 5*60)//最大调节时间是5秒钟
-            //{
-            //    break;
-            //}
 
             //if(m_nStageWaitCount < 60)//延时1秒钟
             if (!m_oWaitTimer.IsWaitTimeout(1000))//延时1秒钟
@@ -3057,35 +3079,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
             }
             else
             {
-
-                //2014/04/21,在双液晶屏上拼接环境中测试，意外发现，如果屏幕背景为黑色, 则四角的白色圆圈在画面中显得很暗。
-                /*
-                //如果背景不为黑色， 则角的白色圆圈反而显得很亮。
-                //全屏红显示
-                if(FALSE == this->m_bIsSimulatedCalibrating)
-                {
-                //2014/04/21,在双液晶屏上拼接环境中测试，意外发现，如果屏幕背景为黑色, 则四角的白色圆圈在画面中显得很暗，
-                //如果背景不为黑色， 则角的白色圆圈反而显得很亮。
-                //
-                //进一步实验发现红色背景效果最好
-                //绿色背景时，屏幕中间上部高亮, 曝光过度。
-
-                RECT rc  = m_CurrentMonitorInfo.rcMonitor;
-
-                //映射屏幕坐标到校正窗体的坐标
-                MapWindowPoints(
-                NULL,                     //handle to the source window, desktop
-                m_AutoCalibrateWnd,       //handle to destination window
-                (LPPOINT)&rc,             //array of points to map 
-                sizeof(RECT)/sizeof(POINT)//number of points in array
-                );
-
-                FillBoard(m_AutoCalibrateWnd, RED, &rc);
-
-                }
-                //
-                */
-                //m_nStageWaitCount = 0;
                 m_oWaitTimer.Reset();
                 m_eCalibrateStage = E_SEARCH_SCREEN_IMAGE_BOUNDARY;
             }
@@ -3133,13 +3126,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
         else
         {
             if(!this->m_oMonitorBoundaryFinder.IsDone()) break;
-
-            //m_ptUpperCentroid = this->m_oMonitorBoundaryFinder.GetUpperPartCentroid();
-            //m_ptLowerCentroid = this->m_oMonitorBoundaryFinder.GetLowerPartCentroid();
-            //m_vecUpperBorderCalibratePts = this->m_oMonitorBoundaryFinder.GetUpperBorderCalibratePts();
-            //m_vecLowerBorderCalibratePts = this->m_oMonitorBoundaryFinder.GetLowerBorderCalibratePts();
-            //m_oUpperHalfMaskFrame        = this->m_oMonitorBoundaryFinder.GetUpperHalfMaskFrame();
-            //m_oLowerHalfMaskFrame        = this->m_oMonitorBoundaryFinder.GetLowerHalfMaskFrame();
 
             //屏幕边界搜索后续处理
             BOOL bRet = OnPostSearchScreenBoundary(monoFrame.Width(), monoFrame.Height());
@@ -3551,13 +3537,16 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
                 int Radius = Radius_A > Radius_B ? Radius_B : Radius_A;
 
                 m_oCalibratePattern.InitPattern(Radius, this->m_CurrentMonitorInfo.rcArea);
+
+
                 //显示校正图案
                 m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, m_clrGridHighlight, BACKGROUND_COLOR);
 
-                //m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, RED, BACKGROUND_COLOR);
+                if (m_eDebugLevel >= E_CALIB_DEBUG_LEVEL_DEBUG)
+                {
+                    DbgDumpPatternInfo(Radius, this->m_CurrentMonitorInfo.rcArea);
+                }
 
-                //设置图像中的校正点数组尺寸
-                //m_vecInteriorCalibPoint.resize(this->m_oCalibratePattern.GetCalibrateMarkCount());
             }
             //设置校正点图像坐标到屏幕坐标的映射数组的尺寸
             m_vecInteriorCalibMap.resize(this->m_oCalibratePattern.GetCalibrateMarkCount());
@@ -3584,49 +3573,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
 
 
     case E_PROCESS_PATTERN://处理校正图案
-        // m_nStageWaitCount++;
-        //m_nStageFrameCount++;
-        //
-        //if(m_nStageFrameCount == 1)
-        //{
-        //      if(FALSE == this->m_bIsSimulatedCalibrating)//非模拟校正状态。
-        //      {
-        //            m_liImageGrdientEnergy = 0;
-
-        //            //初始化校正图案
-        //            int nScreenWidth  = this->m_CurrentMonitorInfo.rcArea.right  - this->m_CurrentMonitorInfo.rcArea.left;
-        //            int nScreenHeight = this->m_CurrentMonitorInfo.rcArea.bottom - this->m_CurrentMonitorInfo.rcArea.top;
-
-
-        //            int Radius_A = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, nScreenWidth);
-        //            int Radius_B = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, nScreenHeight);
-
-        //            //取两半径数值小者
-        //            int Radius = Radius_A > Radius_B ? Radius_B : Radius_A;
-
-        //            m_oCalibratePattern.InitPattern(Radius, this->m_CurrentMonitorInfo.rcArea);
-        //            //显示校正图案
-        //            m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, m_clrGridHighlight, BACKGROUND_COLOR);
-
-        //            //m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd, RED, BACKGROUND_COLOR);
-
-        //            //设置图像中的校正点数组尺寸
-        //            //m_vecInteriorCalibPoint.resize(this->m_oCalibratePattern.GetCalibrateMarkCount());
-        //      }
-        //        //设置校正点图像坐标到屏幕坐标的映射数组的尺寸
-        //        m_vecInteriorCalibMap.resize(this->m_oCalibratePattern.GetCalibrateMarkCount());
-
-        //            
-        //        //内部校正点计数器
-        //        m_nInteriorCalibPtNumber = 0;
-        //}
-
-        //if(m_nStageFrameCount == MAX_STAGE_FRAME_COUNT)//开始准备校正图片了
-        //{
-
-        //}
-        ////else if(MAX_STAGE_WAIT_COUNT < m_nStageWaitCount)
-        ////else if(MAX_STAGE_FRAME_COUNT < m_nStageFrameCount && m_oWaitTimer.IsWaitTimeout(MAX_NEED_WAIT_TIME))
         if (m_oWaitTimer.IsWaitTimeout(MAX_NEED_WAIT_TIME))
         {
             //选取最清晰的上部图片(即梯度能量最大)的图片
@@ -4755,7 +4701,9 @@ BOOL CAutoCalibratorImpl2::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNo
         return FALSE;
     }
 
+
     //设置自动亮度调节时期望的画面平均亮度
+    m_AutoBrightnessRegulator.Reset();
     m_AutoBrightnessRegulator.SetExpectedBrightness(cBrightness);
     m_AutoBrightnessRegulator.SetFeedbackCtrlFunction(NULL);
 
@@ -4821,7 +4769,50 @@ BOOL CAutoCalibratorImpl2::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNo
     int Radius = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, uCx);
     m_oCalibratePattern.InitPattern(Radius, this->m_CurrentMonitorInfo.rcArea);
 
+    TCHAR szSmulateParamsFileName[MAX_PATH];
+    _tcscpy_s(szSmulateParamsFileName, _countof(szSmulateParamsFileName), lpszAVIFilePath);
 
+
+    //PathCchRemoveFileSpec(szSmulateParamsFileName, _countof(szSmulateParamsFileName));
+    PathRemoveFileSpec(szSmulateParamsFileName);
+
+    //PathCchAppend(szSmulateParamsFileName, _countof(szSmulateParamsFileName), _T("simulate-params.txt"));
+    PathAppend(szSmulateParamsFileName, _T("simulate-params.txt"));
+
+    DbgLoadSimulateParams(szSmulateParamsFileName);
+
+
+    //每个屏幕的校正尝试次数
+    m_nTryTimes = 0;
+
+    if (m_oautocalibrateparamslist.size() > 0)
+    {
+        //设置自动校正时间放大倍数
+        SetTimeMagnification(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateSpeed);
+
+
+        //最大尝试次数，要能够覆盖所有的画面参数
+        if (this->m_nMaxTryTimes < (int)this->m_oautocalibrateparamslist.size())
+        {
+            this->m_nMaxTryTimes = (int)this->m_oautocalibrateparamslist.size();
+        }
+
+        if (m_bEnableOnlineScreenArea)
+        {
+            m_AutoBrightnessRegulator.SetExpectedBrightness((m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateExpectedBrightness) >> 1);
+        }
+        else
+        {
+            m_AutoBrightnessRegulator.SetExpectedBrightness(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateExpectedBrightness);
+        }
+    }
+    else
+    {
+        //设置自动校正时间放大倍数
+        SetTimeMagnification(1);
+    }
+
+    m_nDbgFrameCount = 0;
 
     DWORD dwThreadId = 0;
     m_hSimulatedCalibrateThread = ::CreateThread(
@@ -5141,6 +5132,8 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoMask(const CImageFrame* pGrayFrame)
 
     //RECT rc;
     BOOL bRet = FALSE;
+
+    m_oWaitTimer.Trigger();
     switch(m_eAutoMaskStage)
     {
     case E_AUTO_MASK_START://开始校正
@@ -5727,6 +5720,130 @@ void CAutoCalibratorImpl2::EndAutoMasking()
 }
 
 
+
+ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
+{
+
+    CAutoCalibratorImpl2* pCalibrator = reinterpret_cast<CAutoCalibratorImpl2*>(lpCtx);
+
+    //生成调试窗体
+    int nCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
+    int nFrameCx = GetSystemMetrics(SM_CXFRAME);
+    int nFrameCy = GetSystemMetrics(SM_CYFRAME);
+
+    RECT rcPosition;
+    rcPosition.left = 0;
+    rcPosition.top = 0;
+
+    rcPosition.right = 640;
+    rcPosition.bottom = 480;
+
+    rcPosition.right += nFrameCx * 2;
+    rcPosition.bottom += nCaptionHeight + nFrameCy * 2;
+
+
+    pCalibrator->m_oDebugWindow.Create(NULL, rcPosition, _T("Dbg Window"), WS_POPUP | WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+
+
+    pCalibrator->m_oDebugWindow.SetWindowPos(
+        HWND_TOPMOST,
+        rcPosition.left,
+        rcPosition.top,
+        rcPosition.right - rcPosition.left,
+        rcPosition.bottom - rcPosition.top,
+        SWP_SHOWWINDOW);
+
+    const BITMAPINFOHEADER* bmpinfoHeader = pCalibrator->m_oAVIInput.GetAVIFormat();
+    if (bmpinfoHeader == NULL)
+    {
+        return -1;
+    }
+
+    CImageFrame mjpgFrame;
+    CImageFrame grayFrame;
+
+    mjpgFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, bmpinfoHeader->biBitCount >> 3);
+    grayFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1);
+
+    CImageFrame onlineScreenArea;
+    BYTE initValue = 0x00;
+    onlineScreenArea.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1, &initValue);
+    FillPolygon(
+        onlineScreenArea.GetData(),
+        bmpinfoHeader->biWidth,
+        bmpinfoHeader->biHeight,
+        &pCalibrator->m_vecDbgOnlineScreenVertices[0],
+        pCalibrator->m_vecDbgOnlineScreenVertices.size(),
+        255,
+        TRUE);
+
+
+    pCalibrator->m_oCalibratePattern.InitPattern(pCalibrator->m_nDbgPatternRadius, pCalibrator->m_rcDbgMonitor);
+
+
+    Debug_SaveImageFrame(onlineScreenArea, _T("OnlineScreenArea.jpg"));
+
+
+    CMJPG_Decoder m_oMJPGDecoder;//MJPG解码器
+
+    ::SetTimer(NULL, 1, 10, NULL);
+
+    MSG msg;
+    while (::GetMessage(&msg, NULL, 0, 0))
+    {
+
+        switch (msg.message)
+        {
+        case WM_TIMER:
+        {
+            LONG lBytes = 0;
+            LONG lSamples = 0;
+            BOOL bRet = FALSE;
+
+            bRet = pCalibrator->m_oAVIInput.Read((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, &lSamples);
+            if (!bRet)
+            {
+
+                PostThreadMessage(::GetCurrentThreadId(), WM_QUIT, 0, 0);
+                break;
+            }
+
+            int nMJPGDataLength = 0;
+            m_oMJPGDecoder.ProcessData(mjpgFrame.GetData(), lBytes, (BYTE *)grayFrame.GetData(), &nMJPGDataLength);
+
+            //用在线的屏蔽图做与运算
+            grayFrame &= onlineScreenArea;
+
+            bRet = pCalibrator->FeedImage(&grayFrame);
+            if (!bRet)
+            {
+                //pCalibrator->m_oDebugWindow.DestroyWindow();
+                PostThreadMessage(::GetCurrentThreadId(), WM_QUIT, 0, 0);
+            }
+
+        }
+
+        break;
+
+
+        default:
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+
+        }//switch
+
+    }//while
+
+
+    pCalibrator->m_oDebugWindow.DestroyWindow();
+    pCalibrator->m_bIsSimulatedCalibrating = FALSE;
+    pCalibrator->m_bIsWorking = FALSE;
+    pCalibrator->m_oAVIInput.Close();
+
+    return 0;
+
+}
+
 //调试工具
 void CAutoCalibratorImpl2::DebugTool_LoadCalibrateData(
     const char* szCalirateDataFileName,
@@ -5883,8 +6000,357 @@ void CAutoCalibratorImpl2::DebugTool_LoadCalibrateData(
 
 void CAutoCalibratorImpl2::SetTimeMagnification(DWORD dwTimeMagnification)
 {
-    
     this->m_oWaitTimer.Init(dwTimeMagnification);
     this->m_oMonitorAreaLocator.GetWaiterTimer().Init(dwTimeMagnification);
     this->m_oMonitorBoundaryFinder.GetWaiterTimer().Init(dwTimeMagnification);
 }
+
+
+//
+
+//调试工具,记录模拟参数
+void CAutoCalibratorImpl2::DbgDumpSimulateParams(const TAutoCalibrateParams& autoCalibrateParams)
+{
+    FILE* file;
+
+    CAtlString strFileName;
+    strFileName.Format(
+        _T("%s\\simulate-params.txt"),
+        m_strImageOutputBaseDir);
+
+    CT2CA szFileName(strFileName);
+
+    fopen_s(&file, szFileName, "a");
+
+    if (file == NULL) return;
+
+    char szData[1024];
+    
+
+    const AutoCalibrateParamsList& autoCalibrateParamList = autoCalibrateParams.autocalibrateparamslist;
+    //校正参数
+    for (size_t i = 0; i < autoCalibrateParamList.size(); i++)
+    {
+        sprintf_s(
+            szData,
+            _countof(szData),
+            "%s\n",
+            "#calibrate params");
+        fwrite(szData, 1, strlen(szData), file);
+
+        sprintf_s(
+            szData,
+            _countof(szData),
+            "expected-brightness=%d, spd=%d, brightness=%d, gamma=%d\n",
+
+            autoCalibrateParamList[i].autoCalibrateImageParams.autoCalibrateExpectedBrightness,
+            autoCalibrateParamList[i].autoCalibrateImageParams.autoCalibrateSpeed,
+            autoCalibrateParamList[i].videoprocampproperty.Prop_VideoProcAmp_Brightness,
+            autoCalibrateParamList[i].videoprocampproperty.Prop_VideoProcAmp_Gamma);
+        
+        fwrite(szData, 1, strlen(szData), file);
+    }
+
+    //使能在线屏蔽图
+    sprintf_s(
+            szData,
+            _countof(szData),
+            "%s\n",
+            "#EnableOnlineScreenArea");
+    fwrite(szData, 1, strlen(szData), file);
+    
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%s\n",
+        autoCalibrateParams.bEnableOnlineScreenArea ? "TRUE" : "FALSE");
+    fwrite(szData, 1, strlen(szData), file);
+
+    //手动在线屏蔽图顶点位置
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%s\n",
+        "#Online Screen Area Vertices");
+    fwrite(szData, 1, strlen(szData), file);
+
+
+    const std::vector<POINT>&  onlineVertices = autoCalibrateParams.vecOnlineAreaVertices;
+
+    int nVerticesCount = onlineVertices.size();
+    memset(szData, 0, sizeof(szData));
+    for (int i = 0; i < nVerticesCount; i++)
+    {
+        char text[128];
+        sprintf_s(text, _countof(text),"(%d,%d)%s",
+            onlineVertices[i].x,
+            onlineVertices[i].y,
+            i == (nVerticesCount - 1) ? "" : ";");
+
+        strcat_s(szData, _countof(szData), text);
+    }
+    
+    strcat_s(szData, _countof(szData), "\n");
+    fwrite(szData, 1, strlen(szData), file);
+
+
+    //屏幕宽度
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%s\n",
+        "#monitor  width");
+    fwrite(szData, 1, strlen(szData), file);
+
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%d\n",
+        m_uMonitorWidth);
+    fwrite(szData, 1, strlen(szData), file);
+
+    //屏幕高度
+    sprintf_s(
+    szData,
+    _countof(szData),
+    "%s\n",
+    "#monitor  height");
+
+    fwrite(szData, 1, strlen(szData), file);
+
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%d\n",
+        m_uMonitorHeight);
+    fwrite(szData, 1, strlen(szData), file);
+
+    fclose(file);
+
+}
+
+//@功能:记录校正图案中圆的半径和屏幕像素尺寸
+void CAutoCalibratorImpl2::DbgDumpPatternInfo(int radius, const RECT& rcArea)
+{
+    FILE* file;
+
+    CAtlString strFileName;
+    strFileName.Format(
+        _T("%s\\simulate-params.txt"),
+        m_strImageOutputBaseDir);
+
+    CT2CA szFileName(strFileName);
+    fopen_s(&file, szFileName, "a");
+
+    if (file == NULL) return;
+    char szData[1024];
+
+    //校正图案中圆的半径
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%s\n",
+        "#Pattern Radius");
+
+    fwrite(szData, 1, strlen(szData), file);
+
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%d\n",
+        radius);
+    fwrite(szData, 1, strlen(szData), file);
+
+
+    //屏幕区域
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%s\n",
+        "#Monitor Area");
+
+    fwrite(szData, 1, strlen(szData), file);
+
+    sprintf_s(
+        szData,
+        _countof(szData),
+        "%d,%d,%d,%d\n",
+        rcArea.left,
+        rcArea.top,
+        rcArea.right,
+        rcArea.bottom);
+    fwrite(szData, 1, strlen(szData), file);
+
+
+    fclose(file);
+
+
+}
+
+void CAutoCalibratorImpl2::DbgLoadSimulateParams(LPCTSTR lpszFileName)
+{
+    FILE* file = NULL;
+    CT2CA szFileName(lpszFileName);
+
+    fopen_s(&file, szFileName, "r");
+
+    if (file == NULL) return;
+
+    char szText[1204];
+
+    m_oautocalibrateparamslist.clear();
+
+    m_vecDbgOnlineScreenVertices.clear();
+    
+    m_nDbgPatternRadius = 58;
+    m_rcDbgMonitor = RECT{ 0, 0, 1920,1080 };
+
+    enum EParsetage
+    {
+        E_PARSE_STAGE_READ_COMMENTS,
+        E_PARSE_ONLINE_AREA_FLAG,
+        E_PARSE_ONLINE_AREA_VERTICES,
+        E_PARSE_PATTERN_RADIUS,
+        E_PARSE_MONITOR_AREA,
+        E_PARSE_CALIBRATE_PARAM,
+    };
+
+    EParsetage eParseStage = E_PARSE_STAGE_READ_COMMENTS;
+    int nRet = 0;
+    while (fgets(szText, _countof(szText), file))
+    {
+        //删除行尾空格和回车换行符
+        for (int pos = strlen(szText) - 1; pos >= 0; pos--)
+        {
+            if (szText[pos] == '\r' || szText[pos] == '\n' || szText[pos] == ' ')
+            {
+                szText[pos] = '\0';
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        switch (eParseStage)
+        {
+        case E_PARSE_STAGE_READ_COMMENTS:
+            if (_stricmp(szText, "#calibrate params") == 0)
+            {
+                eParseStage = E_PARSE_CALIBRATE_PARAM;
+            }
+            else if (_stricmp(szText, "#EnableOnlineScreenArea") == 0)
+            {
+                eParseStage = E_PARSE_ONLINE_AREA_FLAG;
+            }
+            else if (_stricmp(szText, "#Online Screen Area Vertices") == 0 )
+            {
+                eParseStage = E_PARSE_ONLINE_AREA_VERTICES;
+            }
+            else if (_stricmp(szText, "#Pattern Radius") == 0)
+            {
+                eParseStage = E_PARSE_PATTERN_RADIUS;
+            }
+            else if (_stricmp(szText, "#Monitor Area") == 0)
+            {
+                eParseStage = E_PARSE_MONITOR_AREA;
+            }
+            break;
+
+
+        case E_PARSE_CALIBRATE_PARAM:
+        {
+            AutoCalibrateParams params;
+            memset(&params, 0, sizeof(params));
+
+            nRet = sscanf_s(szText,
+                "expected-brightness=%hhd, spd=%hhd, brightness=%d, gamma=%d\n",
+                &params.autoCalibrateImageParams.autoCalibrateExpectedBrightness,
+                &params.autoCalibrateImageParams.autoCalibrateSpeed,
+                &params.videoprocampproperty.Prop_VideoProcAmp_Brightness,
+                &params.videoprocampproperty.Prop_VideoProcAmp_Gamma);
+
+            if (nRet == 4)
+            {
+                m_oautocalibrateparamslist.push_back(params);
+            }
+
+            eParseStage = E_PARSE_STAGE_READ_COMMENTS;
+        }
+
+        break;
+
+        case E_PARSE_ONLINE_AREA_FLAG:
+            if (_stricmp(szText, "TRUE") == 0)
+            {
+                m_bEnableOnlineScreenArea = TRUE;
+            }
+            else if(_stricmp(szText, "FALSE") == 0)
+            {
+                m_bEnableOnlineScreenArea = FALSE;
+            }
+
+            eParseStage = E_PARSE_STAGE_READ_COMMENTS;
+
+            break;
+
+        case E_PARSE_ONLINE_AREA_VERTICES:
+        {
+            const char* pStart = szText;
+            const char* pEnd   = pStart;
+
+            while (*pEnd)
+            {
+                if (*pEnd == ';')
+                {//
+                    POINT pt;
+                    int nRet = sscanf_s(pStart, "(%d, %d)", &pt.x, &pt.y);
+                    if (nRet == 2)
+                    {
+                        m_vecDbgOnlineScreenVertices.push_back(pt);
+                    }
+                    pEnd++;
+                    pStart = pEnd;
+                }
+                else
+                {
+                    pEnd++;
+                }
+            }//while
+
+            if (pStart != pEnd)
+            {
+                POINT pt;
+                nRet = sscanf_s(pStart, "(%d, %d)", &pt.x, &pt.y);
+                if (nRet == 2)
+                {
+                    m_vecDbgOnlineScreenVertices.push_back(pt);
+                }
+            }
+
+            eParseStage = E_PARSE_STAGE_READ_COMMENTS;
+        }
+            break;
+
+        case E_PARSE_PATTERN_RADIUS:
+            nRet = sscanf_s(szText, "%d", &m_nDbgPatternRadius);
+            eParseStage = E_PARSE_STAGE_READ_COMMENTS;
+            break;
+
+
+        case E_PARSE_MONITOR_AREA:
+            nRet = sscanf_s(
+                szText, "%d,%d,%d,%d", 
+                &m_rcDbgMonitor.left,
+                &m_rcDbgMonitor.top,
+                &m_rcDbgMonitor.right,
+                &m_rcDbgMonitor.bottom);
+
+            eParseStage = E_PARSE_STAGE_READ_COMMENTS;
+            break;
+        }//switch
+    }//while
+        
+    fclose(file);
+}
+

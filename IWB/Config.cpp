@@ -1139,7 +1139,7 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
                 //缺省值
                 if(paramDefault)defaultParams.autoCalibrateHilightGray = atoi(paramDefault);
             }
-            else if (paramName && paramName && _stricmp(paramName, "AutoCalibrateSpeed") == 0)
+            else if (paramName && paramValue && _stricmp(paramName, "AutoCalibrateSpeed") == 0)
             {
                 int nSpd = atoi(paramValue);
                 if (nSpd <= 0) nSpd = 1;
@@ -1572,6 +1572,18 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 					advanceSettings.bIsOnLineScreenArea = FALSE;
 				}
 			}
+			else if(_stricmp(paramName, "DisableReflectionSpot") == 0)
+			{
+				if(paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					advanceSettings.bDisableReflectionSpot = TRUE;
+				}
+				else
+				{
+					advanceSettings.bDisableReflectionSpot = FALSE;
+				}
+
+			}
         }
 
     }while(pChild);
@@ -1692,7 +1704,16 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 	pElement->SetAttribute("name", "OnLineScreenArea");
 	pElement->SetAttribute("value", advanceSettings.bIsOnLineScreenArea ? "Yes" : "No");
 	pNode->LinkEndChild(pElement);
-	
+
+	//是否去掉反射点响应功能
+	pXmlComment = new TiXmlComment("是否去掉反射点响应功能");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "DisableReflectionSpot");
+	pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
     return TRUE;
 }
 

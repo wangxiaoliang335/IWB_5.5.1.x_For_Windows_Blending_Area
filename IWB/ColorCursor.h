@@ -97,7 +97,17 @@ public:
         HPEN     hPenOld        = (HPEN)SelectObject(hMainDC, hPen);
         HBRUSH   hBrushFill     = ::CreateSolidBrush(clrFill);
         HBRUSH   hBrushOld = (HBRUSH)SelectObject(hMainDC, hBrushFill);
-        Rectangle(hMainDC, rcArea.left,  rcArea.top, rcArea.right, rcArea.bottom);
+
+        //Rectangle(hMainDC, rcArea.left,  rcArea.top, rcArea.right, rcArea.bottom);
+
+        //³ß´ç¼õ°ë
+        long width  = rcArea.right  - rcArea.left;
+        long height = rcArea.bottom - rcArea.top;
+        long left   = width >> 2;
+        long right  = left + (width >> 1);
+        long top    = height >> 2;
+        long bottom = top + (height >> 1);
+        Rectangle(hMainDC, left, top, right, bottom);
 
 
         DeleteObject(hBrushTransparent);

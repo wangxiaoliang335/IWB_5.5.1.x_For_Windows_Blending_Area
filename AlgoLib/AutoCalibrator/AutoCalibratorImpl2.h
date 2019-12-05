@@ -31,6 +31,7 @@
 #include "DispMonitorFinder.h"
 #include "../inc/SplitArea.h"
 #include "../../inc/MJPG/MJPG_Decoder.h"
+#include "../../inc/FillPolygon.h"
 
 typedef std::vector<POINT> PolygonVertices;
 
@@ -170,17 +171,17 @@ public:
 
             InitGDIObject();
 
-			/////add by vera_zhao 2018.12.29
-			//是否显示数字
-			if (bDispNumber)
-			{
+            /////add by vera_zhao 2018.12.29
+            //是否显示数字
+            if (bDispNumber)
+            {
                 m_nCountDown = MAX_COUNT_DOWN;
                 DispNumber(m_nCountDown / 15);
-			}
-			else
-			{
-				m_nCountDown = 25;
-			}
+            }
+            else
+            {
+                m_nCountDown = 25;
+            }
 
 
             
@@ -212,18 +213,18 @@ public:
 
                m_nCountDown --;
 
-			   if (bDispNumber)
-			   {
+               if (bDispNumber)
+               {
                   if(m_nCountDown % 15 == 0)
                   {
                      int number = m_nCountDown / 15;
                      DispNumber(number);
                   }
-			   }
-			   else
-			   {
-				   //不做操作
-			   }
+               }
+               else
+               {
+                   //不做操作
+               }
 
                if(0 == m_nCountDown)
                {
@@ -335,11 +336,11 @@ class CWaitTimer
 public:
     CWaitTimer()
     {
-        Init(1);
+        Init(1, FALSE);
     }
 
     //@参数:dwLatencyTimes， 时间延迟倍数
-    void Init(DWORD dwTimeMagnification)
+    void Init(DWORD dwTimeMagnification, BOOL bUseAbsTime=FALSE)
     {
         m_dwTimeBegin = GetTickCount();
 
@@ -352,23 +353,50 @@ public:
             dwTimeMagnification = 10;
         }
         m_dwTimeMagnification = dwTimeMagnification;
+
+        m_dwFrameCount = 0;
+
+        m_bUseAsbTime = bUseAbsTime;
     }
 
    
     void Reset()
     {
         m_dwTimeBegin = GetTickCount();
-
+        m_dwFrameCount = 0;
     }
 
     BOOL IsWaitTimeout(DWORD dwWaitTimeInMs)
     {
+        if (m_bUseAsbTime)
+        {
+            DWORD dwTimeElapsed = GetTimeElapsed();
 
-        DWORD dwTimeElapsed = GetTimeElapsed() ;
-
-       return (dwTimeElapsed >= dwWaitTimeInMs*m_dwTimeMagnification) ? TRUE : FALSE;
+            return (dwTimeElapsed >= dwWaitTimeInMs*m_dwTimeMagnification) ? TRUE : FALSE;
+        }
+        else
+        {
+            const int MILLI_SECOND_PER_FRAME = 16;
+            DWORD dwNeeedWaitFrames = (dwWaitTimeInMs + (MILLI_SECOND_PER_FRAME  >> 1))/ MILLI_SECOND_PER_FRAME;
+            dwNeeedWaitFrames *= m_dwTimeMagnification;
+            return (m_dwFrameCount >= dwNeeedWaitFrames) ? TRUE : FALSE;
+        }
     }
 
+
+    void Trigger()
+    {
+        if (!m_bUseAsbTime)
+        {
+            m_dwFrameCount++;
+        }
+
+    }
+
+    DWORD GetTimeMagnification()
+    {
+        return m_dwTimeMagnification;
+    }
 protected:
     DWORD GetTimeElapsed()
     {
@@ -388,9 +416,10 @@ protected:
 
 
 protected:
-    DWORD m_dwTimeBegin   ;//计数起始时间
+    DWORD m_dwTimeBegin        ;//计数起始时间
     DWORD m_dwTimeMagnification;//时间放大倍数
-
+    DWORD m_dwFrameCount;
+    DWORD m_bUseAsbTime;//使用绝对时间
 
 };
 
@@ -591,21 +620,6 @@ protected:
 
     BOOL SearchCircleCentroids(const CWordFrame&  srcImage, TBorderMarker* pPtBorderMarker, int nExpectedNumber, POINT* pGlobalCentroid);
 
-    //@功能:以指定的参考点为原点建立直角坐标系,按照方位角从小到大的顺序排列各个点。
-    //@参数:pBorderMarker, 指向边界界桩点的数组
-    //      nPtNumber, 点的数目
-    //      ptOrigin, 原点坐标
-    //void SortInDirection(CMonitorBoundaryFinder::TBorderMarker*  pBorderMarker, int nPtNumber, const POINT& ptOrigin);
-
-    //搜索屏幕区域枚举值
-    /*
-    enum ESearchScreenPart
-    {
-        E_SEARCH_SCREEN_UPPER,//屏幕上半部
-        E_SEARCH_SCREEN_LOWER,//屏幕下半部
-    }m_eScreenPart;
-    */
-
     //@功能:处理差分图片
     //@参数:diffImage, 差分图
     //      eScreenPart, 屏幕区域枚举值
@@ -621,22 +635,10 @@ protected:
      CWordFrame m_frameBackground     ;//暗帧
      CWordFrame m_frameForeground     ;//亮帧
      CImageFrame m_oInitialScreenMask ;//屏幕区域屏蔽图
-     //CImageFrame m_oUpperHalfMaskFrame;//上部屏蔽图
-     //CImageFrame m_oLowerHalfMaskFrame;//下部屏蔽图
+
      CImageFrame m_oScreenMaskFrame   ;//完整的屏蔽图
-
-    //CWordFrame  m_oUpperBorderFrame  ;//上部边界轮廓图
-    //CWordFrame  m_oLowerBorderFrame  ;//下部边界轮廓图
-
-    //CWordFrame m_oBorderFrame        ;//边界轮廓图
-
-    //POINT  m_ptUpperCentroid          ;//上部全局重心
-    //POINT  m_ptLowerCentroid          ;//下部全局重心
     
     POINT  m_ptCentroid               ;//重心
-
-    //POINT  m_ptScreenCentroid         ;//全部的重心
-
 
     //在屏幕四周显示的高亮白色实心圆的直径 , 单位像素。
     static const int INITIAL_MARKER_DIAMETER = 45;
@@ -646,30 +648,17 @@ protected:
     //采用实心小圆的坐标来勾勒屏幕影像在画面中的边界
     std::vector<RECT> m_vecBorderMarkerPositions       ;//全部边界圆的位置(计算机屏幕坐标)
     std::vector<double> m_vecDisplayIntensity          ;//每个校正实心圆的显示强度,范围0~1.0, 屏幕四个顶角处的实心圆显示强度最大。
-    
-    //std::vector<RECT> m_vecUpperPartMarkerPositions    ;//上半部边界圆的位置(计算机屏幕坐标)
-    //std::vector<RECT> m_vecLowerPartMarkerPositions    ;//下半部边界圆的位置(计算机屏幕坐标)
 
     std::vector<TBorderMarker> m_vecBorderCalibratePts    ;//在摄像头视频中的边界点的坐标,最后的结果应该按照从左上角开始,顺时针方向排列(视频坐标)
-
-    
-    //std::vector<TBorderMarker> m_vecUpperBorderCalibratePts ;//在摄像头视频中上半部边界点的坐标,最后的结果应该按照从上部左上角开始,顺时针方向排列(视频坐标)
-    //std::vector<TBorderMarker> m_vecLowerBorderCalibratePts ;//在摄像头视频中下半部边界点的坐标,最后的结果应该按照从下部左上角开始,顺时针方向排列(视频坐标)
-
-    //std::vector<POINT>        m_vecBoundaryPts              ;//边界点
-
     std::vector<PolygonVertices> m_vecSubAreaPolygons;//图像划分的多边形子区域, 用来分区设定二值化门限
 
     RECT                   m_rcMonitor       ;//屏幕矩形区域
     ECalibDebugLevel       m_eDebugLevel     ;//调试级别
-//  BOOL                   m_bIsSimulateInput;//模拟输入标志
+
     HWND                   m_hDispWnd        ;//显示窗体
     BOOL                   m_bDone           ;//搜索结束标志
 
 
-    //static const int WAIT_STEADY_SAMPLE_COUNT     = 10;//等待稳定采样时的计数值
-
-    //static const int WAIT_SAMPLE_END_STAGE_COUNT  = WAIT_STEADY_SAMPLE_COUNT + 5;//
     CWaitTimer m_oWaitTimer;
     const int WAIT_STEDAY_SAMPLE_TIME = 160;//等待稳定采样时的时间,单位:ms
     const int WAIT_SAMPLE_END_TIME    = 330;//阶段结束的时间,单位:ms
@@ -679,12 +668,6 @@ protected:
 
     //垂直方向的边界点个数
     int m_nVertSideMarkerNumber;
-
-//public:
-    //每条边上的边界符号的数目。
-    //static const int HORZ_SIDE_MARKER_NUMBER  = 7;
-    //static const int VERT_SIDE_MARKER_NUMBER  = 5;
-    //static const int BORDER_MARKER_NUMBER = (HORZ_SIDE_MARKER_NUMBER  - 1)*2 + (VERT_SIDE_MARKER_NUMBER - 1)*2;
 
     static const int MINIMUM_SIDE_MARKER_NUMBER = 5;
     
@@ -733,7 +716,9 @@ public:
         m_bRestoreLanguageBar(FALSE),
         m_bUseOldMethod(FALSE),
         m_bBorderCalibratrPtsIsValid(FALSE),
-		m_bEnableOnLineScreenArea(FALSE)
+        m_bEnableOnlineScreenArea(FALSE),
+        m_nDbgFrameCount(0),
+        m_nDbgPatternRadius(58)
     {
         
         m_uMonitorWidth  = GetSystemMetrics(SM_CXSCREEN);
@@ -809,7 +794,7 @@ public:
      //@功能:获取所有屏幕的校正数据
      virtual  const TCalibData*  GetCalibrateData()const;
 
-	 void OnDeviceMissing();
+     void OnDeviceMissing();
 
 
     //@功能:子区域校正
@@ -897,7 +882,6 @@ public:
         POINT ptCoord      ;//图像坐标
         UINT nLayerPtIndex ;//在圈中的索引号
     };
-
 
 
     //@功 能:在角点数组中, 查找左上角的匹配候选点。
@@ -1010,7 +994,7 @@ public:
                 BYTE bkData  = *pBkgndData;
                 BYTE destData;
 
-				BYTE subtractBkData = (bkData >> 2) * 3;
+                BYTE subtractBkData = (bkData >> 2) * 3;
 
                 if(srcData < subtractBkData)
                 {
@@ -1191,110 +1175,124 @@ public:
 
 
 
-    static ULONG _stdcall SimulatedCalibrateProc(LPVOID lpCtx)
-    {
+    static ULONG _stdcall SimulatedCalibrateProc(LPVOID lpCtx);
+    //{
 
-        CAutoCalibratorImpl2* pCalibrator = reinterpret_cast<CAutoCalibratorImpl2*>(lpCtx);
+    //    CAutoCalibratorImpl2* pCalibrator = reinterpret_cast<CAutoCalibratorImpl2*>(lpCtx);
 
-        //生成调试窗体
-        int nCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
-        int nFrameCx = GetSystemMetrics(SM_CXFRAME);
-        int nFrameCy = GetSystemMetrics(SM_CYFRAME);
+    //    //生成调试窗体
+    //    int nCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
+    //    int nFrameCx = GetSystemMetrics(SM_CXFRAME);
+    //    int nFrameCy = GetSystemMetrics(SM_CYFRAME);
 
-        RECT rcPosition;
-        rcPosition.left = 0;
-        rcPosition.top = 0;
+    //    RECT rcPosition;
+    //    rcPosition.left = 0;
+    //    rcPosition.top = 0;
 
-        rcPosition.right = 640;
-        rcPosition.bottom = 480;
+    //    rcPosition.right = 640;
+    //    rcPosition.bottom = 480;
 
-        rcPosition.right += nFrameCx*2;
-        rcPosition.bottom += nCaptionHeight + nFrameCy*2;
-
-
-        pCalibrator->m_oDebugWindow.Create(NULL, rcPosition, _T("Dbg Window"), WS_POPUP | WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+    //    rcPosition.right += nFrameCx*2;
+    //    rcPosition.bottom += nCaptionHeight + nFrameCy*2;
 
 
-        pCalibrator->m_oDebugWindow.SetWindowPos(
-            HWND_TOPMOST,
-            rcPosition.left,
-            rcPosition.top,
-            rcPosition.right - rcPosition.left,
-            rcPosition.bottom - rcPosition.top,
-            SWP_SHOWWINDOW);
-
-        const BITMAPINFOHEADER* bmpinfoHeader = pCalibrator->m_oAVIInput.GetAVIFormat();
-        if(bmpinfoHeader == NULL)
-        {
-            return -1;
-        }
-
-        CImageFrame mjpgFrame;
-        CImageFrame grayFrame;
-
-        mjpgFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, bmpinfoHeader->biBitCount >> 3);
-        grayFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, bmpinfoHeader->biBitCount >> 3);
+    //    pCalibrator->m_oDebugWindow.Create(NULL, rcPosition, _T("Dbg Window"), WS_POPUP | WS_OVERLAPPEDWINDOW | WS_VISIBLE);
 
 
-         CMJPG_Decoder m_oMJPGDecoder;//MJPG解码器
+    //    pCalibrator->m_oDebugWindow.SetWindowPos(
+    //        HWND_TOPMOST,
+    //        rcPosition.left,
+    //        rcPosition.top,
+    //        rcPosition.right - rcPosition.left,
+    //        rcPosition.bottom - rcPosition.top,
+    //        SWP_SHOWWINDOW);
+
+    //    const BITMAPINFOHEADER* bmpinfoHeader = pCalibrator->m_oAVIInput.GetAVIFormat();
+    //    if(bmpinfoHeader == NULL)
+    //    {
+    //        return -1;
+    //    }
+
+    //    CImageFrame mjpgFrame;
+    //    CImageFrame grayFrame;
+
+    //    mjpgFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, bmpinfoHeader->biBitCount >> 3);
+    //    grayFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1);
+
+    //    CImageFrame onlineScreenArea;
+    //    BYTE initValue = 0x00;
+    //    onlineScreenArea.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1, &initValue);
+    //    FillPolygon(
+    //        onlineScreenArea.GetData(),
+    //        bmpinfoHeader->biWidth,
+    //        bmpinfoHeader->biHeight,
+    //        &pCalibrator->m_vecDbgOnlineScreenVertices[0],
+    //        pCalibrator->m_vecDbgOnlineScreenVertices.size(),
+    //        255,
+    //        TRUE);
+
+    //    Debug_SaveImageFrame(onlineScreenArea, _T("OnlineScreenArea.jpg"));
 
 
-        ::SetTimer(NULL, 1, 10, NULL);
+    //     CMJPG_Decoder m_oMJPGDecoder;//MJPG解码器
 
-        MSG msg;
-        while(::GetMessage(&msg, NULL, 0, 0 ))
-        {
+    //    ::SetTimer(NULL, 1, 10, NULL);
 
-            switch(msg.message)
-            {
-            case WM_TIMER:
-                {
-                    LONG lBytes = 0;
-                    LONG lSamples = 0;
-                    BOOL bRet = FALSE;
+    //    MSG msg;
+    //    while(::GetMessage(&msg, NULL, 0, 0 ))
+    //    {
 
+    //        switch(msg.message)
+    //        {
+    //        case WM_TIMER:
+    //            {
+    //                LONG lBytes = 0;
+    //                LONG lSamples = 0;
+    //                BOOL bRet = FALSE;
 
-                    bRet = pCalibrator->m_oAVIInput.Read((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, & lSamples);
-                    if(!bRet)
-                    {
+    //                bRet = pCalibrator->m_oAVIInput.Read((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, & lSamples);
+    //                if(!bRet)
+    //                {
 
-                        PostThreadMessage(::GetCurrentThreadId(), WM_QUIT, 0 ,0);
-                        break;
-                    }
+    //                    PostThreadMessage(::GetCurrentThreadId(), WM_QUIT, 0 ,0);
+    //                    break;
+    //                }
 
-                    int nMJPGDataLength = 0;
-                    m_oMJPGDecoder.ProcessData(mjpgFrame.GetData(), lBytes,(BYTE *)grayFrame.GetData(), &nMJPGDataLength);
+    //                int nMJPGDataLength = 0;
+    //                m_oMJPGDecoder.ProcessData(mjpgFrame.GetData(), lBytes,(BYTE *)grayFrame.GetData(), &nMJPGDataLength);
+    //                
+    //                //用在线的屏蔽图做与运算
+    //                grayFrame &= onlineScreenArea;
 
+    //                bRet = pCalibrator->FeedImage(&grayFrame);
+    //                if(!bRet)
+    //                {
+    //                    //pCalibrator->m_oDebugWindow.DestroyWindow();
+    //                    PostThreadMessage(::GetCurrentThreadId(), WM_QUIT, 0 ,0);
+    //                }
 
-                    bRet = pCalibrator->FeedImage(&grayFrame);
-                    if(!bRet)
-                    {
-                        //pCalibrator->m_oDebugWindow.DestroyWindow();
-                        PostThreadMessage(::GetCurrentThreadId(), WM_QUIT, 0 ,0);
-                    }
+    //            }
 
-                }
-
-                break;
-
-
-            default:
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-
-            }//switch
-
-        }//while
+    //            break;
 
 
-        pCalibrator->m_oDebugWindow.DestroyWindow();
-        pCalibrator->m_bIsSimulatedCalibrating = FALSE;
-        pCalibrator->m_bIsWorking = FALSE;
-        pCalibrator->m_oAVIInput.Close();
+    //        default:
+    //            TranslateMessage(&msg);
+    //            DispatchMessage(&msg);
 
-        return 0;
+    //        }//switch
 
-    }
+    //    }//while
+
+
+    //    pCalibrator->m_oDebugWindow.DestroyWindow();
+    //    pCalibrator->m_bIsSimulatedCalibrating = FALSE;
+    //    pCalibrator->m_bIsWorking = FALSE;
+    //    pCalibrator->m_oAVIInput.Close();
+
+    //    return 0;
+
+    //}
 
 
     //@功能:返回8位格式的屏蔽位图
@@ -1531,7 +1529,7 @@ protected:
     BOOL m_bSaveInermediatFile;//是否保存自动校正中间文件标志
     BOOL m_bRecordVideo;
 
-	BOOL m_bEnableOnLineScreenArea;
+    BOOL m_bEnableOnlineScreenArea;
     //>>
 
     //<<2013/08/19
@@ -1541,6 +1539,7 @@ protected:
     CAtlString m_strImageOutputBaseDir   ;//调试图片输出根目录
     CAtlString m_strCurrentImageOutputDir;//调试图片输出目录名称
     CAtlString m_strDebugVideoFullPath   ;//调试用视频存储位置
+
 
     //功能:亮度控制回调函数
     //@参数:bInc, TRUE:增加亮度，FALSE:减少亮度
@@ -1572,7 +1571,7 @@ protected:
     {
         std::vector<TCalibCoordPair> calibMap ;
         CImageFrame                 maskFrame ;
-		int                        circleRadius;
+        int                        circleRadius;
     };
     
     //映射光点位于哪个屏幕区域的映射数组，用灰度图片数据结构来存储。
@@ -1602,7 +1601,7 @@ protected:
 
 //    AutoCalibrateImageParamsList m_oImageParamsList        ;//自动定位参数列表
 
-	AutoCalibrateParamsList      m_oautocalibrateparamslist; //自动校正参数列表
+    AutoCalibrateParamsList      m_oautocalibrateparamslist; //自动校正参数列表
 
     CMonitorAreaLocator          m_oMonitorAreaLocator     ;//屏幕区域定位器
     CMonitorBoundaryFinder       m_oMonitorBoundaryFinder  ;//屏幕边界查找器
@@ -1664,4 +1663,16 @@ public:
         const double rotationMatrix[2][2],//坐标旋转矩阵
         const POINT& ptCenter);
 
+
+   //调试工具,记录模拟参数
+   //<<dbg
+   void DbgDumpSimulateParams(const TAutoCalibrateParams& autoCalibrateParams);
+   void DbgDumpPatternInfo(int radius, const RECT& rcArea);
+   void DbgLoadSimulateParams(LPCTSTR lpszFileName);
+   int  m_nDbgFrameCount;
+
+   std::vector<POINT> m_vecDbgOnlineScreenVertices;
+   int m_nDbgPatternRadius;
+   RECT m_rcDbgMonitor;
+   //dbg>
 };

@@ -1,7 +1,7 @@
 <WGRSetting>
     <PERSetting>
         <Exceptions count="2">
-            <E_1 procName="mspaint.exe" appName="windows painter" permission="462848" />
+            <E_1 procName="mspaint.exe" appName="windows painter" permission="0" />
             <E_2 procName="drawview.exe" appName="drawview" permission="0" />
         </Exceptions>
         <General permission="0" />

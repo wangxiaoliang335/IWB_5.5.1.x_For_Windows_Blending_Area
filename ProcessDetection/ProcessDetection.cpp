@@ -374,7 +374,7 @@ CProcessDetection::CProcessDetection(void)
       m_dwThreadId(0)
 {    
     m_currentuser = "";
-	m_processInfoMap.clear();	
+	m_processInfoMap.clear();
     m_specProcInfo[0].procName = "JOSS.EXE";
     m_specProcInfo[0].procCreatDate = "";
 }

@@ -259,7 +259,9 @@ struct TAutoCalibrateParams
 
     AutoCalibrateParamsList   autocalibrateparamslist;   //自动校正参数列表
 
-	BOOL   bEnableOnineScreenArea;
+	BOOL   bEnableOnlineScreenArea;
+
+    std::vector<POINT> vecOnlineAreaVertices;//在线区域的顶点。
 
 };
 

@@ -568,8 +568,6 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     //录制视频
     if (IsRecording())
     {
-        //m_oAviRecorder.Write((const BYTE*)m_YUY2SrcFrame.GetData(), m_YUY2SrcFrame.Size());
-       // m_oAviRecorder.Write((const BYTE*)pSrcBuf, nMJPGDataLength);
         m_oAviRecorder.Write((const BYTE*)pSrcBuf, nImageDataLength);   //支持YUV2录制模式
     }
 
@@ -589,13 +587,13 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetStaticMaskFrame());
     }
 
-	if(this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+	if(this->m_pPenPosDetector->IsEnableOnlineScreenArea())
 	{
 		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
 	}
 
 	//如果是在手动校正并且要求使用绘制的屏蔽图，那么就需要用绘制的屏蔽图进行与运算
-//	if ((this->m_pPenPosDetector->IsManualCalibrating()|| this->m_pPenPosDetector->IsAutoCalibrating()) && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+//	if ((this->m_pPenPosDetector->IsManualCalibrating()|| this->m_pPenPosDetector->IsAutoCalibrating()) && this->m_pPenPosDetector->IsEnableOnlineScreenArea())
 //	{
 //		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
 //	}
@@ -767,7 +765,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 	}
 	else
 	{
-		if (m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnLineScreenArea())
+		if (m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnlineScreenArea())
 		{
 			 std::vector<CPoint> vecFinishpt;
 			 m_pPenPosDetector->GetCurrentOnLineScreenAreaPt(vecFinishpt);

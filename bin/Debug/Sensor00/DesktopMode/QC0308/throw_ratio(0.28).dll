@@ -383,15 +383,15 @@
     <!--镜头规格-->
     <LensSpec>
         <!--镜头后焦距, 单位:mm-->
-        <Param name="backFocalLength" value="-6.27744e+66" />
+        <Param name="backFocalLength" value="2.7" />
         <!--水平视角, 单位:度-->
-        <Param name="FOV_horz" value="-6.27744e+66" />
+        <Param name="FOV_horz" value="146" />
         <!--垂直视角, 单位:度-->
-        <Param name="FOV_vert" value="-6.27744e+66" />
+        <Param name="FOV_vert" value="105" />
         <!--对角线视角, 单位:度-->
-        <Param name="FOV_diagonal" value="-6.27744e+66" />
+        <Param name="FOV_diagonal" value="175" />
         <!--投射比-->
-        <Param name="Throw Ratio" value="-6.27744e+66" />
+        <Param name="Throw Ratio" value="0.15" />
     </LensSpec>
     <!--自动校正补偿系数-->
     <AutoCalibCompensateCoefs>

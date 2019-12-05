@@ -360,8 +360,8 @@ public:
     void EnableStaticMasking(BOOL bEnableStaticMasking)         { m_bIsStaticMasking = bEnableStaticMasking; }
 	BOOL IsStaticMasking()const                                 { return m_bIsStaticMasking;}
 
-	void EnableOnLineScreenArea(BOOL bEnableManualMaskFrame) { m_bEnableOnLineScreenArea = bEnableManualMaskFrame; }
-	BOOL IsEnableOnLineScreenArea()const                           { return m_bEnableOnLineScreenArea; }
+	void EnableOnlineScreenArea(BOOL bEnableManualMaskFrame) { m_bEnableOnlineScreenArea = bEnableManualMaskFrame; }
+	BOOL IsEnableOnlineScreenArea()const                           { return m_bEnableOnlineScreenArea; }
 
 	void SetCalibrateFailed(int CalibrateFailed)                {  m_bCalibratorFailed = CalibrateFailed ;  }
 
@@ -795,7 +795,9 @@ protected:
 	/////////modify by vera_zhao   2019.10.24
 	BOOL  m_bIsAntiJamming          ; //是否进行抗干扰处理
 
-	BOOL   m_bEnableOnLineScreenArea; //是否启用手动绘制的静态屏蔽图
+	BOOL   m_bEnableOnlineScreenArea; //是否启用手动绘制的静态屏蔽图
+
+	BOOL   m_bDisableReflectionSpot;   //是否响应反射点
 
 	BOOL m_bIsStaticMasking        ;//是否静态屏蔽干扰点标志
 
@@ -901,6 +903,7 @@ protected:
 	//>>
 	std::vector<CPoint>  m_vecOnLinePt ;    //用来保存绘制屏蔽图时的采集点
 
+	static const  double SCREEN_DISTANCETWOSPOT_WIDTH_IN_MM;
 	int m_ScreenMinDistanceWidthInPixel ;
 
 };

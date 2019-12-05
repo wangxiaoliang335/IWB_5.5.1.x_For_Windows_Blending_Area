@@ -24,15 +24,15 @@ inline  int FilterOutColinearPoints(const POINT* pOrgVertices, int nVertexNum, P
 		long va_x = pPrev->x - pCurrent->x;
 		long va_y = pPrev->y - pCurrent->y;
 		
-		long norm_va_square = va_x*va_x + va_y*va_y;
+		double norm_va_square = va_x*va_x + va_y*va_y;
 
         //令当前点和下一邻接点所在直线为B
 		//vb = (vb_x, vb_y, 0)
 		long vb_x = pNext->x - pCurrent->x;
 		long vb_y = pNext->y - pCurrent->y;
-		long norm_vb_square = vb_x*vb_x + vb_y*vb_y;
+        double norm_vb_square = vb_x*vb_x + vb_y*vb_y;
 
-		long cross_a_b = va_x*vb_y - va_y*vb_x;//Cross(A,B)
+        double cross_a_b = va_x*vb_y - va_y*vb_x;//Cross(A,B)
 
 		//|Cross(A,B)|=|A||B|sin(theta)
 		double cross_square = cross_a_b*cross_a_b;
@@ -49,9 +49,9 @@ inline  int FilterOutColinearPoints(const POINT* pOrgVertices, int nVertexNum, P
                 {//上一拐点不是当前结点的前一邻接点， 则当前点和上一边界拐点所在的直线C和直线B比较
                     long vc_x = pLastTurnVertex->x - pCurrent->x;
                     long vc_y = pLastTurnVertex->y - pCurrent->y;
-                    long norm_vc_square = vc_x * vc_x + vc_y*vc_y;
+                    double norm_vc_square = vc_x * vc_x + vc_y*vc_y;
 
-                    long cross_c_b = vc_x*vb_y - vc_y*vb_x;//Cross(C,B);
+                    double cross_c_b = vc_x*vb_y - vc_y*vb_x;//Cross(C,B);
                     cross_square = cross_c_b*cross_c_b;
 
                     if (cross_square < threshold)

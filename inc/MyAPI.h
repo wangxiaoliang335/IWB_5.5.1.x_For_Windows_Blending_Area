@@ -1,5 +1,9 @@
 #pragma once
 #include <atlstr.H>
+//#include <pathcch.h>
+//#pragma comment(lib, "Pathcch.lib")
+#include  <Shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
 #include <shellapi.h>
 #include <winerror.h>
 #pragma comment(lib, "shell32.lib")
@@ -80,6 +84,7 @@ inline CAtlString CheckAndCreatePath(LPCTSTR szPath)
 	}
 
 	PathCanonicalize(absPathBuf, strAbsPath);
+    //PathCchCanonicalize(absPathBuf, _countof(absPathBuf), strAbsPath);
 
 	strAbsPath = absPathBuf;
 
