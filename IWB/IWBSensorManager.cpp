@@ -586,8 +586,15 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 
         }//for
     }
+}
 
-
+void CIWBSensorManager::SetGlobalCfgData(TSysConfigData& sysCfgData)
+{
+	for (size_t i = 0; i < sysCfgData.vecSensorConfig.size(); i++)
+	{
+		if (i >= m_vecSensors.size()) break;
+		m_vecSensors[i]->SetGlobalCfgData(&sysCfgData.globalSettings);
+	}
 }
 
 
@@ -687,9 +694,11 @@ void CIWBSensorManager::OnCameraPlugIn(const TCaptureDeviceInstance& devInst)
         if(sensor.IsDetecting()) continue;
 
         const TCaptureDeviceInstance& devInfo = sensor.GetDeviceInfo();
+
         ////如果是路径相等的话还要比较是不是PID和VID相等//modify by zhaown 
         if( (_tcsicmp(devInfo.m_strDevPath, devInst.m_strDevPath) == 0) &&(devInfo.m_nPID == devInst.m_nPID)&&(devInfo.m_nVID == devInst.m_nVID))
         {
+			sensor.SetDeviceInfo(devInst);
             //sensor.Run();
             StartRunning(sensor.GetID());
 
@@ -839,10 +848,12 @@ void CIWBSensorManager::EnableOpticalPen(BOOL bEnable)
 //@说明:只要有一支光笔在控制中,则返回TRUE
 BOOL CIWBSensorManager::IsOpticalPenControlling()
 {
-    BOOL bIsControlling = FALSE;
+   // BOOL bIsControlling = FALSE;
+	BOOL bIsControlling = TRUE;
     for(size_t i=0; i<m_vecSensors.size(); i++)
     {   
-        bIsControlling |= m_vecSensors[i]->IsOpticalPenControlling();
+//        bIsControlling |= m_vecSensors[i]->IsOpticalPenControlling();
+		bIsControlling &= m_vecSensors[i]->IsOpticalPenControlling();
     }
 
     return bIsControlling;
@@ -1142,133 +1153,6 @@ BOOL CIWBSensorManager::IsCalibarateOk()
 //@功能:开启光斑采集功能
 void CIWBSensorManager::StartLightSpotSampling(HWND hNotifyWindow, int nSensorID)
 {
-    //std::vector<DisplayDevInfo> vecMonitorInfo;
-
-    //BOOL bRet = FALSE;
-    //ESampleCollectPattern ePattern;
-    //if(theApp.GetScreenMode() == EScreenModeSingle)
-    //{
-    //    /*
-    //    theApp.GetMonitorFinder().SearchDisplayDev();
-    //    
-    //    m_nCurrentSensorID = 0;
-
-    //    if(m_nCurrentSensorID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return ;
-
-    //    const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(m_nCurrentSensorID);
-    //    if(pDisplayDevInfo)
-    //    {
-    //        vecMonitorInfo.push_back(*pDisplayDevInfo);
-    //        
-    //    }
-    //    */
-    //    if (nSensorID == -1)
-    //    {
-    //        nSensorID = 0;
-    //    }
-    //    if (0 <= nSensorID && nSensorID < (int)m_vecSensors.size())
-    //    {
-    //        ePattern = E_SAMPLE_COLLECT_PATTERN_9_Points;
-
-    //        RECT rcMonitor;
-
-    //        bRet = m_vecSensors[nSensorID]->GetAttachedScreenArea(rcMonitor);
-    //        if (!bRet) return;
-
-    //        bRet = m_wndLightSpotSampling.StartCollectSpotSize(&rcMonitor, 1, hNotifyWindow, ePattern);
-
-    //        //进入光斑采集状态
-    //        if (bRet)
-    //        {
-    //            m_nCurrentSensorID = nSensorID;
-    //            m_vecSensors[m_nCurrentSensorID]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
-    //        }
-    //    }
-
-    //    
-    //}
-    //else
-    //{
-    //    std::vector<RECT> vecMonitorAreas;
-    //    vecMonitorAreas.resize(m_vecSensors.size());
-    //    for (size_t i = 0; i < m_vecSensors.size(); i++)
-    //    {
-    //        bRet = m_vecSensors[i]->GetAttachedScreenArea(vecMonitorAreas[i]);
-    //        if (!bRet) return;
-    //    }
-
-    //    RECT rcBoundary;
-    //    rcBoundary.left = 0;
-    //    rcBoundary.top = 0;
-    //    rcBoundary.right = 0;
-    //    rcBoundary.bottom = 0;
-
-
-    //    for (size_t i = 0; i< vecMonitorAreas.size(); i++)
-    //    {
-    //        RECT rcArea = vecMonitorAreas[i];
-    //        if (rcArea.left  < rcBoundary.left) rcBoundary.left   = rcArea.left;
-    //        if (rcArea.right > rcBoundary.right) rcBoundary.right = rcArea.right;
-    //        if (rcArea.top   < rcBoundary.top) rcBoundary.top     = rcArea.top;
-    //        if (rcArea.bottom > rcBoundary.top) rcBoundary.bottom = rcArea.bottom;
-    //    }
-
-
-    //    ePattern = E_SAMPLE_COLLECT_PATTERN_15_Points;
-
-    //    bRet =  m_wndLightSpotSampling.StartCollectSpotSize(&rcBoundary, 1, hNotifyWindow, ePattern);
-
-    //    //if (m_vecSensors.size() > 0)
-    //    //{
-    //    //    m_vecSensors[0]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
-    //    //}
-
-
-    //    for(size_t i=0; i<m_vecSensors.size(); i++)
-    //    {//所有传感其进入光斑采样状态
-    //        m_vecSensors[i]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
-    //    }
-
-    //}
-
-    //if (m_bAllScreenMergedOnOnePlane)
-    //{//所有屏幕融合在一个平面上
-
-    //    //采样点列数为2n+1列, 
-    //    for(size_t i=0; i < m_vecSensors.size(); i++)
-    //    {//所有传感其进入光斑采样状态
-    //        m_vecSensors[i]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
-    //    }
-
-    //    //int nCxScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    //    //int nCyScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-    //    LONG lScreenTop  = 0;
-    //    LONG lScreenLeft = 0;        
-    //    LONG lCxScreen   = GetSystemMetrics(SM_CXSCREEN);
-    //    LONG lCyScreen   = GetSystemMetrics(SM_CYSCREEN);
-    //    RECT rcPrimaryMonitor = RECT{lScreenTop, lScreenLeft, lCxScreen, lCyScreen};
-
-    //    int columnCount = 2 * m_vecSensors.size() + 1;
-
-    //    //作为一个完整的屏幕进行手动光斑采样
-    //    m_wndLightSpotSampling.StartCollectSpotSize(&rcPrimaryMonitor, 1, hNotifyWindow, columnCount);
-
-    //}
-    //else
-    //{//多折幕形式
-
-    //    std::vector<RECT> vecMonitorAreas;
-    //    vecMonitorAreas.resize(m_vecSensors.size());
-    //    for (size_t i = 0; i < m_vecSensors.size(); i++)
-    //    {
-    //        m_vecSensors[i]->GetAttachedScreenArea(vecMonitorAreas[i]);
-    //    }
-
-
-    //}
-
-
     m_nCurrentSensorID = 0;
 
     RECT rcArea;
@@ -1285,118 +1169,6 @@ void CIWBSensorManager::StartLightSpotSampling(HWND hNotifyWindow, int nSensorID
 //@参数:bSuccess, 成功失败标志
 void CIWBSensorManager::OnIWBSensorLightSpotSamplingDone(BOOL bSuccess)
 {
-        //if(theApp.GetScreenMode() == EScreenModeSingle)
-        //{
-        //    m_vecSensors[m_nCurrentSensorID]->OnLightSpotSamplingDone(m_wndLightSpotSampling.GetAllSampleSize(), bSuccess);
-        //}
-        //else if(bSuccess)
-        //{
-        //    //theApp.GetMonitorFinder().SearchDisplayDev();
-
-        //    const ALL_LIGHTSPOT_SAMPLE_SIZE&  allSampleSize = m_wndLightSpotSampling.GetAllSampleSize();
-
-        //    if (allSampleSize[0].vecSampleSize.size() == 15)
-        //    {
-
-        //        ALL_LIGHTSPOT_SAMPLE_SIZE group;
-        //        group.resize(1);
-
-        //        RECT rcMonitor;
-
-        //        //设置Sensor0的光斑采样数据
-        //        if (m_vecSensors[0]->GetAttachedScreenArea(rcMonitor))
-        //        {
-        //            group[0].rcMonitor = rcMonitor;
-        //            group[0].vecSampleSize.resize(9);
-        //            for (int i = 0; i < 9; i++)
-        //            {
-        //                group[0].vecSampleSize[i] = allSampleSize[0].vecSampleSize[i];
-        //            }
-
-        //            //for (int i = 0; i < 9; i++)
-        //            //{
-        //            //	group[0].vecSampleSize[i] = allSampleSize[0].vecSampleSize[i];
-        //            //}
-        //        }
-        //        m_vecSensors[0]->OnLightSpotSamplingDone(group, bSuccess);
-
-        //        if (m_vecSensors.size() > 1)//2019/10/15
-        //        {
-        //            //设置Sensor1的光斑采样数据
-        //            group[0].vecSampleSize.clear();
-        //            if (m_vecSensors[1]->GetAttachedScreenArea(rcMonitor))
-        //            {
-        //                group[0].rcMonitor = rcMonitor;
-        //                group[0].vecSampleSize.resize(9);
-        //                //for (int i = 0; i < 9; i++)
-        //                //{
-        //                //    group[0].vecSampleSize[i] = allSampleSize[0].vecSampleSize[i];
-        //                //}
-
-        //                for (int i = 0; i < 9; i++)
-        //                {
-        //                    group[0].vecSampleSize[i] = allSampleSize[0].vecSampleSize[6 + i];
-        //                }
-
-        //            }
-
-        //            m_vecSensors[1]->OnLightSpotSamplingDone(group, bSuccess);
-        //        }
-
-
-        //    }
-        //    else if(allSampleSize[0].vecSampleSize.size() == 9)
-        //    {
-        //        for(size_t i=0; i<m_vecSensors.size(); i++)
-        //        {   
-        //            m_vecSensors[i]->OnLightSpotSamplingDone(allSampleSize, bSuccess);
-        //        }
-        //    }
-        //}//else
-
- 
-
-    //const ALL_LIGHTSPOT_SAMPLE_SIZE&  allScreenSamples = m_wndLightSpotSampling.GetAllScreenSamples();
-    //
-    //if (m_bAllScreenMergedOnOnePlane)
-    //{
-
-    //    ALL_LIGHTSPOT_SAMPLE_SIZE sensorSamples;
-
-    //    int nFirstSampeIndex = 0;
-
-    //    sensorSamples.resize(1);
-
-    //    //每个屏9个采样点
-    //    sensorSamples[0].vecSampleSize.resize(9);
-
-    //    for (size_t i = 0; i < m_vecSensors.size(); i++)
-    //    {
-
-    //        //获取图像传感器关联的屏幕区域
-    //        m_vecSensors[i]->GetAttachedScreenArea(sensorSamples[0].rcMonitor);
-
-
-    //        for (int nSampleIdx = 0; nSampleIdx < sensorSamples.size(); nSampleIdx++)
-    //        {
-    //            sensorSamples[0].vecSampleSize[nSampleIdx] = allScreenSamples[0].vecSampleSize[nFirstSampeIndex + nSampleIdx];
-
-    //        }
-
-    //        //下一个图像传感器的采样点重第6个点开始
-    //        nFirstSampeIndex += 6;
-
-
-    //        m_vecSensors[i]->OnLightSpotSamplingDone(sensorSamples, bSuccess);
-    //    }//for
-    //}
-    //else
-    //{
-
-
-
-
-    //}
 
     const ALL_LIGHTSPOT_SAMPLE_SIZE&  screenSamples = m_wndLightSpotSampling.GetScreenSamples();
     m_vecSensors[m_nCurrentSensorID]->OnLightSpotSamplingDone(screenSamples, bSuccess);

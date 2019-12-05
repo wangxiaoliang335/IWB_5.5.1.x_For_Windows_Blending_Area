@@ -589,7 +589,6 @@ protected://成员函数
 
     }
 
-
     BOOL IsSamePoint(const TPoint2D& left, const POINT& right)
     {
         double dx = left.d[0] - double(right.x);

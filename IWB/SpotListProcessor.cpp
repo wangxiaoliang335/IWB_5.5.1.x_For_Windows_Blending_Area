@@ -557,8 +557,7 @@ void CSpotListProcessor::ProcessLightSpots()
         int nAllLightSpotCount = 0;
 
         BOOL bDoubleScreenTouchMergeTemp = g_tSysCfgData.globalSettings.bDoubleScreenTouchMerge;
-        
-        
+             
         /*
 
         //#0号传感器(位于拼接屏的左边)的光斑
@@ -813,7 +812,7 @@ bool CSpotListProcessor::DoGLBoardGestureRecognition(TLightSpot* pLightSpots, in
     //}
     //<<commented by Jiqw : 2015/04/20
 
-    if (g_oGLBoardGR.FindTboardWnd(pLightSpots, nLightSpotCount))
+     if (g_oGLBoardGR.FindTboardWnd(pLightSpots, nLightSpotCount))
     {
         //g_oGLBoardGR.SetIsTouchPadMode(m_oVirtualHID.GetHIDMode() == E_DEV_MODE_TOUCHSCREEN);
         bool isMultiPenMode = g_oGLBoardGR.IsMultiPenMode();
@@ -917,21 +916,6 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
     }
     else
     {
-
-        /*int debugCount = 0;
-
-        if (nLightSpotCount >= 1)
-        {
-        AtlTrace(_T("\n[threadId=0x%x]ElementCount =  %d, nLightSpotCount=%d\r\n"), GetCurrentThreadId(), nElementCount, nLightSpotCount);
-        for(int i = 0; i < nElementCount; i++)
-        {
-        AtlTrace(_T("<<<, penInfo uid =  %d matchstate = %d >>\r\n"), pMatchInfo[i].uId, pMatchInfo[i].eMatchState);
-        }
-        }*/
-
-
-        //AtlTrace(_T("<<<<AcutalCount = %d, nElementCount = %d\r\n"), nLightSpotCount, nElementCount);
-
         for(int i = 0; i < nElementCount; i++)
         {
             const TMatchInfo &refMInfo = pMatchInfo[i];
@@ -939,39 +923,8 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
             penInfo[i].uId       = refMInfo.uId;
             penInfo[i].pt        = refMInfo.ptPos;  
 
-            /*penInfo[i].ePenState = (pMatchInfo[i].eMatchState == E_MISMATCHED)?E_PEN_STATE_UP:E_PEN_STATE_DOWN;
-            penInfo[i].uId       = pMatchInfo[i].uId;
-            penInfo[i].pt        = pMatchInfo[i].ptPos;*/
-
-
-            ////if (nLightSpotCount >= 2)
-            //{
-            //    //AtlTrace(_T("penInfo uid =  %d matchstate = %d  nElementCount=%d\r\n"), refMInfo.uId, refMInfo.eMatchState, nElementCount);
-            //    AtlTrace(_T("{{{[threadId=0x%x]penInfo uid =%d matchstate =%d LightSpotCount=%d}}\r\n"), GetCurrentThreadId(), (int)pMatchInfo[i].uId, (int)pMatchInfo[i].eMatchState, nLightSpotCount);
-            //}
-
-
-            //debugCount ++;    
-            //AtlTrace(_T("******{(Uid: %d), (state: %d), (pos:<%d, %d>)};\r\n"), refMInfo.uId, refMInfo.eMatchState, refMInfo.ptPos.x, refMInfo.ptPos.y);
         }
-
-        /*if(debugCount >=2 )
-        {
-        AtlTrace(_T("debugCount=%d\n"), debugCount);
-
-
-        }*/
-
     }    
-
-    /*if (!toBeContinued)
-    {
-    if (!m_bIsSmartPenReset)
-    {
-    m_oSmartPenMatch.Reset();
-    m_bIsSmartPenReset = true;
-    }
-    }*/
 
     nPenCount = nElementCount;
 

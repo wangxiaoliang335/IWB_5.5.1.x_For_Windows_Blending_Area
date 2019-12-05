@@ -22,7 +22,6 @@ struct TScreenLayout
 {
     std::vector<RectF> vecScreens  ;//屏幕区域数组
     std::vector<RectF> vecMergeAreas;//光斑融合区数组
-
 };
 
 
@@ -621,6 +620,13 @@ struct TLensConfig
 			autocalibratesettings.calibrateImageParams.autoCalibrateExpectedBrightness = 30;
 			autocalibratesettings.calibrateImageParams.autoCalibrateHilightGray = 255;//940 nm 激光器
 		}
+
+		lensSpecification.backFocalLength = 2.7;
+		lensSpecification.FOV_horz = 146;
+		lensSpecification.FOV_vert = 105;
+		lensSpecification.FOV_diagonal = 175;
+		lensSpecification.throwRatio = 0.15;
+
     }
 };
 

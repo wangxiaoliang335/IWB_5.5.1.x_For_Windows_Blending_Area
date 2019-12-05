@@ -5,7 +5,7 @@
 #define GREEN  RGB(0  ,255,0)  
 #define BKGND_COLOR RGB(0,0,255)
 
-#define MARGIN_WIDTH 10
+#define MARGIN_WIDTH 30  /////
 #define SYMBOL_SIZE  20
 
 
