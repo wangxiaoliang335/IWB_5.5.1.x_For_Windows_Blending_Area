@@ -784,7 +784,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             {   //²»²åÖµ
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
-                DebugContactInfo(penInfo, penCount);
+               // DebugContactInfo(penInfo, penCount);
 #endif
             }
             else
@@ -803,7 +803,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                     if (nItemCount > 0)
                     {
 #ifdef _DEBUG
-                        DebugContactInfo(pInterpolateContact, nItemCount);
+                        //DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
 						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
 
