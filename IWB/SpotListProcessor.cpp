@@ -193,9 +193,10 @@ void CSpotListProcessor::StopProcess()
 //@参 数:lightSpot, 光斑数据。
 //       CameraIndex, 看到光斑的镜头的ID号。
 //       pMergeAreaIndex, 指向保存融合区索引的内存的指针，在该触控融合区发现了要判断的光斑。
+//       bBeyondMergeArea, 超越融合区最外边界标志
 //@返回值:TRUE, 在融合区内出现。
 //       FALSE, 未在融合区内出现
-BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, UINT* pMergeAreaIndex)
+BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, bool* pbBeyondMergeArea = NULL, UINT* pMergeAreaIndex)
 {
     if (m_uCameraCount == 1) return FALSE;
     if (CameraIndex >= m_uCameraCount) return FALSE;
@@ -210,12 +211,23 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
         mergeAreas[0] = *pMergeArea;
         mergeAreaIndex[0] = CameraIndex;
         areaCount = 1;
+
+        if (lightSpot.ptPosInScreen.x > pMergeArea->right)
+        {//光斑出现在唯一融合区右侧属于邻居Camera的区域
+            if (pbBeyondMergeArea) *pbBeyondMergeArea = TRUE;
+        }
+
     }
     else if (CameraIndex == m_uCameraCount - 1)
     {//只有左边的一个融合区
         const RECT* pMergeArea = m_oSpotMerger.GetMergeArea(CameraIndex - 1);
         mergeAreas[0] = *pMergeArea;
         mergeAreaIndex[0] = CameraIndex - 1;
+
+        if (lightSpot.ptPosInScreen.x < pMergeArea->left)
+        {//光斑出现在唯一融合区左侧属于邻居Camera的区域
+            if (pbBeyondMergeArea)*pbBeyondMergeArea = TRUE;
+        }
 
         areaCount = 1;
     }
@@ -231,6 +243,20 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
         mergeAreaIndex[1] = CameraIndex;
 
         areaCount = 2;
+
+
+        if(lightSpot.ptPosInScreen.x < pLeftMergeArea->left)
+        {
+            // 光斑出现在左融合区的左侧属于左边邻居Camera的区域
+            if (pbBeyondMergeArea)*pbBeyondMergeArea = TRUE;
+        }
+
+        else if (lightSpot.ptPosInScreen.x > pRightMergeArea->right)
+        {
+            // 光斑出现在右融合区的右侧属于右边邻居Camera的区域
+            if (pbBeyondMergeArea)*pbBeyondMergeArea = TRUE;
+        }
+        
     }
     
     for (int i = 0; i < _countof(mergeAreas); i++)
@@ -437,10 +463,14 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
         for (int i = 0; i < nLightSpotCount; i++)
         {
             TLightSpot& spot = pLightSpots[i];
-            spot.aux.mergeAreaIndex = UINT(-1);
+            //<<debug
+            spot.dwCameraId = dwCameraId;
+            //debug>>
 
+            spot.aux.uMergeAreaIndex = UINT(-1);
+            spot.aux.bBeyondMergeArea = false;
 
-            if (AppearInMergeArea(spot, dwCameraId, &spot.aux.mergeAreaIndex))
+            if (AppearInMergeArea(spot, dwCameraId, &spot.aux.bBeyondMergeArea, &spot.aux.uMergeAreaIndex))
             {
                 bAllOutsideMergeArea = FALSE;
 
@@ -593,6 +623,10 @@ void CSpotListProcessor::ProcessLightSpots()
             for (int i = 0; i < pSpotListGroup->aryLightSpotsCount[nCameraIndex]; i++)
             {
                 const TLightSpot& spot = pSpotListGroup->aryLightSpots[nCameraIndex][i];
+                
+                //光斑位于融合区最外侧边界以外，则略过
+                if (spot.aux.bBeyondMergeArea) continue;
+
                 allLightSpots[nAllLightSpotCount] = spot;
                 nAllLightSpotCount++;
             }
@@ -720,7 +754,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             sprintf_s(
                 szData,
                 _countof(szData),
-                "%g,%g,%d,%d\n",
+                "[%d]%g,%g,%d,%d\n",
+                pLightSpots[i].dwCameraId,
                 pLightSpots[i].pt2dPosInVideo[0],
                 pLightSpots[i].pt2dPosInVideo[1],
                 pLightSpots[i].ptPosInScreen.x,

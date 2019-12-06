@@ -15,11 +15,15 @@ struct TLightSpot
     //辅助数据结构
     struct  
     {
-        UINT mergeAreaIndex      ;//光斑所在的融合区索引号。
+        UINT uMergeAreaIndex      ;//光斑所在的融合区索引号。
                                  //-1, 不在任何融合区
                                  //>=0, 融合区索引号
-
+        bool bBeyondMergeArea      ;//位置超越融合区标志
     }aux;
+
+    //<<debug
+    DWORD dwCameraId;//所属相机ID
+    //debug>>
 
     
 	bool operator < (TLightSpot& right)

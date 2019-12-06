@@ -114,9 +114,10 @@ protected:
     //@参 数:lightSpot, 光斑数据。
     //       CameraIndex, 看到光斑的镜头的ID号。
     //       pMergeAreaIndex, 指向保存融合区索引的内存的指针，在该触控融合区发现了要判断的光斑。
+    //       bBeyondMergeArea, 超越融合区最外边界标志
     //@返回值:TRUE, 在融合区内出现。
     //       FALSE, 未在融合区内出现
-    BOOL AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, UINT* pMergeAreaIndex = NULL);
+    BOOL AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, bool* bBeyondMergeArea, UINT* pMergeAreaIndex = NULL);
 
 
 

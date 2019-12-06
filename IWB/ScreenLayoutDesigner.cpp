@@ -111,7 +111,7 @@ void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
     m_vecMergeAreasRelative.resize(nMergeAreaCount);
     m_vecMergeAreasAbs.resize(nMergeAreaCount);
 
-    float fMergeAreaHalfSize = 0.02;
+    float fMergeAreaHalfSize = 0.005;
 
     for (int i = 0; i < nMergeAreaCount; i++)
     {
