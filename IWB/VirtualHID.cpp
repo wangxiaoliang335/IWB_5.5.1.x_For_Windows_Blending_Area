@@ -291,7 +291,8 @@ CVirtualHID::CVirtualHID()
     m_aspectRatioDenominator(9),
     m_eTouchDataAdjustModel(E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO),
 	m_bTouchHIDMode(true),
-	m_bTouchTUIOMode(false)
+	m_bTouchTUIOMode(false),
+	m_bSinglePointMode(false)
 
 {
     memset(&m_TouchPoints[0], 0, sizeof(m_TouchPoints));
@@ -414,21 +415,25 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
              }
              break;
           case E_DEV_MODE_TOUCHSCREEN:
-#ifdef SINGLE_TOUCH
-		     //搜索编号为0的笔信息
-		     for (int i = 0; i < nPenCount; i++)
-		     {
-			     if (pPenInfos[i].uId == 0)
-			     {
-			           InputTouchPoints(&pPenInfos[i], 1);
-				       break;
-			     }
-		     }
-#else
-		      bRet = InputTouchPoints(pPenInfos, nPenCount);
-#endif
+			  ////如果选择的是单点触控的话，只响应一个点就可以了
+			  if (m_bSinglePointMode)
+			  {
+		          //搜索编号为0的笔信息
+		         for (int i = 0; i < nPenCount; i++)
+		         {
+			         if (pPenInfos[i].uId == 0)
+			         {
+			             InputTouchPoints(&pPenInfos[i], 1);
+				         break;
+			         }
+		         }
+			  }
+			  else
+			  {
+		          bRet = InputTouchPoints(pPenInfos, nPenCount);
+			  }
 		     break;
-           }   
+           } //switch  
 	}
 
 	if (m_bTouchTUIOMode)
@@ -1008,7 +1013,10 @@ void CVirtualHID::SetTouchHIDMode(bool  eMode)
 	}
 	m_bTouchHIDMode = eMode;
 }
-
+void CVirtualHID::SetSinglePointMode(bool eMode)
+{
+	m_bSinglePointMode = eMode;
+}
 void  CVirtualHID::SetIPadressAndPort(DWORD IP,int nPort)
 {
 	m_oVirtualTUIOTouch.SetIPadressAndPort(IP, nPort);

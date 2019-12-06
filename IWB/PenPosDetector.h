@@ -363,6 +363,9 @@ public:
 	void EnableOnlineScreenArea(BOOL bEnableManualMaskFrame) { m_bEnableOnlineScreenArea = bEnableManualMaskFrame; }
 	BOOL IsEnableOnlineScreenArea()const                           { return m_bEnableOnlineScreenArea; }
 
+	void DisableReflectionPoint(BOOL bDisableReflectionPoint) { m_bDisableReflectionSpot = bDisableReflectionPoint; }
+	BOOL IsDisableReflectionPoint()const                      { return m_bDisableReflectionSpot; }
+
 	void SetCalibrateFailed(int CalibrateFailed)                {  m_bCalibratorFailed = CalibrateFailed ;  }
 
     //Added by toxuke@gmail.com, 2014/09/10

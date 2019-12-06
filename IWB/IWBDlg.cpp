@@ -2036,6 +2036,24 @@ void CIWBDlg::OnMenuParameterSettings()
 		{
 			pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
 		}
+		///////////////////
+		if (TSensorModeConfig->advanceSettings.bDisableReflectionSpot)
+		{
+			pSensor->GetPenPosDetector()->DisableReflectionPoint(TRUE);
+		}
+		else {
+			pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
+		}
+		if (TSensorModeConfig->advanceSettings.bSinglePointMode)
+		{
+		    this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
+		}
+		else
+		{ 
+			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
+		}
+
+
     }//if
 }
 

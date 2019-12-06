@@ -46,6 +46,9 @@ public:
 	//@功能：设置TUIO触控模式
 	void SetTouchTUIOMode(bool  eMode);
 	bool GetTouchTUIOMode()const { return m_bTouchTUIOMode; }
+	////@功能：设置触屏单点模式
+	void SetSinglePointMode(bool eMode);
+	bool GetSinglePointMode()const { return m_bSinglePointMode; }
 
 	/////////////////
 	void    SetIPadressAndPort(DWORD IP, int nPort);
@@ -88,6 +91,8 @@ protected:
 	CVirtualTUIO  m_oVirtualTUIOTouch;
 	bool     m_bTouchHIDMode  ;
 	bool     m_bTouchTUIOMode ;
+
+	bool     m_bSinglePointMode;
 
 
 	static const int MAX_TOUCH_POINT_COUNT = 10;

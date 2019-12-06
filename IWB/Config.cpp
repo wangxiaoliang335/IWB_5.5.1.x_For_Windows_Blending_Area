@@ -1582,7 +1582,17 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 				{
 					advanceSettings.bDisableReflectionSpot = FALSE;
 				}
-
+			}
+			else if(_stricmp(paramName, "SinglePointMode") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					advanceSettings.bSinglePointMode = TRUE;
+				}
+				else
+				{
+					advanceSettings.bSinglePointMode = FALSE;
+				}			
 			}
         }
 
@@ -1712,6 +1722,15 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 	pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "DisableReflectionSpot");
 	pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	//是否开启单点响应功能
+	pXmlComment = new TiXmlComment("是否开启单点模式");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "SinglePointMode");
+	pElement->SetAttribute("value", advanceSettings.bSinglePointMode ? "Yes" : "No");
 	pNode->LinkEndChild(pElement);
 
     return TRUE;

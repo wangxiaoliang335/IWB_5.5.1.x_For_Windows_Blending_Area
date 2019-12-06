@@ -125,4 +125,6 @@ public:
 	afx_msg void OnBnClickedCheckDynamicmaskframecontrol();
 	afx_msg void OnBnClickedCheckAntijammingcontrol();
 
+	afx_msg void OnBnClickedCheckSinglepointmode();
+	afx_msg void OnBnClickedCheckDisablereflectionpoint();
 };

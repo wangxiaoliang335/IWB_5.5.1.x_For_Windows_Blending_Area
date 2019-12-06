@@ -85,6 +85,9 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX,IDC_CHECK_DYNAMICMASKFRAMECONTROL,TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame);
 	DDX_Check(pDX, IDC_CHECK_ANTIJAMMINGCONTROL, TSensorModeConfig->advanceSettings.bIsAntiJamming);
 
+	DDX_Check(pDX, IDC_CHECK_DISABLEREFLECTIONPOINT, TSensorModeConfig->advanceSettings.bDisableReflectionSpot);
+	DDX_Check(pDX, IDC_CHECK_SINGLEPOINTMODE, TSensorModeConfig->advanceSettings.bSinglePointMode);
+
 }
 
 
@@ -120,6 +123,8 @@ BEGIN_MESSAGE_MAP(CAdvancedSettingsDlg, CScrollablePropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_DYNAMICMASKFRAMECONTROL, &CAdvancedSettingsDlg::OnBnClickedCheckDynamicmaskframecontrol)
 	ON_BN_CLICKED(IDC_CHECK_ANTIJAMMINGCONTROL, &CAdvancedSettingsDlg::OnBnClickedCheckAntijammingcontrol)
 
+	ON_BN_CLICKED(IDC_CHECK_SINGLEPOINTMODE, &CAdvancedSettingsDlg::OnBnClickedCheckSinglepointmode)
+	ON_BN_CLICKED(IDC_CHECK_DISABLEREFLECTIONPOINT, &CAdvancedSettingsDlg::OnBnClickedCheckDisablereflectionpoint)
 END_MESSAGE_MAP()
 
 
@@ -560,12 +565,12 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->SetWindowText(strText);
 
 		//更新正常使用时的亮度系数
-		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[1].lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
+		TLensConfig& lensCfg = m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
-		m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.m_eTouchType = GetActualTouchType();
+		m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType = GetActualTouchType();
 
 		CString strBrightnessCoefficient;//亮度系数
-		switch(m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.m_eTouchType)
+		switch(m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType)
 		{
 		    case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 				strBrightnessCoefficient.Format(_T("%d"), lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
@@ -593,7 +598,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		GetDlgItem(IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT)->SetWindowText(strBrightnessCoefficient);
 
 		//更新触控方式
-		switch (m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.m_eTouchType)
+		switch (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType)
 		{
 		    case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 
@@ -653,7 +658,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		GetDlgItem(IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY)->SetWindowText(autoCalibrateHilightGray);
 
 		///根据墙面和桌面的不同来进行参数的设置
-		if (m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.bIsDynamicMaskFrame)
+		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bIsDynamicMaskFrame)
 		{
 			((CButton*)GetDlgItem(IDC_CHECK_DYNAMICMASKFRAMECONTROL))->SetCheck(true);
 		}
@@ -662,13 +667,30 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 			((CButton*)GetDlgItem(IDC_CHECK_DYNAMICMASKFRAMECONTROL))->SetCheck(false);
 		}
 
-		if (m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.bIsAntiJamming)
+		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bIsAntiJamming)
 		{
 			((CButton*)GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL))->SetCheck(true);
 		}
 		else {
 			((CButton*)GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL))->SetCheck(false);
 		}
+
+		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bDisableReflectionSpot)
+		{
+			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(true);
+		}
+		else {
+			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(false);
+		}
+		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bSinglePointMode)
+		{
+			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(true);
+		}
+		else
+		{
+			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(false);
+		}
+
 
 		//更新到变量中去
 		UpdateData(TRUE);
@@ -788,6 +810,22 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		}
 		else {
 			((CButton*)GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL))->SetCheck(false);
+		}
+
+		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bDisableReflectionSpot)
+		{
+			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(true);
+		}
+		else {
+			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(false);
+		}
+		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bSinglePointMode)
+		{
+			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(true);
+		}
+		else
+		{
+			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(false);
 		}
 
 		//更新到变量中去
@@ -1293,3 +1331,15 @@ void CAdvancedSettingsDlg::OnBnClickedCheckAntijammingcontrol()
 	SetModified(TRUE);
 }
 
+void CAdvancedSettingsDlg::OnBnClickedCheckSinglepointmode()
+{
+	// TODO: Add your control notification handler code here
+	SetModified(TRUE);
+}
+
+
+void CAdvancedSettingsDlg::OnBnClickedCheckDisablereflectionpoint()
+{
+	// TODO: Add your control notification handler code here
+	SetModified(TRUE);
+}
