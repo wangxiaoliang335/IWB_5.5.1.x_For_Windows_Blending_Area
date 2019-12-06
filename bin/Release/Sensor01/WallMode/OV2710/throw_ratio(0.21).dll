@@ -16,7 +16,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="0" default="0" />
+            <Param name="Brightness" value="20" default="20" />
             <!--对比度-->
             <Param name="Contrast" value="38" default="38" />
             <!--色调-->
@@ -34,7 +34,7 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="0" default="0" />
+            <Param name="Gain" value="100" default="1000" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -75,7 +75,6 @@
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-PenTouchWhiteBoard>
-
     <!--手指触控模式下的正常使用参数-->
     <NormalUsage-FingerTouchControl>
         <!--光斑触发门限-->
@@ -112,7 +111,6 @@
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-FingerTouchControl>
-
     <!--手掌触控模式下的正常使用参数-->
     <NormalUsage-PalmTouchControl>
         <!--光斑触发门限-->
@@ -149,13 +147,12 @@
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </NormalUsage-PalmTouchControl>
-
     <!--安装调试模式参数-->
     <InstallTunning>
         <!--安装调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="-16" default="-16" />
+            <Param name="Brightness" value="-25" default="-16" />
             <!--对比度-->
             <Param name="Contrast" value="38" default="38" />
             <!--色调-->
@@ -178,13 +175,12 @@
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </InstallTunning>
-
     <!--电子白板激光器调试模式参数-->
     <LaserTunning-WhiteBoard>
-        <!--电子白板调试模式下的相机参数-->
+        <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="0" default="0" />
+            <Param name="Brightness" value="64" default="64" />
             <!--对比度-->
             <Param name="Contrast" value="38" default="38" />
             <!--色调-->
@@ -194,7 +190,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="2" default="2" />
             <!--伽玛值-->
-            <Param name="Gamma" value="72" default="72" />
+            <Param name="Gamma" value="100" default="100" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -202,15 +198,14 @@
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="0" default="0" />
+            <Param name="Gain" value="100" default="100" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning-WhiteBoard>
-
     <!--手指触控激光器调试模式参数-->
     <LaserTunning-FingerTouchControl>
-        <!--手指触控激光器调试模式下的相机参数-->
+        <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
             <Param name="Brightness" value="0" default="0" />
@@ -236,10 +231,9 @@
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning-FingerTouchControl>
-
     <!--手掌触控激光器调试模式参数-->
     <LaserTunning-PalmTouchControl>
-        <!--手掌触控激光器调试模式下的相机参数-->
+        <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
             <Param name="Brightness" value="-24" default="-24" />
@@ -265,7 +259,6 @@
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
     </LaserTunning-PalmTouchControl>
-
     <!--自动校正参数列表-->
     <AutoCalibrateParamsList>
         <!--第(1)组自动校正参数-->
@@ -276,11 +269,13 @@
                 <Param name="autoCalibrateExpectedBrightness" value="130" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <!--自动校正速度(1~10), 1最快，10最慢-->
+                <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
-            <!--第(1)组自动校正相机参数-->
+            <!--第(1)组自动校正参数-->
             <CameraParams>
                 <!--亮度-->
-                <Param name="Brightness" value="-16" default="-16" />
+                <Param name="Brightness" value="-24" default="-24" />
                 <!--对比度-->
                 <Param name="Contrast" value="38" default="38" />
                 <!--色调-->
@@ -303,7 +298,6 @@
                 <Param name="Exposure" value="-7" default="-7" />
             </CameraParams>
         </AutoCalibrateParams>
-
         <!--第(2)组自动校正参数-->
         <AutoCalibrateParams>
             <!--第(2)组自动校正画面参数-->
@@ -312,8 +306,10 @@
                 <Param name="autoCalibrateExpectedBrightness" value="100" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <!--自动校正速度(1~10), 1最快，10最慢-->
+                <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
-            <!--第(2)组自动校正相机参数-->
+            <!--第(2)组自动校正参数-->
             <CameraParams>
                 <!--亮度-->
                 <Param name="Brightness" value="0" default="0" />
@@ -339,7 +335,6 @@
                 <Param name="Exposure" value="-7" default="-7" />
             </CameraParams>
         </AutoCalibrateParams>
-
         <!--第(3)组自动校正参数-->
         <AutoCalibrateParams>
             <!--第(3)组自动校正画面参数-->
@@ -348,8 +343,10 @@
                 <Param name="autoCalibrateExpectedBrightness" value="50" default="50" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <!--自动校正速度(1~10), 1最快，10最慢-->
+                <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
-            <!--第(3)组自动校正相机参数-->
+            <!--第(3)组自动校正参数-->
             <CameraParams>
                 <!--亮度-->
                 <Param name="Brightness" value="-24" default="-24" />
@@ -398,6 +395,7 @@
     </LensSpec>
     <!--自动校正补偿系数-->
     <AutoCalibCompensateCoefs>
+	<![CDATA[
         <Param name="CompensateCoefficient" value="9.43230499999999949523e+00" />
         <Param name="CompensateCoefficient" value="5.85412099999999995131e-10" />
         <Param name="CompensateCoefficient" value="9.52005499999999954686e-09" />
@@ -405,5 +403,15 @@
         <Param name="u0" value="4.86803099999999988601e-01" />
         <!--归一化后的垂直光心坐标-->
         <Param name="v0" value="2.50028299999999981118e-01" />
+		]]>
+        <Param name="CompensateCoefficient" value="1.206705e+01" />
+        <Param name="CompensateCoefficient" value="5.614278e-10" />
+        <Param name="CompensateCoefficient" value="1.498230e-04" />
+        <!--归一化后的水平光心坐标-->
+        <Param name="u0" value="5.502061e-01" />
+        <!--归一化后的垂直光心坐标-->
+        <Param name="v0" value="4.444444e-01" />	
+		
+		
     </AutoCalibCompensateCoefs>
 </LensConfig>

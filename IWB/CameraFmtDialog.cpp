@@ -14,7 +14,7 @@ CameraFmtDialog::CameraFmtDialog(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_DIALOG_ADANCEDSETTINGS, pParent)
 	, m_sCurrentCameraResution(_T(""))
 	, m_SelectedCameraFmtValue(_T(""))
-	, m_bHIDMode(FALSE)
+	, m_bHIDMode(TRUE)
 	, m_bTUIOMode(FALSE)
 	, m_IPAddress(0)
 	, m_strPort(_T(""))
@@ -72,11 +72,21 @@ BOOL CameraFmtDialog::OnInitDialog()
 	    m_SelectedCameraFmtValue = m_sCurrentCameraResution;
 	}
 
-	((CButton*)GetDlgItem(IDC_CHECK_HID))->SetCheck(g_tSysCfgData.globalSettings.bTouchHIDMode);
-	((CButton*)GetDlgItem(IDC_CHECK_TUIO))->SetCheck(g_tSysCfgData.globalSettings.bTouchTUIOMode);
+	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+	{
+		GetDlgItem(IDC_CHECK_TUIO)->EnableWindow(false);
+		GetDlgItem(IDC_CHECK_HID)->EnableWindow(false);
+		GetDlgItem(IDC_IPADDRESS_IP)->EnableWindow(false);
+		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(false);
+	}
+	else
+	{
+	    ((CButton*)GetDlgItem(IDC_CHECK_HID))->SetCheck(g_tSysCfgData.globalSettings.bTouchHIDMode);
+	    ((CButton*)GetDlgItem(IDC_CHECK_TUIO))->SetCheck(g_tSysCfgData.globalSettings.bTouchTUIOMode);
 	
-	unsigned   char   *pIP = (unsigned   char*)&m_IPAddress;
-	CIPAddress.SetAddress(*pIP, *(pIP + 1), *(pIP + 2), *(pIP + 3));
+	    unsigned   char   *pIP = (unsigned   char*)&m_IPAddress;
+	    CIPAddress.SetAddress(*pIP, *(pIP + 1), *(pIP + 2), *(pIP + 3));
+	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE

@@ -2,7 +2,7 @@
 <!--镜头配置参数-->
 <LensConfig>
     <!--引导框的位置和颜色, value range: left=[0-639]; top=[0-479]; width=[0-640]; height=[0-480]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue-->
-    <Param name="GuideBox" width="640" height="480" left="80" top="60" right="560" bottom="420" color="ff0000" visible="Yes" />
+    <Param name="GuideBox" width="640" height="480" left="80" top="60" right="480" bottom="360" color="ff0000" visible="Yes" />
     <!--电子白板手指触控模式下的正常使用参数-->
     <NormalUsage-FingerTouchWhiteBoard>
         <!--光斑触发门限-->
@@ -26,7 +26,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -52,7 +52,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="150" default="150" />
+            <Param name="Brightness" value="60" default="60" />
             <!--对比度-->
             <Param name="Contrast" value="255" default="255" />
             <!--色调-->
@@ -98,7 +98,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -134,7 +134,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -180,7 +180,7 @@
         <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="120" default="120" />
+            <Param name="Brightness" value="180" default="180" />
             <!--对比度-->
             <Param name="Contrast" value="150" default="150" />
             <!--色调-->
@@ -190,7 +190,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -208,7 +208,7 @@
         <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="120" default="120" />
+            <Param name="Brightness" value="180" default="180" />
             <!--对比度-->
             <Param name="Contrast" value="150" default="150" />
             <!--色调-->
@@ -218,7 +218,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -236,7 +236,7 @@
         <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="120" default="120" />
+            <Param name="Brightness" value="180" default="180" />
             <!--对比度-->
             <Param name="Contrast" value="150" default="150" />
             <!--色调-->
@@ -246,7 +246,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -303,9 +303,9 @@
             <!--第(2)组自动校正画面参数-->
             <ImageParams>
                 <!--自动校正亮度自动控制时期望的平均画面亮度(范围0~255)-->
-                <Param name="autoCalibrateExpectedBrightness" value="70" default="100" />
+                <Param name="autoCalibrateExpectedBrightness" value="100" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
-                <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <Param name="AutoCalibrateHilightGray" value="180" default="180" />
                 <!--自动校正速度(1~10), 1最快，10最慢-->
                 <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
@@ -340,9 +340,9 @@
             <!--第(3)组自动校正画面参数-->
             <ImageParams>
                 <!--自动校正亮度自动控制时期望的平均画面亮度(范围0~255)-->
-                <Param name="autoCalibrateExpectedBrightness" value="30" default="100" />
+                <Param name="autoCalibrateExpectedBrightness" value="70" default="70" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
-                <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <Param name="AutoCalibrateHilightGray" value="120" default="120" />
                 <!--自动校正速度(1~10), 1最快，10最慢-->
                 <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
@@ -391,16 +391,16 @@
         <!--对角线视角, 单位:度-->
         <Param name="FOV_diagonal" value="175" />
         <!--投射比-->
-        <Param name="Throw Ratio" value="0.15" />
+        <Param name="Throw Ratio" value="0.7" />
     </LensSpec>
     <!--自动校正补偿系数-->
     <AutoCalibCompensateCoefs>
-        <Param name="CompensateCoefficient" value="-6.27743856220419248788e+66" />
-        <Param name="CompensateCoefficient" value="-6.27743856220419248788e+66" />
-        <Param name="CompensateCoefficient" value="-6.27743856220419248788e+66" />
+        <Param name="CompensateCoefficient" value="0.00000000000000000000e+00" />
+        <Param name="CompensateCoefficient" value="0.00000000000000000000e+00" />
+        <Param name="CompensateCoefficient" value="0.00000000000000000000e+00" />
         <!--归一化后的水平光心坐标-->
-        <Param name="u0" value="-6.27743856220419248788e+66" />
+        <Param name="u0" value="5.00000000000000000000e-01" />
         <!--归一化后的垂直光心坐标-->
-        <Param name="v0" value="-6.27743856220419248788e+66" />
+        <Param name="v0" value="5.00000000000000000000e-01" />
     </AutoCalibCompensateCoefs>
 </LensConfig>

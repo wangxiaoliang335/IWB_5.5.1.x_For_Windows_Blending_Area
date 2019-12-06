@@ -82,7 +82,7 @@
                 <!--高级设置参数-->
                 <AdvanceSettings>
                     <!--设备触控类型("Finger_Touch_WhiteBoard":手触控电子白板; "Pen_Touch_WhiteBoard":笔触控电子白板; "Finger_Touch_Control":手指触控;"Palm_Touch_Control":手掌互动;-->
-                    <Param name="DeviceTouchType" value="Palm_Touch_Control" />
+                    <Param name="DeviceTouchType" value="Pen_Touch_WhiteBoard" />
                     <!--是否是背投设备-->
                     <Param name="RearProjectionDevice" value="No" />
                     <!--干扰光斑屏蔽区膨胀半径-->
@@ -126,7 +126,7 @@
                 <!--高级设置参数-->
                 <AdvanceSettings>
                     <!--设备触控类型("Finger_Touch_WhiteBoard":手触控电子白板; "Pen_Touch_WhiteBoard":笔触控电子白板; "Finger_Touch_Control":手指触控;"Palm_Touch_Control":手掌互动;-->
-                    <Param name="DeviceTouchType" value="Palm_Touch_Control" />
+                    <Param name="DeviceTouchType" value="Pen_Touch_WhiteBoard" />
                     <!--是否是背投设备-->
                     <Param name="RearProjectionDevice" value="No" />
                     <!--干扰光斑屏蔽区膨胀半径-->

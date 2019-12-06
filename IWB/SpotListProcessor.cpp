@@ -119,9 +119,6 @@ void CSpotListProcessor::StartProcess()
     }
 
     InterlockedIncrement(&m_lReferenceCount);
-
-
-
 }
 
 //@¹¦ÄÜ:Í£Ö¹

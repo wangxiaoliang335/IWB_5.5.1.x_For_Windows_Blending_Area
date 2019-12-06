@@ -539,12 +539,15 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
         //设置工作模式
         m_vecSensors[i]->SetLensMode(sysCfgData.globalSettings.eLensMode);
     }
-
-    //this->m_oSpotListProcessor.GetVirtualHID().SetHIDMode(sysCfgData.globalSettings.eHIDDeviceMode);
+    //
+	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+	{
+		sysCfgData.globalSettings.bTouchHIDMode = true;
+		sysCfgData.globalSettings.bTouchTUIOMode = false;
+	}
     this->m_pSpotListProcessor->GetVirtualHID().SetHIDMode(sysCfgData.globalSettings.eHIDDeviceMode);
 	//////add by zhaown 2019.9.25
 	////如果两种模式都为false的话，那么强行HID模式响应
-
 	if ((!sysCfgData.globalSettings.bTouchHIDMode) && (!sysCfgData.globalSettings.bTouchTUIOMode))
 	{
 		this->m_pSpotListProcessor->GetVirtualHID().SetTouchHIDMode(true);

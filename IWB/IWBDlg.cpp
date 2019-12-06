@@ -2541,9 +2541,18 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         }
 
 		////插值
-		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_ENABLED);
+		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_ENABLED);	
 		///高级设置
-		m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_ENABLED);
+		///如果是手触或者笔触电子白板的话，那么就灰掉高级设置
+		//if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+		//{
+		//	m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
+		//}
+		//else
+		{
+		     m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_ENABLED);
+		}
+
     }
     else
     {   
@@ -2748,10 +2757,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.CheckMenuItem(uMenuID, MF_BYCOMMAND | MF_UNCHECKED);
             }
         }
-
     }
-
-
 }
 
 void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
@@ -5144,6 +5150,7 @@ void CIWBDlg::OnMenuAdvancessetting()
 		if (!bHIDMode && !bTUIOMode)
 		{
 			g_tSysCfgData.globalSettings.bTouchHIDMode = true;
+			//bHIDMode = true;
 		}
 		else
 		{
