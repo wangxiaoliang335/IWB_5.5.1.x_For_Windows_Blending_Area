@@ -435,20 +435,21 @@ BOOL CVideToScreenMap::ChangeImageSize(int nNewImageWidth, int nNewImageHeight)
 
 BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool* pbIsOutsideScreen, BOOL bWithoutAutoCalibCompensate,TCameraDebugData* pDebugData)
 {
+    //线程安全加锁
     CComCritSecLock<CComAutoCriticalSection> lock(m_csForCalibrateThreadSafe);
 
     int nActualMonitorLeft, nActualMonitorTop, nActualMonitorRight, nActualMonitorBottom, nActualMonitorWidth, nActualMonitorHeight;
-    //线程安全加锁
-    {
+    
 
-        nActualMonitorLeft   = this->m_rcMonitorResolution.left  ;
-        nActualMonitorTop    = this->m_rcMonitorResolution.top   ;
-        nActualMonitorRight  = this->m_rcMonitorResolution.right ;
-        nActualMonitorBottom = this->m_rcMonitorResolution.bottom;
 
-        nActualMonitorWidth  = this->m_rcMonitorResolution.right  - this->m_rcMonitorResolution.left;
-        nActualMonitorHeight = this->m_rcMonitorResolution.bottom - this->m_rcMonitorResolution.top ;
-    }
+    nActualMonitorLeft   = this->m_rcMonitorResolution.left  ;
+    nActualMonitorTop    = this->m_rcMonitorResolution.top   ;
+    nActualMonitorRight  = this->m_rcMonitorResolution.right ;
+    nActualMonitorBottom = this->m_rcMonitorResolution.bottom;
+
+    nActualMonitorWidth  = this->m_rcMonitorResolution.right  - this->m_rcMonitorResolution.left;
+    nActualMonitorHeight = this->m_rcMonitorResolution.bottom - this->m_rcMonitorResolution.top ;
+
 
 
     int nMonitorId = 0;
@@ -482,6 +483,8 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
         pPtScreen ->d[0] = nActualMonitorLeft + ((pPtScreen ->d[0] - nCalibrateMonitorLeft) * nActualMonitorWidth  + (nCalibrateMonitorWidth  >> 1)/*四舍五入*/)/nCalibrateMonitorWidth;
         pPtScreen ->d[1] = nActualMonitorTop  + ((pPtScreen ->d[1] - nCalibrateMonitorTop ) * nActualMonitorHeight + (nCalibrateMonitorHeight >> 1)/*四舍五入*/)/nCalibrateMonitorHeight;
 
+
+        
         //虚拟屏幕位置信息(单位:像素)
         int nCXVScreen    = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int nCYVScreen    = GetSystemMetrics(SM_CYVIRTUALSCREEN);
@@ -496,6 +499,7 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
 		}
 
 		if (pbIsOutsideScreen) *pbIsOutsideScreen = false;
+        
 
         //判断位置是否位于虚拟屏幕以外，如果位于虚拟屏幕以外，则置位标志*pbIsOutside
         if (pPtScreen->d[0] < nVSLeft)
@@ -533,6 +537,9 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
 			}
             pPtScreen->d[1]  = nVSBottom;
         }
+
+
+
     }
 
     return TRUE;

@@ -9,7 +9,7 @@ CSpotMerger::CSpotMerger()
 
     int nRange = nCxScreen > nCyScreen ? nCyScreen : nCxScreen;
 
-    m_nMergeDistThreshold = nRange * 5 / 100;
+    m_nMergeDistThreshold = nRange * 2 / 100;
 }
 
 CSpotMerger::~CSpotMerger()
@@ -183,13 +183,13 @@ void CSpotMerger::DoMerge(TLightSpot* pLightSpots, int* pLightSpotCount)
     {
         TLightSpot&  spot = pLightSpots[nSpotIndex];
 
-        if (spot.aux.mergeAreaIndex != UINT(-1))
+        if (spot.aux.uMergeAreaIndex != UINT(-1))
         {
             for (int j = nSpotIndex + 1; j < nSpotCount; j++)
             {
                 TLightSpot&  cmp_spot = pLightSpots[j];
 
-                if (cmp_spot.aux.mergeAreaIndex == spot.aux.mergeAreaIndex)
+                if (cmp_spot.aux.uMergeAreaIndex == spot.aux.uMergeAreaIndex)
                 {//当前处理的光斑和与之比较的光斑处于同一融合区
                  //通过判断是否小于融合的距离门限, 来决定是否融合
 
@@ -257,7 +257,7 @@ void CSpotMerger::OnDisplayChange(int nScreenWidth, int nScreenHeight)
     this->m_nMergeAreaLeftBorder  = m_nSeperateX - nMergeAreaWidth/2;
     this->m_nMergeAreaRightBorder = m_nSeperateX + nMergeAreaWidth/2;
 
-    m_nMergeDistThreshold = nScreenHeight * 5 / 100;
+    m_nMergeDistThreshold = nScreenHeight * 2/ 100;
 }
 
 
