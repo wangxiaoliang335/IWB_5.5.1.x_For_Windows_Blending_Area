@@ -15,6 +15,7 @@
 #define EASI_TOUCH_MAXIMUM_Y (1080*8)
 
 
+
 struct EASI_TouchPoint
 {
     UCHAR  bStatus  ;//bit0: Tip Switch; bit1:In Range; bit2...7: Padding bits
@@ -32,6 +33,7 @@ struct EASI_TouchPoint
 
 #define EASI_MOUSE_MAXIMUM_X  0x7FFF
 #define EASI_MOUSE_MAXIMUM_Y  0x7FFF
+
 struct EASI_MouseInput
 {
     //Buttions bit map:

@@ -4,7 +4,6 @@
 //CVideToScreenMap g_oVideo2ScreenMap;
 const  double CVideToScreenMap::SCREEN_OUT_AREA_WIDTH_IN_MM = 10.0;
 
-
 //class CVideToScreenMap
 CVideToScreenMap::CVideToScreenMap(int nID)
 :

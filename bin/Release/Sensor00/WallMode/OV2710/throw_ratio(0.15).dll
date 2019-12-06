@@ -395,13 +395,13 @@
     </LensSpec>
     <!--自动校正补偿系数-->
     <AutoCalibCompensateCoefs>
-        <Param name="CompensateCoefficient" value="9.64074199999999947863e+00" />
-        <Param name="CompensateCoefficient" value="9.74599099999999963877e-04" />
-        <Param name="CompensateCoefficient" value="7.24432899999999957430e+00" />
+        <Param name="CompensateCoefficient" value="8.84658499999999925478e+00" />
+        <Param name="CompensateCoefficient" value="3.61762800000000011962e-04" />
+        <Param name="CompensateCoefficient" value="1.16310400000000004894e+01" />
         <!--归一化后的水平光心坐标-->
-        <Param name="u0" value="4.86013599999999990064e-01" />
+        <Param name="u0" value="5.20432400000000017215e-01" />
         <!--归一化后的垂直光心坐标-->
-        <Param name="v0" value="2.82656300000000026973e-01" />
+        <Param name="v0" value="3.95562799999999992195e-01" />
     </AutoCalibCompensateCoefs>
     <!--相机内部和对称畸变参数-->
     <LensInternalAndSymmetricDistortionParams>

@@ -89,6 +89,8 @@ public:
     //@参数:sysCfgData, 所有图像传感器的配置信息
     void SetCfgData( TSysConfigData& sysCfgData);
 
+	void SetGlobalCfgData(TSysConfigData& sysCfgData);
+
     //@功能:获取配置数据
     //@参数:sysCfgData, 所有图像传感器的配置信息
     BOOL GetCfgData(TSysConfigData& sysCfgData);

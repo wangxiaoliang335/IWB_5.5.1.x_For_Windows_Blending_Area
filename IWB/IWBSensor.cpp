@@ -635,10 +635,9 @@ const TCaptureDeviceInstance& CIWBSensor::GetDeviceInfo()const
 //      pGlobalSettings, 输入参数, 指向全局配置信息的指针
 void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* pGlobalSettings)
 {
-    m_tCfgData = cfgData;
+	m_tCfgData = cfgData;
 
-	
-    m_tDeviceInfo.m_strDevPath = cfgData.strFavoriteDevicePath;
+	m_tDeviceInfo.m_strDevPath = cfgData.strFavoriteDevicePath;
 
 	int nPID = 0, nVID = 0;
 	int ret = _stscanf_s(m_tDeviceInfo.m_strDevPath, _T("\\\\?\\usb#vid_%04x&pid_%04x"), &nVID, &nPID);
@@ -646,22 +645,27 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 	{
 		m_tDeviceInfo.m_nPID = nPID;
 		m_tDeviceInfo.m_nVID = nVID;
+
+		m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 	}
 
+	//选取最合适的视频格式
+	for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)
+	{
+		CAtlString strFormatName = GetVideoFormatName(m_tDeviceInfo.m_vecVideoFmt[i]);
 
-    //选取最合适的视频格式
-    for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)
-    {
-        CAtlString strFormatName = GetVideoFormatName(m_tDeviceInfo.m_vecVideoFmt[i]);
+		if (strFormatName == m_tCfgData.strFavoriteMediaType)
+		{
+			m_tFavoriteMediaType = m_tDeviceInfo.m_vecVideoFmt[i];
+			break;
+		}
+	}
+	SetGlobalCfgData( pGlobalSettings);
 
-        if (strFormatName == m_tCfgData.strFavoriteMediaType)
-        {
-            m_tFavoriteMediaType = m_tDeviceInfo.m_vecVideoFmt[i];
-            break;
-        }
+}
 
-    }
-
+void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
+{
     TSensorModeConfig* TSensorModeConfig = NULL;
 	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
@@ -670,8 +674,6 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
     const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
     this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
-
-
 
     const NormalUsageSettings* pNormalUsageSettings = NULL;
     //全局配置信息
@@ -717,26 +719,6 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 			   break;
 
 		}
-
-//        if(theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//        {  //加密狗为笔触模式, 强制工作模式为笔触模式
-//            m_oPenPosDetector.SetTouchType(E_DEVICE_PEN_TOUCH_WHITEBOARD);
-//            pNormalUsageSettings  = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
-//        }
-//        else
-//        {//加密狗为手触模式, 选用用户选择的触控模式
-//            m_oPenPosDetector.SetTouchType(TSensorModeConfig->advanceSettings.m_eTouchType);
-//
-//            if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//            {
-//                pNormalUsageSettings = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
-//            }
-//            else
-//            {
-//                pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouchWhiteBoard;
-//            }
-//
-//        }
 
         //设置光斑检测门限
         m_oPenPosDetector.SetYThreshold(pNormalUsageSettings->cYThreshold);

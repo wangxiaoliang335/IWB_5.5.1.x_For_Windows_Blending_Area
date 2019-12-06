@@ -145,8 +145,8 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	// TODO:  Add extra initialization here
 	m_ctlSpotProportion.SetRange(20, 80);
 	m_ctlNormalUserBrightness.SetRange(-255,255);
-	m_ctlAutoCalibrationAveBrightness.SetRange(-255,255) ;
-	m_ctlAutoCalibrateHiLightGray.SetRange(-255,255);
+	m_ctlAutoCalibrationAveBrightness.SetRange(0,255) ;
+	m_ctlAutoCalibrateHiLightGray.SetRange(0,255);
 	m_bInitDone = TRUE;
 
 	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
@@ -161,7 +161,7 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 		TSensorModeConfig* TSensorModeConfig = NULL;
 		TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 		//只有手指精确触控的时候才需要光斑大小判断
-		if (E_DEVICE_FINGER_TOUCH_WHITEBOARD != TSensorModeConfig->advanceSettings.m_eTouchType)
+		if ( TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
 		{
 			GetDlgItem(IDC_EDIT_SPOTPROPORTION)->EnableWindow(TRUE);
 		}

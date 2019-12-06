@@ -88,7 +88,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="60" default="60" />
+            <Param name="Brightness" value="100" default="100" />
             <!--对比度-->
             <Param name="Contrast" value="255" default="255" />
             <!--色调-->
@@ -98,7 +98,7 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
@@ -124,7 +124,7 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="60" default="60" />
+            <Param name="Brightness" value="100" default="100" />
             <!--对比度-->
             <Param name="Contrast" value="255" default="255" />
             <!--色调-->

@@ -10,6 +10,7 @@
 #include "../inc/MyApi.h"
 #include "OnlineRegisterDlg.h"
 #include "UpdateFirmwareDlg.h"
+#include <hidsdi.h>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -380,7 +381,8 @@ m_hDispWnd(NULL),
 m_pCurInstalledSensor(NULL),
 m_hUCShieldBitmap(NULL),
 m_bStartDrawOnlineScreenArea(false),
-m_bPreGuideRectangleVisible(false)
+m_bPreGuideRectangleVisible(false),
+m_pUSBDevDetector_HID(NULL)
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -811,7 +813,8 @@ BOOL CIWBDlg::OnInitDialog()
 	//CIWBSensor对象分配摄像头设备路径
 	m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
 
-    
+	this->m_oIWBSensorManager.SetGlobalCfgData(g_tSysCfgData);
+
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
     
@@ -821,6 +824,9 @@ BOOL CIWBDlg::OnInitDialog()
     //AM_KSCATEGORY_CAPTURE:{65E8773D-8F56-11D0-A3B9-00A0C9223196}
     m_pUSBDevDetector = new CUSBDevDetector(KSCATEGORY_CAPTURE, this->GetSafeHwnd());
 
+	GUID hidguid;
+	HidD_GetHidGuid(&hidguid);
+	m_pUSBDevDetector_HID = new CUSBDevDetector(hidguid, this->GetSafeHwnd());
 
     //Register RAW INPUT Device, added by toxuke@gmail.com, 2012/05/23
     RAWINPUTDEVICE rid;
@@ -852,7 +858,7 @@ BOOL CIWBDlg::OnInitDialog()
     m_hDispWnd = this->GetSafeHwnd();//默认视频画在本窗体上
     if (StartRunning())
     {
-        if(this->m_oIWBSensorManager.IsCalibrated())
+        if(this->m_oIWBSensorManager.IsCalibrated() && this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE )
         {
             MinimizeToTray();
             m_bVisible = FALSE;
@@ -1429,6 +1435,12 @@ LRESULT CIWBDlg::OnClose(WPARAM wParam,LPARAM lParam)
         delete m_pUSBDevDetector;
         m_pUSBDevDetector = NULL;
     }
+	if(m_pUSBDevDetector_HID)
+	{
+		delete m_pUSBDevDetector_HID;
+		m_pUSBDevDetector_HID = NULL;
+	}
+
 
 	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
 	if (pSensor)
@@ -1818,10 +1830,6 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                     ); 
                     AtlTrace(_T("\t\tInterface name %s\r\n"), pDevInterface->dbcc_name);
 					
-
-
-
-
                     if(m_oUSBCameraDeviceList.IsCandidateDevice(pDevInterface->dbcc_name))
                     {
                         //更新设备列表
@@ -1834,24 +1842,22 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             theApp.ReadUSBKey();
 							UpdateInfoAboutDongle();
 
-						//	///把前面的VIP和PID读出来，如果上次的PID和VID这次的PID一致的话就不用再重新加载配置文件了
-						//	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-						//	const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-						//	if (theApp.GetScreenMode() == EScreenModeSingle)
-						//	{
-						//		//单屏模式下已经有Sensor正在运行，则跳过
-						//		if (pSensor->IsDetecting()) break;
-						//	}
-
-							//if (devInfo.m_nPID != pDevInst->m_nPID || devInfo.m_nVID != pDevInst->m_nVID)
-							//{
-							//    LoadConfig(pDevInst->m_nPID, pDevInst->m_nVID);
-							//    this->m_oIWBSensorManager.SetCfgData(::g_tSysCfgData);
-							//}
-
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
                         }
                     }
+					else
+					{
+						int nVID = 0; 
+						int nPID = 0;
+						int ret = _stscanf_s(pDevInterface->dbcc_name, _T("\\\\?\\HID#VID_%04x&PID_%04x"), &nVID, &nPID);
+						if (nVID ==13961 && nPID ==34658)
+						{
+						   //在检测到新设备时重新读取加密狗
+						   theApp.ReadUSBKey();
+						   UpdateInfoAboutDongle();
+						}
+
+					}
                 }
                 break;
 
@@ -1901,6 +1907,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         pDevInterface->dbcc_classguid.Data4[6],
                         pDevInterface->dbcc_classguid.Data4[7]
                     );
+
                     AtlTrace(_T("\t\tInterface name %s\r\n"), pDevInterface->dbcc_name);
 
                     if(m_oUSBCameraDeviceList.IsCandidateDevice(pDevInterface->dbcc_name))
@@ -1916,7 +1923,18 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
 
 						UpdateInfoAboutDongle();
                     }
-
+					else
+					{
+						int nVID = 0;
+						int nPID = 0;
+						int ret = _stscanf_s(pDevInterface->dbcc_name, _T("\\\\?\\HID#VID_%04x&PID_%04x"), &nVID, &nPID);
+						if (nVID == 13961 && nPID == 34658)
+						{
+						    //在检测到新设备时重新读取加密狗
+						    theApp.ReadUSBKey();
+						    UpdateInfoAboutDongle();
+						}
+					}
                 }
 
                 break;
@@ -1966,7 +1984,7 @@ void CIWBDlg::OnMenuParameterSettings()
 
     if(paramsSettingSheet.DoModal() == IDOK)
     {
-        pSensor->SetCfgData(paramsSettingSheet.GetSensorConfig(), &paramsSettingSheet.GetGlobalSettings());
+		pSensor->SetCfgData(paramsSettingSheet.GetSensorConfig(), &paramsSettingSheet.GetGlobalSettings());
 
         g_tSysCfgData.vecSensorConfig[pSensor->GetID()] = paramsSettingSheet.GetSensorConfig();
         g_tSysCfgData.globalSettings = paramsSettingSheet.GetGlobalSettings();
@@ -1982,7 +2000,15 @@ void CIWBDlg::OnMenuParameterSettings()
 		EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
 		TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
-	
+        //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
+		if (g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15)
+		{
+			if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
+			{
+		         TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
+			}
+		}
+
 		/////设置是否开启自动屏蔽功能
 		if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
 		{
@@ -2513,6 +2539,20 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 
                 break;
         }
+
+		////插值
+		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_ENABLED);	
+		///高级设置
+		///如果是手触或者笔触电子白板的话，那么就灰掉高级设置
+		//if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+		//{
+		//	m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
+		//}
+		//else
+		{
+		     m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_ENABLED);
+		}
+
     }
     else
     {   
@@ -2717,10 +2757,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.CheckMenuItem(uMenuID, MF_BYCOMMAND | MF_UNCHECKED);
             }
         }
-
     }
-
-
 }
 
 void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
@@ -2737,9 +2774,10 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
 
     //从鼠标按下时的坐标查找关联的图像传感器对象指针
-    POINT ptClient = point;
-    ScreenToClient(&ptClient);
-    CIWBSensor* pSensor = this->m_oIWBSensorManager.SensorFromPt(ptClient);
+//    POINT ptClient = point;
+//    ScreenToClient(&ptClient);
+//    CIWBSensor* pSensor = this->m_oIWBSensorManager.SensorFromPt(ptClient);
+	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
     if(NULL == pSensor) return;
 
     m_pSelectedSensor = pSensor;//更新选中的传感器指针
@@ -2932,7 +2970,6 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             }
         }
 
-
         //显示传感器快捷菜单
         pSubMenu->TrackPopupMenu(
             TPM_LEFTALIGN|TPM_TOPALIGN,
@@ -2944,35 +2981,8 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
 }
 
-//void CIWBDlg::OnMaskAreaSpecify()
-//{
-//    // TODO: Add your command handler code here
-//
-//}
-//
-//void CIWBDlg::OnDisableManualSreenArea()
-//{
-//    // TODO: Add your command handler code here
-//}
-
 void CIWBDlg::OnCaptureChanged(CWnd *pWnd)
 {
-    // TODO: Add your message handler code here
-    //TRACE(_T("OnCaptureChanged\r\n"));
-    //if(pWnd != this)
-    //{
-    // CPenPosDetector* pPenPosDetector = m_oFilterGraphBuilder.GetPenPosDetector();
-    // if(pPenPosDetector == NULL) return;
-    // if(pPenPosDetector->GetManualScreenAreaMode() == E_ManualScreenAreaEditMode)
-    // {
-    // pPenPosDetector->SetManualScreenAreaMode(E_ManualScreenAreaNormalMode);
-    // //TRACE(_T("OnCaptureChanged change to Normal Mode\r\n"));
-    // return;
-    // }
-
-    //}
-
-
     CDialog::OnCaptureChanged(pWnd);
 }
 
@@ -3556,11 +3566,13 @@ void CIWBDlg::OnEndManualMaskAreaEdit()//结束编辑
 
     //保存屏蔽图
 
-    POINT ptCursor;
-    GetCursorPos(&ptCursor);
+//    POINT ptCursor;
+//    GetCursorPos(&ptCursor);
 
-    CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(ptCursor);
-    if(pSensor == NULL) return;
+//    CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(ptCursor);
+//    if(pSensor == NULL) return;
+
+	CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
 
 
     pSensor->GetPenPosDetector()->SaveStaticMaskFrame();
@@ -4664,6 +4676,40 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 		 {
             ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
 		 }
+
+		 ////////////////////////////////////////////
+		 TSensorModeConfig* TSensorModeConfig = NULL;
+		 EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+
+		 TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
+
+		 //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
+		 if (g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15)
+		 {
+			 if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
+			 {
+				 TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
+			 }
+		 }
+
+		 /////设置是否开启自动屏蔽功能
+		 if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
+		 {
+			 pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
+		 }
+		 else
+		 {
+			 pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
+		 }
+		 ////////////设置是否开启抗干扰功能
+		 if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
+		 {
+			 pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
+		 }
+		 else
+		 {
+			 pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
+		 }
     }//if
 
 }
@@ -5104,6 +5150,7 @@ void CIWBDlg::OnMenuAdvancessetting()
 		if (!bHIDMode && !bTUIOMode)
 		{
 			g_tSysCfgData.globalSettings.bTouchHIDMode = true;
+			//bHIDMode = true;
 		}
 		else
 		{

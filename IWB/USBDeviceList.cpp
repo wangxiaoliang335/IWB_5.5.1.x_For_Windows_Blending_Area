@@ -216,7 +216,6 @@ BOOL CUsbCameraDeviceList::IsCandidateDevice(LPCTSTR lpszDevicePath)
         {
             return TRUE;
         }
-
     }
 
     return FALSE;

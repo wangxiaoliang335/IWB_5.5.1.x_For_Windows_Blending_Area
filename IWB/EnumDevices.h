@@ -410,12 +410,7 @@ inline HRESULT RetrieveCaptureDeviceNames(CaptuerDeviceInstanceSet& instanceSet,
                             DeleteMediaType(pmtConfig);
 
                         }//for each image format
-
-
                     }
-
-
-
                 }
 
 
@@ -425,16 +420,10 @@ inline HRESULT RetrieveCaptureDeviceNames(CaptuerDeviceInstanceSet& instanceSet,
         }
 
         //
-    
-
-
-
         VariantClear(&varName);
 
         ptrMoniker =NULL;
     }
-
-
 
     return S_OK;
 }
@@ -451,8 +440,6 @@ inline BOOL IsUSBDevVidPidEqual(LPCTSTR szLeft, LPCTSTR szRight)
     //GUID_DEVINTERFACE_USB_DEVICE Class GUID = {A5DCBF10-6530-11D2-901F-00C04FB951ED} defined in Usbiodef.h.
     //
     //
-
-
 
  
     TCHAR left[26], right[26];//\\?\USB#Vid_0ac8&Pid_3450

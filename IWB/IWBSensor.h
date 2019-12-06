@@ -65,6 +65,7 @@ public:
     //@参数:cfgData, 输入参数, 图像传感器的配置信息
     //      pGlobalSettings, 输入参数, 指向全局配置信息的指针
     void SetCfgData( const TSensorConfig& cfgData, const GlobalSettings* pGlobalSettings = NULL);
+	void SetGlobalCfgData(const GlobalSettings* pGlobalSettings = NULL);
 
 	void SetlenCfgData(const TLensConfig& lencfgData);
 

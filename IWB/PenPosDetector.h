@@ -329,16 +329,6 @@ public:
     //@功能:正在干扰点侦测
     BOOL IsClutterDetecting()const {return m_bIsClutterDetecting;}
 
-	//void SetFirstGuidelineYPos(int nYPos) { m_nFirstGuidelineYPos = nYPos ;}
-	//int GetFirstGuidelineYPos()const      { return m_nFirstGuidelineYPos  ;}
-	//void ShowFirstGuideLine(BOOL bShow)   { m_bShowFirstGuideline = bShow ;}
-	//BOOL IsFirstGuidelineVisible()const   { return m_bShowFirstGuideline  ;}
-
-	//void SetSecondGuidelineYPos(int nYPos){ m_nSecondGuidelineYPos = nYPos;}
-	//int GetSecondGuidelineYPos()const     {return m_nSecondGuidelineYPos  ;}
-	//void ShowSecondGuideLine(BOOL bShow)  {m_bShowSecondGuideline = bShow ;}
-	//BOOL IsSecondGuidelineVisible()const  {return m_bShowSecondGuideline  ;}
-
     //@功能:设置引导矩形框的位置
     void SetGuideRectangle(const RECT& rcGuideRectangel, DWORD dwRGBColor);
 
@@ -372,6 +362,9 @@ public:
 
 	void EnableOnlineScreenArea(BOOL bEnableManualMaskFrame) { m_bEnableOnlineScreenArea = bEnableManualMaskFrame; }
 	BOOL IsEnableOnlineScreenArea()const                           { return m_bEnableOnlineScreenArea; }
+
+	void DisableReflectionPoint(BOOL bDisableReflectionPoint) { m_bDisableReflectionSpot = bDisableReflectionPoint; }
+	BOOL IsDisableReflectionPoint()const                      { return m_bDisableReflectionSpot; }
 
 	void SetCalibrateFailed(int CalibrateFailed)                {  m_bCalibratorFailed = CalibrateFailed ;  }
 
@@ -652,6 +645,8 @@ protected:
 	void  DetectSpotSlopeDirection(const CImageFrame& grayFrame, TBlobObject& pObj,int CalArea);
 	void  SpecialInvalidSpot(TBlobObject& pObj);
 
+	void  FilterMaxNeighborhoodSpot(TBlobObject* pObjs, size_t nObjCount);
+
    
  protected:
     HANDLE m_hSimulateManualThread;
@@ -805,6 +800,8 @@ protected:
 
 	BOOL   m_bEnableOnlineScreenArea; //是否启用手动绘制的静态屏蔽图
 
+	BOOL   m_bDisableReflectionSpot;   //是否响应反射点
+
 	BOOL m_bIsStaticMasking        ;//是否静态屏蔽干扰点标志
 
     BOOL m_bIsClutterDetecting       ;//干扰点检测
@@ -907,7 +904,10 @@ protected:
 	//<<调试工具
 	TCameraDebugData m_vecDebugData[MAX_OBJ_NUMBER];
 	//>>
-	std::vector<CPoint>  m_vecOnLinePt;
+	std::vector<CPoint>  m_vecOnLinePt ;    //用来保存绘制屏蔽图时的采集点
+
+	static const  double SCREEN_DISTANCETWOSPOT_WIDTH_IN_MM;
+	int m_ScreenMinDistanceWidthInPixel ;
 
 };
 

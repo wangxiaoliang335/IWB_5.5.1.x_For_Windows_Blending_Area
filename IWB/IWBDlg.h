@@ -632,6 +632,7 @@ protected:
 	
 	//CStatusDlg               m_ctlStatusBar                   ;//状态对话框
 	CUSBDevDetector*         m_pUSBDevDetector             ;//USB即插即用检测
+	CUSBDevDetector*         m_pUSBDevDetector_HID         ;
 	UINT_PTR                 m_uOpenCloseTestTimer         ;//USB摄像头打开关闭测试定时器
 	//CAutoCalibrator          m_oAutoCalibrator             ;
 	//CScreenAreaDetector      m_oScreenAreaDetector         ;//屏幕区域自动侦测

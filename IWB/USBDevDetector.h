@@ -42,16 +42,11 @@ public:
 
 	~CUSBDevDetector()
 	{
-
 		if(m_hDevNotify)
 		{
 			UnregisterDeviceNotification(m_hDevNotify);
 		}
-
-
 	}
-
-
 
 protected:
     HDEVNOTIFY m_hDevNotify;
