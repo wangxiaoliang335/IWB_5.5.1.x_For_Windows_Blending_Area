@@ -2044,7 +2044,7 @@ void CIWBDlg::OnMenuParameterSettings()
 		else {
 			pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
 		}
-		if (TSensorModeConfig->advanceSettings.bSinglePointMode)
+		if (g_tSysCfgData.globalSettings.bSinglePointMode)
 		{
 		    this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
 		}

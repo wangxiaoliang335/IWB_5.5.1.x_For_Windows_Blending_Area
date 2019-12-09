@@ -13,11 +13,17 @@ struct TLightSpot
     POINT ptPosInScreen        ;//重心坐标(屏幕坐标)
 
     //辅助数据结构
-    struct  
+    struct  TAux
     {
+		TAux()
+		{
+			uMergeAreaIndex  = -1;
+			bBeyondMergeArea = false;
+		}
+
         UINT uMergeAreaIndex      ;//光斑所在的融合区索引号。
-                                 //-1, 不在任何融合区
-                                 //>=0, 融合区索引号
+                                    //-1, 不在任何融合区
+                                    //>=0, 融合区索引号
         bool bBeyondMergeArea      ;//位置超越融合区标志
     }aux;
 

@@ -546,6 +546,8 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 		sysCfgData.globalSettings.bTouchTUIOMode = false;
 	}
     this->m_pSpotListProcessor->GetVirtualHID().SetHIDMode(sysCfgData.globalSettings.eHIDDeviceMode);
+
+	this->m_pSpotListProcessor->GetVirtualHID().SetSinglePointMode(sysCfgData.globalSettings.bSinglePointMode);
 	//////add by zhaown 2019.9.25
 	////如果两种模式都为false的话，那么强行HID模式响应
 	if ((!sysCfgData.globalSettings.bTouchHIDMode) && (!sysCfgData.globalSettings.bTouchTUIOMode))
