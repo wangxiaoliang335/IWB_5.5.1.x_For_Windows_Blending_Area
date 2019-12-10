@@ -542,6 +542,7 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS, OnChangeAutoCalibrateAveBrightness)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY, OnChangeAutoCalibrateLightGray)
     ON_MESSAGE(WM_REAR_PROJECTION, OnRearProjection)
+	ON_MESSAGE(WM_CHANGE_VIDEODISPLAYDELAY,OnChangeVideoDisplayDelay)
 
 
 //ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
@@ -4355,6 +4356,12 @@ LRESULT CIWBDlg::OnChangeAutoCalibrateLightGray(WPARAM wParam, LPARAM lParam)
 {
     return 0L;
 }
+
+LRESULT CIWBDlg::OnChangeVideoDisplayDelay(WPARAM wParam, LPARAM lParam)
+{
+	return 0L;
+}
+
 
 LRESULT CIWBDlg::OnRearProjection(WPARAM wParam, LPARAM lParam)
 {

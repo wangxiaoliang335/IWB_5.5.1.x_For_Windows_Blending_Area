@@ -175,6 +175,7 @@
 #define IDC_BTN_DELEXCEPTION            1022
 #define IDC_EDIT_PROCNAME               1022
 #define IDC_EDIT_APPNAME                1023
+
 #define IDC_EDIT_IMAGE_BRIGHTNESS       1079
 #define IDC_COMBO_MONITOR_LIST          1089
 #define IDC_LIST_MONITORS               1090
@@ -182,7 +183,6 @@
 #define IDC_CHECK_STARTGLBGR            1091
 #define ID_SCREEN_SELECT                1092
 #define IDC_EDIT_MULT_PALM              1094
-#define IDC_SPIN1                       1094
 #define IDC_SPIN_MULT_PALM              1095
 #define IDC_EDIT1                       1095
 #define IDC_EDIT2                       1096
@@ -223,7 +223,6 @@
 #define IDC_CAMERAFMT_COMBO             1125
 #define IDC_CHECK_HID                   1127
 #define IDC_CHECK_TUIO                  1128
-
 #define IDC_IPADDRESS_IP                1130
 #define IDC_EDIT_PORT                   1131
 #define IDC_RADIO_FINGERTOUCHCONTROL    1132
@@ -232,6 +231,8 @@
 #define IDC_CHECK_ANTIJAMMINGCONTROL    1135
 #define IDC_CHECK_DISABLEREFLECTIONPOINT 1136
 #define IDC_CHECK_SINGLEPOINTMODE       1137
+#define IDC_EDIT_VIDEODISPLAYDELAY      1138
+#define IDC_SPIN_VIDEODISPLAYDELAY      1139
 
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
@@ -443,7 +444,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        166
 #define _APS_NEXT_COMMAND_VALUE         32900
-#define _APS_NEXT_CONTROL_VALUE         1129
+#define _APS_NEXT_CONTROL_VALUE         1131
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

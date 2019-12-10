@@ -180,8 +180,8 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
     
     int nMonitorWidth  = rcMonitor.right  - rcMonitor.left;
     int nMonitorHeight = rcMonitor.bottom - rcMonitor.top ;
-    int nMonitorLeft   = rcMonitor.left;
-    int nMonitorTop    = rcMonitor.top ;
+	int nMonitorLeft   = rcMonitor.left;
+	int nMonitorTop    = rcMonitor.top;
     int nTopMargin     = MARGIN_WIDTH    ;//第一行采样符号与上边界的距离
     int nBottomMargin  = MARGIN_WIDTH    ;//最后一行采样符号与下边界的距离
     int nLeftMargin    = MARGIN_WIDTH    ;//第一列采样符号与左边界的距离
@@ -311,8 +311,11 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         {
             for (int i =0; i <= m_nCurrentSampleNo; i++)
             {
-                DrawCross(ps.hdc,
-                    m_vecSampleSymbols[i].ptDisplay,
+				POINT ptDisplay = m_vecSampleSymbols[i].ptDisplay;
+				ScreenToClient(hWnd, &ptDisplay);
+                DrawCross(
+					ps.hdc,
+					ptDisplay,
                     m_vecSampleSymbols[i].bSampled ? m_vecSampleSymbols[i].clrSampleAfter : m_vecSampleSymbols[i].clrSampleBefore,
                     m_vecSampleSymbols[i].size);
             }
@@ -768,8 +771,8 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
 		//HWND_TOP, 
 		rcBoundary.left,
 		rcBoundary.top,
-		rcBoundary.right,
-		rcBoundary.bottom,
+		rcBoundary.right  - rcBoundary.left,
+		rcBoundary.bottom - rcBoundary.top,
 		SWP_SHOWWINDOW);
 	SetFocus(m_hWnd);
 	

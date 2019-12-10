@@ -45,6 +45,9 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_EDIT_AUTOCALIBRATE_HILIGHT_GRAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray);
     DDX_Control(pDX, IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY, m_ctlAutoCalibrateHiLightGray);
 
+	DDX_Text(pDX, IDC_EDIT_VIDEODISPLAYDELAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.videoDislayDelay);
+	DDX_Control(pDX, IDC_SPIN_VIDEODISPLAYDELAY, m_ctlVideoIsplayDelay);
+
     DDX_Radio(pDX, IDC_RADIO_PEN_TOUCH,  (int&)TSensorModeConfig->advanceSettings.m_eTouchType);
 
 	DDX_Radio(pDX, IDC_DESKTOPMODE,(int&)m_tGlobalSettings.eProjectionMode);
@@ -125,6 +128,8 @@ BEGIN_MESSAGE_MAP(CAdvancedSettingsDlg, CScrollablePropertyPage)
 
 	ON_BN_CLICKED(IDC_CHECK_SINGLEPOINTMODE, &CAdvancedSettingsDlg::OnBnClickedCheckSinglepointmode)
 	ON_BN_CLICKED(IDC_CHECK_DISABLEREFLECTIONPOINT, &CAdvancedSettingsDlg::OnBnClickedCheckDisablereflectionpoint)
+	ON_EN_CHANGE(IDC_EDIT_VIDEODISPLAYDELAY, &CAdvancedSettingsDlg::OnEnChangeEditVideodisplaydelay)
+
 END_MESSAGE_MAP()
 
 
@@ -152,6 +157,7 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	m_ctlNormalUserBrightness.SetRange(-255,255);
 	m_ctlAutoCalibrationAveBrightness.SetRange(0,255) ;
 	m_ctlAutoCalibrateHiLightGray.SetRange(0,255);
+	m_ctlVideoIsplayDelay.SetRange(0,200);
 	m_bInitDone = TRUE;
 
 	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
@@ -655,7 +661,11 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 
 		CString autoCalibrateHilightGray;
 		autoCalibrateHilightGray.Format(_T("%d"), lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray);
-		GetDlgItem(IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY)->SetWindowText(autoCalibrateHilightGray);
+		GetDlgItem(IDC_EDIT_AUTOCALIBRATE_HILIGHT_GRAY)->SetWindowText(autoCalibrateHilightGray);
+
+		CString VideoDisplayDelay;
+		VideoDisplayDelay.Format(_T("%d"), lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.videoDislayDelay);
+		GetDlgItem(IDC_EDIT_VIDEODISPLAYDELAY)->SetWindowText(VideoDisplayDelay);
 
 		///根据墙面和桌面的不同来进行参数的设置
 		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bIsDynamicMaskFrame)
@@ -768,16 +778,6 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		   default:
 			    break;
 		}
-//		if (m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//		{
-//			((CButton*)GetDlgItem(IDC_RADIO_PEN_TOUCH))->SetCheck(true);
-//			((CButton*)GetDlgItem(IDC_RADIO_FINGER_TOUCH))->SetCheck(false);
-//		}
-//		else
-//		{
-//			((CButton*)GetDlgItem(IDC_RADIO_PEN_TOUCH))->SetCheck(false);
-//			((CButton*)GetDlgItem(IDC_RADIO_FINGER_TOUCH))->SetCheck(true);
-//		}
 
 		CString  autoCalibrateExpectedBrightness;
 		autoCalibrateExpectedBrightness.Format(_T("%d"), lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
@@ -785,7 +785,11 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 
 		CString autoCalibrateHilightGray;
 		autoCalibrateHilightGray.Format(_T("%d"), lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray);
-		GetDlgItem(IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY)->SetWindowText(autoCalibrateHilightGray);
+		GetDlgItem(IDC_EDIT_AUTOCALIBRATE_HILIGHT_GRAY)->SetWindowText(autoCalibrateHilightGray);
+
+		CString VideoDisplayDelay;
+		VideoDisplayDelay.Format(_T("%d"), lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.videoDislayDelay);
+		GetDlgItem(IDC_EDIT_VIDEODISPLAYDELAY)->SetWindowText(VideoDisplayDelay);
 
 		///根据墙面和桌面的不同来进行参数的设置
 		if(m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bIsDynamicMaskFrame)
@@ -1327,5 +1331,47 @@ void CAdvancedSettingsDlg::OnBnClickedCheckSinglepointmode()
 void CAdvancedSettingsDlg::OnBnClickedCheckDisablereflectionpoint()
 {
 	// TODO: Add your control notification handler code here
+	SetModified(TRUE);
+}
+
+
+void CAdvancedSettingsDlg::OnEnChangeEditVideodisplaydelay()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CScrollablePropertyPage::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	if (!m_bInitDone)
+	{
+		return;
+	}
+	CString strText;
+	GetDlgItem(IDC_EDIT_VIDEODISPLAYDELAY)->GetWindowText(strText);
+
+	int npos = _ttoi(strText);
+	int bForceValidate = FALSE;
+
+	if(npos <VIDEODISPLAYDELAY_MIN )
+	{
+		npos = VIDEODISPLAYDELAY_MIN;
+		bForceValidate = TRUE;
+	}
+	if(npos >VIDEODISPLAYDELAY_MAX)
+	{
+		npos = VIDEODISPLAYDELAY_MAX;
+		bForceValidate = TRUE;
+	}
+	if(bForceValidate)
+	{
+		strText.Format(_T("%d"), npos);
+		GetDlgItem(IDC_EDIT_VIDEODISPLAYDELAY)->GetWindowText(strText);
+	}
+	else
+	{
+		::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_VIDEODISPLAYDELAY, (WPARAM)0, (LPARAM)npos);
+	}
+
 	SetModified(TRUE);
 }

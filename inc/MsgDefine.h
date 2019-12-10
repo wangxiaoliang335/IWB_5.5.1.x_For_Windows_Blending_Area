@@ -94,7 +94,8 @@
 
 #define WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS  (WM_USER + 32)
 #define WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY           (WM_USER+ 33)
-#define WM_REAR_PROJECTION                              (WM_USER+ 34)
+#define WM_REAR_PROJECTION                             (WM_USER+ 34)
+#define WM_CHANGE_VIDEODISPLAYDELAY                    (WM_USER+ 35)
 
 //ÉãÏñÍ·×´Ì¬
 //WPARAM, LPCTSTR×Ö·û´®

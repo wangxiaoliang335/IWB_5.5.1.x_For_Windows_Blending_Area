@@ -495,6 +495,7 @@ protected:
 	LRESULT OnChangeAutoCalibrateAveBrightness(WPARAM wParam, LPARAM lParam);
 	LRESULT OnChangeAutoCalibrateLightGray(WPARAM wParam, LPARAM lParam);
 	LRESULT OnRearProjection(WPARAM wParam, LPARAM lParam);
+	LRESULT OnChangeVideoDisplayDelay(WPARAM wParam, LPARAM lParam);
 
 
 	//afx_msg void OnMenuAutoCalibrationWithHumanIntervention();

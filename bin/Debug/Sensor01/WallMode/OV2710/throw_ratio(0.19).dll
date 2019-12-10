@@ -269,6 +269,8 @@
                 <Param name="autoCalibrateExpectedBrightness" value="130" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <!--视频显示延迟(0~200ms)-->
+                <Param name="VideoDisplayDelay" value="0" default="0" />
                 <!--自动校正速度(1~10), 1最快，10最慢-->
                 <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
@@ -306,6 +308,8 @@
                 <Param name="autoCalibrateExpectedBrightness" value="100" default="100" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <!--视频显示延迟(0~200ms)-->
+                <Param name="VideoDisplayDelay" value="0" default="0" />
                 <!--自动校正速度(1~10), 1最快，10最慢-->
                 <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>
@@ -343,6 +347,8 @@
                 <Param name="autoCalibrateExpectedBrightness" value="50" default="50" />
                 <!--自动校正图案中高亮块的灰度值(0~255)-->
                 <Param name="AutoCalibrateHilightGray" value="255" default="255" />
+                <!--视频显示延迟(0~200ms)-->
+                <Param name="VideoDisplayDelay" value="0" default="0" />
                 <!--自动校正速度(1~10), 1最快，10最慢-->
                 <Param name="autoCalibrateSpeed" value="1" default="1" />
             </ImageParams>

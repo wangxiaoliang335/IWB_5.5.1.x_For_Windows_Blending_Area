@@ -1162,7 +1162,8 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
                 if(paramDefault)defaultParams.autoCalibrateHilightGray = atoi(paramDefault);
             }
             else if (paramName && paramValue && _stricmp(paramName, "VideoDisplayDelay") == 0)
-            {//视频显示延迟, 范围(0~200ms)
+            {
+				//视频显示延迟, 范围(0~200ms)
                 int nVideoDisplayDelay = atoi(paramValue);
                 if (nVideoDisplayDelay < 0 ) nVideoDisplayDelay = 0;
                 if (nVideoDisplayDelay > 200) nVideoDisplayDelay = 200;
