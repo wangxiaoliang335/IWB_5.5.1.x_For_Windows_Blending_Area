@@ -121,7 +121,7 @@ public:
     //@参数:pMonitors, 屏幕区域数组
     //      nMonitorCount, 屏幕个数
     //BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, ESampleCollectPattern ePattern = E_SAMPLE_COLLECT_PATTERN_9_Points);
-    BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol);
+    BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol,int nSensorId);
 
     
 
@@ -194,7 +194,6 @@ protected:
      //初始化采样位置
     void InitSamplePosition(const RECT &rcMonitor);
 
-
     //变量
 	int                               m_nSampleTimes     ;//单个点的采样次数计数器
 
@@ -212,10 +211,7 @@ protected:
 
 	std::vector<ValidParamsInfo>         m_vecSampleData     ;//保存MAX_SPOT_SAMPLING_TIMES次采样的数据的数组
 
-    //POINT                             m_ptLastSamplePointInScreen;//上一个采样点在屏幕中的位置, 单位:屏幕坐标
-   
-
-
+	int  m_nSensorID ;                 //在进行第几个的sensor
 
     ALL_LIGHTSPOT_SAMPLE_SIZE         m_ScreenLightspotSample;//所有监视器的光斑采样点, 一个监视器对应一组采样点
 

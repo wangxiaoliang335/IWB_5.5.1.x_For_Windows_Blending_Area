@@ -1306,32 +1306,6 @@ void CIWBSensor::OnAutoSearchMaskAreaDone(BOOL bSuccess)
 //@参数: hSampleWnd, 采样窗体句柄
 BOOL CIWBSensor::StartLightSpotSampling(HWND hSampleWnd)
 {
-
-    ////搜索系统屏幕个数
-    //theApp.GetMonitorFinder().SearchDisplayDev();
-    // std::vector<DisplayDevInfo> vecMonitorInfo;
-    //if(this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return FALSE;
-
-    //const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetMointorInfo(this->m_nID);
-    //if(pDisplayDevInfo)
-    //{
-    //    vecMonitorInfo.push_back(*pDisplayDevInfo);
-    //}
-    //  //for(size_t i =0; i < m_tCfgData.attachedMonitorIds.size(); i++)
-    //  //{
-    //  //      unsigned int uMonitorID = m_tCfgData.attachedMonitorIds[i];
-    //  //      
-    //  //      //const DisplayDevInfo* pDisplayDevInfo = m_oDispMonitorFinder.GetMointorInfo(uMonitorID);
-    //  //      const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetMointorInfo(uMonitorID);
-    //  //      if(pDisplayDevInfo)
-    //  //      {
-    //  //          vecMonitorInfo.push_back(*pDisplayDevInfo);
-    //  //      }
-    //  //}
-    //
-    //  
-    //BOOL bRet =  m_wndLightSpotSampling.StartCollectSpotSize(&vecMonitorInfo[0], vecMonitorInfo.size(), hNotifyWindow);
-
     //if(bRet)
     //{
     //    //this->m_oPenPosDetector.GetMouseEventGenerator().EnterSpotSamplingMode(m_wndLightSpotSampling.m_hWnd, COLLECTSPOT_MODE_COLLECT);

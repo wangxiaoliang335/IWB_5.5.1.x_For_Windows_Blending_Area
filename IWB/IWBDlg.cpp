@@ -4095,7 +4095,8 @@ void CIWBDlg::OnSpotCalibrationSetting()
 ///在没有设置完的情况下退出设置的界面的。
 HRESULT CIWBDlg::OnBreakSpotSetting(WPARAM wParam, LPARAM lParam)
 {
-    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(FALSE);
+	int nSId = int(wParam);
+    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(FALSE, nSId);
 
     return 0;
 
@@ -4104,8 +4105,8 @@ HRESULT CIWBDlg::OnBreakSpotSetting(WPARAM wParam, LPARAM lParam)
 //@功能:完成设置后调用的函数。是有WM_FINISH_BOLBSETTING消息响应的。
 HRESULT CIWBDlg::OnFinshSpotSetting(WPARAM wParam, LPARAM lParam)
 {
-
-    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(TRUE);
+	int nSId = int(lParam);
+    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(TRUE, nSId);
 
     if(this->m_oIWBSensorManager.AllSamplingIsDone())
     {

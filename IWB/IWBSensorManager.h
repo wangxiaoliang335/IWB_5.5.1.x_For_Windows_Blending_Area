@@ -173,7 +173,7 @@ public:
 
     //@功能:光斑采集结束事件的响应函数
     //@参数:bSuccess, 成功失败标志
-    void OnIWBSensorLightSpotSamplingDone(BOOL bSuccess);
+    void OnIWBSensorLightSpotSamplingDone(BOOL bSuccess,int nSensorId);
 
     //@功能:判断所有的采样已经完成
     BOOL AllSamplingIsDone();
