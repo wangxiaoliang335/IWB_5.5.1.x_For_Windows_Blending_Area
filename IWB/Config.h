@@ -182,6 +182,7 @@ struct GlobalSettings
 	//ECameraType             eCameraType;         //攝像頭的類型
 
     EScreenMode            eScreenMode;//屏接的屏幕数目
+	BOOL          bSinglePointMode;
 
 
     GlobalSettings()
@@ -215,6 +216,7 @@ struct GlobalSettings
 
         //屏接的屏幕数目
         eScreenMode = EScreenModeUnknown;
+		bSinglePointMode = FALSE;
     }
 };
 
@@ -489,7 +491,6 @@ struct TAdvancedSettings
 	BOOL bIsAntiJamming;           //是否开启抗干扰功能
 	BOOL bIsOnLineScreenArea;      //是否开启手动绘制的静态屏蔽图
 	BOOL bDisableReflectionSpot;   //反射点是否响应
-	BOOL bSinglePointMode;         //是否响应单点模式 
 
 
     TAdvancedSettings()
@@ -507,7 +508,6 @@ struct TAdvancedSettings
 		bIsAntiJamming = FALSE;
 		bIsOnLineScreenArea = FALSE;
 		bDisableReflectionSpot = TRUE;
-		bSinglePointMode = FALSE;
     }
 };
 

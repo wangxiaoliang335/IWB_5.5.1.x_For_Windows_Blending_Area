@@ -86,7 +86,7 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_ANTIJAMMINGCONTROL, TSensorModeConfig->advanceSettings.bIsAntiJamming);
 
 	DDX_Check(pDX, IDC_CHECK_DISABLEREFLECTIONPOINT, TSensorModeConfig->advanceSettings.bDisableReflectionSpot);
-	DDX_Check(pDX, IDC_CHECK_SINGLEPOINTMODE, TSensorModeConfig->advanceSettings.bSinglePointMode);
+	DDX_Check(pDX, IDC_CHECK_SINGLEPOINTMODE, m_tGlobalSettings.bSinglePointMode);
 
 }
 
@@ -682,14 +682,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		else {
 			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(false);
 		}
-		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bSinglePointMode)
-		{
-			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(true);
-		}
-		else
-		{
-			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(false);
-		}
+
 
 
 		//更新到变量中去
@@ -819,14 +812,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		else {
 			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(false);
 		}
-		if (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.bSinglePointMode)
-		{
-			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(true);
-		}
-		else
-		{
-			((CButton*)GetDlgItem(IDC_CHECK_SINGLEPOINTMODE))->SetCheck(false);
-		}
+
 
 		//更新到变量中去
 		UpdateData(TRUE);

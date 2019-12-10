@@ -596,13 +596,14 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
     m_tDeviceInfo = devInfo;
 
     /////如果是高清摄像头的话，如果设置中不是1080*720或者1920*1080的话就默认为1080*720
-    if (m_tDeviceInfo.m_nPID == SONIX_PID && m_tDeviceInfo.m_nVID == SONIX_VID)
-    {
-        if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
-        {
-            m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
-        }
-    }
+	/////SONIX_PID是720P的摄像头PID，720P的摄像头需要显示640*480MJPG。
+//    if (m_tDeviceInfo.m_nPID == SONIX_PID && m_tDeviceInfo.m_nVID == SONIX_VID)
+//    {
+//        if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
+//        {
+//            m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
+//        }
+//    }
 
     //选取最合适的视频格式
     for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)

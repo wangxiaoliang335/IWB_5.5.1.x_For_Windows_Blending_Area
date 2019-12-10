@@ -666,6 +666,17 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                     globalSettings.eScreenMode = (EScreenMode)(nScreenCount + 1);
                 }
             }
+			else if (_stricmp(paramName, "SinglePointMode") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					globalSettings.bSinglePointMode = TRUE;
+				}
+				else
+				{
+					globalSettings.bSinglePointMode = FALSE;
+				}
+			}
 
         }//if
         else if(_stricmp(lpszElementName, "CMOS_CHIP") == 0)
@@ -853,6 +864,16 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
 	pElement->SetAttribute("value",globalSettings.nMaxTimeInSearchDevice);
 	pNode->LinkEndChild(pElement);
 
+
+	//是否开启单点响应功能
+	pXmlComment = new TiXmlComment("是否开启单点模式");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "SinglePointMode");
+	pElement->SetAttribute("value", globalSettings.bSinglePointMode ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
     //CMOS芯片信息
     pXmlComment = new TiXmlComment("CMOS芯片信息");
     pNode->LinkEndChild(pXmlComment);
@@ -879,6 +900,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
         pElement->SetAttribute("value", int(globalSettings.eScreenMode) + 1);
     }
     pNode->LinkEndChild(pElement);
+
 
     return TRUE;
 }
@@ -1610,17 +1632,6 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 					advanceSettings.bDisableReflectionSpot = FALSE;
 				}
 			}
-			else if(_stricmp(paramName, "SinglePointMode") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					advanceSettings.bSinglePointMode = TRUE;
-				}
-				else
-				{
-					advanceSettings.bSinglePointMode = FALSE;
-				}			
-			}
         }
 
     }while(pChild);
@@ -1749,15 +1760,6 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 	pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "DisableReflectionSpot");
 	pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
-
-	//是否开启单点响应功能
-	pXmlComment = new TiXmlComment("是否开启单点模式");
-	pNode->LinkEndChild(pXmlComment);
-
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "SinglePointMode");
-	pElement->SetAttribute("value", advanceSettings.bSinglePointMode ? "Yes" : "No");
 	pNode->LinkEndChild(pElement);
 
     return TRUE;
