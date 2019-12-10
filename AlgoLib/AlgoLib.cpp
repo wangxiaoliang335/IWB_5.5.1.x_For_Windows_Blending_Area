@@ -244,7 +244,7 @@ void CAutoCalibrator::TestAutoBrightnessControl(CHANGECAMERAPARAMSPROC ChangeCam
 
 
 
-//调试函数:查看校正图案        
+//调试函数:查看校正图案
 void CAutoCalibrator::ViewCalibratePattern()
 {
     m_pAutoCalibratorImpl->ViewCalibratePattern();
@@ -428,14 +428,11 @@ BOOL CalibrateAlog::CaclCalibrationParams(const TCalibData& calibData, BOOL bDeb
         m_pCalibrateInst = new Calibrator_GenericCameraModel();
     }
 
-   
-
     BOOL bRet = m_pCalibrateInst->CalcParams(calibData, bDebug);
 
     return bRet;
 
 }
-
 
  //@功能:返回校正方程参数
 const TCalibParams* CalibrateAlog::GetCalibParams()const
@@ -462,7 +459,6 @@ void CalibrateAlog::SetCalibParams(const TCalibParams& params)
     m_pCalibrateInst->SetCalibParams(params);
 
 }
-
 
 
 //@功能:根据摄像头的视频坐标计算得出屏幕坐标

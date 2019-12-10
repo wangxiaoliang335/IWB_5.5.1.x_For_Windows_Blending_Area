@@ -124,6 +124,14 @@ struct TMonitorCalibCoefs
 
 };
 
+//定位校正模型
+enum E_CALIBRATE_MODEL
+{
+    E_CALIBRATE_MODEL_GENERICAL_CAMERA,     //通用相机模型
+    E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE, //4点透视模型
+    E_CALIBRATE_MODEL_COUNT = 2             //校正模型数目
+};
+
 //校正类型
 enum E_CALIBRATE_TYPE
 {
@@ -135,17 +143,20 @@ enum E_CALIBRATE_TYPE
 typedef std::vector<TMonitorCalibCoefs>  ALL_CALIB_COEFS;
 struct TCalibParams
 {
-   // SIZE szScreen;
-    E_CALIBRATE_TYPE eCalibType;
-    SIZE szImage;
-    ALL_CALIB_COEFS allCalibCoefs;
-
     TCalibParams()
     {
         eCalibType = E_CALIBRATE_TYPE_AUTO;
         szImage.cx = 640;
         szImage.cy = 480;
+
+        eCalibrateModel = E_CALIBRATE_MODEL_GENERICAL_CAMERA;
     }
+
+    E_CALIBRATE_MODEL eCalibrateModel;//定位校正使用的模型
+
+    E_CALIBRATE_TYPE eCalibType;//手动/自动校正
+    SIZE szImage;
+    ALL_CALIB_COEFS allCalibCoefs;
 };
 
 struct TMonitorCalibData
@@ -168,22 +179,28 @@ typedef  std::vector<TMonitorCalibData> ALL_MOITOR_CALIB_DATA ;
 
 struct TCalibData
 {
-    //SIZE szScreen;
-    //RECT rcScreen;//屏幕区域
+
+    TCalibData()
+    {
+        eCalibrateModel = E_CALIBRATE_MODEL_GENERICAL_CAMERA;
+        eCalibType = E_CALIBRATE_TYPE_AUTO;
+        szImage.cx = 1920;
+        szImage.cy = 1080;
+        lpCtx = NULL;//
+
+    }
+
+    E_CALIBRATE_MODEL eCalibrateModel;//定位校正使用的模型
+
     E_CALIBRATE_TYPE eCalibType;
     SIZE szImage;
 
     ALL_MOITOR_CALIB_DATA allMonitorCalibData;
     LPVOID lpCtx;//上下文辅助数据
     
-    TCalibData()
-    {
-        eCalibType = E_CALIBRATE_TYPE_AUTO;
-        szImage.cx = 1920;
-        szImage.cy = 1080;
-        lpCtx      = NULL;//
 
-    }
+
+
 };
 
 enum EChangeCalibCameraParams
@@ -215,9 +232,18 @@ typedef BOOL   (CALLBACK *PRE_STATIC_MASKING_ROUTINE)(LPVOID lpCtx);
 //自动校正时指定的画面参数
 struct AutoCalibrateImageParams
 {
+    AutoCalibrateImageParams()
+    {
+        autoCalibrateExpectedBrightness = 0x80;
+        autoCalibrateHilightGray = 255;
+        autoCalibrateSpeed = 1;
+        videoDislayDelay = 0;
+
+    }
     BYTE autoCalibrateExpectedBrightness; //自动校正亮度自动控制时期望的平均画面亮度(范围0~255)
     BYTE autoCalibrateHilightGray       ; //自动校正图案中高亮块的灰度值(0~255)
     BYTE autoCalibrateSpeed             ; //自动校正速度(1~10), 1最快，10最慢
+    BYTE videoDislayDelay               ;//视频显示延迟
 };
 
 struct AutoCalibrateParams

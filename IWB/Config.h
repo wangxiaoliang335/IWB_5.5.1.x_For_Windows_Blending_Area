@@ -676,8 +676,8 @@ struct TSensorModeConfig
 {
 	TAdvancedSettings       advanceSettings;//高级设置
 	TLensConfig             lensConfigs[E_CAMERA_MODEL_COUNT][E_LENS_TYPE_COUNT];
-	ManualCalibrateSettings manualCalibrateSetting;   //手动校正时的参数设置												   //std::vector<int>         attachedMonitorIds   ;//关联的显示器编号
-	TCalibParams            calibParam;        //校正参数
+	ManualCalibrateSettings manualCalibrateSetting;//手动校正时的参数设置
+	TCalibParams            calibParam;//校正参数
 
 	TSensorModeConfig()
 	{

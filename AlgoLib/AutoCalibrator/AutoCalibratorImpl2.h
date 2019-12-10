@@ -335,12 +335,14 @@ class CWaitTimer
 {
 public:
     CWaitTimer()
+        :
+    m_dwVideoDisplayDelay(0)
     {
-        Init(1, FALSE);
+        Init(1, 0, FALSE);
     }
 
     //@参数:dwLatencyTimes， 时间延迟倍数
-    void Init(DWORD dwTimeMagnification, BOOL bUseAbsTime=FALSE)
+    void Init(DWORD dwTimeMagnification, DWORD dwVideoDisplayDelay, BOOL bUseAbsTime=FALSE)
     {
         m_dwTimeBegin = GetTickCount();
 
@@ -354,6 +356,7 @@ public:
         }
         m_dwTimeMagnification = dwTimeMagnification;
 
+        m_dwVideoDisplayDelay = dwVideoDisplayDelay;
         m_dwFrameCount = 0;
 
         m_bUseAsbTime = bUseAbsTime;
@@ -372,13 +375,14 @@ public:
         {
             DWORD dwTimeElapsed = GetTimeElapsed();
 
-            return (dwTimeElapsed >= dwWaitTimeInMs*m_dwTimeMagnification) ? TRUE : FALSE;
+            return (dwTimeElapsed >= dwWaitTimeInMs*m_dwTimeMagnification + m_dwVideoDisplayDelay) ? TRUE : FALSE;
         }
         else
         {
             const int MILLI_SECOND_PER_FRAME = 16;
             DWORD dwNeeedWaitFrames = (dwWaitTimeInMs + (MILLI_SECOND_PER_FRAME  >> 1))/ MILLI_SECOND_PER_FRAME;
             dwNeeedWaitFrames *= m_dwTimeMagnification;
+            dwNeeedWaitFrames += m_dwVideoDisplayDelay / MILLI_SECOND_PER_FRAME;
             return (m_dwFrameCount >= dwNeeedWaitFrames) ? TRUE : FALSE;
         }
     }
@@ -420,6 +424,7 @@ protected:
     DWORD m_dwTimeMagnification;//时间放大倍数
     DWORD m_dwFrameCount;
     DWORD m_bUseAsbTime;//使用绝对时间
+    DWORD m_dwVideoDisplayDelay;//视频显示延迟，单位:ms
 
 };
 
@@ -470,7 +475,7 @@ public:
         return  m_SubAreaCentroids;
      }
 
-    CWaitTimer GetWaiterTimer() 
+    CWaitTimer& GetWaiterTimer() 
     {
         return m_oWaitTimer;
     }
@@ -609,7 +614,7 @@ public:
 
     int GetMarkerCount()const;
 
-    CWaitTimer GetWaiterTimer()
+    CWaitTimer& GetWaiterTimer()
     {
         return m_oWaitTimer;
     }
@@ -1442,7 +1447,7 @@ protected:
     static const DWORD MAX_NEED_WAIT_TIME = 250;//校正阶段之间需要等待的时间间隔, 单位:ms
     static const DWORD IR_LED_FLASH_TIME   = 3000;//红外通信灯闪烁时间
 
-    void SetTimeMagnification(DWORD dwTimeMagnification);
+    void InitWaitTimer(DWORD dwTimeMagnification, DWORD dwVideoDisplayDelay);
 
 
 

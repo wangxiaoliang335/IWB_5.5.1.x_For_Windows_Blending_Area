@@ -1412,8 +1412,8 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
     m_oautocalibrateparamslist = autoCalibrateParams.autocalibrateparamslist;
 
     //设置自动校正时间放大倍数
-    SetTimeMagnification(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateSpeed);
-
+    const AutoCalibrateImageParams& autocalibrateParams = m_oautocalibrateparamslist[0].autoCalibrateImageParams;
+    InitWaitTimer(autocalibrateParams.autoCalibrateSpeed, autocalibrateParams.videoDislayDelay);
 
     //SQUARE_SIZE  = INITIAL_SQUARE_SIZE;
 
@@ -2888,7 +2888,9 @@ void CAutoCalibratorImpl2::OnMonitorCollectDataFail()
             m_clrGridHighlight = RGB(gray, gray, gray);
 
             //设置自动校正时间放大倍数
-            SetTimeMagnification(m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateSpeed);
+            //SetTimeMagnification(m_oautocalibrateparamslist[nIndex].autoCalibrateImageParams.autoCalibrateSpeed);
+            const AutoCalibrateImageParams& autocalibrateParams = m_oautocalibrateparamslist[0].autoCalibrateImageParams;
+            InitWaitTimer(autocalibrateParams.autoCalibrateSpeed, autocalibrateParams.videoDislayDelay);
         }
 
         //复位用旧法搜索屏幕上下半区的标志
@@ -4788,7 +4790,8 @@ BOOL CAutoCalibratorImpl2::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNo
     if (m_oautocalibrateparamslist.size() > 0)
     {
         //设置自动校正时间放大倍数
-        SetTimeMagnification(m_oautocalibrateparamslist[0].autoCalibrateImageParams.autoCalibrateSpeed);
+        const AutoCalibrateImageParams& autocalibrateParams = m_oautocalibrateparamslist[0].autoCalibrateImageParams;
+        InitWaitTimer(autocalibrateParams.autoCalibrateSpeed, autocalibrateParams.videoDislayDelay);
 
 
         //最大尝试次数，要能够覆盖所有的画面参数
@@ -4809,7 +4812,7 @@ BOOL CAutoCalibratorImpl2::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNo
     else
     {
         //设置自动校正时间放大倍数
-        SetTimeMagnification(1);
+        InitWaitTimer(1,0);
     }
 
     m_nDbgFrameCount = 0;
@@ -5766,22 +5769,30 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
     grayFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1);
 
     CImageFrame onlineScreenArea;
-    BYTE initValue = 0x00;
-    onlineScreenArea.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1, &initValue);
-    FillPolygon(
-        onlineScreenArea.GetData(),
-        bmpinfoHeader->biWidth,
-        bmpinfoHeader->biHeight,
-        &pCalibrator->m_vecDbgOnlineScreenVertices[0],
-        pCalibrator->m_vecDbgOnlineScreenVertices.size(),
-        255,
-        TRUE);
+
+    if (pCalibrator->m_vecDbgOnlineScreenVertices.size())
+    {
+        BYTE initValue = 0x00;
+        onlineScreenArea.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1, &initValue);
+        FillPolygon(
+            onlineScreenArea.GetData(),
+            bmpinfoHeader->biWidth,
+            bmpinfoHeader->biHeight,
+            &pCalibrator->m_vecDbgOnlineScreenVertices[0],
+            pCalibrator->m_vecDbgOnlineScreenVertices.size(),
+            255,
+            TRUE);
+
+        Debug_SaveImageFrame(onlineScreenArea, _T("OnlineScreenArea.jpg"));
+    }
+    else
+    {
+        BYTE initValue = 0xFF;
+        onlineScreenArea.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1, &initValue);
+    }
 
 
     pCalibrator->m_oCalibratePattern.InitPattern(pCalibrator->m_nDbgPatternRadius, pCalibrator->m_rcDbgMonitor);
-
-
-    Debug_SaveImageFrame(onlineScreenArea, _T("OnlineScreenArea.jpg"));
 
 
     CMJPG_Decoder m_oMJPGDecoder;//MJPG解码器
@@ -5998,11 +6009,11 @@ void CAutoCalibratorImpl2::DebugTool_LoadCalibrateData(
 }
 
 
-void CAutoCalibratorImpl2::SetTimeMagnification(DWORD dwTimeMagnification)
+void CAutoCalibratorImpl2::InitWaitTimer(DWORD dwTimeMagnification, DWORD dwVideoDisplayDelay)
 {
-    this->m_oWaitTimer.Init(dwTimeMagnification);
-    this->m_oMonitorAreaLocator.GetWaiterTimer().Init(dwTimeMagnification);
-    this->m_oMonitorBoundaryFinder.GetWaiterTimer().Init(dwTimeMagnification);
+    this->m_oWaitTimer.Init(dwTimeMagnification, dwVideoDisplayDelay);
+    this->m_oMonitorAreaLocator.GetWaiterTimer().Init(dwTimeMagnification, dwVideoDisplayDelay);
+    this->m_oMonitorBoundaryFinder.GetWaiterTimer().Init(dwTimeMagnification, dwVideoDisplayDelay);
 }
 
 
