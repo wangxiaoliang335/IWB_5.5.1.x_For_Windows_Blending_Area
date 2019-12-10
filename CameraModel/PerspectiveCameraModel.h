@@ -13,8 +13,6 @@ public:
     CPerspectiveCameraModel();
 
     BOOL CalcParams(const TPoint2D* pPointsInImage, const TPoint2D* pPointsOnPlane, int nPtNumber, const SIZE& sImage);
-    
-
 
     //@功能;根据视频坐标计算得出计算机屏幕坐标
     //@参数:ptImage, 光斑的视频图像坐标
@@ -22,6 +20,11 @@ public:
     BOOL GetScreenPt(const TPoint2D* ptImage, TPoint2D* ptScreen, int nPtNumber);
 
     BOOL IsValidParameters();
+
+    void SetParameters(const double* pParameters, int nParametersCount);
+
+    int GetParameterCount()const;
+    const double* GetParameters()const;
 protected:
     double m_Parameters[9];
 

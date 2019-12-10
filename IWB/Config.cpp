@@ -1161,8 +1161,24 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
                 //缺省值
                 if(paramDefault)defaultParams.autoCalibrateHilightGray = atoi(paramDefault);
             }
+            else if (paramName && paramValue && _stricmp(paramName, "VideoDisplayDelay") == 0)
+            {//视频显示延迟, 范围(0~200ms)
+                int nVideoDisplayDelay = atoi(paramValue);
+                if (nVideoDisplayDelay < 0 ) nVideoDisplayDelay = 0;
+                if (nVideoDisplayDelay > 200) nVideoDisplayDelay = 200;
+                imageParams.videoDislayDelay = nVideoDisplayDelay;
+
+                //缺省值
+                if (paramDefault)
+                {
+                    nVideoDisplayDelay = atoi(paramDefault);
+                    if (nVideoDisplayDelay < 0) nVideoDisplayDelay = 0;
+                    if (nVideoDisplayDelay > 200) nVideoDisplayDelay = 200;
+                    defaultParams.videoDislayDelay = nVideoDisplayDelay;
+                }
+            }
             else if (paramName && paramValue && _stricmp(paramName, "AutoCalibrateSpeed") == 0)
-            {
+            {//自动校正速度(1,最慢,10最快)
                 int nSpd = atoi(paramValue);
                 if (nSpd <= 0) nSpd = 1;
                 if (nSpd > 10) nSpd = 10;
@@ -1238,6 +1254,17 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateImageParams& imageParams, c
     pElement->SetAttribute("name", "AutoCalibrateHilightGray");
     pElement->SetAttribute("value", imageParams.autoCalibrateHilightGray);
     pElement->SetAttribute("default", defaultParams.autoCalibrateHilightGray);
+    pNode->LinkEndChild(pElement);
+
+
+    //视频显示延迟, 范围(0~200ms)
+    pXmlComment = new TiXmlComment("视频显示延迟(0~200ms)");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "VideoDisplayDelay");
+    pElement->SetAttribute("value", imageParams.videoDislayDelay);
+    pElement->SetAttribute("default", defaultParams.videoDislayDelay);
     pNode->LinkEndChild(pElement);
 
 
@@ -1955,6 +1982,15 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
                 {
                     calibParams.szImage.cy = atoi(paramValue);
                 }
+                else if (_stricmp(paramName, "CalibrateModel"))
+                {
+                    int nCalibrateModel = E_CALIBRATE_MODEL(atoi(paramValue));
+                    if (nCalibrateModel < 0 || nCalibrateModel >= (int) E_CALIBRATE_MODEL_COUNT)
+                    {
+                        nCalibrateModel = 0;
+                    }
+                    calibParams.eCalibrateModel = E_CALIBRATE_MODEL(nCalibrateModel);
+                }
                 else if(_stricmp(paramName, "CalibrateType") == 0)
                 {
                     if(_stricmp(paramValue,"Auto") == 0)
@@ -2018,6 +2054,17 @@ BOOL SaveConfig(TiXmlNode *pNode, const TCalibParams& calibParams)
     pElement->SetAttribute("name", "ImageHeight");
     pElement->SetAttribute("value", calibParams.szImage.cy);
     pNode->LinkEndChild(pElement);
+
+
+
+    //定位校正时使用的模型
+    pXmlComment = new TiXmlComment("CalibrateModel(0:4-points Perspective Camera Model, 1:Generic Camera Model)");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "CalibrateModel");
+    pElement->SetAttribute("value", (int)calibParams.eCalibrateModel);
+    pNode->LinkEndChild(pElement);
+    
 
     pXmlComment = new TiXmlComment("校正类型(手动:Manual, 自动:Auto)");
     pNode->LinkEndChild(pXmlComment);

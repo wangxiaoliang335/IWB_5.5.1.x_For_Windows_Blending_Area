@@ -15,7 +15,8 @@
 #include "../LAPACK/inc/lapacke.h"
 #include "../inc/CameraModel.h"
 #include "../inc/CameraSpecs.h"
-
+#include "../inc/MultiDimensionPoint.h"
+#include "../../CameraModel/PerspectiveCameraModel.h"
 //#define USE_CYLINDER_BULB_MODEL
 
 #ifdef USE_CYLINDER_BULB_MODEL
@@ -146,8 +147,8 @@ public:
     //@功能:设置自动校正补偿数据
     virtual void SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs) = 0;
 
-	//@功能:设置相机的已知的内部参数和对称畸变参数
-	virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams) = 0;
+    //@功能:设置相机的已知的内部参数和对称畸变参数
+    virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams) = 0;
 
 
 };
@@ -159,29 +160,26 @@ class Calibrator_GenericCameraModel:public ICalibrate
 {
 public:
 
-	Calibrator_GenericCameraModel()
-		:
-	m_bInternalAndSymmetricDistortParamsIsValid(FALSE)
-	{
+    Calibrator_GenericCameraModel()
+        :
+    m_bInternalAndSymmetricDistortParamsIsValid(FALSE)
+    {
 
-	}
+    }
 
-	virtual ~Calibrator_GenericCameraModel()
-	{
+    virtual ~Calibrator_GenericCameraModel()
+    {
 
-	}
+    }
+
+
     //@功能:计算校正参数
     //@输入:ALL_CALIB_DATA ,输入, 所有屏幕的校正数据
     //      screenSize,输入, 屏幕尺寸
     //      imageSize ,输入, 图象尺寸
     virtual BOOL CalcParams(const TCalibData& calibData, BOOL bDebug = FALSE)
     {
-        int N = calibData.allMonitorCalibData[0].calibData.size();
-        TPoint2D* pImagePts  = new TPoint2D[N];
-        TPoint2D* pScreenPts = new TPoint2D[N];
-
          int nMonitorCount = calibData.allMonitorCalibData.size();
-
          m_calibParams.allCalibCoefs.resize(nMonitorCount);
 
          if(m_vecCameraModels.size() != nMonitorCount)
@@ -193,6 +191,7 @@ public:
         {
             //屏幕区域
             const RECT& rcMonitor    = calibData.allMonitorCalibData[nMonitorId].rcMonitor;
+            
             int nMonitorScreenWidth  = rcMonitor.right  - rcMonitor.left;
             int nMonitorScreenHeight = rcMonitor.bottom - rcMonitor.top ;
 
@@ -200,45 +199,47 @@ public:
 
            const std::vector<TCalibCoordPair>& data = calibData.allMonitorCalibData[0].calibData;
 
+           int N = calibData.allMonitorCalibData[0].calibData.size();
+
+           std::vector<TPoint2D> vecImagePts;
+           std::vector<TPoint2D> vecScreenPts;
+
+           vecImagePts.resize(N);
+           vecScreenPts.resize(N);
+
+
             for(int i=0; i < N ; i++)
             {
-
-                pImagePts [i] = data[i].pt2DImageCoord;
-
-				
-
-                pScreenPts[i].d[0] = double(data[i].ptScreenCoord.x);
-                pScreenPts[i].d[1] = double(data[i].ptScreenCoord.y);
-
+                vecImagePts[i] = data[i].pt2DImageCoord;
+                vecScreenPts[i].d[0] = double(data[i].ptScreenCoord.x);
+                vecScreenPts[i].d[1] = double(data[i].ptScreenCoord.y);
             }
-
-
+            
 
             try
             {
-				//置位调试标志
-				m_vecCameraModels[nMonitorId].EnableDebug(bDebug);
-
+                //置位调试标志
+                m_vecCameraModels[nMonitorId].EnableDebug(bDebug);
 
                 //double dbThrowRatio = 0.15;//镜头投射比
-				BOOL calibrateSuccess = 
-				m_vecCameraModels[nMonitorId].Calibrate(
-					E_CAMERA_PROJECTION_PERSPECTIVE,
-					m_tLensSpec.throwRatio,//投射比
-					pScreenPts,
-					pImagePts,
-					N,
-					calibData.allMonitorCalibData[nMonitorId].rcMonitor,
-					calibData.allMonitorCalibData[nMonitorId].radius,
-					calibData.szImage.cx,
-					calibData.szImage.cy,
-					m_bInternalAndSymmetricDistortParamsIsValid ? &m_tInternalAndSymmetricDistortParams : NULL
+                BOOL calibrateSuccess = 
+                m_vecCameraModels[nMonitorId].Calibrate(
+                    E_CAMERA_PROJECTION_PERSPECTIVE,
+                    m_tLensSpec.throwRatio,//投射比
+                    &vecScreenPts[0],//屏幕坐标数组
+                    &vecImagePts[0],//图像坐标数组
+                    N,
+                    calibData.allMonitorCalibData[nMonitorId].rcMonitor,
+                    calibData.allMonitorCalibData[nMonitorId].radius,
+                    calibData.szImage.cx,
+                    calibData.szImage.cy,
+                    m_bInternalAndSymmetricDistortParamsIsValid ? &m_tInternalAndSymmetricDistortParams : NULL
                     );
 
-				if (!calibrateSuccess)
-				{
-					return FALSE;
-				}
+                if (!calibrateSuccess)
+                {
+                    return FALSE;
+                }
 
                 //保存校正模型参数
                 std::vector<double>& calibCoefs =  m_calibParams.allCalibCoefs[nMonitorId].calibCoefs;
@@ -286,13 +287,9 @@ public:
 
         }//if
 #endif
-		//test>>
-    
-       
-        
+        //test>>
     CalcParams_Exit:
-        delete[] pImagePts;
-        delete[] pScreenPts;
+
 
        return TRUE;
 
@@ -314,20 +311,20 @@ public:
         }
         else
         {//自动校正
-			TVector2D offsetFromRefraction  = GetRefractionOffset(m_vecCameraModels[nMonitorId], ptCentroid);
-			//TVector2D offsetFromRefraction = GetRefractionOffsetEx(m_vecCameraModels[nMonitorId], ptCentroid);
+            TVector2D offsetFromRefraction  = GetRefractionOffset(m_vecCameraModels[nMonitorId], ptCentroid);
+            //TVector2D offsetFromRefraction = GetRefractionOffsetEx(m_vecCameraModels[nMonitorId], ptCentroid);
 
 
 #ifdef USE_CYLINDER_BULB_MODEL
           TVector2D offsetByLedBubble;
           offsetByLedBubble.d[0] = 0.0;
           offsetByLedBubble.d[1] = 0.0;
-		  
+          
           if(m_vecCylinderBulbModel.size() > nMonitorId)
           {
                offsetByLedBubble = m_vecCylinderBulbModel[nMonitorId].GetRealOffset(ptCentroid);
           }
-		  //test>>
+          //test>>
 
           pt2DContact = ptCentroid - offsetFromRefraction  - offsetByLedBubble ;
 #else
@@ -338,11 +335,11 @@ public:
         }
 
 
-		if (pDebugOutput)
-		{
-			pDebugOutput->pt2DContactInImage = pt2DContact;
-			pDebugOutput->pt2DCentroid = ptCentroid;
-		}
+        if (pDebugOutput)
+        {
+            pDebugOutput->pt2DContactInImage = pt2DContact;
+            pDebugOutput->pt2DCentroid = ptCentroid;
+        }
         BOOL bRet = m_vecCameraModels[nMonitorId].FromImage2World(&pt2DContact, 1, pptScreen);
 
         return bRet;
@@ -367,14 +364,14 @@ public:
         v.d[0] = ptObj.d[0] - m_tAutoCalibCompCoefs.u0 * sizeImage.cx;
         v.d[1] = ptObj.d[1] - m_tAutoCalibCompCoefs.v0 * sizeImage.cy;
 
-		
-		
-		/*
-		TPoint2D ptLensCenter = camera.GetLensCenterInImage();
+        
+        
+        /*
+        TPoint2D ptLensCenter = camera.GetLensCenterInImage();
 
-		v.d[0] = ptObj.d[0] - ptLensCenter.d[0];
-		v.d[1] = ptObj.d[1] - ptLensCenter.d[1];
-		*/
+        v.d[0] = ptObj.d[0] - ptLensCenter.d[0];
+        v.d[1] = ptObj.d[1] - ptLensCenter.d[1];
+        */
 
         double r = norm(v);
 
@@ -403,33 +400,33 @@ public:
     }
 
  
-	//@功能:计算自动校正时摄像头接收可见光,无红外滤光片和正常使用时有红外滤光片,通过940nm波长时,光斑的偏移距离
-	TVector2D GetRefractionOffsetEx(const CGenericCameraModel& camera, const TPoint2D& ptObj)
-	{
+    //@功能:计算自动校正时摄像头接收可见光,无红外滤光片和正常使用时有红外滤光片,通过940nm波长时,光斑的偏移距离
+    TVector2D GetRefractionOffsetEx(const CGenericCameraModel& camera, const TPoint2D& ptObj)
+    {
 
-	
-		double theta, phi;
-		
-		camera.GetThetaPhi(&ptObj, 1, &theta, &phi);
+    
+        double theta, phi;
+        
+        camera.GetThetaPhi(&ptObj, 1, &theta, &phi);
 
-		//Matalb仿真计算表明,像素偏移量drθ和光点与光轴的夹角θ,近似满足多项式关系
-		//dr=K(1)*θ + K(2)*θ^3 + K(3)**θ^5 
-		double K1 = m_tAutoCalibCompCoefs.k[0];
-		double K2 = m_tAutoCalibCompCoefs.k[1];
-		double K3 = m_tAutoCalibCompCoefs.k[2];
-		
-		double theta2 = theta  * theta;
-		double theta3 = theta2 * theta;
-		double theta5 = theta3 * theta2;
+        //Matalb仿真计算表明,像素偏移量drθ和光点与光轴的夹角θ,近似满足多项式关系
+        //dr=K(1)*θ + K(2)*θ^3 + K(3)**θ^5 
+        double K1 = m_tAutoCalibCompCoefs.k[0];
+        double K2 = m_tAutoCalibCompCoefs.k[1];
+        double K3 = m_tAutoCalibCompCoefs.k[2];
+        
+        double theta2 = theta  * theta;
+        double theta3 = theta2 * theta;
+        double theta5 = theta3 * theta2;
 
-		double dr = K1*theta + K2*theta3 + K3*theta5;
+        double dr = K1*theta + K2*theta3 + K3*theta5;
 
-		TVector2D dv;
-		dv.d[0] = dr*cos(phi);
-		dv.d[1] = dr*sin(phi);
+        TVector2D dv;
+        dv.d[0] = dr*cos(phi);
+        dv.d[1] = dr*sin(phi);
 
-		return dv;
-	}
+        return dv;
+    }
 
 
 
@@ -456,27 +453,6 @@ public:
 
         m_calibParams = params;
 
-/*
-        if(m_calibParams.eCalibType == E_CALIBRATE_TYPE_AUTO)
-        {
-            
-            if(m_vecCylinderBulbModel.size() != nMonitorCount)
-            {
-                m_vecCylinderBulbModel.resize(nMonitorCount);
-            }
-
-            for(int nMonitorId = 0; nMonitorId < nMonitorCount; nMonitorId++)
-            {
-                SIZE imageSize =  m_vecCameraModels[nMonitorId].GetImageSize();
-                m_vecCylinderBulbModel[nMonitorId].CalcProjectData(
-                    &m_vecCameraModels[nMonitorId],
-                    m_vecCameraModels[nMonitorId].GetMonitorRect(),
-                    imageSize.cx ,
-                    imageSize.cy);
-            }
-
-        }//if
-*/
     }
 
     virtual void SetLensSpecification(const TLensSpecification& lensSpec)
@@ -484,21 +460,21 @@ public:
         m_tLensSpec = lensSpec;
     }
 
-	virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pInternalAndSymmetricDistortParams)
-	{
-		if (pInternalAndSymmetricDistortParams)
-		{
-			m_tInternalAndSymmetricDistortParams = *pInternalAndSymmetricDistortParams;
-			m_bInternalAndSymmetricDistortParamsIsValid = TRUE;
-		}
-		else
-		{
-			m_bInternalAndSymmetricDistortParamsIsValid = FALSE;
-		}
-		
-	}
+    virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pInternalAndSymmetricDistortParams)
+    {
+        if (pInternalAndSymmetricDistortParams)
+        {
+            m_tInternalAndSymmetricDistortParams = *pInternalAndSymmetricDistortParams;
+            m_bInternalAndSymmetricDistortParamsIsValid = TRUE;
+        }
+        else
+        {
+            m_bInternalAndSymmetricDistortParamsIsValid = FALSE;
+        }
+        
+    }
 
-	
+    
     virtual void SetCMOSChipSpecification(const TCMOSChipSpecification& cmosChipSpec)
     {
         m_tCMOSChipSepc = cmosChipSpec;
@@ -516,11 +492,155 @@ protected:
      std::vector<CylinderBulbModel>   m_vecCylinderBulbModel;//圆柱形灯泡模型。
 #endif
     TCalibParams m_calibParams;
-	TInternalAndSymmetricDistortParams m_tInternalAndSymmetricDistortParams;//镜头内部和非对称畸变参数
-	BOOL  m_bInternalAndSymmetricDistortParamsIsValid;//镜头内部和非对称畸变参数是否有效标志
+    TInternalAndSymmetricDistortParams m_tInternalAndSymmetricDistortParams;//镜头内部和非对称畸变参数
+    BOOL  m_bInternalAndSymmetricDistortParamsIsValid;//镜头内部和非对称畸变参数是否有效标志
     TLensSpecification     m_tLensSpec          ;//镜头规格
     TCMOSChipSpecification m_tCMOSChipSepc      ;//CMOS芯片规格
     TAutoCalibCompCoefs    m_tAutoCalibCompCoefs;//自动校正补偿系数
 
 
+};
+
+
+//四点定位校正模型
+class Calibrator_4PointsPerspectiveCameraModel :public ICalibrate
+{
+public:
+
+    //@功能:计算校正参数
+    //@输入:ALL_CALIB_DATA ,输入, 所有屏幕的校正数据
+    //      screenSize,输入, 屏幕尺寸
+    //      imageSize ,输入, 图象尺寸
+    virtual BOOL CalcParams(const TCalibData& calibData, BOOL bDebug = FALSE)
+    {
+        int N = calibData.allMonitorCalibData[0].calibData.size();
+
+        TPoint2D* pImagePts  = new TPoint2D[N];
+        TPoint2D* pScreenPts = new TPoint2D[N];
+
+        int nMonitorCount = calibData.allMonitorCalibData.size();
+
+        m_calibParams.allCalibCoefs.resize(nMonitorCount);
+
+        if (m_vecCameraModels.size() != nMonitorCount)
+        {
+            m_vecCameraModels.resize(nMonitorCount);
+        }
+
+        for (int nMonitorId = 0; nMonitorId < nMonitorCount; nMonitorId++)
+        {
+            const std::vector<TCalibCoordPair>& data = calibData.allMonitorCalibData[0].calibData;
+
+            int N = calibData.allMonitorCalibData[0].calibData.size();
+
+            std::vector<TPoint2D> vecImagePts;
+            std::vector<TPoint2D> vecScreenPts;
+
+            vecImagePts.resize(N);
+            vecScreenPts.resize(N);
+
+
+            for (int i = 0; i < N; i++)
+            {
+                vecImagePts[i] = data[i].pt2DImageCoord;
+                vecScreenPts[i].d[0] = double(data[i].ptScreenCoord.x);
+                vecScreenPts[i].d[1] = double(data[i].ptScreenCoord.y);
+
+            }//for-each(i)
+
+
+            BOOL bRet = m_vecCameraModels[nMonitorId].CalcParams(&vecImagePts[0], &vecScreenPts[0], N, calibData.szImage);
+
+            if (FALSE == bRet)
+                return bRet;
+
+            //保存校正参数
+            std::vector<double>& calibCoefs = m_calibParams.allCalibCoefs[nMonitorId].calibCoefs;
+            int nParamCount = m_vecCameraModels[nMonitorId].GetParameterCount();
+            const double* pModelParams = m_vecCameraModels[nMonitorId].GetParameters();
+            calibCoefs.resize(nParamCount);
+            for (int j = 0; j < nParamCount; j++)
+            {
+                calibCoefs[j] = pModelParams[j];
+            }
+
+
+        }//for=each(nMonitorId)
+
+
+        return TRUE;
+    }
+
+
+
+    //@功能;根据视频坐标计算得出计算机屏幕坐标
+    //@参数:ptImage, 光斑的视频图像坐标
+    //      ptScreen, 保存计算机屏幕坐标的地址
+    //      nMonitorId, 屏幕ID,从零开始
+    //      bWithoutAutoCalibCompensate, 不做自动校正补偿标志
+    virtual BOOL GetScreenPt(const TPoint2D& ptImage, TPoint2D* pptScreen, int nMonitorId = 0, BOOL bWithoutAutoCalibCompensate = FALSE, TCameraDebugData* pDebugOutput = NULL)
+    {
+        if (nMonitorId < 0 || size_t(nMonitorId) >= m_vecCameraModels.size()) return FALSE;
+
+        BOOL bRet = m_vecCameraModels[nMonitorId].GetScreenPt(&ptImage,  pptScreen, 1);
+
+        return bRet;
+        
+    }
+
+
+
+    //@功能:返回校正方程参数
+    virtual const TCalibParams* GetCalibParams()const
+    {
+
+        return &m_calibParams;
+    }
+
+    //@功能:设置校正方程参数
+    virtual  void SetCalibParams(const TCalibParams& params)
+    {
+        int nMonitorCount = params.allCalibCoefs.size();
+        m_vecCameraModels.resize(nMonitorCount);
+        for (int i = 0; i < nMonitorCount; i++)
+        {
+            if (params.allCalibCoefs[i].calibCoefs.size())
+            {
+                m_vecCameraModels[i].SetParameters(
+                    &params.allCalibCoefs[i].calibCoefs[0],
+                    params.allCalibCoefs[i].calibCoefs.size());
+            }
+        }//for
+
+        m_calibParams = params;
+    }
+
+
+    //@功能:设置镜头规格数据
+    virtual void SetLensSpecification(const TLensSpecification& lensSpec)
+    {
+
+    }
+
+    //@功能:设置CMOS芯片规格数据
+    virtual void SetCMOSChipSpecification(const TCMOSChipSpecification& cmosChipSpec)
+    {
+
+    }
+
+    //@功能:设置自动校正补偿数据
+    virtual void SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs)
+    {
+
+    }
+
+    //@功能:设置相机的已知的内部参数和对称畸变参数
+    virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams)
+    {
+
+    }
+
+protected:
+    std::vector<CPerspectiveCameraModel> m_vecCameraModels;//相机投影模型数组, 每一个实际的屏幕对应一个模型。
+    TCalibParams m_calibParams;
 };

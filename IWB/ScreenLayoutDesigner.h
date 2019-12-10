@@ -120,8 +120,9 @@ protected:
 
     enum EAreaType
     {
-        E_AREA_TYPE_SPLITTER = 0,//分割条
+        E_AREA_TYPE_SPLITTER = 0,//屏幕分割条
         E_AREA_TYPE_BUTTON   = 1,//按钮
+        E_AREA_TYPE_MERGE_BORDER,//融合区边界
         
     };
 
@@ -144,7 +145,12 @@ protected:
         ULONG  ulData;//关联的数据, 当活动区为分割条时, 用来保存分割条的索引号。
     };
 
-    static const int SPLITTER_WIDTH = 4;
+    //屏幕分割条宽度
+    static const int SPLITTER_WIDTH    = 4;
+    
+    //融合区拖拽宽度
+    static const int BORDER_DRAG_WIDTH = 4;
+
     std::vector < TActiveArea> m_vecActiveAreas;//活动区域
 
 

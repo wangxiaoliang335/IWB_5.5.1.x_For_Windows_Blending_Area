@@ -20,7 +20,7 @@ BOOL CPerspectiveCameraModel::CalcParams(const TPoint2D* pPointsInImage, const T
     //H = [h(1), h(2), h(3);
     //    h(4), h(5), h(6);
     //    h(7), h(8), 1];
-    //
+    // 
     // |x     |     |u|
     // |y     | = H*|v|
     // |lambda|     |1| 
@@ -180,4 +180,29 @@ BOOL CPerspectiveCameraModel::IsValidParameters()
     }
 
     return FALSE;
+}
+
+int CPerspectiveCameraModel::GetParameterCount()const
+{
+    return _countof(m_Parameters);
+}
+
+const double* CPerspectiveCameraModel::GetParameters()const
+{
+
+    return &m_Parameters[0];
+}
+
+
+void CPerspectiveCameraModel::SetParameters(const double* pParameters, int nParametersCount)
+{
+    if (nParametersCount > _countof(m_Parameters))
+    {
+        nParametersCount = _countof(m_Parameters);
+    }
+
+    for (int i = 0; i < nParametersCount; i++)
+    {
+        m_Parameters[i] = pParameters[i];
+    }
 }
