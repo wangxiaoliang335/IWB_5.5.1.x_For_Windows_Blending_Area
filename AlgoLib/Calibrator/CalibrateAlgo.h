@@ -92,6 +92,12 @@ inline T POW(T base, int exponent)
 class ICalibrate
 {
 public:
+    ICalibrate(E_CALIBRATE_MODEL eCalibrateModel)
+        :
+        m_eCalibrateModel(eCalibrateModel)
+    {
+        
+    }
 
     //@功能:计算校正参数
     //@输入:ALL_CALIB_DATA ,输入, 所有屏幕的校正数据
@@ -150,6 +156,13 @@ public:
     //@功能:设置相机的已知的内部参数和对称畸变参数
     virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams) = 0;
 
+    E_CALIBRATE_MODEL GetCalibrateModel() const
+    {
+        return m_eCalibrateModel;
+    }
+
+protected:
+    E_CALIBRATE_MODEL m_eCalibrateModel;
 
 };
 
@@ -162,6 +175,7 @@ public:
 
     Calibrator_GenericCameraModel()
         :
+    ICalibrate(E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE),
     m_bInternalAndSymmetricDistortParamsIsValid(FALSE)
     {
 
@@ -506,6 +520,13 @@ protected:
 class Calibrator_4PointsPerspectiveCameraModel :public ICalibrate
 {
 public:
+    Calibrator_4PointsPerspectiveCameraModel()
+        :
+        ICalibrate(E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE)
+    {
+
+    }
+
 
     //@功能:计算校正参数
     //@输入:ALL_CALIB_DATA ,输入, 所有屏幕的校正数据
@@ -593,7 +614,6 @@ public:
     //@功能:返回校正方程参数
     virtual const TCalibParams* GetCalibParams()const
     {
-
         return &m_calibParams;
     }
 
@@ -619,25 +639,25 @@ public:
     //@功能:设置镜头规格数据
     virtual void SetLensSpecification(const TLensSpecification& lensSpec)
     {
-
+        //do nothing
     }
 
     //@功能:设置CMOS芯片规格数据
     virtual void SetCMOSChipSpecification(const TCMOSChipSpecification& cmosChipSpec)
     {
-
+        //do nothing
     }
 
     //@功能:设置自动校正补偿数据
     virtual void SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs)
     {
-
+        //do nothing
     }
 
     //@功能:设置相机的已知的内部参数和对称畸变参数
     virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams)
     {
-
+        //do nothing
     }
 
 protected:

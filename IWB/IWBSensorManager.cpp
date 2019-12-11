@@ -905,7 +905,7 @@ void  CIWBSensorManager::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWN
             }
         }
 
-        m_eOperatonMode = E_MODE_ALL_SENSOR;
+        m_eOperationMode = E_MODE_ALL_SENSOR;
     }
     else if( 0<= nSensorID && nSensorID < (int)m_vecSensors.size())
     {
@@ -915,7 +915,7 @@ void  CIWBSensorManager::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWN
             m_vecSensors[nSensorID]->EnableOpticalPen(FALSE);
             m_vecSensors[nSensorID]->StartAutoCalibrate(ePattern, hNotifyWindow);
 
-            m_eOperatonMode = E_MODE_SINGLE_SENSOR;
+            m_eOperationMode = E_MODE_SINGLE_SENSOR;
             
             m_vecCalibrateResults.resize(1);
             m_vecCalibrateResults[0] = FALSE;
@@ -949,7 +949,7 @@ void CIWBSensorManager::OnIWBSensorAutoCalibrateDone(BOOL bSuccess, BOOL bSimula
            }			
         }
     }
-    if(m_eOperatonMode == E_MODE_ALL_SENSOR)
+    if(m_eOperationMode == E_MODE_ALL_SENSOR)
     {//
         m_vecCalibrateResults[m_nCurrentSensorID] = bSuccess;
 
@@ -974,7 +974,7 @@ void CIWBSensorManager::OnIWBSensorAutoCalibrateDone(BOOL bSuccess, BOOL bSimula
         }
 
     }
-    else if(m_eOperatonMode == E_MODE_SINGLE_SENSOR)
+    else if(m_eOperationMode == E_MODE_SINGLE_SENSOR)
     {
         m_vecCalibrateResults[0] = bSuccess;
         m_vecSensors[m_nCurrentSensorID]->OnAutoCalibrateDone(m_vecCalibrateResults[0]);
@@ -1016,14 +1016,14 @@ void  CIWBSensorManager::StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow,
             
         }
 
-        m_eOperatonMode = E_MODE_ALL_SENSOR;
+        m_eOperationMode = E_MODE_ALL_SENSOR;
     }
     else if( 0<= nSensorID && nSensorID < (int)m_vecSensors.size())
     {
         m_vecSensors[nSensorID]->EnableOpticalPen(FALSE);
         m_vecSensors[nSensorID]->StartManualCalibrate(hNotifyWindow, nPtsInRow, nPtsInCol);
 
-        m_eOperatonMode = E_MODE_SINGLE_SENSOR;
+        m_eOperationMode = E_MODE_SINGLE_SENSOR;
         m_nCurrentSensorID   = nSensorID;
         m_vecCalibrateResults.resize(1);
         m_vecCalibrateResults[0] = FALSE;
@@ -1036,7 +1036,7 @@ void  CIWBSensorManager::StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow,
 //@参数:bSuccess, 成功/失败标志    
 void CIWBSensorManager::OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCtxData)
 {
-    if(m_eOperatonMode == E_MODE_ALL_SENSOR)
+    if(m_eOperationMode == E_MODE_ALL_SENSOR)
     {//
         m_vecCalibrateResults[m_nCurrentSensorID] = bSuccess;
 
@@ -1053,7 +1053,7 @@ void CIWBSensorManager::OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCt
         }
     }
 
-    if(m_eOperatonMode == E_MODE_SINGLE_SENSOR)
+    if(m_eOperationMode == E_MODE_SINGLE_SENSOR)
     {
         m_vecCalibrateResults[0] = bSuccess;
         m_vecSensors[m_nCurrentSensorID]->OnManualCalibrateDone(m_vecCalibrateResults[0]);
@@ -1094,7 +1094,7 @@ void CIWBSensorManager::StartSearchMaskArea(HWND hNotifyWindow, int nSensorID)
              }
         }
 
-        m_eOperatonMode = E_MODE_ALL_SENSOR;
+        m_eOperationMode = E_MODE_ALL_SENSOR;
     }
     else if( 0<= nSensorID && nSensorID < (int)m_vecSensors.size())
     {
@@ -1103,7 +1103,7 @@ void CIWBSensorManager::StartSearchMaskArea(HWND hNotifyWindow, int nSensorID)
             m_vecSensors[nSensorID]->EnableOpticalPen(FALSE);
             m_vecSensors[nSensorID]->StartAutoMasking(hNotifyWindow);
 
-            m_eOperatonMode    = E_MODE_SINGLE_SENSOR;
+            m_eOperationMode    = E_MODE_SINGLE_SENSOR;
             m_nCurrentSensorID = nSensorID;
         }
     }
@@ -1117,7 +1117,7 @@ void CIWBSensorManager::OnIWBSensorSearchMaskAreaDone(BOOL bSuccess)
 {
     m_vecSensors[m_nCurrentSensorID]->OnAutoSearchMaskAreaDone(bSuccess);
 
-    if(m_eOperatonMode == E_MODE_ALL_SENSOR)
+    if(m_eOperationMode == E_MODE_ALL_SENSOR)
     {//所有传感器自动屏蔽模式
 
         if(m_nCurrentSensorID < (int)m_vecSensors.size() - 1)
@@ -1135,7 +1135,7 @@ void CIWBSensorManager::OnIWBSensorSearchMaskAreaDone(BOOL bSuccess)
 //@功能:判断校正是否成功
 BOOL CIWBSensorManager::IsCalibarateOk()
 {
-    if(E_MODE_ALL_SENSOR == m_eOperatonMode)
+    if(E_MODE_ALL_SENSOR == m_eOperationMode)
     {
         for(UINT i=0; i < m_vecCalibrateResults.size(); i++)
         {
@@ -1368,7 +1368,7 @@ BOOL CIWBSensorManager::DoSimulateAutoCalibrate(int nSensorId, HWND hNotifyWnd, 
 {
     if(nSensorId >= int(m_vecSensors.size())) return FALSE;
 
-     m_eOperatonMode      = E_MODE_SINGLE_SENSOR;
+     m_eOperationMode      = E_MODE_SINGLE_SENSOR;
      m_nCurrentSensorID   = nSensorId;
 
     m_vecCalibrateResults.resize(1);
@@ -1538,4 +1538,76 @@ void CIWBSensorManager::OnTimer(LPVOID lpCtx)
         }//if
 
     }//for-each(i)
+}
+
+//@功能:开始四点标定
+//@参数:hNotifyWindow, 消息接收窗体
+//      nSensorID, -1, 全部传感器标定
+void  CIWBSensorManager::Start4BasePointMarking(HWND hNotifyWindow, int nSensorID)
+{
+    if (nSensorID == -1)
+    {
+        m_vecCalibrateResults.resize(m_vecSensors.size());
+
+        for (size_t i = 0; i < m_vecCalibrateResults.size(); i++)
+        {
+            m_vecCalibrateResults[i] = FALSE;
+        }
+
+        //所有传感器禁用光笔
+        for (size_t i = 0; i < m_vecSensors.size(); i++)
+        {
+            m_vecSensors[i]->EnableOpticalPen(FALSE);
+        }
+
+        if (m_vecSensors.size() >= 1)
+        {
+            m_nCurrentSensorID = 0;
+            m_vecSensors[0]->Start4BasePointMarking(hNotifyWindow);
+        }
+
+        m_eOperationMode = E_MODE_ALL_SENSOR;
+    }
+    else if (0 <= nSensorID && nSensorID < (int)m_vecSensors.size())
+    {
+        m_vecSensors[nSensorID]->EnableOpticalPen(FALSE);
+        m_vecSensors[nSensorID]->Start4BasePointMarking(hNotifyWindow);
+        
+        m_eOperationMode = E_MODE_SINGLE_SENSOR;
+        m_nCurrentSensorID = nSensorID;
+        m_vecCalibrateResults.resize(1);
+        m_vecCalibrateResults[0] = FALSE;
+   }
+
+}
+
+//@功能:4点标定结束响应函数
+//@参数:bSuccess, TRUE,成功
+void CIWBSensorManager::OnIWBSensor4BasePointMarkingDone(BOOL bSuccess)
+{
+    if (m_eOperationMode == E_MODE_ALL_SENSOR)
+    {//
+        m_vecCalibrateResults[m_nCurrentSensorID] = bSuccess;
+
+        if (m_nCurrentSensorID < (int)m_vecSensors.size() - 1)
+        {//继续下一屏幕的4点标定
+            m_nCurrentSensorID ++;
+            m_vecSensors[m_nCurrentSensorID]->Start4BasePointMarking(m_hNotifyWindow);
+            return;
+        }
+    }
+
+    if (m_eOperationMode == E_MODE_SINGLE_SENSOR)
+    {
+        m_vecCalibrateResults[0] = bSuccess;
+        m_vecSensors[m_nCurrentSensorID]->On4BasePointMarkingDone(bSuccess);
+    }
+    else
+    {
+        for (unsigned int i = 0; i<m_vecCalibrateResults.size(); i++)
+        {
+            m_vecSensors[i]->OnManualCalibrateDone(m_vecCalibrateResults[i]);
+        }
+    }
+
 }

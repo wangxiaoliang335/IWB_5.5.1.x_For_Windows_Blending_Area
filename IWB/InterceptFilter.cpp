@@ -749,6 +749,26 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         }
     }
 
+
+    int nBasePointCount = 0;
+    CBaseStoneMarker&  baseStoneMarker = m_pPenPosDetector->GetBaseStoneMarker();
+
+    //正在4点标定基准点
+    if (m_pPenPosDetector->IsMarkingBasestone())
+    {
+
+
+        //获得当前基點的索引号
+        int baseStoneIndex = baseStoneMarker.GetCurrentBaseStoneIndex();
+
+        TCHAR szText[1024];
+        _stprintf_s(szText, _countof(szText), _T("双击#%d测量基點"), baseStoneIndex + 1);
+        m_pVideoPlayer->SetDisplayInfo(szText);
+
+        nBasePointCount = baseStoneIndex;
+    }
+
+
 	if (m_bStartDrawOnlineScreenArea)
 	{
 	     std::vector<CPoint> vecpt;
@@ -846,9 +866,7 @@ BOOL CInterceptFilter::StartDetect(HWND hDisplayWnd, int nSrcImageWidth, int nSr
 
 BOOL CInterceptFilter::StopDetect()
 {
-
     return m_pPenPosDetector->StopDetect();
-
 }
 
 void CInterceptFilter::ViewMonoImage(HWND hWnd)

@@ -570,7 +570,19 @@ public:
 	 bool    LoadOnLinePt();
 	 bool    SaveOnLinePt();
 
-		 
+
+     //@功能:进入4点标定模式
+     void EnterMarkStoneBaseMode(HWND hNotifyWnd);
+
+     //@功能:离开四点标定模式
+     void LeaveMarkStoneBaseMode();
+
+     //@功能:返回标定对象。
+     CBaseStoneMarker& GetBaseStoneMarker();
+
+     //@功能:判断是否正在进行4点标定
+     BOOL IsMarkingBasestone()const;
+
 protected:
 
 	BOOL SimulateMannalCalibrate(LPCTSTR lpszAVIFilePath);    
@@ -647,7 +659,8 @@ protected:
 
 	void  FilterMaxNeighborhoodSpot(TBlobObject* pObjs, size_t nObjCount);
 
-   
+
+
  protected:
     HANDLE m_hSimulateManualThread;
 	CAviReader  m_oAVIInput;            //AVI输入源
@@ -908,6 +921,10 @@ protected:
 
 	static const  double SCREEN_DISTANCETWOSPOT_WIDTH_IN_MM;
 	int m_ScreenMinDistanceWidthInPixel ;
+
+
+    BOOL m_bMarkingBaseStone;//4点标定状态标志
+    CBaseStoneMarker m_oBaseStoneMarker;//4点标定执行器
 
 };
 

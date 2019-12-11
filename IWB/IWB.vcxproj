@@ -752,6 +752,7 @@
     <ClCompile Include="AddExceptionDlg.cpp" />
     <ClCompile Include="AdvancedSettingsDlg.cpp" />
     <ClCompile Include="AttachToScreenDlg.cpp" />
+    <ClCompile Include="BaseStoneMarker.cpp" />
     <ClCompile Include="CalibrationWndBase.cpp" />
     <ClCompile Include="CameraFmtDialog.cpp" />
     <ClCompile Include="CBPropertySheet.cpp" />
@@ -971,6 +972,7 @@
     <ClInclude Include="AdvancedSettingsDlg.h" />
     <ClInclude Include="Akima_Interpolate.h" />
     <ClInclude Include="AttachToScreenDlg.h" />
+    <ClInclude Include="BaseStoneMarker.h" />
     <ClInclude Include="BezierInterpolator.h" />
     <ClInclude Include="CalibrateSymbolChecker.h" />
     <ClInclude Include="CalibrateSymbolManualSampler.h" />

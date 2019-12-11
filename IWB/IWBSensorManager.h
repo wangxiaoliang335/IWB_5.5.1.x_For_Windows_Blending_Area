@@ -271,6 +271,11 @@ public:
 
     void ApplyScreenLayout();
 
+    void  Start4BasePointMarking(HWND hNotifyWindow, int nSensorID);
+
+    //@功能:4点标定结束响应函数
+    void OnIWBSensor4BasePointMarkingDone(BOOL bSuccess);
+
 protected:
     void UpdateVideoLayout(const RECT& rcDisplayArea);
 	void DrawSelectBound(HWND hWnd);
@@ -319,7 +324,7 @@ protected:
         E_MODE_SINGLE_SENSOR //校正单个传感器
     };
 
-    EOperationMode  m_eOperatonMode;
+    EOperationMode  m_eOperationMode;
     HWND m_hNotifyWindow;
     E_AutoCalibratePattern m_eAutoCalibratePattern;
 

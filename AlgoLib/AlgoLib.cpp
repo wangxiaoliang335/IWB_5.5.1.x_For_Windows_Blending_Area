@@ -119,29 +119,6 @@ CAutoCalibrator::~CAutoCalibrator()
 BOOL CAutoCalibrator::StartCalibrating(const TAutoCalibrateParams& autoCalibrateParams, const TStaticMaskingParams& staticMaskingParams)
 {
     
-    
-    //hr = CheckUSBKey();
-    //if(hr != S_OK)
-    //{
-    //    return hr;
-    //}
-
-    //m_pAutoCalibratorImpl->SetDebugLevel(autoCalibrateParams.eDebugLevel);
-   
- /*   BOOL bRet = m_pAutoCalibratorImpl->StartCalibrating(
-        hNotifyWnd, 
-        eGridPattern, 
-        cBrightness, 
-        ChangeCameraParamsProc, 
-        lpCtx, 
-        clrGridHighlight, 
-        bSaveInermediatFile,
-        bRecordVideo);
-    if(!bRet)
-    {
-        return ERR_START_CALIBRATING_FAILED;
-    }*/
-
      BOOL bRet = m_pAutoCalibratorImpl->StartCalibrating(autoCalibrateParams, staticMaskingParams);
     return bRet;
 
@@ -155,18 +132,6 @@ BOOL CAutoCalibrator::StartMasking(const TAutoMaskingParams& autoMaskingParams, 
 
     return bRet;
 }
-
-
-//void CAutoCalibrator::EndCalibrating()
-//{
-//    return m_pAutoCalibratorImpl->EndCalibrating();
-//}
-
-
-//BOOL CAutoCalibrator::ProcessImage(const CImageFrame* pYUVFrame)
-//{
-//	return GetAutoCalibratorInstance()->ProcessImage(pYUVFrame);
-//}
 
 
 BOOL CAutoCalibrator::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNotifyWnd, UINT nCx, UINT nCy, BYTE cBrightness, E_AutoCalibratePattern eGridsNumber, ECalibDebugLevel eDebugLevel)
@@ -393,6 +358,7 @@ const CImageFrame* CBlobDetector::GetBinarizedImage() const
 //====================================================
 //Part 3.坐标校正算法
 
+
 CalibrateAlog::CalibrateAlog()
 :
 m_pCalibrateInst(NULL)
@@ -414,6 +380,27 @@ CalibrateAlog::~CalibrateAlog()
     }
 }
 
+void CalibrateAlog::CreateCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
+{
+    if (m_pCalibrateInst)
+    {
+        delete m_pCalibrateInst;
+        m_pCalibrateInst = NULL;
+    }
+
+    switch (eCalibrateModel)
+    {
+    case E_CALIBRATE_MODEL_GENERICAL_CAMERA:
+        m_pCalibrateInst = new Calibrator_GenericCameraModel();
+        break;
+
+    case E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE:
+        m_pCalibrateInst = new Calibrator_4PointsPerspectiveCameraModel();
+        break;
+        
+    }
+
+}
 
 //@功能:计算校正参数
 //@输入:calibData ,输入, 所有屏幕的校正数据
@@ -423,9 +410,9 @@ BOOL CalibrateAlog::CaclCalibrationParams(const TCalibData& calibData, BOOL bDeb
      CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
     int N = calibData.allMonitorCalibData[0].calibData.size();
    
-    if(NULL == m_pCalibrateInst)
+    if(NULL == m_pCalibrateInst || calibData.eCalibrateModel != m_pCalibrateInst->GetCalibrateModel())
     {
-        m_pCalibrateInst = new Calibrator_GenericCameraModel();
+        CreateCalibrateInst(calibData.eCalibrateModel);
     }
 
     BOOL bRet = m_pCalibrateInst->CalcParams(calibData, bDebug);
@@ -451,9 +438,10 @@ void CalibrateAlog::SetCalibParams(const TCalibParams& params)
 
     if( 0 == params.allCalibCoefs.size()) return;
 
-    if(NULL == m_pCalibrateInst)
+    if (NULL == m_pCalibrateInst || params.eCalibrateModel != m_pCalibrateInst->GetCalibrateModel())
     {
-         m_pCalibrateInst = new Calibrator_GenericCameraModel();
+
+        CreateCalibrateInst(params.eCalibrateModel);
     }
 
     m_pCalibrateInst->SetCalibParams(params);

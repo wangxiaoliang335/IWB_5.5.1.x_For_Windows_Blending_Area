@@ -600,9 +600,9 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
 
     ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
     ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
-
-        ON_WM_RBUTTONUP()
-        END_MESSAGE_MAP()
+    ON_MESSAGE(WM_END_4_BASE_POINT_MARKING, &CIWBDlg::OnEnd4BasePointMarking)
+    ON_WM_RBUTTONUP()
+END_MESSAGE_MAP()
 
 
 void CIWBDlg::InitMenu()
@@ -5341,8 +5341,36 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     UpdateWindow();
 
     StartRunning();
+}
 
 
+//@功能:”结束4点标定“消息响应函数
+HRESULT CIWBDlg::OnEnd4BasePointMarking(WPARAM wParam, LPARAM lParam)
+{
+    BOOL bSuccess = (BOOL)wParam;
+
+    m_oIWBSensorManager.OnIWBSensorManualCalibrateDone(bSuccess, (DWORD)lParam);
+
+    if (m_oIWBSensorManager.IsCalibarateOk())
+    {
+        //保存配置信息
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        
+        if (pSensor)
+        {
+            const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+            if (!devInfo.m_strDevPath.IsEmpty())
+            {
+                this->SaveConfig();
+            }
+
+        }
+
+        //最小化到托盘
+        MinimizeToTray();
+    }
+
+    return 0L;
 }
 
 

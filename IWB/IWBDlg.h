@@ -552,6 +552,10 @@ protected:
     //@功能:结束屏幕布局设计
     HRESULT OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam);
 
+
+    //@功能:”结束4点标定“消息响应函数
+    HRESULT OnEnd4BasePointMarking(WPARAM wParam, LPARAM lParam);
+
 	//2018/01/26
 	//更新加密锁的状态
 	void UpdateInfoAboutDongle();
