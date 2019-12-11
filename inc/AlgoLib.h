@@ -659,6 +659,7 @@ public:
 
 
 protected:
+    void CreateCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel);
     ICalibrate* m_pCalibrateInst;
     CComAutoCriticalSection* m_pcsForParam;//保护参数线程安全的关键段
 
