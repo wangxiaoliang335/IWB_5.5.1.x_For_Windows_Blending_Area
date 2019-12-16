@@ -427,7 +427,7 @@ protected:
 
 
 //=====º¯Êý======
-//	void AdjustStatusBar(int left, int top, int cx, int cy);
+	void AdjustStatusBar(int left, int top, int cx, int cy);
 	BOOL StartRunning();
 	BOOL StopRunning();
 	void DoAutoCalibrate();

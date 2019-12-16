@@ -132,6 +132,9 @@
 #define IDS_STRING492                   492
 #define IDS_STRING493                   493
 #define IDS_STRING494                   494
+#define IDS_STRING495                   495
+#define IDS_STRING496                   496
+
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000

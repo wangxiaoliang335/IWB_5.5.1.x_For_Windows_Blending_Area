@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!--镜头配置参数-->
 <LensConfig>
-    <!--引导框的位置和颜色, value range: left=[0-639]; top=[0-479]; width=[0-640]; height=[0-480]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue-->
+    <!--引导框的位置和颜色, value range: left=[0-1]; top=[0-1]; width=[0-1]; height=[0-1]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue-->
     <Param name="GuideBox" width="640" height="480" left="80" top="60" right="560" bottom="420" color="ff0000" visible="Yes" />
     <!--电子白板手指触控模式下的正常使用参数-->
     <NormalUsage-FingerTouchWhiteBoard>
@@ -88,9 +88,9 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="0" default="0" />
+            <Param name="Brightness" value="100" default="100" />
             <!--对比度-->
-            <Param name="Contrast" value="38" default="38" />
+            <Param name="Contrast" value="255" default="255" />
             <!--色调-->
             <Param name="Hue" value="0" default="0" />
             <!--饱和度-->
@@ -98,15 +98,15 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
-            <Param name="WhiteBalance" value="4600" default="4600" />
+            <Param name="WhiteBalance" value="5000" default="5000" />
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="0" default="0" />
+            <Param name="Gain" value="17578" default="17578" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -124,9 +124,9 @@
         <!--正常使用时的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="0" default="0" />
+            <Param name="Brightness" value="100" default="100" />
             <!--对比度-->
-            <Param name="Contrast" value="38" default="38" />
+            <Param name="Contrast" value="255" default="255" />
             <!--色调-->
             <Param name="Hue" value="0" default="0" />
             <!--饱和度-->
@@ -134,15 +134,15 @@
             <!--清晰度-->
             <Param name="Sharpness" value="1" default="1" />
             <!--伽玛值-->
-            <Param name="Gamma" value="1" default="1" />
+            <Param name="Gamma" value="2" default="2" />
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
-            <Param name="WhiteBalance" value="4600" default="4600" />
+            <Param name="WhiteBalance" value="5000" default="5000" />
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="0" default="0" />
+            <Param name="Gain" value="17578" default="17578" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -208,9 +208,9 @@
         <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="0" default="0" />
+            <Param name="Brightness" value="130" default="130" />
             <!--对比度-->
-            <Param name="Contrast" value="38" default="38" />
+            <Param name="Contrast" value="150" default="150" />
             <!--色调-->
             <Param name="Hue" value="0" default="0" />
             <!--饱和度-->
@@ -222,11 +222,11 @@
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
-            <Param name="WhiteBalance" value="4600" default="4600" />
+            <Param name="WhiteBalance" value="5000" default="5000" />
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="0" default="0" />
+            <Param name="Gain" value="17578" default="17578" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>
@@ -236,9 +236,9 @@
         <!--激光器调试模式下的相机参数-->
         <CameraParams>
             <!--亮度-->
-            <Param name="Brightness" value="0" default="0" />
+            <Param name="Brightness" value="130" default="130" />
             <!--对比度-->
-            <Param name="Contrast" value="38" default="38" />
+            <Param name="Contrast" value="150" default="150" />
             <!--色调-->
             <Param name="Hue" value="0" default="0" />
             <!--饱和度-->
@@ -250,11 +250,11 @@
             <!--颜色启动-->
             <Param name="ColorEnable" value="0" default="0" />
             <!--白平衡-->
-            <Param name="WhiteBalance" value="4600" default="4600" />
+            <Param name="WhiteBalance" value="5000" default="5000" />
             <!--背光补偿-->
             <Param name="BacklightCompensation" value="2" default="2" />
             <!--增益-->
-            <Param name="Gain" value="0" default="0" />
+            <Param name="Gain" value="17578" default="17578" />
             <!--曝光时间-->
             <Param name="Exposure" value="-7" default="-7" />
         </CameraParams>

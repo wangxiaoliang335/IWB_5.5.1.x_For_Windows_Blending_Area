@@ -52,15 +52,64 @@ BOOL COnlineRegisterDlg::OnInitDialog()
 
        CString strFusionInfo;
        //"%d Screens Fusion"
-       strFusionInfo.Format(g_oResStr[IDS_STRING464], theApp.GetScreenCount());
+       strFusionInfo.Format(g_oResStr[IDS_STRING464], theApp.GetScreenModeFromUSBKeyCount());
+
+	   //加密狗的类型显示
+	   CString strUSBKey = g_oResStr[IDS_STRING460];
+	   CString stPalmTouch = _T("---");
+	   switch (theApp.GetUSBKeyTouchType())
+	   {
+	   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+		   strUSBKey = g_oResStr[IDS_STRING460];
+		   break;
+	   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+		   strUSBKey = g_oResStr[IDS_STRING461];
+		   break;
+	   case E_DEVICE_FINGER_TOUCH_CONTROL:
+		   strUSBKey = g_oResStr[IDS_STRING495];
+		   break;
+	   case E_DEVICE_PALM_TOUCH_CONTROL:
+		   strUSBKey = g_oResStr[IDS_STRING496];
+	       /////////手掌互动的类型
+	       switch (theApp.GetPalmTouchType())
+	       {
+	          case E_PLAM_TOUCHCONTROL_P1:
+		           stPalmTouch = _T("P1");
+		           break;
+	          case E_PLAM_TOUCHCONTROL_P3:
+		           stPalmTouch = _T("P3");
+		           break;
+	          case E_PLAM_TOUCHCONTROL_P4:
+		           stPalmTouch = _T("P4");
+		           break;
+	          case E_PLAM_TOUCHCONTROL_P5:
+		           stPalmTouch = _T("P5");
+		           break;
+	          case E_PLAM_TOUCHCONTROL_T3:
+		           stPalmTouch = _T("T3");
+		           break;
+	          case E_PLAM_TOUCHCONTROL_T4:
+		           stPalmTouch = _T("T4");
+		           break;
+	          case E_PLAM_TOUCHCONTROL_T5:
+		           stPalmTouch = _T("T5");
+		           break;
+	          default:
+		          break;
+	        }
+			break;
+	     default:
+		    break;
+	   }
 
        m_strText.Format(
-           _T("%s\r\n%s:%s\r\n%s:%s"), 
+           _T("%s\r\n%s:%s(%s)\r\n%s:%s"), 
            g_oResStr[IDS_STRING458],//"使用硬件加密狗"信息
            g_oResStr[IDS_STRING459],
-           theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD ? g_oResStr[IDS_STRING460] : g_oResStr[IDS_STRING461],
+		   strUSBKey,
+		   stPalmTouch,
            g_oResStr[IDS_STRING462],
-           theApp.GetScreenMode() >= EScreenModeDouble? (LPCTSTR)strFusionInfo :g_oResStr[IDS_STRING463]);
+           theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble? (LPCTSTR)strFusionInfo :g_oResStr[IDS_STRING463]);
            
    }
    else

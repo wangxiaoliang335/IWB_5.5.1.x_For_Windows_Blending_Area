@@ -58,7 +58,7 @@ public:
     EScreenMode GetScreenModeFromUSBKey()const;
 
     int GetScreenCount() const;
-
+	int GetScreenModeFromUSBKeyCount()const;
 
     BOOL IsHardwareKeyExist()const
     {

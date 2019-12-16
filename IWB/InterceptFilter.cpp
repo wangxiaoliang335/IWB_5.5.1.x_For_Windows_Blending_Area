@@ -592,13 +592,6 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
 	}
 
-	//如果是在手动校正并且要求使用绘制的屏蔽图，那么就需要用绘制的屏蔽图进行与运算
-//	if ((this->m_pPenPosDetector->IsManualCalibrating()|| this->m_pPenPosDetector->IsAutoCalibrating()) && this->m_pPenPosDetector->IsEnableOnlineScreenArea())
-//	{
-//		MaskFilterData((BYTE*)m_GraySrcFrame.GetData(), m_GraySrcFrame.Size(), this->m_pPenPosDetector->GetManualOnLineScreenArea());
-//	}
-
-
     if (m_nFrameSkipCount > 0)
     {
         m_nFrameSkipCount--;
@@ -683,12 +676,12 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
  
     }
 
-    if (m_pPenPosDetector->IsGuideRectangleVisible())
+    if (m_pPenPosDetector->IsGuideRectangleVisible() && m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE)
     {
         ////////先进行调整再进行得到操作。
         m_pPenPosDetector->RegulateGuideRectangle(m_pSensor, m_nRawImageWidth, m_nRawImageHeight);
 
-        RECT rcGuideRectangle;
+		RECT rcGuideRectangle;
         DWORD dwRGBColor;
         m_pPenPosDetector->GetGuideRectangle(&rcGuideRectangle, &dwRGBColor);
 

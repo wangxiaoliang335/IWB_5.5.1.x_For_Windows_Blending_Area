@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!--镜头配置参数-->
 <LensConfig>
-    <!--引导框的位置和颜色, value range: left=[0-639]; top=[0-479]; width=[0-640]; height=[0-480]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue-->
-    <Param name="GuideBox" width="1280" height="720" left="160" top="90" right="960" bottom="540" color="ff0000" visible="Yes" />
+    <!--引导框的位置和颜色, value range: left=[0-1]; top=[0-1]; width=[0-1]; height=[0-1]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue-->
+    <Param name="GuideBox" width="1" height="1" left="0" top="0" right="0" bottom="0" color="ff0000" visible="Yes" />
     <!--电子白板手指触控模式下的正常使用参数-->
     <NormalUsage-FingerTouchWhiteBoard>
         <!--光斑触发门限-->

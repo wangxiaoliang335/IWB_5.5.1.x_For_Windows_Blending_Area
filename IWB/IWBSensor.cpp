@@ -435,11 +435,11 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
             {
                 //TOSDText::RectF rcText;
                 RectF rcText;
-                rcText.left = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cx;
-                rcText.top = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cy;
+				rcText.left = (float)lensCfg.rcGuideRectangle.left;  // / (float)videoSize.cx;
+				rcText.top = (float)lensCfg.rcGuideRectangle.top;   // / (float)videoSize.cy;
 
-                rcText.right = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cx;
-                rcText.bottom = (float)lensCfg.rcGuideRectangle.left / (float)videoSize.cy;
+				rcText.right = (float)lensCfg.rcGuideRectangle.right;  // / (float)videoSize.cx;
+				rcText.bottom = (float)lensCfg.rcGuideRectangle.bottom;  // / (float)videoSize.cy;
 
                 m_oVideoPlayer.AddOSDText(
                     E_OSDTEXT_TYPE_GUIDE_BOX,
@@ -736,8 +736,15 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
         minimumLightSpotSize.cy = pNormalUsageSettings->nLightSpotMinimumHeight;
         m_oPenPosDetector.SetMinimumLightSpotSize(minimumLightSpotSize);
 
+		////初始化默认是640*480
+		RECT rcGuideRectangle;
+		rcGuideRectangle.left   = lensCfg.rcGuideRectangle.left * 640 ;
+		rcGuideRectangle.right  = lensCfg.rcGuideRectangle.right * 640 ;
+		rcGuideRectangle.top    = lensCfg.rcGuideRectangle.top * 480;
+		rcGuideRectangle.bottom = lensCfg.rcGuideRectangle.bottom * 480;
+
         m_oPenPosDetector.SetGuideRectangle(
-            lensCfg.rcGuideRectangle, lensCfg.dwGuideRectangleColor);
+			rcGuideRectangle, lensCfg.dwGuideRectangleColor);
 
         m_oPenPosDetector.ShowGuideRectangle(lensCfg.bRectangleVisible);
 

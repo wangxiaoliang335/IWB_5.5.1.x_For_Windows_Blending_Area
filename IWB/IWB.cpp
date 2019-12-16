@@ -884,8 +884,13 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 EScreenMode CIWBApp::GetScreenMode()const
 {
     EScreenMode eScreenMode = m_eScreenModeFromUsbKey;
-    
-    if (g_tSysCfgData.globalSettings.eScreenMode != EScreenModeUnknown && g_tSysCfgData.globalSettings.eScreenMode < m_eScreenModeFromUsbKey)
+	///////add by vera_zhao2019.12.12
+	if (g_tSysCfgData.globalSettings.eScreenMode == EScreenModeUnknown)
+	{
+		g_tSysCfgData.globalSettings.eScreenMode = m_eScreenModeFromUsbKey;
+	}
+
+    if (g_tSysCfgData.globalSettings.eScreenMode < m_eScreenModeFromUsbKey)
     {
         eScreenMode = g_tSysCfgData.globalSettings.eScreenMode;
     }
@@ -899,7 +904,10 @@ int CIWBApp::GetScreenCount() const
     return int(GetScreenMode()) + 1;
 }
 
-
+int CIWBApp::GetScreenModeFromUSBKeyCount()const
+{
+	return int(GetScreenModeFromUSBKey()) + 1;
+}
 EScreenMode CIWBApp::GetScreenModeFromUSBKey()const
 {
     return m_eScreenModeFromUsbKey;

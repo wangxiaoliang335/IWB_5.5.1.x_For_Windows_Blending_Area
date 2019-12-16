@@ -345,9 +345,11 @@ static UINT indicators[] ={
     IDS_STRING438,
     IDS_STRING439,
     IDS_STRING440,
-	IDS_STRING438,
 	IDS_STRING439,
-	IDS_STRING440,
+	IDS_STRING439,
+	IDS_STRING439,
+	IDS_STRING439,
+	IDS_STRING439,
 };
 
 
@@ -1149,10 +1151,9 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     {
         nSensorStatusWidth  =  cx / nSensorCount;
     }
-
 	
     //reference D:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\src\mfc\barstat.cpp
-    const int  CX_PANE_BORDER =  6;// 3 pixels on each side of each pane
+    const int  CX_PANE_BORDER =  8;//4    //3 pixels on each side of each pane
 
     const int PANE1_MIN_WIDTH = 48*4;
     int nPaneWidth_1 = nSensorStatusWidth/10 - CX_PANE_BORDER - borders[2];
@@ -1170,13 +1171,19 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
 	//当窗体很小时,可能为负值。
     if(nPaneWidth_3 < 0) nPaneWidth_3 = 0;
 
+	int nPaneWidth_4 = nSensorStatusWidth ;
+	int nPaneWidth_5 = nSensorStatusWidth*2 ;
+
     //for(int i=0; i < nSensorCount; i++)
     for (int i = 0; i < 1; i++)
     {		
         this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 0, indicators[i*StatusPaneCountEachSensor + 0], SBPS_NORMAL,    nPaneWidth_1);
         this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 1, indicators[i*StatusPaneCountEachSensor + 1], SBPS_NORMAL,    nPaneWidth_2);
 		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 2, indicators[i*StatusPaneCountEachSensor + 2], SBPS_OWNERDRAW, nPaneWidth_3);
+		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 3, indicators[i*StatusPaneCountEachSensor + 3], SBPS_NORMAL,    nPaneWidth_4);
+		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 4, indicators[i*StatusPaneCountEachSensor + 4], SBPS_NORMAL,    nPaneWidth_5);
     }
+
 
     //查询除状态栏以外的客户区
     RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0,reposQuery, &rcClient, NULL, TRUE);
@@ -1190,6 +1197,10 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     }    
 }
 
+void CIWBDlg::AdjustStatusBar(int left, int top, int cx, int cy)
+{
+
+}
 
 //void CIWBDlg::AdjustStatusBar(int left, int top, int cx, int cy)
 //{
@@ -1713,14 +1724,29 @@ HRESULT CIWBDlg::OnCameraStatusNotify(WPARAM wParam,LPARAM lParam)
     LPCTSTR lpszText = (LPCTSTR)wParam;
     int    nCameraID = lParam;
 
+	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
     if(0 == nCameraID)
     {
         this->m_ctlStatusBar.SetPaneText(PANE_STATE, lpszText, TRUE);
     }
-    else if( 1 == nCameraID)
-    {
-        this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_STATE , lpszText, TRUE);
-    }
+	if (nSensorCount == 2)
+	{
+		if (1 == nCameraID)
+		{
+			this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor - 1 + PANE_STATE, lpszText, TRUE);
+		}
+	}
+	if (nSensorCount == 3)
+	{
+		if (1 == nCameraID)
+		{
+			this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor - 1 + PANE_STATE, lpszText, TRUE);
+		}
+		else if (2 == nCameraID)
+		{
+			this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_STATE, lpszText, TRUE);
+		}
+	}
 
     return 0;
 }
@@ -5090,7 +5116,7 @@ void CIWBDlg::UpdateInfoAboutDongle()
 	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
 	if (nSensorCount > 1)
 	{
-		m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_DONGLE, strAboutDongle, TRUE);
+		//m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_DONGLE, strAboutDongle, TRUE);
 	}
 
 	//201680629,硬件加密狗丢失，不要弹出对话框，因为客户有的设备只有软注册，没有硬件加密狗
@@ -5342,14 +5368,12 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
 
+    StartRunning();
 
     CRect rcDisplayArea;
     GetClientRect(&rcDisplayArea);
     InvalidateRect(&rcDisplayArea, TRUE);
     UpdateWindow();
-
-    StartRunning();
-
 
 }
 

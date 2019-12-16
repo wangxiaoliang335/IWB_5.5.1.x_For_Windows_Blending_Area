@@ -361,7 +361,7 @@ void CIWBSensorManager::DrawSelectBound(HWND hWnd)
 			//A brush created by using a monochrome (1 bit per pixel) bitmap has the text and background colors of the device context to which it is drawn. 
 			//Pixels represented by a 0 bit are drawn with the current text color; pixels represented by a 1 bit are drawn with the current background color.
 			SetTextColor(hDC, RGB(0, 0, 0));
-			SetBkColor(hDC, RGB(255, 255, 255));
+			SetBkColor(hDC, RGB(238,149,114)); //RGB(255, 255, 255)
 		}
 		else
 		{

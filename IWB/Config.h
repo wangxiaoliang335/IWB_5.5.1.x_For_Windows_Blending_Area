@@ -38,8 +38,8 @@ enum EDeviceTouchType
 {
     E_DEVICE_PEN_TOUCH_WHITEBOARD   , //笔触控电子白板（精准触控）
     E_DEVICE_FINGER_TOUCH_WHITEBOARD, //手触控电子白板（精准触控）
-	E_DEVICE_FINGER_TOUCH_CONTROL   , //手指触控(大画面精准触控)
 	E_DEVICE_PALM_TOUCH_CONTROL     , //手掌互动(非精准触控并保证某一区域只能大光斑触发，激光器装在中间)
+	E_DEVICE_FINGER_TOUCH_CONTROL   , //手指触控(大画面精准触控)
 	E_DEVICE_NOFIND                 , //没发现加密狗
 };
 
@@ -544,9 +544,9 @@ struct TLensConfig
 
 
     //引导框
-    RECT  rcGuideRectangle     ;//引导框位置
-	int   Referwidth           ;//设置引导框所参考的分辨率
-	int   ReferHeight;
+	RectF  rcGuideRectangle     ;//引导框位置
+	float   Referwidth         ;//设置引导框所参考的分辨率(归一化后的值是1)
+	float   ReferHeight        ;
     DWORD dwGuideRectangleColor;//引导框颜色
     BOOL  bRectangleVisible    ;//引导框可见标志
 
@@ -556,14 +556,16 @@ struct TLensConfig
 
 		//2017/11/16, 新增引导框信息
 		//<<
-		int image_Default_Width = 640;
-		int image_Default_Height = 480;
-		rcGuideRectangle.left = image_Default_Width / 8;
-		rcGuideRectangle.right = image_Default_Width - image_Default_Width / 8;
-		rcGuideRectangle.top = image_Default_Height / 8;
-		rcGuideRectangle.bottom = image_Default_Height - image_Default_Height / 8;
+		float image_Default_Width = 1;
+		float image_Default_Height = 1;
+		rcGuideRectangle.left = 0.2;
+		rcGuideRectangle.right = 0.8;
+		rcGuideRectangle.top = 0.2;
+		rcGuideRectangle.bottom = 0.8;
+
 		Referwidth = image_Default_Width;
 		ReferHeight = image_Default_Height;
+
 		dwGuideRectangleColor = 0xFF0000;//RGB
 		bRectangleVisible = TRUE;
 		//>>

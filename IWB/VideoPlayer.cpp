@@ -459,7 +459,7 @@ HRESULT CVideoPlayer::PlayVideo(HWND hWnd,  HWND hNotifyWnd)
 
         //通知停止状态
         CString strStatusText;
-        strStatusText.Format(_T("%s,%s"), g_oResStr[IDS_STRING443], lpMsgBuf);
+        strStatusText.Format(_T("%s,%s"), g_oResStr[IDS_STRING443],lpMsgBuf);
         PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
 
         LOG_ERR("(%s) m_pMC->Run() failed with error code: 0x%x, %s", __FUNCTION__, hr, (const char*)CT2CA((LPTSTR)lpMsgBuf));
@@ -909,6 +909,9 @@ BOOL CVideoPlayer::StartDetect( HWND hPlayWnd, const RECT& rcDispArea, HWND hNot
     m_bIsDetecting = bRet;
 
     m_eVideoState = E_VIDEO_RUNNING;
+
+	PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, (WPARAM)0, (LPARAM)m_nID);
+	PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING442], (LPARAM)m_nID);
     
 #ifdef _LOG
     LOG_INF("Leave %s", __FUNCTION__);
@@ -2429,7 +2432,7 @@ void CVideoPlayer::DisplayText(HDC hDC, int nImageWidth, int nImageHeight)
 		DrawText(hDC, (LPCTSTR)osd.GetText(), _tcsclen(osd.GetText()), &rcNeedArea, dwFormat|DT_CALCRECT);
 		int nNeedArea_Width = rcNeedArea.right - rcNeedArea.left;
 		int nTextArea_Width = rcTextArea.right - rcTextArea.left;
-		if (nNeedArea_Width > nTextArea_Width)
+		if (nNeedArea_Width > nTextArea_Width && nNeedArea_Width !=0 )
 		{//显示不小，按比例缩小字体尺寸,使的文字内容在TextArea中能够完整显示。
 			long lNewFontSize = osd.GetFontSize() * nTextArea_Width / nNeedArea_Width;
 			SelectObject(hDC, hFontOld);
@@ -2461,10 +2464,11 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 	 /////这个是在帧率下显示的只显示第一个摄像头的信息	 
 	 if (theApp.GetScreenMode() == EScreenModeSingle)
 	 {
-	    _stprintf_s(
-	            	m_szStatusText,
-	            	_countof(m_szStatusText),
-		            _T("(%d*%d-%c%c%c%c)"),
+		 _stprintf_s(
+			       m_szStatusText,
+			       _countof(m_szStatusText),
+			       _T("%s(%d*%d-%c%c%c%c)"),
+			        g_oResStr[IDS_STRING442],
 		            nImageWidth,
 		            nImageHeight,
 		            ImageType & 0xFF, 
@@ -2480,7 +2484,7 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 	else
 	{
          CString strVideoInfo;
-        strVideoInfo.Format(
+         strVideoInfo.Format(
                            _T("#%d %c%c%c%c %d*%d@%.0f"),
                            m_nID+1,
                            ImageType & 0xFF, (ImageType >> 8) & 0xFF, (ImageType >> 16) & 0xFF, (ImageType >> 24) & 0xFF,
@@ -2490,7 +2494,7 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 
         //TOSDText::RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
         RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
-       AddOSDText(
+        AddOSDText(
                    E_OSDTEXT_TYPE_FORMAT_INFO,
                    (LPCTSTR)strVideoInfo,
                    textArea,
@@ -2499,6 +2503,7 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
                    _T("Times New Roman"),
                   -1 );
 
+		PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING442], (LPARAM)nId);
 	}
 }
 

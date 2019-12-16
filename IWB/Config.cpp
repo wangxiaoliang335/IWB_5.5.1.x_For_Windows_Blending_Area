@@ -663,7 +663,7 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
 
                 if ( 0 <  nScreenCount && nScreenCount <= EScreenModeNumber)
                 {
-                    globalSettings.eScreenMode = (EScreenMode)(nScreenCount + 1);
+                    globalSettings.eScreenMode = (EScreenMode)(nScreenCount-1);
                 }
             }
 			else if (_stricmp(paramName, "SinglePointMode") == 0)
@@ -2534,37 +2534,37 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
 				const char* paramValue = ((TiXmlElement*)pChild)->Attribute("width");
 				if (paramValue)
 				{
-					lensConfig.Referwidth = atoi(paramValue);
+					lensConfig.Referwidth = atof(paramValue);
 				}
 
 				paramValue = ((TiXmlElement*)pChild)->Attribute("height");
 				if (paramValue)
 				{
-					lensConfig.ReferHeight = atoi(paramValue);
+					lensConfig.ReferHeight = atof(paramValue);
 				}
 
 				paramValue = ((TiXmlElement*)pChild)->Attribute("left");
 				if (paramValue)
 				{
-					lensConfig.rcGuideRectangle.left = atoi(paramValue);
+					lensConfig.rcGuideRectangle.left = atof(paramValue);
 				}
 
 				paramValue = ((TiXmlElement*)pChild)->Attribute("top");
 				if (paramValue)
 				{
-					lensConfig.rcGuideRectangle.top = atoi(paramValue);
+					lensConfig.rcGuideRectangle.top = atof(paramValue);
 				}
 
 				paramValue = ((TiXmlElement*)pChild)->Attribute("right");
 				if (paramValue)
 				{
-					lensConfig.rcGuideRectangle.right = atoi(paramValue);
+					lensConfig.rcGuideRectangle.right = atof(paramValue);
 				}
 
 				paramValue = ((TiXmlElement*)pChild)->Attribute("bottom");
 				if (paramValue)
 				{
-					lensConfig.rcGuideRectangle.bottom = atoi(paramValue);
+					lensConfig.rcGuideRectangle.bottom = atof(paramValue);
 				}
 
 				paramValue = ((TiXmlElement*)pChild)->Attribute("color");
@@ -2596,24 +2596,18 @@ BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
 {
 	
 	//安装引导框位置
-	TiXmlComment* pXmlComment = new TiXmlComment("引导框的位置和颜色, value range: left=[0-639]; top=[0-479]; width=[0-640]; height=[0-480]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue");
+	TiXmlComment* pXmlComment = new TiXmlComment("引导框的位置和颜色, value range: left=[0-1]; top=[0-1]; width=[0-1]; height=[0-1]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue");
 	pNode->LinkEndChild(pXmlComment);
 
 	TiXmlElement* pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "GuideBox");
-	pElement->SetAttribute("width", lensConfig.Referwidth);
-	pElement->SetAttribute("height", lensConfig.ReferHeight);
+	pElement->SetDoubleAttribute("width", lensConfig.Referwidth);
+	pElement->SetDoubleAttribute("height", lensConfig.ReferHeight);
 
-	pElement->SetAttribute("left", lensConfig.rcGuideRectangle.left);
-	pElement->SetAttribute("top", lensConfig.rcGuideRectangle.top);
-	pElement->SetAttribute("right",lensConfig.rcGuideRectangle.right);
-	pElement->SetAttribute("bottom", lensConfig.rcGuideRectangle.bottom);
-
-//	long width  = lensConfig.rcGuideRectangle.right  - lensConfig.rcGuideRectangle.left;
-//	long height = lensConfig.rcGuideRectangle.bottom - lensConfig.rcGuideRectangle.top;
-
-//	pElement->SetAttribute("width", width);
-//	pElement->SetAttribute("height", height);
+	pElement->SetDoubleAttribute("left", lensConfig.rcGuideRectangle.left);
+	pElement->SetDoubleAttribute("top", lensConfig.rcGuideRectangle.top);
+	pElement->SetDoubleAttribute("right",lensConfig.rcGuideRectangle.right);
+	pElement->SetDoubleAttribute("bottom", lensConfig.rcGuideRectangle.bottom);
 
 	char data[32];
 	sprintf_s(data, _countof(data), "%x", lensConfig.dwGuideRectangleColor);
@@ -2827,7 +2821,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TLensConfig& lensConfig)
     return TRUE;
 }
 
-BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
+BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId, ECameraType eCameraType, ELensType Lentype)
 {
 	//高级设置参数
 	TiXmlComment* pXmlComment = new TiXmlComment("高级设置参数");
@@ -2854,36 +2848,57 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 	pNode->LinkEndChild(pElement);
 	SaveConfig(pElement, sensorModeCfg.calibParam);
 
+	//		//保存各种镜头的配置参数
+	TCHAR szPath[MAX_PATH];
+	_stprintf_s(
+		szPath,
+		_countof(szPath),
+		_T("%s\\Sensor%02d\\%s\\%s"),
+		(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+		nSensorId,
+		GetProjectModeString(EProjectionMode(nModeIndex)),
+		GetCameraTypeString(eCameraType));
 
-	for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
-	{
+	//递归创建子目录
+	//CreateFullDirectory(CA2CT(szPath));
+	CreateFullDirectory(szPath);
 
-		//保存各种镜头的配置参数
-		TCHAR szPath[MAX_PATH];
-		_stprintf_s(
-			szPath,
-			_countof(szPath),
-			_T("%s\\Sensor%02d\\%s\\%s"),
-			(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-			nSensorId,
-			GetProjectModeString(EProjectionMode(nModeIndex)),
-			GetCameraTypeString(eCameraType));
+	//保存各种镜头的配置参数
+	TCHAR szPathRatio[MAX_PATH];
+	memset(szPathRatio, 0, sizeof(szPathRatio));
+	_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
+
+	SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
+
+//	for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
+//	{
+
+//		//保存各种镜头的配置参数
+//		TCHAR szPath[MAX_PATH];
+//		_stprintf_s(
+//			szPath,
+//			_countof(szPath),
+//			_T("%s\\Sensor%02d\\%s\\%s"),
+//			(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+//			nSensorId,
+//			GetProjectModeString(EProjectionMode(nModeIndex)),
+//			GetCameraTypeString(eCameraType));
 
 		//递归创建子目录
 		//CreateFullDirectory(CA2CT(szPath));
-		CreateFullDirectory(szPath);
+//		CreateFullDirectory(szPath);
 
-		for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
-		{
-			//保存各种镜头的配置参数
-			TCHAR szPathRatio[MAX_PATH];
-			memset(szPathRatio, 0, sizeof(szPathRatio));
-			_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
+//		for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
+//		{
+//			//保存各种镜头的配置参数
+//			TCHAR szPathRatio[MAX_PATH];
+//			memset(szPathRatio, 0, sizeof(szPathRatio));
+//			_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
+//
+//			SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][i]);
 
-			SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][i]);
-
-		}
-	}
+//		}
+//	}
 	return TRUE;
 }
 
@@ -2913,9 +2928,6 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIn
 			LoadConfig(pChild, sensorModeCfg.calibParam);
 		}
 	} while(pChild);
-
-
-	
 
 	return TRUE;
 }
@@ -3102,6 +3114,11 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 	pXmlComment = new TiXmlComment("投影机放置方式(\"Desktop\":桌面模式; \"Wall\":墙面模式");
 	pNode->LinkEndChild(pXmlComment);
 
+	int nVID = 0;
+	int nPID = 0;
+	int ret = _stscanf_s(sensorCfg.strFavoriteDevicePath, _T("\\\\?\\usb#vid_%04x&pid_%04x"), &nVID, &nPID);
+	ECameraType eCameraType = GetCameraType(nPID,nVID);
+
 	for (size_t i = 0; i< sensorCfg.vecSensorModeConfig.size() ;i++)
 	{
 		pElement = new TiXmlElement("IWBProjectionMode");
@@ -3114,8 +3131,8 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 			pElement->SetAttribute("Mode", "Wall");
 		}
 		pNode->LinkEndChild(pElement);
-
-		SaveConfig(pElement, sensorCfg.vecSensorModeConfig[i], i,nSensorId);
+        
+		SaveConfig(pElement, sensorCfg.vecSensorModeConfig[i], i,nSensorId, eCameraType, sensorCfg.eSelectedLensType);
 	}
     return TRUE;
 }
