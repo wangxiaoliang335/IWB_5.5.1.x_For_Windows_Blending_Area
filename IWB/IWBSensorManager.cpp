@@ -268,7 +268,6 @@ void CIWBSensorManager::SetVideoDisplayArea(const RECT& rcNewDisplayArea)
 }
 
 
-
 //@功能:切换设想头到指定的模式
 void CIWBSensorManager::SwitchToMode(ESensorLensMode eMode, int nSensorID)
 {
@@ -305,23 +304,6 @@ ESensorLensMode CIWBSensorManager::GetLensMode()const
 }
 
 
-
-////功能:执行自动校正操作
-////@参数:nSensorID, 传感器编号(0~n), -1时指全体传感器  
-//BOOL CIWBSensorManager::DoAutoCalibrate(int nSensorID)
-//{
-//
-//    return FALSE;
-//}
-//
-//
-// //功能:执行手动校正操作
-// //@参数:nSensorID, 传感器编号(0~n), -1时指全体传感器
-//BOOL CIWBSensorManager::DoManualCliabrate(int nSensorID)
-//{
-//
-//    return FALSE;
-//}
 
 void CIWBSensorManager::DrawSelectBound(HWND hWnd)
 {
@@ -946,7 +928,7 @@ void CIWBSensorManager::OnIWBSensorAutoCalibrateDone(BOOL bSuccess, BOOL bSimula
                       m_eAutoCalibratePattern,
                       m_hNotifyWindow);
                  return;
-           }			
+           }
         }
     }
     if(m_eOperationMode == E_MODE_ALL_SENSOR)
@@ -1158,11 +1140,17 @@ BOOL CIWBSensorManager::IsCalibarateOk()
 //@功能:开启光斑采集功能
 void CIWBSensorManager::StartLightSpotSampling(HWND hNotifyWindow, int nSensorID)
 {
-    m_nCurrentSensorID = 0;
-
+	if(nSensorID > -1)
+	{
+		m_nCurrentSensorID = nSensorID;
+	}
+	else
+	{
+        m_nCurrentSensorID = 0;
+	}
     RECT rcArea;
     m_vecSensors[m_nCurrentSensorID]->GetAttachedScreenArea(rcArea);
-    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, hNotifyWindow, 3,3);
+    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, hNotifyWindow, 3,3,nSensorID);
 
     //传感器进入光斑采样状态
     m_vecSensors[m_nCurrentSensorID]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
@@ -1172,19 +1160,23 @@ void CIWBSensorManager::StartLightSpotSampling(HWND hNotifyWindow, int nSensorID
 
 //@功能:光斑采集结束事件的响应函数
 //@参数:bSuccess, 成功失败标志
-void CIWBSensorManager::OnIWBSensorLightSpotSamplingDone(BOOL bSuccess)
+void CIWBSensorManager::OnIWBSensorLightSpotSamplingDone(BOOL bSuccess, int nSensorId)
 {
 
     const ALL_LIGHTSPOT_SAMPLE_SIZE&  screenSamples = m_wndLightSpotSampling.GetScreenSamples();
     m_vecSensors[m_nCurrentSensorID]->OnLightSpotSamplingDone(screenSamples, bSuccess);
-    
+	if (nSensorId > -1)
+	{
+		//说明是单屏采集。
+		return;
+	}
 
     m_nCurrentSensorID  ++;
     if (m_nCurrentSensorID == m_vecSensors.size()) return;
 
     RECT rcArea;
     m_vecSensors[m_nCurrentSensorID]->GetAttachedScreenArea(rcArea);
-    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, m_hNotifyWindow, 3, 3);
+    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, m_hNotifyWindow, 3, 3, nSensorId);
 
     //传感器进入光斑采样状态
     m_vecSensors[m_nCurrentSensorID]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
@@ -1606,7 +1598,7 @@ void CIWBSensorManager::OnIWBSensor4BasePointMarkingDone(BOOL bSuccess)
     {
         for (unsigned int i = 0; i<m_vecCalibrateResults.size(); i++)
         {
-            m_vecSensors[i]->OnManualCalibrateDone(m_vecCalibrateResults[i]);
+            m_vecSensors[i]->On4BasePointMarkingDone(m_vecCalibrateResults[i]);
         }
     }
 

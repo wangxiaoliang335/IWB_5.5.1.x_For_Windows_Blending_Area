@@ -408,10 +408,10 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
              for(int i=0; i < nPenCount; i++)
              {
                  if(pPenInfos[i].uId == 0)
-                 {			   
+                 {
                      m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);				
                      break;
-                 }	
+                 }
              }
              break;
           case E_DEV_MODE_TOUCHSCREEN:

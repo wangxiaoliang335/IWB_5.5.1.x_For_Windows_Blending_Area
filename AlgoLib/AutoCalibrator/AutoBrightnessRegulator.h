@@ -77,10 +77,8 @@ public:
 
         }
 
-
         if((m_nFrameCount % 10) == 0)//每10帧改变一次亮度参数,摄像头对参数的变化需要一定时间响应
-        {   
-
+        {
             if(m_fpControl)
             {
                 m_fpControl(bInc, absDiff,m_nIndex,m_lpCtxData);

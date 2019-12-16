@@ -359,7 +359,7 @@ const CImageFrame* CBlobDetector::GetBinarizedImage() const
 //Part 3.坐标校正算法
 
 
-CalibrateAlog::CalibrateAlog()
+CalibrateAlgo::CalibrateAlgo()
 :
 m_pCalibrateInst(NULL)
 {
@@ -367,7 +367,7 @@ m_pCalibrateInst(NULL)
     m_pcsForParam = new CComAutoCriticalSection();
 }
 
-CalibrateAlog::~CalibrateAlog()
+CalibrateAlgo::~CalibrateAlgo()
 {
     if(m_pCalibrateInst)
     {
@@ -380,7 +380,7 @@ CalibrateAlog::~CalibrateAlog()
     }
 }
 
-void CalibrateAlog::CreateCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
+void CalibrateAlgo::CreateCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
 {
     if (m_pCalibrateInst)
     {
@@ -405,7 +405,7 @@ void CalibrateAlog::CreateCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
 //@功能:计算校正参数
 //@输入:calibData ,输入, 所有屏幕的校正数据
 //      bDebug, 调试标志
-BOOL CalibrateAlog::CaclCalibrationParams(const TCalibData& calibData, BOOL bDebug)
+BOOL CalibrateAlgo::CaclCalibrationParams(const TCalibData& calibData, BOOL bDebug)
 {
      CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
     int N = calibData.allMonitorCalibData[0].calibData.size();
@@ -422,7 +422,7 @@ BOOL CalibrateAlog::CaclCalibrationParams(const TCalibData& calibData, BOOL bDeb
 }
 
  //@功能:返回校正方程参数
-const TCalibParams* CalibrateAlog::GetCalibParams()const
+const TCalibParams* CalibrateAlgo::GetCalibParams()const
 {
     if(m_pCalibrateInst)
     {
@@ -432,7 +432,7 @@ const TCalibParams* CalibrateAlog::GetCalibParams()const
 }
 
 //@功能:设置校正方程参数
-void CalibrateAlog::SetCalibParams(const TCalibParams& params)
+void CalibrateAlgo::SetCalibParams(const TCalibParams& params)
 {   
     CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
 
@@ -450,7 +450,7 @@ void CalibrateAlog::SetCalibParams(const TCalibParams& params)
 
 
 //@功能:根据摄像头的视频坐标计算得出屏幕坐标
-BOOL CalibrateAlog::GetScreenCoord(const TPoint2D& ptVideo, TPoint2D* ptScreen, int nMonitorId, BOOL bWithoutAutoCalibCompensate, TCameraDebugData* pDebugOutput)
+BOOL CalibrateAlgo::GetScreenCoord(const TPoint2D& ptVideo, TPoint2D* ptScreen, int nMonitorId, BOOL bWithoutAutoCalibCompensate, TCameraDebugData* pDebugOutput)
 {
     CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
 
@@ -470,7 +470,7 @@ BOOL CalibrateAlog::GetScreenCoord(const TPoint2D& ptVideo, TPoint2D* ptScreen, 
 //      nPtNumber, 光斑个数
 //      pScreenPts, 指向保存屏幕坐标数组的指针
 //      nMonitorId, 屏幕Id,在一个镜头看多个屏幕时才有效。
-BOOL CalibrateAlog::GetScreenCoord_Aug(const POINT* pImgPts,  const RECT* prcBounds, int nPtNumber, POINT* pScreenPts, int nMonitorId)
+BOOL CalibrateAlgo::GetScreenCoord_Aug(const POINT* pImgPts,  const RECT* prcBounds, int nPtNumber, POINT* pScreenPts, int nMonitorId)
 {
     CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
 
@@ -492,7 +492,7 @@ BOOL CalibrateAlog::GetScreenCoord_Aug(const POINT* pImgPts,  const RECT* prcBou
 //      pScreenPts, 指向保存屏幕坐标的内存地址的指针
 //      nMonitorId, 屏幕Id,在一个镜头看多个屏幕时才有效。
 
-BOOL CalibrateAlog::GetScreenCoord_WithLightSpotContour(const POINT& pCentroid,  const POINT* pContourPoints, int nContourPointCount, POINT* pScreenPts, int nMonitorId, POINT* debugPtContourCross)
+BOOL CalibrateAlgo::GetScreenCoord_WithLightSpotContour(const POINT& pCentroid,  const POINT* pContourPoints, int nContourPointCount, POINT* pScreenPts, int nMonitorId, POINT* debugPtContourCross)
 {
     CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
 
@@ -513,7 +513,7 @@ BOOL CalibrateAlog::GetScreenCoord_WithLightSpotContour(const POINT& pCentroid, 
 */
 
 //@功能:设置镜头规格数据
-void CalibrateAlog::SetLensSpecification(const TLensSpecification& lensSpec)
+void CalibrateAlgo::SetLensSpecification(const TLensSpecification& lensSpec)
 {
     if(NULL == m_pCalibrateInst)
     {
@@ -523,7 +523,7 @@ void CalibrateAlog::SetLensSpecification(const TLensSpecification& lensSpec)
 }
 
 //@功能:设置CMOS芯片规格数据
-void CalibrateAlog::SetCMOSChipSpecification(const TCMOSChipSpecification& cmosChipSpec)
+void CalibrateAlgo::SetCMOSChipSpecification(const TCMOSChipSpecification& cmosChipSpec)
 {
     if(NULL == m_pCalibrateInst)
     {
@@ -533,7 +533,7 @@ void CalibrateAlog::SetCMOSChipSpecification(const TCMOSChipSpecification& cmosC
 }
 
 //@功能:设置自动校正补偿数据
-void CalibrateAlog::SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs)
+void CalibrateAlgo::SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs)
 {
     if(NULL == m_pCalibrateInst)
     {
@@ -544,7 +544,7 @@ void CalibrateAlog::SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCo
 
 
 //@功能:设置镜头的已知的内部参数和对称畸变参数
-void CalibrateAlog::SetLensInternalAndSymmmetricDistortParams(const TInternalAndSymmetricDistortParams* pParams)
+void CalibrateAlgo::SetLensInternalAndSymmmetricDistortParams(const TInternalAndSymmetricDistortParams* pParams)
 {
 	if (NULL == m_pCalibrateInst)
 	{
@@ -552,9 +552,18 @@ void CalibrateAlog::SetLensInternalAndSymmmetricDistortParams(const TInternalAnd
 	}
 	m_pCalibrateInst->SetLensInternalAndSymmetricDistortParams(pParams);
 
-
 }
 
+
+//@功能:生成指定类型的校正实例
+void CalibrateAlgo::GenCalibratorInst(E_CALIBRATE_MODEL eCalibrateModel)
+{
+    if (NULL == m_pCalibrateInst || eCalibrateModel != m_pCalibrateInst->GetCalibrateModel())
+    {
+
+        CreateCalibrateInst(eCalibrateModel);
+    }
+}
 //=====================================================
 //Part 4.屏幕区域侦测
 CScreenAreaDetectorImpl* GetAreaDetectorInstance()

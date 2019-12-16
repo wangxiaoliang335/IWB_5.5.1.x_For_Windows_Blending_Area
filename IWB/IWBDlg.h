@@ -495,6 +495,7 @@ protected:
 	LRESULT OnChangeAutoCalibrateAveBrightness(WPARAM wParam, LPARAM lParam);
 	LRESULT OnChangeAutoCalibrateLightGray(WPARAM wParam, LPARAM lParam);
 	LRESULT OnRearProjection(WPARAM wParam, LPARAM lParam);
+	LRESULT OnChangeVideoDisplayDelay(WPARAM wParam, LPARAM lParam);
 
 
 	//afx_msg void OnMenuAutoCalibrationWithHumanIntervention();
@@ -554,7 +555,7 @@ protected:
 
 
     //@功能:”结束4点标定“消息响应函数
-    HRESULT OnEnd4BasePointMarking(WPARAM wParam, LPARAM lParam);
+    HRESULT OnEnd4BasePointCalibrate(WPARAM wParam, LPARAM lParam);
 
 	//2018/01/26
 	//更新加密锁的状态
@@ -837,4 +838,5 @@ public:
 	bool    m_bPreGuideRectangleVisible;
 
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+    afx_msg void OnOperationFourpointcalibration();
 };

@@ -55,6 +55,9 @@ public:
 	//int m_nAutoCalibrateHiLightGray;
 	CSpinButtonCtrl m_ctlAutoCalibrateHiLightGray;
 
+	//IDC_SPIN_VIDEODISPLAYDELAY
+	CSpinButtonCtrl  m_ctlVideoIsplayDelay;
+
 
 
     //<<added by toxuke@gmail.com, 2012/08/20
@@ -127,4 +130,5 @@ public:
 
 	afx_msg void OnBnClickedCheckSinglepointmode();
 	afx_msg void OnBnClickedCheckDisablereflectionpoint();
+	afx_msg void OnEnChangeEditVideodisplaydelay();
 };

@@ -542,6 +542,7 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS, OnChangeAutoCalibrateAveBrightness)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY, OnChangeAutoCalibrateLightGray)
     ON_MESSAGE(WM_REAR_PROJECTION, OnRearProjection)
+	ON_MESSAGE(WM_CHANGE_VIDEODISPLAYDELAY,OnChangeVideoDisplayDelay)
 
 
 //ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
@@ -600,8 +601,9 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
 
     ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
     ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
-    ON_MESSAGE(WM_END_4_BASE_POINT_MARKING, &CIWBDlg::OnEnd4BasePointMarking)
+    ON_MESSAGE(WM_END_4_BASE_POINT_CALIBRATE, &CIWBDlg::OnEnd4BasePointCalibrate)
     ON_WM_RBUTTONUP()
+    ON_COMMAND(ID_MENU_FOURPOINTCALIBRATION, &CIWBDlg::OnOperationFourpointcalibration)
 END_MESSAGE_MAP()
 
 
@@ -673,8 +675,6 @@ void CIWBDlg::InitMenu()
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_1D5X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_1D5X], RGB(1, 0, 0));
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_2X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_2X], RGB(1, 0, 0));
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_3X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_3X], RGB(1, 0, 0));
-
-    
 
 }
 
@@ -2458,6 +2458,9 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //使能"光斑采样"菜单项
 	    m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_ENABLED);
 
+        //使能“4点标定"菜单项
+        m_oMenu.EnableMenuItem(ID_MENU_AUTO_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
+
         //使能"自动校正"菜单项
         m_oMenu.EnableMenuItem(ID_MENU_AUTO_CALIBRATE, MF_BYCOMMAND| MF_ENABLED);
 
@@ -2494,10 +2497,17 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_ENABLED);
                 m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND| MF_ENABLED); 
                 m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_ENABLED);
+                
+                
+                //使能"4点标定"子菜单
+                m_oMenu.EnableMenuItem(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND | MF_ENABLED);
+
                 //使能"手动校正"子菜单
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_ENABLED);
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_ENABLED);
 			    m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
+
+
 
 				////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
 				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
@@ -2519,6 +2529,9 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_GRAYED);
                m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND| MF_GRAYED); 
                m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
+
+               //灰化"4点标定"子菜单
+               m_oMenu.EnableMenuItem(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND | MF_GRAYED);
 
                //灰化"手动校正"子菜单
                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
@@ -2544,6 +2557,10 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_GRAYED);
                 m_oMenu.EnableMenuItem(ID_ERASE_MASK_RECTANGLE_2X, MF_BYCOMMAND| MF_GRAYED); 
                 m_oMenu.EnableMenuItem(ID_MANUALMASKAREA_ENDEDITING, MF_BYCOMMAND| MF_GRAYED);
+
+                //灰化"4点标定"子菜单
+                m_oMenu.EnableMenuItem(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND | MF_GRAYED);
+
 
                 //灰化"手动校正"子菜单
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
@@ -2775,6 +2792,13 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.CheckMenuItem(uMenuID, MF_BYCOMMAND | MF_UNCHECKED);
             }
         }
+    }
+
+
+    //
+    if (!g_tSysCfgData.globalSettings.bEnable4PointsCalibrate)
+    {
+        m_oMenu.RemoveMenu(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND);
     }
 }
 
@@ -4095,7 +4119,8 @@ void CIWBDlg::OnSpotCalibrationSetting()
 ///在没有设置完的情况下退出设置的界面的。
 HRESULT CIWBDlg::OnBreakSpotSetting(WPARAM wParam, LPARAM lParam)
 {
-    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(FALSE);
+	int nSId = int(wParam);
+    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(FALSE, nSId);
 
     return 0;
 
@@ -4104,8 +4129,8 @@ HRESULT CIWBDlg::OnBreakSpotSetting(WPARAM wParam, LPARAM lParam)
 //@功能:完成设置后调用的函数。是有WM_FINISH_BOLBSETTING消息响应的。
 HRESULT CIWBDlg::OnFinshSpotSetting(WPARAM wParam, LPARAM lParam)
 {
-
-    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(TRUE);
+	int nSId = int(lParam);
+    this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(TRUE, nSId);
 
     if(this->m_oIWBSensorManager.AllSamplingIsDone())
     {
@@ -4354,6 +4379,12 @@ LRESULT CIWBDlg::OnChangeAutoCalibrateLightGray(WPARAM wParam, LPARAM lParam)
 {
     return 0L;
 }
+
+LRESULT CIWBDlg::OnChangeVideoDisplayDelay(WPARAM wParam, LPARAM lParam)
+{
+	return 0L;
+}
+
 
 LRESULT CIWBDlg::OnRearProjection(WPARAM wParam, LPARAM lParam)
 {
@@ -5345,11 +5376,11 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
 
 
 //@功能:”结束4点标定“消息响应函数
-HRESULT CIWBDlg::OnEnd4BasePointMarking(WPARAM wParam, LPARAM lParam)
+HRESULT CIWBDlg::OnEnd4BasePointCalibrate(WPARAM wParam, LPARAM lParam)
 {
     BOOL bSuccess = (BOOL)wParam;
 
-    m_oIWBSensorManager.OnIWBSensorManualCalibrateDone(bSuccess, (DWORD)lParam);
+    m_oIWBSensorManager.OnIWBSensor4BasePointMarkingDone(bSuccess);
 
     if (m_oIWBSensorManager.IsCalibarateOk())
     {
@@ -5374,3 +5405,10 @@ HRESULT CIWBDlg::OnEnd4BasePointMarking(WPARAM wParam, LPARAM lParam)
 }
 
 
+
+
+void CIWBDlg::OnOperationFourpointcalibration()
+{
+    // TODO: Add your command handler code here
+    this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), -1);
+}

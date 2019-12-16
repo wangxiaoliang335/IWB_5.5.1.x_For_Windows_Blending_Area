@@ -4,6 +4,14 @@ struct MultiDimensionPoint
 {
     typedef MultiDimensionPoint<T,N> _self_type;
 
+    _self_type ()
+    {
+        for (int i = 0; i < N; i++)
+        {
+            d[i] = T(0);
+        }
+    }
+
      _self_type operator -(const _self_type& right) const
     {
         _self_type tmp;

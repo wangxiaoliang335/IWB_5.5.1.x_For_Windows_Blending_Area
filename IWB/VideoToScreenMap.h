@@ -172,7 +172,7 @@ public:
     //void OutputCalibParams(LPCTSTR lpszFileName = NULL);
     //>>
     
-    CalibrateAlog& GetCalibAlog() { return m_oCalibrateAlog;}
+    CalibrateAlgo& GetCalibAlog() { return m_oCalibrateAlog;}
 
 	void  ScreenOutAreaWidthInPixel(double screenDigonalInMM);
 
@@ -207,7 +207,7 @@ protected:
 	static const  double SCREEN_OUT_AREA_WIDTH_IN_MM;//屏幕外围有效区域的宽度，单位:毫米
 
 
-    CalibrateAlog m_oCalibrateAlog;
+    CalibrateAlgo m_oCalibrateAlog;
     
     //光点位置到屏幕编号的映射数组,以决定光斑处于哪个屏幕上
     CImageFrame   m_oScreenMap;
@@ -239,7 +239,7 @@ inline T POW(T base, int exponent)
     {
         val*=base;
     }
-    return val;	
+    return val;
 }
 
 

@@ -26,9 +26,21 @@ struct TCMOSChipSpecification
 //自动校正补偿系数
 struct TAutoCalibCompCoefs
 {
+    TAutoCalibCompCoefs()
+    {
+        u0 = 0.0;
+        v0 = 0.0;
+        k[0] = 0.0;
+        k[1] = 0.0;
+        k[2] = 0.0;
+
+    }
+
     double u0;//光心垂直坐标,归一化到(0,1)范围,以独立于具体图像分辨率
     double v0;//光心垂直坐标,归一化到(0,1)范围,以独立于具体图像分辨率
     double k[3];//
+
+
 };
 
 //镜头内部参数

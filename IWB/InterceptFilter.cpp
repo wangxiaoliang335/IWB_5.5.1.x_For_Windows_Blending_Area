@@ -362,21 +362,6 @@ void CInterceptFilter::CaptureImage()
 // Transform place holder - should never be called
 HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 {
-    //	if (g_bFirstTime)
-    //	{
-    //		g_oFpsDetector.Reset();
-    //		g_bFirstTime = FALSE;
-    //	}
-    //	g_oFpsDetector.Trigger();
-
-    //	static int debug = 0;
-    //	if (debug % 500 == 0)
-    //	{
-    //		AtlTrace("========FPS = %f=======\n", g_oFpsDetector.GetCurrentFps());
-    //	}
-    //
-    //	return S_OK;
-
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
     m_oLostFrameDetector.DoDetect();
@@ -650,7 +635,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     int nObjCount = m_pPenPosDetector->GetObjCount();
     //    const RECT* pBounds   = m_pPenPosDetector->GetLightSpotBounds();
 
-    const DarwaryLightSpotBounds* LightspotInfo = m_pPenPosDetector->GetLightSpotInfo();
+    const LightSpotBounds* LightspotInfo = m_pPenPosDetector->GetLightSpotInfo();
 
     //const POINT (&aryContourCrossPoints)[MAX_OBJ_NUMBER][4]  = m_pPenPosDetector->GetContourCrossPoints();
 
@@ -664,7 +649,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
             {
                 m_BGRAFrame.DrawRectange(LightspotInfo[i].m_aryLightSpotBounds, ARGB_BLUE);
             }
-            else {
+            else 
+            {
                 m_BGRAFrame.DrawRectange(LightspotInfo[i].m_aryLightSpotBounds, ARGB_PURPLE);
             }
 
@@ -672,11 +658,11 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
         if (m_pPenPosDetector->IsSpotSizeInfoVisible())
         {
-            int x = LightspotInfo[i].m_aryLightSpotBounds.right - LightspotInfo[i].m_aryLightSpotBounds.left;
-            int y = LightspotInfo[i].m_aryLightSpotBounds.bottom - LightspotInfo[i].m_aryLightSpotBounds.top;
-            if (x > 0 && y > 0)
+            int w = LightspotInfo[i].m_aryLightSpotBounds.right  - LightspotInfo[i].m_aryLightSpotBounds.left;
+            int h = LightspotInfo[i].m_aryLightSpotBounds.bottom - LightspotInfo[i].m_aryLightSpotBounds.top;
+            if (w > 0 && h > 0)
             {
-                sprintf_s(szSize, _countof(szSize), "<%d*%d>", x, y);
+                sprintf_s(szSize, _countof(szSize), "<%d*%d>", w, h);
                 m_BGRAFrame.PutStr(LightspotInfo[i].m_aryLightSpotBounds.right, LightspotInfo[i].m_aryLightSpotBounds.bottom, szSize, ARGB_YELLOW, 16);
             }
         }
@@ -754,19 +740,92 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     CBaseStoneMarker&  baseStoneMarker = m_pPenPosDetector->GetBaseStoneMarker();
 
     //正在4点标定基准点
-    if (m_pPenPosDetector->IsMarkingBasestone())
+    if (baseStoneMarker.GetMachineState()  != CBaseStoneMarker::E_MACHINE_STATE_END)
     {
+            //获得当前基點的索引号
+            int baseStoneIndex = baseStoneMarker.GetCurrentBaseStoneIndex();
 
+            TCHAR szText[1024];
+            _stprintf_s(szText, _countof(szText), _T("双击#%d标定點"), baseStoneIndex + 1);
+            m_pVideoPlayer->SetDisplayInfo(szText, 30);
 
-        //获得当前基點的索引号
-        int baseStoneIndex = baseStoneMarker.GetCurrentBaseStoneIndex();
-
-        TCHAR szText[1024];
-        _stprintf_s(szText, _countof(szText), _T("双击#%d测量基點"), baseStoneIndex + 1);
-        m_pVideoPlayer->SetDisplayInfo(szText);
-
-        nBasePointCount = baseStoneIndex;
+            nBasePointCount = baseStoneIndex;
     }
+    else
+    {
+        nBasePointCount = 0;
+        if (baseStoneMarker.IsDataValid())
+        {
+            nBasePointCount = 4;
+        }
+    }
+   
+    const TCalibParams* pCalibParams = m_pPenPosDetector->GetVideoToScreenMap().GetCalibParams();
+
+    if (m_pPenPosDetector->IsMarkingBasestone() 
+        || 
+        (pCalibParams &&  pCalibParams->eCalibrateModel == E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE))
+    {
+        const TPoint2D* pBasePoints = baseStoneMarker.GetBasePoints();
+
+        if (nBasePointCount)
+        {//显示测量基點十字
+            for (int i = 0; i < nBasePointCount; i++)
+            {
+                int SIZE = 10;
+                POINT center;
+                center.x = pBasePoints[i].d[0];
+                center.y = pBasePoints[i].d[1];
+
+                m_BGRAFrame.DrawCross(
+                    center,
+                    SIZE,
+                    ARGB_PURPLE);
+            }
+
+
+            if (1 < nBasePointCount)
+            {
+                POINT start, end;
+                start.x = pBasePoints[0].d[0];
+                start.y = pBasePoints[0].d[1];
+
+
+                int nEdgeCount = nBasePointCount - 1;
+
+                if (nBasePointCount == 4)
+                {
+                    nEdgeCount = 4;
+                }
+
+                int nLineNo = 0;
+
+                int ptEndIdx = 1;
+
+                while (nLineNo < nEdgeCount)
+                {
+                    end.x = pBasePoints[ptEndIdx].d[0];
+                    end.y = pBasePoints[ptEndIdx].d[1];
+                    m_BGRAFrame.Line(
+                        start,
+                        end,
+                        ARGB_CYAN);
+
+                    ptEndIdx++;
+                    if (ptEndIdx == 4)
+                    {
+                        ptEndIdx = 0;
+                    }
+
+                    start = end;
+                    nLineNo++;
+                }//while
+
+            }//if
+
+        }//if(nBasePointCount)
+    }
+
 
 
 	if (m_bStartDrawOnlineScreenArea)
@@ -785,7 +844,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 	}
 	else
 	{
-		if (m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnlineScreenArea())
+		//if (m_pSensor->GetLensMode() == E_VIDEO_TUNING_MODE && this->m_pPenPosDetector->IsEnableOnlineScreenArea())
+        if(this->m_pPenPosDetector->IsEnableOnlineScreenArea())
 		{
 			 std::vector<CPoint> vecFinishpt;
 			 m_pPenPosDetector->GetCurrentOnLineScreenAreaPt(vecFinishpt);
@@ -842,12 +902,6 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         SaveBGRAFrame(m_BGRAFrame);
         m_bCaptureImage = FALSE;
     }
-
-    //<<debug
-    //static int s_DebugCounter = 0;
-    // AtlTrace(_T("[%05d]CIntercept Filter Transform\n"), s_DebugCounter);
-    // s_DebugCounter ++;
-    //debug>>
 
     return S_OK;
 }

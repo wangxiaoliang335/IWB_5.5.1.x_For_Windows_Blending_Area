@@ -182,7 +182,6 @@
 #define IDC_CHECK_STARTGLBGR            1091
 #define ID_SCREEN_SELECT                1092
 #define IDC_EDIT_MULT_PALM              1094
-#define IDC_SPIN1                       1094
 #define IDC_SPIN_MULT_PALM              1095
 #define IDC_EDIT1                       1095
 #define IDC_EDIT2                       1096
@@ -223,7 +222,6 @@
 #define IDC_CAMERAFMT_COMBO             1125
 #define IDC_CHECK_HID                   1127
 #define IDC_CHECK_TUIO                  1128
-
 #define IDC_IPADDRESS_IP                1130
 #define IDC_EDIT_PORT                   1131
 #define IDC_RADIO_FINGERTOUCHCONTROL    1132
@@ -232,7 +230,8 @@
 #define IDC_CHECK_ANTIJAMMINGCONTROL    1135
 #define IDC_CHECK_DISABLEREFLECTIONPOINT 1136
 #define IDC_CHECK_SINGLEPOINTMODE       1137
-
+#define IDC_EDIT_VIDEODISPLAYDELAY      1138
+#define IDC_SPIN_VIDEODISPLAYDELAY      1139
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
@@ -414,6 +413,7 @@
 #define ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE 32896
 #define ID_MENU_VIDEOFORMAT             32897
 #define ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER 32900
+#define ID_MENU_FOURPOINTCALIBRATION 32901
 #define ID_SWAP_SENSOR_IMAGE            33000
 #define ID_SWAP_WITH_SENSOR0            33000
 #define ID_SWAP_WITH_SENSOR1            33001
@@ -442,8 +442,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        166
-#define _APS_NEXT_COMMAND_VALUE         32900
-#define _APS_NEXT_CONTROL_VALUE         1129
+#define _APS_NEXT_COMMAND_VALUE         32901
+#define _APS_NEXT_CONTROL_VALUE         1131
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

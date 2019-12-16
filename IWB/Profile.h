@@ -42,6 +42,9 @@
 #define  AUTOCALIBRATEAVERAGEBRIGHTNESS_DEFAULT     255
 #define  AUTOCALIBRATELIGHTGRAY                     255
 
+#define  VIDEODISPLAYDELAY_MIN                     0
+#define  VIDEODISPLAYDELAY_MAX                     200
+
 
 //最小侦测门限
 #define MIN_DETECT_THRESHOLD_VAL 25

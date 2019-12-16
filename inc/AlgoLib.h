@@ -127,9 +127,9 @@ struct TMonitorCalibCoefs
 //定位校正模型
 enum E_CALIBRATE_MODEL
 {
-    E_CALIBRATE_MODEL_GENERICAL_CAMERA,     //通用相机模型
-    E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE, //4点透视模型
-    E_CALIBRATE_MODEL_COUNT = 2             //校正模型数目
+    E_CALIBRATE_MODEL_GENERICAL_CAMERA     = 0,//通用相机模型
+    E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE = 1,//4点透视模型
+    E_CALIBRATE_MODEL_COUNT = 2                //校正模型数目
 };
 
 //校正类型
@@ -197,7 +197,6 @@ struct TCalibData
 
     ALL_MOITOR_CALIB_DATA allMonitorCalibData;
     LPVOID lpCtx;//上下文辅助数据
-    
 
 
 
@@ -440,6 +439,8 @@ public:
 
      void OnDeviceMissing();
 
+
+
 protected:
     CAutoCalibratorImpl2* m_pAutoCalibratorImpl;//指向自动校正对象的实例
 
@@ -602,13 +603,13 @@ typedef std::vector<POINT> Points;
 
 class ICalibrate;
 
-class  ALGOLIB_API CalibrateAlog
+class  ALGOLIB_API CalibrateAlgo
 {
 public:
 
-        CalibrateAlog();
+        CalibrateAlgo();
 
-        ~CalibrateAlog();
+        ~CalibrateAlgo();
 
         //@功能:计算校正参数
         //@输入:data ,输入, 校正参数
@@ -657,7 +658,8 @@ public:
       //@功能:设置校正方程参数
       void SetCalibParams(const TCalibParams& param);
 
-
+      //@功能:生成指定类型的校正实例
+      void GenCalibratorInst(E_CALIBRATE_MODEL eCalibrateModel);
 protected:
     void CreateCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel);
     ICalibrate* m_pCalibrateInst;

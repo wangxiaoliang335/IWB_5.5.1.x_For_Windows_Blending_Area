@@ -3241,7 +3241,7 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
 
                      //绘制上半部的校正图案
                      //m_oCalibratePattern.DrawUpperPartPattern(this->m_AutoCalibrateWnd, m_clrGridHighlight);
-                      m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd);
+                      //m_oCalibratePattern.DrawPattern(this->m_AutoCalibrateWnd);
                 }
 
                 //m_nStageWaitCount = 0;

@@ -182,7 +182,9 @@ struct GlobalSettings
 	//ECameraType             eCameraType;         //攝像頭的類型
 
     EScreenMode            eScreenMode;//屏接的屏幕数目
-	BOOL          bSinglePointMode;
+	BOOL              bSinglePointMode;
+
+    BOOL              bEnable4PointsCalibrate;//使能4点标定
 
 
     GlobalSettings()
@@ -216,7 +218,8 @@ struct GlobalSettings
 
         //屏接的屏幕数目
         eScreenMode = EScreenModeUnknown;
-		bSinglePointMode = FALSE;
+        bSinglePointMode   = FALSE;
+        bEnable4PointsCalibrate = FALSE;
     }
 };
 

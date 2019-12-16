@@ -187,8 +187,3 @@
 //32位整数绝对值宏>
 
 #include "VirtualTUIO.h"
-
-
-
-
-

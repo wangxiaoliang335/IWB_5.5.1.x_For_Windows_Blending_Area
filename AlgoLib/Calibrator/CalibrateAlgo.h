@@ -175,7 +175,7 @@ public:
 
     Calibrator_GenericCameraModel()
         :
-    ICalibrate(E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE),
+    ICalibrate(E_CALIBRATE_MODEL_GENERICAL_CAMERA),
     m_bInternalAndSymmetricDistortParamsIsValid(FALSE)
     {
 
@@ -265,6 +265,7 @@ public:
                    calibCoefs[j] = pModelParams[j];
                 }
 
+                m_calibParams.eCalibrateModel = calibData.eCalibrateModel;
 
             }
             catch(...)
@@ -418,7 +419,6 @@ public:
     TVector2D GetRefractionOffsetEx(const CGenericCameraModel& camera, const TPoint2D& ptObj)
     {
 
-    
         double theta, phi;
         
         camera.GetThetaPhi(&ptObj, 1, &theta, &phi);
@@ -550,6 +550,11 @@ public:
 
         for (int nMonitorId = 0; nMonitorId < nMonitorCount; nMonitorId++)
         {
+            //屏幕区域
+            const RECT& rcMonitor = calibData.allMonitorCalibData[nMonitorId].rcMonitor;
+            m_calibParams.allCalibCoefs[nMonitorId].rcMonitor = rcMonitor;
+
+
             const std::vector<TCalibCoordPair>& data = calibData.allMonitorCalibData[0].calibData;
 
             int N = calibData.allMonitorCalibData[0].calibData.size();
@@ -559,8 +564,8 @@ public:
 
             vecImagePts.resize(N);
             vecScreenPts.resize(N);
-
-
+            
+            
             for (int i = 0; i < N; i++)
             {
                 vecImagePts[i] = data[i].pt2DImageCoord;
@@ -584,10 +589,13 @@ public:
             {
                 calibCoefs[j] = pModelParams[j];
             }
-
+           
 
         }//for=each(nMonitorId)
 
+        m_calibParams.eCalibrateModel = calibData.eCalibrateModel;
+        m_calibParams.szImage = calibData.szImage;
+        m_calibParams.eCalibType = calibData.eCalibType;//校正类别:手动，自动
 
         return TRUE;
     }

@@ -39,7 +39,8 @@ m_eSpotSamplingMode(eCollectSpotMode)*/
 m_nSymbolHorzInterval(50),
 m_nSymbolVertInterval(50),
 m_nSampleNumEachRow(0),
-m_nSampleNumEachCol(0)
+m_nSampleNumEachCol(0),
+m_nSensorID(-1)
 {
     WNDCLASSEX wnd;
     wnd.cbSize = sizeof wnd;
@@ -169,34 +170,6 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
 
     m_rcCurrentMonitor = rcMonitor;
 
-
-    //if (theApp.GetDoubleScreenMerge())
-    //{
-    //	//DoubleScreenMergeCount =  MAX_COLLECT_NUMBER_DOUBLE;
-    //	m_nSampleNumEachRow = 3;
-    //	m_nSampleNumEachCol = 5;
-    //}
-    //else
-    //{
-    //	DoubleScreenMergeCount = MAX_SAMPLE_NUMBER;
-
-    /*m_nSampleNumEachCol = 3;
-    switch(m_eSpotSamplePattern)
-    {
-    case E_SAMPLE_COLLECT_PATTERN_9_Points:
-        m_nSampleNumEachRow = 3;
-        
-        break;
-
-    case E_SAMPLE_COLLECT_PATTERN_15_Points:
-        m_nSampleNumEachRow = 5;
-        break;
-
-    default:
-        m_nSampleNumEachRow = 3;
-    }
-    */
-
     int nSampleCount = m_nSampleNumEachCol * m_nSampleNumEachRow;
     m_vecSampleSymbols.resize(nSampleCount);
 
@@ -205,28 +178,10 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
         m_ScreenLightspotSample[i].vecSampleSize.resize(nSampleCount);
     }
     
-    //}
-
-    //第一行的采样符号
-    //for(int col = 0; col <m_nSampleNumEachCol;col++)
-    //{
-    //	NY = SYMBOL_SIZE;
-    //	TSampleSymbol& cross = m_vecSampleSymbols[CrossIndex];
-    //	cross.clrAdjustBefore = RED;
-    //	cross.clrAdjustAfter = GREEN;
-    //	cross.bAdjusted = FALSE;
-    //	cross.size.cx = SYMBOL_SIZE*2;
-    //	cross.size.cy = SYMBOL_SIZE*2;
-    //	NX = SYMBOL_SIZE  + (m_nCxScreen - SYMBOL_SIZE*2)*(col)/(m_nSampleNumEachCol -1);
-    //	cross.ptCenter.x = NX;
-    //	cross.ptCenter.y = NY;
-    //	CrossIndex++;
-    //}
-
     int nMonitorWidth  = rcMonitor.right  - rcMonitor.left;
     int nMonitorHeight = rcMonitor.bottom - rcMonitor.top ;
-    int nMonitorLeft   = rcMonitor.left;
-    int nMonitorTop    = rcMonitor.top ;
+	int nMonitorLeft   = rcMonitor.left;
+	int nMonitorTop    = rcMonitor.top;
     int nTopMargin     = MARGIN_WIDTH    ;//第一行采样符号与上边界的距离
     int nBottomMargin  = MARGIN_WIDTH    ;//最后一行采样符号与下边界的距离
     int nLeftMargin    = MARGIN_WIDTH    ;//第一列采样符号与左边界的距离
@@ -285,26 +240,6 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
             nSymbolIndex++;
         }
     }
-
-
-    
-
-    ////激光器底下的采样点向下偏移1/3间隔距离
-    //int nOffsetY =  nMonitorHeight/(m_nSampleNumEachCol - 1);
-    //nOffsetY = nOffsetY * 1/4;
-
-    //switch(m_eSpotSamplePattern)
-    //{
-    //case E_SAMPLE_COLLECT_PATTERN_9_Points:
-    //    m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
-    //    break;
-
-    //case E_SAMPLE_COLLECT_PATTERN_15_Points:
-    //    m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
-    //    m_vecSampleSymbols[9].ptDisplay.y += nOffsetY;
-    //    break;
-
-    //}
 
 }
 
@@ -376,8 +311,11 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         {
             for (int i =0; i <= m_nCurrentSampleNo; i++)
             {
-                DrawCross(ps.hdc,
-                    m_vecSampleSymbols[i].ptDisplay,
+				POINT ptDisplay = m_vecSampleSymbols[i].ptDisplay;
+				ScreenToClient(hWnd, &ptDisplay);
+                DrawCross(
+					ps.hdc,
+					ptDisplay,
                     m_vecSampleSymbols[i].bSampled ? m_vecSampleSymbols[i].clrSampleAfter : m_vecSampleSymbols[i].clrSampleBefore,
                     m_vecSampleSymbols[i].size);
             }
@@ -385,64 +323,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             DrawText(ps.hdc,g_oResStr[IDS_STRING432],_tcslen(g_oResStr[IDS_STRING432]),&this->m_rcCurrentMonitor, DT_CENTER|DT_TOP);
 
         }
-        //else
-        //{
-        //for(int i =0;i<DoubleScreenMergeCount;i++)
-        //{
-        //	DrawCross(ps.hdc,
-        //		m_vecSampleSymbols[i].ptCenter,
-        //		m_vecSampleSymbols[i].bAdjusted ? m_vecSampleSymbols[i].clrAdjustAfter:m_vecSampleSymbols[i].clrAdjustBefore,
-        //		m_vecSampleSymbols[i].size);
-        //}
 
-        //DrawText(ps.hdc,g_oResStr[IDS_STRING433],_tcslen(g_oResStr[IDS_STRING433]),&rcClient,DT_CENTER|DT_TOP);
-
-
-        ////////////////////////////////////////////把得到的坐标需要显示在窗口
-        //for(unsigned int i =0; i<m_vecMaxSpot.size();i++)
-        //{
-        //	if (m_vecMaxSpot[i].lSize !=0)
-        //	{
-        //		CAtlString m_pointshow;
-        //		int print_x = m_vecMaxSpot[i].ptCenter.x;
-        //		int print_y = m_vecMaxSpot[i].ptCenter.y;
-        //		long print_s = m_vecMaxSpot[i].lSize;
-        //		m_pointshow.Format(_T("X坐标=%d, Y坐标=%d, 最大光斑面积= %ld"),print_x,print_y,print_s);
-        //		RECT rcRect;
-
-        //		if ((m_vecMaxSpot[i].ptCenter.x > m_nCxScreen - 80)&&(m_vecMaxSpot[i].ptCenter.y > m_nCyScreen-100))
-        //		{
-        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x-80;
-        //			rcRect.top = m_vecMaxSpot[i].ptCenter.y-100;
-        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x ;
-        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y -10; 
-        //		}
-        //		else if (m_vecMaxSpot[i].ptCenter.x > m_nCxScreen - 80)
-        //		{
-        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x-80;
-        //			rcRect.top = m_vecMaxSpot[i].ptCenter.y+10 ;
-        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x ;
-        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y +100; 
-        //		}
-        //		else if (m_vecMaxSpot[i].ptCenter.y > m_nCyScreen-100)
-        //		{
-        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x;
-        //			rcRect.top =m_vecMaxSpot[i].ptCenter.y-100  ;
-        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x + 80;
-        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y -10; 
-        //		}
-        //		else
-        //		{
-        //			rcRect.left = m_vecMaxSpot[i].ptCenter.x;
-        //			rcRect.top =  m_vecMaxSpot[i].ptCenter.y +10;
-        //			rcRect.right = m_vecMaxSpot[i].ptCenter.x + 80;
-        //			rcRect.bottom = m_vecMaxSpot[i].ptCenter.y +100; 
-        //		}
-
-        //		DrawText(ps.hdc,m_pointshow,m_pointshow.GetLength(),&rcRect,DT_WORDBREAK);
-        //	}
-        //}
-        //}
         EndPaint(hWnd,&ps);
     }
 
@@ -568,7 +449,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
                     if (m_hOwner)
                     {
                         //结束光斑采集
-                        PostMessage(m_hOwner,WM_FINISH_COLLECTSPOT, m_ScreenLightspotSample.size(), 0);
+                        PostMessage(m_hOwner,WM_FINISH_COLLECTSPOT, m_ScreenLightspotSample.size(), m_nSensorID);
 
                         //关闭全屏显示
                         //FullScreen(FALSE);
@@ -702,6 +583,11 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         HMENU hMenu = ::LoadMenu(_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(IDR_MENU_CTXMENU));
         HMENU hCtxMenu = ::GetSubMenu(hMenu,2);
 
+		if (m_nSensorID > -1)
+		{
+		    pt.x = pt.x+m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.left;
+		}
+
         if (hCtxMenu)
         {
             TrackPopupMenu(hCtxMenu,
@@ -734,7 +620,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             }
             else*/ if (AbortCollectSpotSize())
             {
-                SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+                SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT, m_nSensorID,0);
             }
         }
     }
@@ -756,7 +642,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
     {
         if (AbortCollectSpotSize())
         {
-            SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+            SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT, m_nSensorID,0);
         }
 
     }
@@ -799,7 +685,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         {   //ESC按下键中途退出
             if (AbortCollectSpotSize())
             {
-                SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+                SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT, m_nSensorID,0);
             }
         }
     }
@@ -812,7 +698,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 //@参数:pMonitorInfo, 屏幕信息数组
 //      nMonitorCount, 屏幕个数
 //BOOL  CCollectSpotSize::StartCollectSpotSize(const MonitorInfo* pMonitorInfo, int nMonitorCount, HWND hNotifyWnd, ESampleCollectPattern ePattern)
-BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol)
+BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol,int nSensorId)
 {
 	//一个显示设备都未找到，则立即返回
 	if (nAreaCount == 0) return FALSE;
@@ -828,6 +714,7 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
         m_hOwner = hNotifyWnd;//通知窗体
         
     }
+	m_nSensorID = nSensorId;
 
     //采样样式
     //m_eSpotSamplePattern = ePattern;
@@ -843,17 +730,26 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
 	rcBoundary.right  = 0;
 	rcBoundary.bottom = 0;
 
-
     for(int i=0; i< nAreaCount; i++)
     {
 		m_vecMonitorAreas[i] = pMonitorAreas[i];
         m_ScreenLightspotSample[i].rcMonitor = pMonitorAreas[i];
 
 		RECT rcArea = pMonitorAreas[i];
-		if (rcArea.left  < rcBoundary.left    ) rcBoundary.left   = rcArea.left;
-		if (rcArea.right > rcBoundary.right   ) rcBoundary.right  = rcArea.right;
-		if (rcArea.top   < rcBoundary.top     ) rcBoundary.top    = rcArea.top;
-		if (rcArea.bottom > rcBoundary.bottom ) rcBoundary.bottom = rcArea.bottom;
+		if(m_nSensorID > -1)
+		{
+			rcBoundary.left = rcArea.left;
+			rcBoundary.right = rcArea.right;
+			rcBoundary.top = rcArea.top;
+			rcBoundary.bottom = rcArea.bottom;
+		}
+		else
+		{
+		    if (rcArea.left  < rcBoundary.left    ) rcBoundary.left   = rcArea.left;
+		    if (rcArea.right > rcBoundary.right   ) rcBoundary.right  = rcArea.right;
+		    if (rcArea.top   < rcBoundary.top     ) rcBoundary.top    = rcArea.top;
+		    if (rcArea.bottom > rcBoundary.bottom ) rcBoundary.bottom = rcArea.bottom;
+		}
     }
 
 
@@ -875,8 +771,8 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
 		//HWND_TOP, 
 		rcBoundary.left,
 		rcBoundary.top,
-		rcBoundary.right,
-		rcBoundary.bottom,
+		rcBoundary.right  - rcBoundary.left,
+		rcBoundary.bottom - rcBoundary.top,
 		SWP_SHOWWINDOW);
 	SetFocus(m_hWnd);
 	
@@ -940,7 +836,7 @@ void CCollectSpotSize::OnDeviceMissing()
 
     if (m_hOwner)
     {
-        SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT,0,0);
+        SendMessage(m_hOwner,WM_BREAK_COLLECTSPOT, m_nSensorID,0);
         EnableWindow(m_hOwner,TRUE);
     }
 

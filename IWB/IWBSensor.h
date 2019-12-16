@@ -209,6 +209,9 @@ public:
       //@参数:bSuccess, 成功/失败标志
       void On4BasePointMarkingDone(BOOL bSuccess);
 
+
+      //初始化校正实例
+      void ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel);
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;

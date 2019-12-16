@@ -14,14 +14,35 @@ public:
     //@返回值:全部基點标定完毕，则返回TRUE, 否则返回FALSE
     BOOL Process(const TPoint2D* pLightSpots, int nlightSpotsCount);
 
-    const TPoint2D* GetBasePoints()const;
+    const TPoint2D* GetBasePoints(UINT* pCount = NULL)const;
+    
+    void LoadBasePoints(const TPoint2D* pBasePoints, UINT nCount);
 
     //@功能:获得当前基點的索引号
     int GetCurrentBaseStoneIndex() const;
 
 
     BOOL IsDataValid()const;
+
+    enum EMachinState
+    {
+        E_MACHINE_STATE_READY,//就绪阶段
+        E_MACHINE_STATE_RUNNING,//运行阶段
+        E_MACHINE_STATE_END,  //结束阶段
+
+    };
+
+    EMachinState GetMachineState() const
+    {
+        return m_eMachineState;
+    }
+
+    
+
+    static const int BASE_STONE_NUMBER = 4;
+
 protected:
+
     //标定笔状态
     enum ELightSpotState
     {
@@ -43,10 +64,14 @@ protected:
         //BOOL       m_bValid            ;//数据有效标志
     };
     
+    BOOL InternalProcess(const TPoint2D* pNewLightSpots, int nlightSpotsCount);
+
     void ProcessLightSpot(MarkLightspot* lightSpot, const TPoint2D* pPtNewPos);
     
+    
+
     int m_nCurrentMarkIndex;//当前标定的基点的索引号。
-    static const int BASE_STONE_NUMBER = 4;
+
     TPoint2D m_BaseStones[BASE_STONE_NUMBER];
     BOOL m_bDataIsValid;
     
@@ -54,4 +79,6 @@ protected:
     static const int MAX_LIGHTSPOT = 8;
     MarkLightspot m_MarkLightSpots[MAX_LIGHTSPOT];//光笔数组
     int m_nActiveLightSpotCount;//活动的光斑个数
+
+    EMachinState m_eMachineState;
 };

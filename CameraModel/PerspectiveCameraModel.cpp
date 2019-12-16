@@ -6,7 +6,11 @@
 CPerspectiveCameraModel::CPerspectiveCameraModel()
     :
     m_H(*((double(*)[3][3])&m_Parameters[0]))
+    ,m_cxImage(m_Parameters[9])
+    ,m_cyImage(m_Parameters[10])
 {
+    m_cxImage = 640.0;
+    m_cyImage = 480.0;
     memset(m_Parameters, 0, sizeof(m_Parameters));
 }
 
@@ -15,7 +19,9 @@ BOOL CPerspectiveCameraModel::CalcParams(const TPoint2D* pPointsInImage, const T
     
     if (nPtNumber == 0) return FALSE;
 
-    m_szImage = szImage;
+    //m_szImage = szImage;
+    m_cxImage = szImage.cx;
+    m_cyImage = szImage.cy;
 
     //H = [h(1), h(2), h(3);
     //    h(4), h(5), h(6);
@@ -53,8 +59,8 @@ BOOL CPerspectiveCameraModel::CalcParams(const TPoint2D* pPointsInImage, const T
     {
         double x = pPointsOnPlane[i].d[0];
         double y = pPointsOnPlane[i].d[1];
-        double u = pPointsInImage[i].d[0] / szImage.cx;
-        double v = pPointsInImage[i].d[1] / szImage.cy;
+        double u = pPointsInImage[i].d[0] / m_cxImage;
+        double v = pPointsInImage[i].d[1] / m_cyImage;
 
         //æÿ’ÛA
         A[i * 2 + 0][0] = u;
@@ -147,12 +153,12 @@ BOOL CPerspectiveCameraModel::CalcParams(const TPoint2D* pPointsInImage, const T
 BOOL CPerspectiveCameraModel::GetScreenPt(const TPoint2D* ptImage, TPoint2D* ptScreen, int nPtNumber)
 {
 
-    if (m_szImage.cx == 0 || m_szImage.cy == 0) return FALSE;
+    if (m_cxImage == 0 || m_cyImage == 0) return FALSE;
 
     for (int i = 0; i < nPtNumber; i++)
     {
-        double u = ptImage[i].d[0]/m_szImage.cx;
-        double v = ptImage[i].d[1]/m_szImage.cy;
+        double u = ptImage[i].d[0] / m_cxImage;
+        double v = ptImage[i].d[1] / m_cyImage;
 
         double x = m_H[0][0] * u + m_H[0][1] * v + m_H[0][2] * 1;
         double y = m_H[1][0] * u + m_H[1][1] * v + m_H[1][2] * 1;
@@ -196,9 +202,9 @@ const double* CPerspectiveCameraModel::GetParameters()const
 
 void CPerspectiveCameraModel::SetParameters(const double* pParameters, int nParametersCount)
 {
-    if (nParametersCount > _countof(m_Parameters))
+    if (nParametersCount != _countof(m_Parameters))
     {
-        nParametersCount = _countof(m_Parameters);
+        return;
     }
 
     for (int i = 0; i < nParametersCount; i++)

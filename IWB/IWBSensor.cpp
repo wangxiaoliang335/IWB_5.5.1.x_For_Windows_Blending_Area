@@ -2,6 +2,7 @@
 
 #include "../inc/Log.h"
 #include "..\MorphologyAlgo\inc\MorphologyAlgo.h"
+#include "../inc/FillPolygon.h"
 
 //#pragma comment(lib, "..\lib\MorphologyAlgo.lib")
 //#include "headers.h"
@@ -667,12 +668,12 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
 
 void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
 {
-    TSensorModeConfig* TSensorModeConfig = NULL;
+    TSensorModeConfig* pSensorModeConfig = NULL;
     EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
-    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
+    pSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
     //设置画面自动调节时的平均亮度 == 自动校正时的第一组画面的平均亮度
     this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
 
@@ -692,9 +693,9 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
            case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
 
                //加密狗为手触模式, 选用用户选择的触控模式
-               m_oPenPosDetector.SetTouchType(TSensorModeConfig->advanceSettings.m_eTouchType);
+               m_oPenPosDetector.SetTouchType(pSensorModeConfig->advanceSettings.m_eTouchType);
 
-               if (TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+               if (pSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
                {
                    pNormalUsageSettings = &lensCfg.normalUsageSettings_PenTouchWhiteBoard;
                }
@@ -746,7 +747,7 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
         m_oPenPosDetector.SetLensFocalType(m_tCfgData.eSelectedLensType);
 
         //设置是否是背投模式
-        m_oPenPosDetector.GetVideoToScreenMap().SetRearProjectMode(TSensorModeConfig->advanceSettings.bIsRearProjection);
+        m_oPenPosDetector.GetVideoToScreenMap().SetRearProjectMode(pSensorModeConfig->advanceSettings.bIsRearProjection);
 
         //设置"自动校正补偿系数"
         m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
@@ -767,7 +768,7 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
             NULL
         );
         //设置校正参数
-        m_oPenPosDetector.GetVideoToScreenMap().SetCalibParams(TSensorModeConfig->calibParam);
+        m_oPenPosDetector.GetVideoToScreenMap().SetCalibParams(pSensorModeConfig->calibParam);
 
     }
 
@@ -1128,6 +1129,9 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
             EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
             pSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
      
+            //重新初始化校正实例
+            ReinitCalibrateInst(calibData.eCalibrateModel);
+
             if (vtsm.DoCalibrate())
             {
                 pSensorModeConfig->calibParam = *vtsm.GetCalibParams();
@@ -1171,15 +1175,8 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
 void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsInCol)
 {
     TManualCalibrateParameters parameters;
+    
     //搜索系统屏幕个数
-    //theApp.GetMonitorFinder().SearchDisplayDev();
-    //if(this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return;
-    //const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(this->m_nID);
-    //if(pDisplayDevInfo)
-    //{
-    //    parameters.monitors.push_back(*pDisplayDevInfo);
-    //}
-
     TScreenInfo tScreenInfo;
     BOOL bRet = this->GetAttachedScreenArea(tScreenInfo.rcArea);
     if (!bRet)
@@ -1192,13 +1189,13 @@ void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsI
     //合上滤光片
     IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), TRUE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
-    TSensorModeConfig* TSensorModeConfig = NULL;
+    TSensorModeConfig* pSensorModeConfig = NULL;
 
     EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
-    TSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
+    pSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    parameters.nCalibratePointsInRow = (nPtsInRow == -1) ? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachRow : nPtsInRow;
-    parameters.nCalibratePointsInCol = (nPtsInCol == -1) ? TSensorModeConfig->manualCalibrateSetting.nPtNumInEachCol : nPtsInCol;
+    parameters.nCalibratePointsInRow = (nPtsInRow == -1) ? pSensorModeConfig->manualCalibrateSetting.nPtNumInEachRow : nPtsInRow;
+    parameters.nCalibratePointsInCol = (nPtsInCol == -1) ? pSensorModeConfig->manualCalibrateSetting.nPtNumInEachCol : nPtsInCol;
     parameters.hNotifyWnd = hNotifyWnd;
     //把图像的高和宽传递进手动校正中
     //add by vera_zhao 2018.11.30
@@ -1235,6 +1232,9 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
         EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
         pSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
  
+        //重新初始化校正实例
+        ReinitCalibrateInst(calibData.eCalibrateModel);
+
         if (vtsm.DoCalibrate())
         {
             pSensorModeConfig->calibParam = *vtsm.GetCalibParams();
@@ -1309,32 +1309,6 @@ void CIWBSensor::OnAutoSearchMaskAreaDone(BOOL bSuccess)
 //@参数: hSampleWnd, 采样窗体句柄
 BOOL CIWBSensor::StartLightSpotSampling(HWND hSampleWnd)
 {
-
-    ////搜索系统屏幕个数
-    //theApp.GetMonitorFinder().SearchDisplayDev();
-    // std::vector<DisplayDevInfo> vecMonitorInfo;
-    //if(this->m_nID >= theApp.GetMonitorFinder().GetDisplayDevCount()) return FALSE;
-
-    //const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetMointorInfo(this->m_nID);
-    //if(pDisplayDevInfo)
-    //{
-    //    vecMonitorInfo.push_back(*pDisplayDevInfo);
-    //}
-    //  //for(size_t i =0; i < m_tCfgData.attachedMonitorIds.size(); i++)
-    //  //{
-    //  //      unsigned int uMonitorID = m_tCfgData.attachedMonitorIds[i];
-    //  //      
-    //  //      //const DisplayDevInfo* pDisplayDevInfo = m_oDispMonitorFinder.GetMointorInfo(uMonitorID);
-    //  //      const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetMointorInfo(uMonitorID);
-    //  //      if(pDisplayDevInfo)
-    //  //      {
-    //  //          vecMonitorInfo.push_back(*pDisplayDevInfo);
-    //  //      }
-    //  //}
-    //
-    //  
-    //BOOL bRet =  m_wndLightSpotSampling.StartCollectSpotSize(&vecMonitorInfo[0], vecMonitorInfo.size(), hNotifyWindow);
-
     //if(bRet)
     //{
     //    //this->m_oPenPosDetector.GetMouseEventGenerator().EnterSpotSamplingMode(m_wndLightSpotSampling.m_hWnd, COLLECTSPOT_MODE_COLLECT);
@@ -1767,6 +1741,7 @@ void CIWBSensor::GetPidVid(INT* pPID, INT* pVID)const
 
 void CIWBSensor::Start4BasePointMarking(HWND hNotifyWnd)
 {
+
     this->m_oPenPosDetector.EnterMarkStoneBaseMode(hNotifyWnd);
 }
 
@@ -1785,7 +1760,7 @@ void CIWBSensor::On4BasePointMarkingDone(BOOL bSuccess)
         int nImageWidth  = m_oPenPosDetector.GetSrcImageWidth();
         int nImageHeight = m_oPenPosDetector.GetSrcImageHeight();
 
-        const POINT screenPoints[4] = {
+        const POINT screenPoints[CBaseStoneMarker::BASE_STONE_NUMBER] = {
             { m_rcMonintorArea.left , m_rcMonintorArea.top    },
             { m_rcMonintorArea.right, m_rcMonintorArea.top    },
             { m_rcMonintorArea.right, m_rcMonintorArea.bottom },
@@ -1819,9 +1794,92 @@ void CIWBSensor::On4BasePointMarkingDone(BOOL bSuccess)
         if (vtsm.DoCalibrate())
         {
             pSensorModeConfig->calibParam = *vtsm.GetCalibParams();
+
+            CImageFrame maskFrame;
+            BYTE initValue = 0;
+            maskFrame.SetSize(nImageWidth, nImageHeight, 1, &initValue);
+
+            POINT aryPointsInImage[CBaseStoneMarker::BASE_STONE_NUMBER];
+            for (int i = 0; i < CBaseStoneMarker::BASE_STONE_NUMBER; i++)
+            {
+                aryPointsInImage[i].x = long(pBasePoints[i].d[0]);
+                aryPointsInImage[i].y = long(pBasePoints[i].d[1]);
+            }
+
+            FillPolygon(
+                maskFrame.GetData(),
+                nImageWidth,
+                nImageHeight,
+                aryPointsInImage,
+                _countof(aryPointsInImage),
+                255,
+                TRUE);
+            
+            const TSensorModeConfig&  sensorModeConfig = m_tCfgData.vecSensorModeConfig[eProjectionMode];
+            const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
+
+            //适当腐蚀屏蔽区，扩到屏幕区域
+            for (int r = 0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r++)
+            {
+                Morph_Dilate8(
+                    maskFrame.GetData(),
+                    maskFrame.GetData(),
+                    maskFrame.Width(),
+                    maskFrame.Height());
+            }
+
+            //将手动校正找到的屏幕区域屏蔽图合并到静态屏蔽图中去
+            m_oPenPosDetector.MergeManualCalibScreenMask(maskFrame);
+
+            //保存静态屏蔽图
+            m_oPenPosDetector.SaveStaticMaskFrame();
+
         }
 
     }
 
+    //无论成功失败都进入正常使用模式
+    //如果失败了,则自动使用原有的校正数据
+    SwitchLensMode(E_NORMAL_USAGE_MODE);
     this->m_oPenPosDetector.LeaveMarkStoneBaseMode();
+}
+
+
+//初始化校正实例
+void CIWBSensor::ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
+{
+    CalibrateAlgo& calibAlgo = this->m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog();
+    
+    calibAlgo.GenCalibratorInst(eCalibrateModel);
+
+    if (eCalibrateModel == E_CALIBRATE_MODEL_GENERICAL_CAMERA)
+    {
+
+        const GlobalSettings& globalSettings = g_tSysCfgData.globalSettings;
+
+        EProjectionMode eProjectionMode = globalSettings.eProjectionMode;
+
+        const TSensorModeConfig&  sensorModeConfig = m_tCfgData.vecSensorModeConfig[eProjectionMode];
+
+
+        const TLensConfig& lensCfg = sensorModeConfig.lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
+
+
+        //设置"自动校正补偿系数"
+        calibAlgo.SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+
+        //设置CMOS芯片规格数据
+
+        calibAlgo.SetCMOSChipSpecification(globalSettings.CMOSChipSpecification);
+
+
+        //设置镜头规格数据
+        calibAlgo.SetLensSpecification(lensCfg.lensSpecification);
+
+        //设置镜头的内部初始参数
+        calibAlgo.SetLensInternalAndSymmmetricDistortParams(lensCfg.bInternalAndSymmetricDistortParamsIsValid ?
+            &lensCfg.lensInternalAndSymmetricDistortParams :
+            NULL);
+    }
+   
 }

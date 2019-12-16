@@ -140,13 +140,13 @@ enum EManualScreenAreadMode
 	E_ManualScreenAreaNormalMode,//正常模式
 };
 
-struct DarwaryLightSpotBounds
+struct LightSpotBounds
 {
 	RECT  m_aryLightSpotBounds;
 	bool  valid;
 
 public:
-	DarwaryLightSpotBounds()
+	LightSpotBounds()
 	{
 		memset(&m_aryLightSpotBounds,0,sizeof(m_aryLightSpotBounds));
 		valid = true;
@@ -215,7 +215,7 @@ public:
 //	}
 
 	////
-	const DarwaryLightSpotBounds* GetLightSpotInfo() const
+	const LightSpotBounds* GetLightSpotInfo() const
 	{
 		return &m_aryLightSpotBoundsInfo[0];
 	}
@@ -350,7 +350,10 @@ public:
 
 
 
-	void  EnableDynamicMasking(BOOL bEnableDynamicMasking)      { m_bIsDynamicMasking = bEnableDynamicMasking; }
+    void  EnableDynamicMasking(BOOL bEnableDynamicMasking) {
+        m_bIsDynamicMasking = bEnableDynamicMasking; 
+        m_bDynamicMaskingChangedEvent = TRUE;
+    }
     BOOL  IsDynamicMasking()const                               { return m_bIsDynamicMasking; }
 
 	/////////modify by vera_zhao 2019.10.24
@@ -724,7 +727,7 @@ protected:
 	//<<<<<<begin
 	//add by vera_zhao 2018.12.24
 	//用一个数组来表示，把无效的光斑和有效的光斑用不同的颜色区分开。
-	DarwaryLightSpotBounds m_aryLightSpotBoundsInfo[MAX_OBJ_NUMBER];  
+	LightSpotBounds m_aryLightSpotBoundsInfo[MAX_OBJ_NUMBER];  
 	std::vector <TInvalidSpotList> m_vecInvalidList;
 	//<<<<<<end
 
@@ -808,6 +811,9 @@ protected:
 	int  m_nMultiEraser        ;
 
 	BOOL m_bIsDynamicMasking       ; //是否正在自动屏蔽
+    BOOL m_bDynamicMaskingChangedEvent;//自动屏蔽状态切换事件
+
+
 	/////////modify by vera_zhao   2019.10.24
 	BOOL  m_bIsAntiJamming          ; //是否进行抗干扰处理
 
@@ -926,5 +932,12 @@ protected:
     BOOL m_bMarkingBaseStone;//4点标定状态标志
     CBaseStoneMarker m_oBaseStoneMarker;//4点标定执行器
 
+    //保存4点标定结果
+    void SaveBaseStoneMarker();
+
+    //载入4点标定结果
+    void LoadBaseStoneMarker();
+
+    void InitBaseStoneFilePath(TCHAR* buf, int nBufSize);
 };
 

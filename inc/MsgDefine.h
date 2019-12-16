@@ -94,7 +94,8 @@
 
 #define WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS  (WM_USER + 32)
 #define WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY           (WM_USER+ 33)
-#define WM_REAR_PROJECTION                              (WM_USER+ 34)
+#define WM_REAR_PROJECTION                             (WM_USER+ 34)
+#define WM_CHANGE_VIDEODISPLAYDELAY                    (WM_USER+ 35)
 
 //摄像头状态
 //WPARAM, LPCTSTR字符串
@@ -137,4 +138,4 @@
 #define WM_END_SCREEN_LAYOUT_DESIGN       (WM_USER + 43)
 
 //四点标定结束标志
-#define WM_END_4_BASE_POINT_MARKING       (WM_USER + 44)
+#define WM_END_4_BASE_POINT_CALIBRATE       (WM_USER + 44)
