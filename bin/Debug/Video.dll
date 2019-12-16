@@ -18,7 +18,7 @@
 		PTG:葡萄牙语-->
         <Param name="Language" value="CHS" />
         <!--投影模式-->
-        <Param name="ProjectionMode" value="Desktop" />
+        <Param name="ProjectionMode" value="Wall" />
         <!--调试模式(Yes/No)-->
         <Param name="DebugMode" value="No" />
         <!--调试级别(0~2)-->
@@ -45,6 +45,8 @@
         <Param name="ScreenDiagonalLength" value="80.0" />
         <!--程序启动时,搜索设备时最大允许花费的时间, 单位:毫秒-->
         <Param name="MaxTimeInSearchDevice" value="8000" />
+        <!--是否开启单点模式-->
+        <Param name="SinglePointMode" value="No" />
         <!--CMOS芯片信息-->
         <CMOS_CHIP>
             <!--像素尺寸，单位:mm-->
@@ -116,6 +118,8 @@
                     <!--校正图片尺寸-->
                     <Param name="ImageWidth" value="640" />
                     <Param name="ImageHeight" value="480" />
+                    <!--CalibrateModel(0:4-points Perspective Camera Model, 1:Generic Camera Model)-->
+                    <Param name="CalibrateModel" value="0" />
                     <!--校正类型(手动:Manual, 自动:Auto)-->
                     <Param name="CalibrateType" value="Auto" />
                     <!--所有监视器校正参数-->
@@ -160,6 +164,8 @@
                     <!--校正图片尺寸-->
                     <Param name="ImageWidth" value="640" />
                     <Param name="ImageHeight" value="480" />
+                    <!--CalibrateModel(0:4-points Perspective Camera Model, 1:Generic Camera Model)-->
+                    <Param name="CalibrateModel" value="0" />
                     <!--校正类型(手动:Manual, 自动:Auto)-->
                     <Param name="CalibrateType" value="Auto" />
                     <!--所有监视器校正参数-->
