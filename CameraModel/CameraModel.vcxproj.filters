@@ -36,6 +36,9 @@
     <ClCompile Include="Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PerspectiveCameraModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files\inc\LAPACK</Filter>
     </ClInclude>
     <ClInclude Include="..\inc\ExpandPolygon.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="PerspectiveCameraModel.h">
       <Filter>Header Files\inc</Filter>
     </ClInclude>
   </ItemGroup>

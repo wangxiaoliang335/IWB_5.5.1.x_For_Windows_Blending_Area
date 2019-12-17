@@ -609,6 +609,27 @@ public:
 
     }
 
+    //@功能:绘制矩形
+    //@参数:area, 矩形区域
+    //      value, 亮度值
+    void DrawCross(const POINT& center, int size, T value)
+    {
+        POINT p1, p2;
+
+        p1 = p2 = center;
+        p1.x = center.x - size / 2;
+        p2.x = center.x + size / 2;
+        Line(p1, p2, value);
+
+        p1 = p2 = center;
+        p1.y = center.y - size / 2;
+        p2.y = center.y + size / 2;
+        Line(p1, p2, value);
+
+
+    }
+
+
      //@功能:以取最大值方式进行融合
     //@参数:right, 被融合的图片
     void Or(const CImageFrameT<T>& right)
