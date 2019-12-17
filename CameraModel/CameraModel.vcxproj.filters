@@ -75,7 +75,7 @@
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="PerspectiveCameraModel.h">
-      <Filter>Header Files\inc</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
