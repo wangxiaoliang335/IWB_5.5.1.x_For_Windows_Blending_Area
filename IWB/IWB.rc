@@ -127,6 +127,7 @@ BEGIN
             MENUITEM "Clear",                       ID_MENU_DRAWMASKFRAME_CLEAR
         END
         MENUITEM SEPARATOR
+        MENUITEM "Four Corner Points Calibration", ID_MENU_FOURPOINTCALIBRATION
         MENUITEM "Manual Calibration ...",      ID_MENU_MANUAL_CALIBRATE
         MENUITEM "Automatic Calibration ...",   ID_MENU_AUTO_CALIBRATE
         MENUITEM "Lightspot Sampling...",       ID_OPERATION_LIGHTSPOTSAMPLING

@@ -2341,7 +2341,7 @@ BOOL CVideoPlayer::DisplayFrame(const BYTE* pARGBFrame, int nImageWidth, int nIm
 
 
 //@功能:在视频画面中显示文字
-void CVideoPlayer::SetDisplayInfo(LPCTSTR lpszInfo)
+void CVideoPlayer::SetDisplayInfo(LPCTSTR lpszInfo, int nDisplayTimes)
 {
     //m_strDisplayText       = lpszInfo;
     //m_nDisplayTimesCounter = 0;
@@ -2357,7 +2357,7 @@ void CVideoPlayer::SetDisplayInfo(LPCTSTR lpszInfo)
 		DT_VCENTER | DT_CENTER | DT_SINGLELINE,
 		40L,
 		_T("Times New Roman"),
-		300);
+        nDisplayTimes);
 
 }
 

@@ -26,8 +26,14 @@ public:
     int GetParameterCount()const;
     const double* GetParameters()const;
 protected:
-    double m_Parameters[9];
-
+    double m_Parameters[11];//H[3][3],
     double(&m_H)[3][3];
-    SIZE   m_szImage;
+
+    //相机画面宽度
+    double& m_cxImage;
+
+    //相机画面高度
+    double& m_cyImage;
+
+    //SIZE   m_szImage;
 };

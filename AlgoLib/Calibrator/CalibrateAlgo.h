@@ -92,6 +92,12 @@ inline T POW(T base, int exponent)
 class ICalibrate
 {
 public:
+    ICalibrate(E_CALIBRATE_MODEL eCalibrateModel)
+        :
+        m_eCalibrateModel(eCalibrateModel)
+    {
+        
+    }
 
     //@功能:计算校正参数
     //@输入:ALL_CALIB_DATA ,输入, 所有屏幕的校正数据
@@ -150,6 +156,13 @@ public:
     //@功能:设置相机的已知的内部参数和对称畸变参数
     virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams) = 0;
 
+    E_CALIBRATE_MODEL GetCalibrateModel() const
+    {
+        return m_eCalibrateModel;
+    }
+
+protected:
+    E_CALIBRATE_MODEL m_eCalibrateModel;
 
 };
 
@@ -162,6 +175,7 @@ public:
 
     Calibrator_GenericCameraModel()
         :
+    ICalibrate(E_CALIBRATE_MODEL_GENERICAL_CAMERA),
     m_bInternalAndSymmetricDistortParamsIsValid(FALSE)
     {
 
@@ -251,6 +265,7 @@ public:
                    calibCoefs[j] = pModelParams[j];
                 }
 
+                m_calibParams.eCalibrateModel = calibData.eCalibrateModel;
 
             }
             catch(...)
@@ -404,7 +419,6 @@ public:
     TVector2D GetRefractionOffsetEx(const CGenericCameraModel& camera, const TPoint2D& ptObj)
     {
 
-    
         double theta, phi;
         
         camera.GetThetaPhi(&ptObj, 1, &theta, &phi);
@@ -506,6 +520,13 @@ protected:
 class Calibrator_4PointsPerspectiveCameraModel :public ICalibrate
 {
 public:
+    Calibrator_4PointsPerspectiveCameraModel()
+        :
+        ICalibrate(E_CALIBRATE_MODEL_4_POINST_PERSPECTIVE)
+    {
+
+    }
+
 
     //@功能:计算校正参数
     //@输入:ALL_CALIB_DATA ,输入, 所有屏幕的校正数据
@@ -529,6 +550,11 @@ public:
 
         for (int nMonitorId = 0; nMonitorId < nMonitorCount; nMonitorId++)
         {
+            //屏幕区域
+            const RECT& rcMonitor = calibData.allMonitorCalibData[nMonitorId].rcMonitor;
+            m_calibParams.allCalibCoefs[nMonitorId].rcMonitor = rcMonitor;
+
+
             const std::vector<TCalibCoordPair>& data = calibData.allMonitorCalibData[0].calibData;
 
             int N = calibData.allMonitorCalibData[0].calibData.size();
@@ -538,8 +564,8 @@ public:
 
             vecImagePts.resize(N);
             vecScreenPts.resize(N);
-
-
+            
+            
             for (int i = 0; i < N; i++)
             {
                 vecImagePts[i] = data[i].pt2DImageCoord;
@@ -563,10 +589,13 @@ public:
             {
                 calibCoefs[j] = pModelParams[j];
             }
-
+           
 
         }//for=each(nMonitorId)
 
+        m_calibParams.eCalibrateModel = calibData.eCalibrateModel;
+        m_calibParams.szImage = calibData.szImage;
+        m_calibParams.eCalibType = calibData.eCalibType;//校正类别:手动，自动
 
         return TRUE;
     }
@@ -593,7 +622,6 @@ public:
     //@功能:返回校正方程参数
     virtual const TCalibParams* GetCalibParams()const
     {
-
         return &m_calibParams;
     }
 
@@ -619,25 +647,25 @@ public:
     //@功能:设置镜头规格数据
     virtual void SetLensSpecification(const TLensSpecification& lensSpec)
     {
-
+        //do nothing
     }
 
     //@功能:设置CMOS芯片规格数据
     virtual void SetCMOSChipSpecification(const TCMOSChipSpecification& cmosChipSpec)
     {
-
+        //do nothing
     }
 
     //@功能:设置自动校正补偿数据
     virtual void SetAutoCalibCompCoefs(const TAutoCalibCompCoefs& autoCalibCompCoefs)
     {
-
+        //do nothing
     }
 
     //@功能:设置相机的已知的内部参数和对称畸变参数
     virtual void SetLensInternalAndSymmetricDistortParams(const TInternalAndSymmetricDistortParams* pLensInternalParams)
     {
-
+        //do nothing
     }
 
 protected:

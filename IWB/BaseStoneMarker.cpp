@@ -5,7 +5,8 @@ CBaseStoneMarker::CBaseStoneMarker()
     :
     m_nCurrentMarkIndex(0),
     m_nActiveLightSpotCount(0),
-    m_bDataIsValid(FALSE)
+    m_bDataIsValid(FALSE),
+    m_eMachineState(E_MACHINE_STATE_END)
 {
 
 }
@@ -27,8 +28,10 @@ void CBaseStoneMarker::Reset()
         m_MarkLightSpots[i].m_eState = E_MARK_STATE_READY;
         // m_MarkLightSpots[i].m_bValid     = FALSE;
         m_MarkLightSpots[i].m_bProcessed = FALSE;
+
     }//for
 
+    m_eMachineState = E_MACHINE_STATE_READY;
     m_bDataIsValid = FALSE;
     m_nActiveLightSpotCount = 0;
 
@@ -39,9 +42,28 @@ int CBaseStoneMarker::GetCurrentBaseStoneIndex() const
     return m_nCurrentMarkIndex;
 }
 
-const TPoint2D* CBaseStoneMarker::GetBasePoints()const
+const TPoint2D* CBaseStoneMarker::GetBasePoints(UINT* pCount)const
 {
+    if (pCount)
+    {
+        *pCount = _countof(m_BaseStones);
+    }
     return &m_BaseStones[0];
+}
+
+void CBaseStoneMarker::LoadBasePoints(const TPoint2D* pBasePoints, UINT nCount)
+{
+    if (nCount > _countof(m_BaseStones))
+    {
+        nCount = _countof(m_BaseStones);
+    }
+
+    for (UINT i = 0; i < nCount; i++)
+    {
+        m_BaseStones[i] = pBasePoints[i];
+    }
+
+    m_bDataIsValid = TRUE;
 }
 
 BOOL CBaseStoneMarker::IsDataValid()const
@@ -51,6 +73,37 @@ BOOL CBaseStoneMarker::IsDataValid()const
 
 //@返回值:全部基點标定完毕，则返回TRUE, 否则返回FALSE
 BOOL CBaseStoneMarker::Process(const TPoint2D* pNewLightSpots, int nlightSpotsCount)
+{
+    BOOL bRet = FALSE;
+    switch (m_eMachineState)
+    {
+        case  E_MACHINE_STATE_READY://就绪阶段
+            InternalProcess(pNewLightSpots, nlightSpotsCount);
+            this->m_eMachineState = E_MACHINE_STATE_RUNNING;
+            break;
+            
+        case E_MACHINE_STATE_RUNNING://运行阶段
+            if (InternalProcess(pNewLightSpots, nlightSpotsCount))
+            {
+                this->m_eMachineState = E_MACHINE_STATE_END;
+                bRet = TRUE;
+            }
+           
+        break;
+
+        case E_MACHINE_STATE_END:  //结束阶段
+
+        break;
+
+    }//switch
+
+    return bRet;
+}
+
+
+
+//@返回值:全部基點标定完毕，则返回TRUE, 否则返回FALSE
+BOOL CBaseStoneMarker::InternalProcess(const TPoint2D* pNewLightSpots, int nlightSpotsCount)
 {
     if (nlightSpotsCount == 0 && m_nActiveLightSpotCount == 0) return FALSE;
 

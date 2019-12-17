@@ -7,18 +7,18 @@ public:
 
     virtual ~CIWBSensor();
 
-	//@功能:设置视频显显示相关信息
-	//@参数:hDispWnd, 视频播放窗体的句柄
-	//      rcDispArea, 视频绘制的区域  
-	//      hNotifyWnd, 接收消息接收窗体句柄
-	void SetVideoDispParams(HWND hDispWnd, RECT& rcDispArea, HWND hNotifyWnd);
+    //@功能:设置视频显显示相关信息
+    //@参数:hDispWnd, 视频播放窗体的句柄
+    //      rcDispArea, 视频绘制的区域  
+    //      hNotifyWnd, 接收消息接收窗体句柄
+    void SetVideoDispParams(HWND hDispWnd, RECT& rcDispArea, HWND hNotifyWnd);
 
     //@功能:运行传感器
     BOOL Run();
 
     BOOL Stop();
 
-	void ShowStatusInfo();
+    void ShowStatusInfo();
 
 
     //@功能:设置视频捕获设备信息
@@ -65,9 +65,9 @@ public:
     //@参数:cfgData, 输入参数, 图像传感器的配置信息
     //      pGlobalSettings, 输入参数, 指向全局配置信息的指针
     void SetCfgData( const TSensorConfig& cfgData, const GlobalSettings* pGlobalSettings = NULL);
-	void SetGlobalCfgData(const GlobalSettings* pGlobalSettings = NULL);
+    void SetGlobalCfgData(const GlobalSettings* pGlobalSettings = NULL);
 
-	void SetlenCfgData(const TLensConfig& lencfgData);
+    void SetlenCfgData(const TLensConfig& lencfgData);
 
     //@功能:获取配置数据
     //@参数:cfgData, 输出参数, 图像传感器的配置信息
@@ -143,7 +143,7 @@ public:
     //@功能:屏幕分辨率发生变化时的事件响应函数
     ///@参数:rcNewMonitorResolution, 关联的屏幕分辨率信息
     //void OnMonitorResolutionChange(const RECT&  rcNewMonitorResolution);
-	void OnMonitorResolutionChange();
+    void OnMonitorResolutionChange();
 
     /*
     @功能：开启智能检测挡板是否消失
@@ -190,18 +190,28 @@ public:
 
       void SetAttachedScreenArea(const RECT& rcMonitor);
 
-	  //@功能:获取关联的屏幕区域尺寸
-	  BOOL GetAttachedScreenArea(RECT& rcMonitor)const;
+      //@功能:获取关联的屏幕区域尺寸
+      BOOL GetAttachedScreenArea(RECT& rcMonitor)const;
 
 
-	  void  OnTimer(LPVOID lpCtxData);
-	  void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
-	  void  SetOnlineScreenArea(bool bEnableOnlineScreenArea) ;
+      void  OnTimer(LPVOID lpCtxData);
+      void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
+      void  SetOnlineScreenArea(bool bEnableOnlineScreenArea) ;
 
-	  void GetPidVid(INT* pPID, INT* pVID)const;
+      void GetPidVid(INT* pPID, INT* pVID)const;
 
-	  ECameraType GetCameraType()const { return m_eCameraType; }
+      ECameraType GetCameraType()const { return m_eCameraType; }
 
+      //@功能:开始传感器4点标定
+      void Start4BasePointMarking(HWND hNotifyWnd);
+
+      //@功能:传感器4点标定结束后的事件响应函数
+      //@参数:bSuccess, 成功/失败标志
+      void On4BasePointMarkingDone(BOOL bSuccess);
+
+
+      //初始化校正实例
+      void ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel);
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;

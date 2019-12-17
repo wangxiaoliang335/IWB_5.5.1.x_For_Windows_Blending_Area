@@ -122,6 +122,8 @@
 #include "Gesture Recognition\GLBoard\MultiPenGestureRecognition.h"
 #include "Gesture Recognition\GLBoard\GestureEventGenerator.h"
 #include "SpotListProcessor.h"
+
+#include "BaseStoneMarker.h"
 #include "PenPosDetector.h"
 #include "LostFrameDetector.h"
 
@@ -185,6 +187,3 @@
 //32位整数绝对值宏>
 
 #include "VirtualTUIO.h"
-
-
-

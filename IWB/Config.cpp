@@ -677,12 +677,25 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
 					globalSettings.bSinglePointMode = FALSE;
 				}
 			}
+            else if (_stricmp(paramName, "Enable4PointCalibrate") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bEnable4PointsCalibrate = TRUE;
+                }
+                else
+                {
+                    globalSettings.bEnable4PointsCalibrate = FALSE;
+                }
+
+            }
 
         }//if
         else if(_stricmp(lpszElementName, "CMOS_CHIP") == 0)
         {
             LoadConfig(pChild, globalSettings.CMOSChipSpecification);
         }
+        
        
     }while(pChild);
 
@@ -901,6 +914,15 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     }
     pNode->LinkEndChild(pElement);
 
+
+    //使能4点标定
+    pXmlComment = new TiXmlComment("使能4点标定状态(Yes/No)");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "Enable4PointCalibrate");
+    pElement->SetAttribute("value", globalSettings.bEnable4PointsCalibrate ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
     return TRUE;
 }
@@ -1983,7 +2005,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
                 {
                     calibParams.szImage.cy = atoi(paramValue);
                 }
-                else if (_stricmp(paramName, "CalibrateModel"))
+                else if (_stricmp(paramName, "CalibrateModel") ==0 )
                 {
                     int nCalibrateModel = E_CALIBRATE_MODEL(atoi(paramValue));
                     if (nCalibrateModel < 0 || nCalibrateModel >= (int) E_CALIBRATE_MODEL_COUNT)
@@ -2059,7 +2081,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const TCalibParams& calibParams)
 
 
     //定位校正时使用的模型
-    pXmlComment = new TiXmlComment("CalibrateModel(0:4-points Perspective Camera Model, 1:Generic Camera Model)");
+    pXmlComment = new TiXmlComment("CalibrateModel(0 -- Generic Camera Model,1 -- 4-points Perspective Camera Model)");
     pNode->LinkEndChild(pXmlComment);
     pElement = new TiXmlElement("Param");
     pElement->SetAttribute("name", "CalibrateModel");

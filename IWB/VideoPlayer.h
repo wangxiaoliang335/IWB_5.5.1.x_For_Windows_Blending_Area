@@ -340,7 +340,7 @@ public:
 
 
     //@功能:在视频画面中显示文字
-    void SetDisplayInfo(LPCTSTR lpszInfo);
+    void SetDisplayInfo(LPCTSTR lpszInfo, int nDisplayTimes=300);
 
 
 
