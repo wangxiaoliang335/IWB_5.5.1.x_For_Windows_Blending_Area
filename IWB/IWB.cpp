@@ -300,6 +300,44 @@ BOOL CIWBApp::InitInstance()
         nVScreenTop,
         (m_eScreenModeFromUsbKey >= EScreenModeDouble)? "Yes" : "No");
 
+
+
+
+    int nDisplayDevCount = m_oDispMonitorFinder.GetDisplayDevCount();
+
+    UINT32 nMaxActiveCx = 0, nMaxActiveCy = 0;
+
+    for (int i = 0; i < nDisplayDevCount; i++)
+    {
+        const DisplayDevInfo* pDisplayDevInfo = m_oDispMonitorFinder.GetDisplayDevInfo(i);
+
+        if (pDisplayDevInfo == NULL) continue;
+        int nDiplayAdpaterInfoCount = pDisplayDevInfo->displayAdapterInfos.size();
+
+        for (int j = 0; j < nDiplayAdpaterInfoCount; j++)
+        {
+            const DiplayAdpaterInfo& inf = pDisplayDevInfo->displayAdapterInfos[j];
+
+            LOG_INF("target-mode:Active Size=%dX%d, Totoal Size=%dX%d",
+                inf.targetMode.targetVideoSignalInfo.activeSize.cx,
+                inf.targetMode.targetVideoSignalInfo.activeSize.cy,
+                inf.targetMode.targetVideoSignalInfo.totalSize.cx,
+                inf.targetMode.targetVideoSignalInfo.totalSize.cy);
+
+            LOG_INF("source-mode:width=%d, height =%d",
+                inf.sourceMode.width,
+                inf.sourceMode.height);
+
+        }//for-each(j)
+
+    }//for-each(i)
+
+
+
+
+
+
+
     ParseCmdLine(this->m_lpCmdLine);
 
     CIWBDlg dlg;

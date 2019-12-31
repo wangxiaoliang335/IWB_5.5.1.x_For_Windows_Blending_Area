@@ -403,34 +403,6 @@ void  CManualCalibrateWnd::InitMonitorCalibrateSymCoord()
 
     BOOL bEvenNumber = (nCalibratePointsInRow % 2) == 0;
 
-    //for(int row=0; row < nCalibratePointsInRow; row++)
-    //{
-    //    nY = rcMonitor.top +  CROSS_SIZE/2 + (nMonitorHeight - CROSS_SIZE)*(row)/(nCalibratePointsInRow-1);
-
-    //    for(int col=0; col < nCalibratePointsInCol; col++)
-    //    {
-    //        TCrossSymbol& cross = m_vecCrossSymbol[crossSymbolIndex];
-    //        cross.clrAdjustBefore = RED;
-    //        cross.clrAdjustAfter  = GREEN ;
-    //        cross.bAdjusted       = FALSE ;
-    //        cross.size.cx         = CROSS_SIZE;
-    //        cross.size.cy         = CROSS_SIZE;
-
-    //        nX = rcMonitor.left + CROSS_SIZE/2 + (nMonitorWidth - CROSS_SIZE)*(col)/(nCalibratePointsInCol -1);
-
-    //        cross.ptCenter.x = nX;
-    //        cross.ptCenter.y = nY;
-
-    //        TCalibCoordPair& calibCoordPair = m_oAllCalibMap[m_nCurMonitorId].calibData[crossSymbolIndex];
-    //        calibCoordPair.ptScreenCoord.x = nX;
-    //        calibCoordPair.ptScreenCoord.y = nY;
-    //        crossSymbolIndex++;
-
-    //    }//for(col)
-
-    //}//for(row)
-
-
     for(int col=0; col < nCalibratePointsInCol; col++)
     {
         nX = rcMonitor.left + CROSS_SIZE/2 + (nMonitorWidth - CROSS_SIZE)*(col)/(nCalibratePointsInCol -1);

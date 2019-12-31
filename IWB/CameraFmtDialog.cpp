@@ -63,7 +63,7 @@ BOOL CameraFmtDialog::OnInitDialog()
 	}
 	else
 	{
-		for (int i = 0 ; i <CameraAllResution.size();i++ )
+		for (UINT i = 0 ; i <CameraAllResution.size();i++ )
 		{
 			m_CCameraFmt.AddString((LPCTSTR)CameraAllResution[i]);
 	    }
@@ -181,7 +181,7 @@ void CameraFmtDialog::OnBnClickedCheckTuio()
 
 bool CameraFmtDialog::GetTouchHIDMode()
 {
-	return m_bHIDMode;
+	return m_bHIDMode==0?false:true;
 }
 
 bool CameraFmtDialog::GetTouchTUIOMode()

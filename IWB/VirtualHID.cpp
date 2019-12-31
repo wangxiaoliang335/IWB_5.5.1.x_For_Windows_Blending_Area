@@ -499,7 +499,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
         LONG nMonitorPixelLeft   = pDisplayDevInfo->rcMonitor.left;
         LONG nMonitorPixelTop    = pDisplayDevInfo->rcMonitor.top;
-        LONG nMonitorPixelWidth  = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
+        LONG nMonitorPixelWidth  = pDisplayDevInfo->rcMonitor.right  - pDisplayDevInfo->rcMonitor.left;
         LONG nMonitorPixelHeight = pDisplayDevInfo->rcMonitor.bottom - pDisplayDevInfo->rcMonitor.top;
 
 
@@ -593,23 +593,38 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             OSVERSIONINFOEX osvinfex;
             if (IsWin10OrGreater())
             {
+                    /*Version	 OS build
+                    1909	18363.535
+                    1903	18362.535
+                    1809	17763.914
+                    1803	17134.1184
+                    1709	16299.1565
+                    */
+
+                m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+
                 if (RtlGetVersionWrapper(&osvinfex))
                 {
                     if (osvinfex.dwBuildNumber <= 16299)
                     {//版本1709(OS内部版本 16299.125)
-                        m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+                        //m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
                     }
-                    else
-                    {
+                    else if (osvinfex.dwBuildNumber == 17134)
+                    {//版本1803(OS内部版本 17134.1184)
                         if (pDisplayDevInfo->displayAdapterInfos.size() >= 2)
                         {//屏幕复制模式
-                            m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+                            //m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
                         }
                         else
                         {//屏幕嵌入在触屏内部的模型
-                            m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
+                          m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
                         }
                     }
+                    //else if (osvinfex.dwBuildNumber == 17763)
+                    //{   //版本1809(OS内部版本 17763.253)
+                        //m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+                    //}
+
                 }
             }
             else
@@ -647,8 +662,8 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
                     const int& nTargetWidth = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cx;
                     const int& nTargetHeight = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cy;
 
-                    wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
-                    wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+                    wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth  ) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
+                    wYData = USHORT((contactPos.y - nMonitorPixelTop  + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
                 }
                 break;
             }//switch(m_eTouchDataAdjustModel)
