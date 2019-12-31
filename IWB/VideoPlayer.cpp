@@ -1003,8 +1003,6 @@ BOOL CVideoPlayer::ResizeVideo(const RECT& rcNewSize)
         bRet = hr == S_OK?TRUE:FALSE;
     }
 
-
-
     return bRet;
 }
 
@@ -1469,7 +1467,8 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
         }
 
         long lBrightness = newParams.Prop_VideoProcAmp_Brightness;
-        if(lBrightness < lMin)
+
+		if(lBrightness < lMin)
         {
             lBrightness = lMin;
         }
@@ -1769,33 +1768,40 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
     }while(0);
 
 	/////////////////////////////////////曝光时间的设置
-	CComPtr<IAMCameraControl> ptrAMCameraControl;	
-	hr = m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void**)&ptrAMCameraControl);
-	if (FAILED(hr))
+	do
 	{
-		return FALSE;
-	}
+	    CComPtr<IAMCameraControl> ptrAMCameraControl;	
+	    hr = m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void**)&ptrAMCameraControl);
+	    if (FAILED(hr))
+	    {
+			break;
+	    }
 
-	hr =
-		ptrAMCameraControl->GetRange(
-			CameraControl_Exposure,
-			&lMin,
-			&lMax,
-			&lSteppingDelta,
-			&lDefault,
-			&lCapsFlags);
+	    hr =
+		   ptrAMCameraControl->GetRange(
+			   CameraControl_Exposure,
+			   &lMin,
+			   &lMax,
+			   &lSteppingDelta,
+			   &lDefault,
+			   &lCapsFlags);
+		if (FAILED(hr))
+		{
+			break;
+		}
 
-	long lExposure = newParams.Prop_CameraControl_Exposure;
-	if (lExposure <lMin)
-	{
-		lExposure = lMin;
-	}
-	else if (lExposure>lMax)
-	{
-		lExposure = lMax;
-	}
+	    long lExposure = newParams.Prop_CameraControl_Exposure;
+	    if (lExposure <lMin)
+	    {
+		    lExposure = lMin;
+	    }
+	    else if (lExposure>lMax)
+	    {
+		    lExposure = lMax;
+	    }
+	    hr = ptrAMCameraControl->Set(CameraControl_Exposure, lExposure, CameraControl_Flags_Manual);
 
-	hr = ptrAMCameraControl->Set(CameraControl_Exposure, lExposure, CameraControl_Flags_Manual);
+	} while (0);
 
     return (hr==S_OK)?TRUE:FALSE;
 

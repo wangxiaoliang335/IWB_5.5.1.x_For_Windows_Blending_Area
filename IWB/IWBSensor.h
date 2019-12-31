@@ -18,7 +18,7 @@ public:
 
     BOOL Stop();
 
-    void ShowStatusInfo();
+    void ShowMissStatusInfo();
 
 
     //@功能:设置视频捕获设备信息
@@ -212,6 +212,9 @@ public:
 
       //初始化校正实例
       void ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel);
+
+	  void SetResolutionType(CAtlString  Value);
+
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;

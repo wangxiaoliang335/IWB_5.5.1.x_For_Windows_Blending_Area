@@ -255,7 +255,7 @@ bool CVirtualTUIO::SaveTUIOConfig()
 void  CVirtualTUIO::SetIPadressAndPort(DWORD IP,int nPort)
 {
 	char szTempIP[24];
-	sprintf_s(szTempIP,_countof(szTempIP),"%d.%d.%d.%d", (IP & 0xFF000000) >> 24, (IP & 0x00FF0000) >> 16, (IP & 0x0000FF00) >> 8, (IP & 0x000000FF));
+	sprintf_s(szTempIP,_countof(szTempIP),"%d.%d.%d.%d", (IP & 0xFF000000)>>24 , (IP & 0x00FF0000) >> 16, (IP & 0x0000FF00) >> 8, (IP & 0x000000FF));
 
 	if (strcmp(szTempIP,szIP) != 0 || m_nPort != nPort)
 	{

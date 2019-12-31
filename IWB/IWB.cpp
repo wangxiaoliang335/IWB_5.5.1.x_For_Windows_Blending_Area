@@ -276,7 +276,7 @@ BOOL CIWBApp::InitInstance()
 
     int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
 
-    ReadUSBKey(TRUE);
+    ReadUSBKey(TRUE, nDeviceCount);
 
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
@@ -587,7 +587,6 @@ void CIWBApp::InitDirectoryInformation()
                         _countof(szFileSystemNameBuffer)//
                     );
 
-
                 if (bRet)
                 {
 
@@ -635,12 +634,26 @@ EPalmTouchControlType CIWBApp::GetPalmTouchType()const
 	return this->m_ePalmTouchControlType;
 }
 
+EFingerTouchControlType CIWBApp::GetFingerTouchType() const
+{
+	return this->m_eFingerTouchControlType;
+}
+
+int  CIWBApp::GatAllUSBKeyTouchTypeCount()
+{
+	return  m_VecAllUsbKeyTouchType.size();
+}
+const AllUSBKeyTouchType* CIWBApp::GatAllUSBKeyTouchType() const
+{
+	return &m_VecAllUsbKeyTouchType[0];
+}
+
 
 //@功能:从USBKey中读取信息
 //@参数:bFirstTime, 第一次检测UsbKey的存在
 //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
 //      第二次及以后则不再弹出兑换框。
-void CIWBApp::ReadUSBKey(BOOL bFirstTime)
+void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 {
 
     //屏幕模式缺省为单屏模式
@@ -649,6 +662,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 
     //手触/笔触模式
     m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+	//手掌互动是计算加密狗的个数；
+	int nUSBKeyTouchCount = 0;
 
     //BOOL bDoubleScreenTouchMerge = FALSE;//双屏拼接功能检测
 
@@ -657,11 +672,13 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
     do
     {
         UINT uKeyNum = SDKREG_GetUSBKeyCount();
+		m_VecAllUsbKeyTouchType.resize(uKeyNum);
         for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
         {    
 			int nAppType = 0;
 			float fVersion = 0.0f;
 			int   nPalmType = 0;
+			int   nFingerContorlType = 0;
             if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
             {
                 continue;
@@ -679,9 +696,12 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 			//      └─1:使能双屏拼接功能                                                 
 			//
 			//
-			if (SDKREG_GetAppType(&nAppType, uKeyIndex) == S_OK)
+ 			if (SDKREG_GetAppType(&nAppType, uKeyIndex) == S_OK)
 			{
 				EDeviceTouchType  eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+				EPalmTouchControlType ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P0;
+				EFingerTouchControlType  eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F0;
+
 				switch (nAppType & 0x0000FF)
 				{
 				case 0:
@@ -692,56 +712,95 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 					break;
 				case 2:
 					eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
+					nFingerContorlType = SDKREG_GetParamType(uKeyIndex);
+					switch (nFingerContorlType)
+					{
+					   case 0:
+						   eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F0;
+						   break;
+					   case 1:
+						   eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F1;
+						   break;
+					   case 2:
+						   eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F2;
+						   break;
+					   case 3:
+						   eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F3;
+						   break;
+					   case 4:
+						   eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F4;
+						   break;
+					   case 5:
+						   eFingerTouchControlType = E_FINGER_TOUCHCONTROL_F5;
+						   break;
+					   default:
+						   break;
+					}
+					if (eFingerTouchControlType >m_eFingerTouchControlType)
+					{
+						m_eFingerTouchControlType = eFingerTouchControlType;
+					}
+
 					break;
 				case 3:
 					eUSBKeyTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
 					nPalmType = SDKREG_GetParamType(uKeyIndex);
-
 					switch (nPalmType)
 					{
-					case 0:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P0;
-						break;
-					case 1:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P1;
-						break;
-					case 2:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P2;
-						break;
-					case 3:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P3;
-						break;
-					case 4:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P4;
-						break;
-					case 5:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P5;
-						break;
-					case 6:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T0;
-						break;
-					case 7:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T1;
-						break;
-					case 8:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T2;
-						break;
-					case 9:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T3;
-						break;
-					case 10:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T4;
-						break;
-					case 11:
-						m_ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T5;
-						break;
-					default:
-						break;
+					   case 0:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P0;
+						   break;
+					   case 1:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P1;
+						   break;
+					   case 2:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P2;
+						   break;
+					   case 3:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P3;
+						   break;
+					   case 4:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P4;
+						   break;
+					   case 5:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_P5;
+						   break;
+					   case 6:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T0;
+						   break;
+					   case 7:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T1;
+						   break;
+					   case 8:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T2;
+						   break;
+					   case 9:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T3;
+						   break;
+					   case 10:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T4;
+						   break;
+					   case 11:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T5;
+						   break;
+					   default:
+						   break;
 					}
+
+					nUSBKeyTouchCount++;
+					m_VecAllUsbKeyTouchType[uKeyIndex].ePalmTouchControlType = ePalmTouchControlType ;
+
+					if (ePalmTouchControlType > m_ePalmTouchControlType)
+					{
+						m_ePalmTouchControlType = ePalmTouchControlType;
+					}
+
 					break;
 				default:
 					break;
 				}//switch
+
+				m_VecAllUsbKeyTouchType[uKeyIndex].eUSBKeyTouchType = eUSBKeyTouchType;
 
 				if (eUSBKeyTouchType > m_eUSBKeyTouchType)
 				{
@@ -781,7 +840,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 					break;
 
 				}//switch
-
+				m_VecAllUsbKeyTouchType[uKeyIndex].eScreenModeFromUsbKey = eScreenMode;
 				 //选择最多的凭借模式
 				if (eScreenMode > m_eScreenModeFromUsbKey) m_eScreenModeFromUsbKey = eScreenMode;
 			}
@@ -834,11 +893,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                         {
                             m_eScreenModeFromUsbKey = (EScreenMode)value;
                         }
-
                     }
-
                 }
-
             }
             else 
             {
@@ -857,7 +913,6 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
                         {
                             m_eScreenModeFromUsbKey = onlineRegisterDlg.GetScreenMode();
                         }
-
                         break;
                     }
 
@@ -873,9 +928,39 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 
             break;//跳出大循环
         }//if(!bFoundUSBKey)
-
-
     } while (!bFoundUSBKey);
+
+	if (m_eUSBKeyTouchType == E_DEVICE_PALM_TOUCH_CONTROL && m_ePalmTouchControlType == E_PLAM_TOUCHCONTROL_P1)
+	{
+		m_eScreenModeFromUsbKey = EScreenModeSingle;
+	}
+	else if (m_eUSBKeyTouchType == E_DEVICE_PALM_TOUCH_CONTROL && m_eScreenModeFromUsbKey ==EScreenModeSingle)
+	{
+		if (nUSBKeyTouchCount  >= nSersorcount )
+		{
+			switch (nSersorcount)
+			{
+			case 2:
+				m_eScreenModeFromUsbKey = EScreenModeDouble;
+				break;
+			case 3:
+				m_eScreenModeFromUsbKey = EScreenModeTriple;
+				break;
+			case 4:
+				m_eScreenModeFromUsbKey = EScreenModeQuad;
+				break;
+			case 5:
+				m_eScreenModeFromUsbKey = EScreenModeQuint;
+				break;
+			case 6:
+				m_eScreenModeFromUsbKey = EScreenModeHexa;
+				break;
+			}
+		}	
+	}
+	else
+	{
+	}
 
     m_bFoundHardwareUSBKey = bFoundUSBKey;
 }

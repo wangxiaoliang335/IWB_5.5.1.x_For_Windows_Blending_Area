@@ -416,7 +416,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
              break;
           case E_DEV_MODE_TOUCHSCREEN:
 			  ////如果选择的是单点触控的话，只响应一个点就可以了
-			  if (m_bSinglePointMode)
+ 			  if (m_bSinglePointMode)
 			  {
 		          //搜索编号为0的笔信息
 		         for (int i = 0; i < nPenCount; i++)

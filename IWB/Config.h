@@ -38,9 +38,20 @@ enum EDeviceTouchType
 {
     E_DEVICE_PEN_TOUCH_WHITEBOARD   , //笔触控电子白板（精准触控）
     E_DEVICE_FINGER_TOUCH_WHITEBOARD, //手触控电子白板（精准触控）
-	E_DEVICE_PALM_TOUCH_CONTROL     , //手掌互动(非精准触控并保证某一区域只能大光斑触发，激光器装在中间)
+	E_DEVICE_PALM_TOUCH_CONTROL     , //手掌互动
 	E_DEVICE_FINGER_TOUCH_CONTROL   , //手指触控(大画面精准触控)
 	E_DEVICE_NOFIND                 , //没发现加密狗
+};
+
+/////手指触控的类型
+enum EFingerTouchControlType
+{
+	E_FINGER_TOUCHCONTROL_F0 = 0,
+	E_FINGER_TOUCHCONTROL_F1 = 1,
+	E_FINGER_TOUCHCONTROL_F2 = 2,
+	E_FINGER_TOUCHCONTROL_F3 = 3,
+	E_FINGER_TOUCHCONTROL_F4 = 4,
+	E_FINGER_TOUCHCONTROL_F5 = 5,
 };
 
 /////手掌互动触控的类型
@@ -48,18 +59,19 @@ enum EPalmTouchControlType
 {
 	///////P系列是30帧的，精度需要做偏差
 	///////T系列是60帧的，精度不需要做偏差
-	E_PLAM_TOUCHCONTROL_P0, //保留。   
-	E_PLAM_TOUCHCONTROL_P1, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在左上角的位置的。
-	E_PLAM_TOUCHCONTROL_P2, //保留。
-	E_PLAM_TOUCHCONTROL_P3, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
-	E_PLAM_TOUCHCONTROL_P4, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
-	E_PLAM_TOUCHCONTROL_P5, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
-	E_PLAM_TOUCHCONTROL_T0, //保留。
-	E_PLAM_TOUCHCONTROL_T1, //保留。
-	E_PLAM_TOUCHCONTROL_T2, //保留。
-	E_PLAM_TOUCHCONTROL_T3, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
-	E_PLAM_TOUCHCONTROL_T4, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
-	E_PLAM_TOUCHCONTROL_T5, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_P0 = 0, //保留。   
+	E_PLAM_TOUCHCONTROL_P1 = 1, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在左上角的位置的。
+	E_PLAM_TOUCHCONTROL_P2 = 2, //保留。
+	E_PLAM_TOUCHCONTROL_P3 = 3, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_P4 = 4, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_P5 = 5, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_T0 = 6, //保留。
+	E_PLAM_TOUCHCONTROL_T1 = 7, //保留。
+	E_PLAM_TOUCHCONTROL_T2 = 8, //保留。
+	E_PLAM_TOUCHCONTROL_T3 = 9, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_T4 = 10, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_T5 = 11, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_UnKnow = -1,
 };
 
 enum EHIDDeviceMode
@@ -2164,7 +2176,7 @@ _declspec(selectany) extern const TCHAR* DEFAULT_DEV_IDS[] = {
 BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData);
 //@功能:保存配置文件
 //@参数:lpszConfigFilePath, 配置文件的完成路径
-BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData);
+BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int nSensorCount);
 
 extern TSysConfigData g_tSysCfgData;
 

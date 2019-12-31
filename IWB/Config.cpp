@@ -3164,9 +3164,10 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 //@参数:pNode,
 //      allSensorCfg,
 
-BOOL SaveConfig(TiXmlNode *pNode, const std::vector<TSensorConfig>& allSensorCfg)
+BOOL SaveConfig(TiXmlNode *pNode, const std::vector<TSensorConfig>& allSensorCfg,int nSersorCount)
 {
-	for (size_t i = 0; i< allSensorCfg.size(); i++)
+	//for (size_t i = 0; i< allSensorCfg.size(); i++)
+	for (size_t i = 0; i< nSersorCount; i++)
 	{
 		TiXmlComment* pXmlComment = new TiXmlComment("摄像头传感器的配置参数");
 		pNode->LinkEndChild(pXmlComment);
@@ -3310,7 +3311,7 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData)
 
 //@功能:保存配置文件
 //@参数:lpszConfigFilePath, 配置文件的完成路径
-BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
+BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int nSensorCount)
 {
     TiXmlDocument oXMLDoc;
     TiXmlDeclaration Declaration("1.0","UTF-8","no");
@@ -3341,7 +3342,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData)
 
 	pSettings->LinkEndChild(pIWBSensors);
 
-	SaveConfig(pIWBSensors, sysCfgData.vecSensorConfig);
+	SaveConfig(pIWBSensors, sysCfgData.vecSensorConfig, nSensorCount);
     
 
     //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中

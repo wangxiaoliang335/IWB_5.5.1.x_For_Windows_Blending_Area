@@ -13,6 +13,80 @@ extern CBitAnswer  g_bitanswer;
 
 IMPLEMENT_DYNAMIC(COnlineRegisterDlg, CDialog)
 
+inline const TCHAR*  GetPalmTouchTypeString(EPalmTouchControlType ePalmTouchControlType)
+{
+	switch (ePalmTouchControlType)
+	{
+	    case E_PLAM_TOUCHCONTROL_P0:
+		     return _T("P0");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_P1:
+		     return  _T("P1");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_P2:
+		     return _T("P2");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_P3:
+		     return  _T("P3");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_P4:
+		     return  _T("P4");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_P5:
+		     return  _T("P5");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_T0:
+		     return  _T("T0");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_T1:
+		     return _T("T1");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_T2:
+		     return  _T("T2");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_T3:
+		     return  _T("T3");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_T4:
+		     return _T("T4");
+		     break;
+	    case E_PLAM_TOUCHCONTROL_T5:
+		     return _T("T5");
+		     break;
+	    default:
+		     break;
+	}
+	return _T("");
+}
+inline const TCHAR* GetFingerTouchTypeString(EFingerTouchControlType eFingerTouchControlType)
+{
+	switch (eFingerTouchControlType)
+	{
+	   case E_FINGER_TOUCHCONTROL_F0:
+		    return  _T("F0");
+		    break;
+	   case E_FINGER_TOUCHCONTROL_F1:
+		    return  _T("F1");
+		    break;
+	   case E_FINGER_TOUCHCONTROL_F2:
+		    return  _T("F2");
+		    break;
+	   case E_FINGER_TOUCHCONTROL_F3:
+		    return  _T("F3");
+		    break;
+	   case E_FINGER_TOUCHCONTROL_F4:
+		    return  _T("F4");
+		    break;
+	   case E_FINGER_TOUCHCONTROL_F5:
+		     return  _T("F5");
+		     break;
+	  default:
+		   break;
+	}
+	return _T("");
+}
+
+
 COnlineRegisterDlg::COnlineRegisterDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(COnlineRegisterDlg::IDD, pParent),
     m_bRegisteredOk(FALSE)
@@ -67,50 +141,63 @@ BOOL COnlineRegisterDlg::OnInitDialog()
 		   break;
 	   case E_DEVICE_FINGER_TOUCH_CONTROL:
 		   strUSBKey = g_oResStr[IDS_STRING495];
+		   stPalmTouch = GetFingerTouchTypeString(theApp.GetFingerTouchType());
 		   break;
 	   case E_DEVICE_PALM_TOUCH_CONTROL:
-		   strUSBKey = g_oResStr[IDS_STRING496];
-	       /////////手掌互动的类型
-	       switch (theApp.GetPalmTouchType())
-	       {
-	          case E_PLAM_TOUCHCONTROL_P1:
-		           stPalmTouch = _T("P1");
-		           break;
-	          case E_PLAM_TOUCHCONTROL_P3:
-		           stPalmTouch = _T("P3");
-		           break;
-	          case E_PLAM_TOUCHCONTROL_P4:
-		           stPalmTouch = _T("P4");
-		           break;
-	          case E_PLAM_TOUCHCONTROL_P5:
-		           stPalmTouch = _T("P5");
-		           break;
-	          case E_PLAM_TOUCHCONTROL_T3:
-		           stPalmTouch = _T("T3");
-		           break;
-	          case E_PLAM_TOUCHCONTROL_T4:
-		           stPalmTouch = _T("T4");
-		           break;
-	          case E_PLAM_TOUCHCONTROL_T5:
-		           stPalmTouch = _T("T5");
-		           break;
-	          default:
-		          break;
-	        }
+		    strUSBKey = g_oResStr[IDS_STRING496];
+		    stPalmTouch = GetPalmTouchTypeString(theApp.GetPalmTouchType());
 			break;
 	     default:
 		    break;
 	   }
 
        m_strText.Format(
-           _T("%s\r\n%s:%s(%s)\r\n%s:%s"), 
+           _T("%s\r\n%s:%s(%s)\r\n%s:%s\r\n\r\n"), 
            g_oResStr[IDS_STRING458],//"使用硬件加密狗"信息
            g_oResStr[IDS_STRING459],
 		   strUSBKey,
 		   stPalmTouch,
            g_oResStr[IDS_STRING462],
            theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble? (LPCTSTR)strFusionInfo :g_oResStr[IDS_STRING463]);
-           
+
+	   int nCount = theApp.GatAllUSBKeyTouchTypeCount();
+	   //説明插入了多餘1個的加密狗
+	   if(nCount >1)
+	   {
+	         const AllUSBKeyTouchType *eAllUSBKeyTouchType = theApp.GatAllUSBKeyTouchType();
+	         m_strText.Append(g_oResStr[IDS_STRING497]);
+	         for (int i = 0; i < nCount; i++)
+	         {
+		          CString   strEachUSBKey = _T("");
+		          CString   strEachKey = _T("");
+		          CString   strEachPalmTouch = _T("--");
+		          CString   strFusionInfo = _T("");
+		          switch(eAllUSBKeyTouchType[i].eUSBKeyTouchType)
+		          {
+		             case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+				          strEachUSBKey = g_oResStr[IDS_STRING460];
+			              break;
+		             case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+				          strEachUSBKey = g_oResStr[IDS_STRING461];
+			              break;
+		             case E_DEVICE_FINGER_TOUCH_CONTROL:
+				          strEachUSBKey = g_oResStr[IDS_STRING495];
+						  strEachPalmTouch = GetFingerTouchTypeString(theApp.GetFingerTouchType());
+			              break;
+		             case E_DEVICE_PALM_TOUCH_CONTROL:
+				          strEachUSBKey = g_oResStr[IDS_STRING496];
+				          strEachPalmTouch = GetPalmTouchTypeString(eAllUSBKeyTouchType[i].ePalmTouchControlType);
+				          break;
+			         default:
+				          break;
+		           }
+		           CString  strFusion =_T("");
+		           strFusion.Format(g_oResStr[IDS_STRING464], (int)eAllUSBKeyTouchType[i].eScreenModeFromUsbKey+1);
+		           strEachKey.Format(_T("\r\n(%d:)%s(%s),%s"),i, strEachUSBKey, strEachPalmTouch, 
+			       eAllUSBKeyTouchType[i].eScreenModeFromUsbKey >= EScreenModeDouble ? (LPCTSTR)strFusion : g_oResStr[IDS_STRING463]);
+	               m_strText.Append(strEachKey);
+	         }
+	   }       
    }
    else
    {

@@ -481,9 +481,7 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
     {
         pPtScreen ->d[0] = nActualMonitorLeft + ((pPtScreen ->d[0] - nCalibrateMonitorLeft) * nActualMonitorWidth  + (nCalibrateMonitorWidth  >> 1)/*四舍五入*/)/nCalibrateMonitorWidth;
         pPtScreen ->d[1] = nActualMonitorTop  + ((pPtScreen ->d[1] - nCalibrateMonitorTop ) * nActualMonitorHeight + (nCalibrateMonitorHeight >> 1)/*四舍五入*/)/nCalibrateMonitorHeight;
-
-
-        
+   
         //虚拟屏幕位置信息(单位:像素)
         int nCXVScreen    = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int nCYVScreen    = GetSystemMetrics(SM_CYVIRTUALSCREEN);
