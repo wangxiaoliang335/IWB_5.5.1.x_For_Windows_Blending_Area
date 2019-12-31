@@ -340,6 +340,11 @@ const int StatusPaneCountEachSensor = 3;
 const int PANE_FPS    = 0;
 const int PANE_STATE  = 1;
 const int PANE_DONGLE = 2;
+const int PANE_STATE2 = 3;
+const int PANE_STATE3 = 4;
+const int PANE_STATE4 = 5;
+const int PANE_STATE5 = 6;
+const int PANE_STATE6 = 7;
 
 static UINT indicators[] ={
     IDS_STRING438,
@@ -574,7 +579,8 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_WM_NCLBUTTONDBLCLK()
     ON_WM_ERASEBKGND()
     ON_WM_LBUTTONDBLCLK()
-    ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_INSTALL_TIP, OnSensorCtxMenu)
+  //  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_INSTALL_TIP, OnSensorCtxMenu)
+	ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN,ID_SENSORCTXMENU_FOURPOINTCALIBRATION, OnSensorCtxMenu)
 
     //ON_COMMAND_RANGE(ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS, ID_GUESTURESETTINGS_WINDOWSGESTURESETTINGS, OnGestureSettingMenu)
 
@@ -774,13 +780,9 @@ BOOL CIWBDlg::OnInitDialog()
     m_aryMenuBmp[e_BMP_ERASE_2X ].LoadBitmap(IDB_BITMAP_ERASER_3X);
     m_aryMenuBmp[e_BMP_ERASE_3X ].LoadBitmap(IDB_BITMAP_ERASER_4X);
 
-
-
     InitMenu();
 
-
     CreateOwnerCursor();
-
 
     m_mnuManualScreenAreaSettings.LoadMenu(IDR_MENU_MANUAL_SREEN_AREA_SETTINGS);
 
@@ -1132,57 +1134,58 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
 
     CRect rcClient;
     GetClientRect(&rcClient);
+    ///add by vera_zhao 2109.12.18
+	AdjustStatusBar(cx, cy);
 
-    //调整状态栏的位置
-    RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0,reposDefault, NULL, NULL, TRUE);
-
-
-    int borders[3];	
-	//The first element receives the width of the horizontal border, 
-	//the second receives the width of the vertical border, 
-	//and the third receives the width of the border between rectangles.
-    ::SendMessage(m_ctlStatusBar.GetSafeHwnd(), SB_GETBORDERS, 0, (LPARAM)borders); 
-
-    int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
-
-    int nSensorStatusWidth = cx;
-    if(nSensorCount != 0)
-    {
-        nSensorStatusWidth  =  cx / nSensorCount;
-    }
-	
-    //reference D:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\src\mfc\barstat.cpp
-    const int  CX_PANE_BORDER =  8;//4    //3 pixels on each side of each pane
-
-    const int PANE1_MIN_WIDTH = 48*4;
-    int nPaneWidth_1 = nSensorStatusWidth/10 - CX_PANE_BORDER - borders[2];
-	//当窗体很小时, 可能为负值。
-    if(nPaneWidth_1 < 0) nPaneWidth_1 = 0;
-
-
-	const int PANE2_MIN_WIDTH = 48 * 4;
-	int nPaneWidth_2 = nSensorStatusWidth/3 - CX_PANE_BORDER - borders[2];
-	//当窗体很小时,可能为负值。
-	if (nPaneWidth_2 < 0) nPaneWidth_2 = 0;
-
-
-    int nPaneWidth_3 = nSensorStatusWidth - nPaneWidth_1 - nPaneWidth_2  - CX_PANE_BORDER - borders[2]* StatusPaneCountEachSensor;
-	//当窗体很小时,可能为负值。
-    if(nPaneWidth_3 < 0) nPaneWidth_3 = 0;
-
-	int nPaneWidth_4 = nSensorStatusWidth ;
-	int nPaneWidth_5 = nSensorStatusWidth*2 ;
-
-    //for(int i=0; i < nSensorCount; i++)
-    for (int i = 0; i < 1; i++)
-    {		
-        this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 0, indicators[i*StatusPaneCountEachSensor + 0], SBPS_NORMAL,    nPaneWidth_1);
-        this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 1, indicators[i*StatusPaneCountEachSensor + 1], SBPS_NORMAL,    nPaneWidth_2);
-		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 2, indicators[i*StatusPaneCountEachSensor + 2], SBPS_OWNERDRAW, nPaneWidth_3);
-		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 3, indicators[i*StatusPaneCountEachSensor + 3], SBPS_NORMAL,    nPaneWidth_4);
-		this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 4, indicators[i*StatusPaneCountEachSensor + 4], SBPS_NORMAL,    nPaneWidth_5);
-    }
-
+	//调整状态栏的位置
+//	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0, reposDefault, NULL, NULL, TRUE);
+//
+//
+//	int borders[3];
+//	//The first element receives the width of the horizontal border, 
+//	//the second receives the width of the vertical border, 
+//	//and the third receives the width of the border between rectangles.
+//	::SendMessage(m_ctlStatusBar.GetSafeHwnd(), SB_GETBORDERS, 0, (LPARAM)borders);
+//
+//	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
+//
+//	int nSensorStatusWidth = cx;
+//	if (nSensorCount != 0)
+//	{
+//		nSensorStatusWidth = cx / nSensorCount;
+//	}
+//
+//	//reference D:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\src\mfc\barstat.cpp
+//	const int  CX_PANE_BORDER = 8;//4    //3 pixels on each side of each pane
+//
+//	const int PANE1_MIN_WIDTH = 48 * 4;
+//	int nPaneWidth_1 = nSensorStatusWidth / 10 - CX_PANE_BORDER - borders[2];
+//	//当窗体很小时, 可能为负值。
+//	if (nPaneWidth_1 < 0) nPaneWidth_1 = 0;
+//
+//
+//	const int PANE2_MIN_WIDTH = 48 * 4;
+//	int nPaneWidth_2 = nSensorStatusWidth / 3 - CX_PANE_BORDER - borders[2];
+//	//当窗体很小时,可能为负值。
+//	if (nPaneWidth_2 < 0) nPaneWidth_2 = 0;
+//
+//
+//	int nPaneWidth_3 = nSensorStatusWidth - nPaneWidth_1 - nPaneWidth_2 - CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+//	//当窗体很小时,可能为负值。
+//	if (nPaneWidth_3 < 0) nPaneWidth_3 = 0;
+//
+//	int nPaneWidth_4 = nSensorStatusWidth;
+//	int nPaneWidth_5 = nSensorStatusWidth * 2;
+//
+//	//for(int i=0; i < nSensorCount; i++)
+//	//  for (int i = 0; i < 1; i++)
+//	//  {		
+//	//      this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 0, indicators[i*StatusPaneCountEachSensor + 0], SBPS_NORMAL, nPaneWidth_1);
+//	//      this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 1, indicators[i*StatusPaneCountEachSensor + 1], SBPS_NORMAL, nPaneWidth_2);
+//	//      this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 2, indicators[i*StatusPaneCountEachSensor + 2], SBPS_OWNERDRAW, nPaneWidth_3);
+//	//      this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 3, indicators[i*StatusPaneCountEachSensor + 3], SBPS_NORMAL, nPaneWidth_4);
+//	//      this->m_ctlStatusBar.SetPaneInfo(i*StatusPaneCountEachSensor + 4, indicators[i*StatusPaneCountEachSensor + 4], SBPS_NORMAL, nPaneWidth_5);
+//	//   }
 
     //查询除状态栏以外的客户区
     RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0,reposQuery, &rcClient, NULL, TRUE);
@@ -1196,9 +1199,70 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     }    
 }
 
-void CIWBDlg::AdjustStatusBar(int left, int top, int cx, int cy)
+void CIWBDlg::AdjustStatusBar(int cx, int cy)
 {
+	//调整状态栏的位置
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0, reposDefault, NULL, NULL, TRUE);
 
+
+	int borders[3];
+	//The first element receives the width of the horizontal border, 
+	//the second receives the width of the vertical border, 
+	//and the third receives the width of the border between rectangles.
+	::SendMessage(m_ctlStatusBar.GetSafeHwnd(), SB_GETBORDERS, 0, (LPARAM)borders);
+
+	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
+
+	int nSensorStatusWidth = cx;
+	if (nSensorCount != 0)
+	{
+		nSensorStatusWidth = cx / nSensorCount;
+	}
+
+	//reference D:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\src\mfc\barstat.cpp
+	const int  CX_PANE_BORDER = 8;//4    //3 pixels on each side of each pane
+
+	const int PANE1_MIN_WIDTH = 48 * 4;
+	int nPaneWidth_1 = 0;
+	if (nSensorCount < 2)
+	{
+		nPaneWidth_1 = nSensorStatusWidth / 10 - CX_PANE_BORDER - borders[2];
+		//当窗体很小时, 可能为负值。
+		if (nPaneWidth_1 < 0) nPaneWidth_1 = 0;
+	}
+
+	const int PANE2_MIN_WIDTH = 48 * 4;
+	int nPaneWidth_2 = nSensorStatusWidth / 3 - CX_PANE_BORDER - borders[2];
+	//当窗体很小时,可能为负值。
+	if (nPaneWidth_2 < 0) nPaneWidth_2 = 0;
+
+
+	int nPaneWidth_3 = nSensorStatusWidth - nPaneWidth_1 - nPaneWidth_2 - CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+	//当窗体很小时,可能为负值。
+	if (nPaneWidth_3 < 0) nPaneWidth_3 = 0;
+
+	int nPaneWidth_4 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+	if (nPaneWidth_4 < 0)  nPaneWidth_4 = 0;
+	int nPaneWidth_5 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+	if (nPaneWidth_5 < 0)  nPaneWidth_5 = 0;
+	int nPaneWidth_6 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+	if (nPaneWidth_6 < 0)  nPaneWidth_6 = 0;
+	int nPaneWidth_7 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+	if (nPaneWidth_7 < 0)  nPaneWidth_7 = 0;
+	int nPaneWidth_8 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+	if (nPaneWidth_8 < 0)  nPaneWidth_8 = 0;
+	//for(int i=0; i < nSensorCount; i++)
+		
+	this->m_ctlStatusBar.SetPaneInfo(0, indicators[0], SBPS_NORMAL, nPaneWidth_1);
+	this->m_ctlStatusBar.SetPaneInfo(1, indicators[1], SBPS_NORMAL, nPaneWidth_2);
+	this->m_ctlStatusBar.SetPaneInfo(2, indicators[2], SBPS_OWNERDRAW, nPaneWidth_3);
+
+	this->m_ctlStatusBar.SetPaneInfo(3, indicators[3], SBPS_NORMAL, nPaneWidth_4);
+    this->m_ctlStatusBar.SetPaneInfo(4, indicators[4], SBPS_NORMAL, nPaneWidth_5);
+	this->m_ctlStatusBar.SetPaneInfo(5, indicators[5], SBPS_NORMAL, nPaneWidth_6);
+	this->m_ctlStatusBar.SetPaneInfo(6, indicators[6], SBPS_NORMAL, nPaneWidth_7);
+	this->m_ctlStatusBar.SetPaneInfo(7, indicators[7], SBPS_NORMAL, nPaneWidth_8);
+	
 }
 
 //void CIWBDlg::AdjustStatusBar(int left, int top, int cx, int cy)
@@ -1691,8 +1755,9 @@ BOOL CIWBDlg::SaveConfig()
     //获取所有图像传感器的配置信息
     this->m_oIWBSensorManager.GetCfgData(g_tSysCfgData);
 
+	size_t nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
     //写入配置文件
-    ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+    ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nSensorCount);
 
     return TRUE;
 }
@@ -1710,10 +1775,6 @@ HRESULT CIWBDlg::OnFpsNotify (WPARAM wParam,LPARAM lParam)
     {
         this->m_ctlStatusBar.SetPaneText(PANE_FPS, strFPS, TRUE);
     }
-//    else if( 1 == nCameraID)
-//    {
-//        this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_FPS, strFPS, TRUE);
-//    }
 
     return 0;
 }
@@ -1722,33 +1783,81 @@ HRESULT CIWBDlg::OnCameraStatusNotify(WPARAM wParam,LPARAM lParam)
 {
     LPCTSTR lpszText = (LPCTSTR)wParam;
     int    nCameraID = lParam;
-
 	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
     if(0 == nCameraID)
     {
         this->m_ctlStatusBar.SetPaneText(PANE_STATE, lpszText, TRUE);
     }
-	if (nSensorCount == 2)
+	switch (nSensorCount)
 	{
-		if (1 == nCameraID)
-		{
-			this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor - 1 + PANE_STATE, lpszText, TRUE);
-		}
-	}
-	if (nSensorCount == 3)
-	{
-		if (1 == nCameraID)
-		{
-			this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor - 1 + PANE_STATE, lpszText, TRUE);
-		}
-		else if (2 == nCameraID)
-		{
-			this->m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_STATE, lpszText, TRUE);
-		}
+	   case 2:
+		  if (1 == nCameraID)
+		  {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+		  }
+		  break;
+	   case 3:
+		   if (1 == nCameraID)
+		   {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+		   }
+		   else if (2 == nCameraID)
+		   {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+		   }
+		   else{}
+		   break;
+	   case 4:
+		   if (1 == nCameraID)  {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+		   }
+		   else if (2 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+		   }
+		   else if (3 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
+		   }
+		   else{}
+		   break;
+	   case 5:
+		   if (1 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+		   }
+		   else if (2 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+		   }
+		   else if (3 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
+		   }
+		   else if(4 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE5, lpszText, TRUE);
+		   }
+		   else { }
+		   break;
+	   case 6:
+		   if (1 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+		   }
+		   else if (2 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+		   }
+		   else if (3 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
+		   }
+		   else if (4 == nCameraID) {
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE5, lpszText, TRUE);
+		   }
+		   else if(5 == nCameraID){
+			   this->m_ctlStatusBar.SetPaneText(PANE_STATE6, lpszText, TRUE);
+		   }
+		   break;
+
+
 	}
 
     return 0;
 }
+
 
 //@功能:开始检测
 BOOL CIWBDlg::StartRunning()
@@ -2018,7 +2127,8 @@ void CIWBDlg::OnMenuParameterSettings()
 		const TCaptureDeviceInstance& devInfo  = pSensor->GetDeviceInfo();
 		if (!devInfo.m_strDevPath.IsEmpty())
 		{
-             ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+			 int nCount = this->m_oIWBSensorManager.GetSensorCount();
+             ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nCount);
 		}
 
 		////////////把设置的是否动态屏蔽传到需要的地方去
@@ -2920,6 +3030,17 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
                     MF_BYCOMMAND|MF_GRAYED);
             }
         }
+
+		if (g_tSysCfgData.globalSettings.bEnable4PointsCalibrate)
+		{
+			pSubMenu->EnableMenuItem(
+				ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
+				MF_BYCOMMAND | MF_ENABLED);
+		}
+		else
+		{
+			pSubMenu->RemoveMenu(ID_SENSORCTXMENU_FOURPOINTCALIBRATION, MF_BYCOMMAND);
+		}
 
         //"自动屏蔽..."菜单项
         pSubMenu->EnableMenuItem(
@@ -4636,6 +4757,10 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
         this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, m_pSelectedSensor->GetID());
         break;
 
+	case ID_SENSORCTXMENU_FOURPOINTCALIBRATION:
+		this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
+		break;
+
 
     case ID_SENSORCTXMENU_AUTOMASK:
         this->m_oIWBSensorManager.StartSearchMaskArea(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
@@ -4749,7 +4874,8 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 		 const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
 		 if (!devInfo.m_strDevPath.IsEmpty())
 		 {
-            ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+			 int nCount = this->m_oIWBSensorManager.GetSensorCount();
+            ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nCount);
 		 }
 
 		 ////////////////////////////////////////////
@@ -4785,6 +4911,32 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 		 {
 			 pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
 		 }
+		 /////////设置是否启用手动绘制的静态屏蔽图
+		 if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
+		 {
+			 pSensor->GetPenPosDetector()->EnableOnlineScreenArea(TRUE);
+		 }
+		 else
+		 {
+			 pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
+		 }
+		 ///////////////////
+		 if (TSensorModeConfig->advanceSettings.bDisableReflectionSpot)
+		 {
+			 pSensor->GetPenPosDetector()->DisableReflectionPoint(TRUE);
+		 }
+		 else {
+			 pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
+		 }
+		 if (g_tSysCfgData.globalSettings.bSinglePointMode)
+		 {
+			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
+		 }
+		 else
+		 {
+			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
+		 }
+
     }//if
 
 }
@@ -4806,7 +4958,8 @@ HRESULT CIWBDlg::OnApplySensorConfig(WPARAM wParam, LPARAM lParam)
 	if (!devInfo.m_strDevPath.IsEmpty())
 	{
 	   //写入配置文件
-       ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+		int nCount = this->m_oIWBSensorManager.GetSensorCount();
+       ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nCount);
 	}
 	return 0L;
 }
@@ -5215,6 +5368,7 @@ void CIWBDlg::OnMenuAdvancessetting()
 				if (strFName == SelectValue)
 				{
 					pSensor->SetFavoriateMediaType(devInfo.m_vecVideoFmt[j]);
+					break;
 				}
 			}
 		}
@@ -5242,10 +5396,10 @@ void CIWBDlg::OnMenuAdvancessetting()
 		int nCount = this->m_oIWBSensorManager.GetSensorCount();
 		if (nCount >0)
 		{
-			g_tSysCfgData.vecSensorConfig[nCount - 1].strFavoriteMediaType = SelectValue;
+			pSensor->SetResolutionType(SelectValue);			
 		}
 		//写入配置文件
-		::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
+		SaveConfig();
 	}
 }
 void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
@@ -5397,6 +5551,10 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     GetClientRect(&rcDisplayArea);
     InvalidateRect(&rcDisplayArea, TRUE);
     UpdateWindow();
+
+	int cx = rcDisplayArea.Width();
+	int cy = rcDisplayArea.Height();
+	AdjustStatusBar(cx,cy);
 
 }
 

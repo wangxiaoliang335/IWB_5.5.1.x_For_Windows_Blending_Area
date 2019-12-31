@@ -19,7 +19,7 @@ m_uCurrentSelectSensordId(0)
     {
         Init(1);
     }
-}
+ }
 
 CIWBSensorManager::~CIWBSensorManager()
 {
@@ -594,7 +594,7 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
 
     size_t nSensorCount = m_vecSensors.size();
     if(nSensorCount == 0)return FALSE;
-    sysCfgData.vecSensorConfig.resize(nSensorCount);
+//    sysCfgData.vecSensorConfig.resize(nSensorCount);
 
     for(size_t i=0; i < nSensorCount; i++)
     {
@@ -606,14 +606,11 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
     
     if (theApp.GetScreenMode() >= EScreenModeDouble)
     {
-
         UINT uScreenCount = 0;
         const RectF* pRelScreens = this->m_oScreenLayoutDesigner.GetScreenRelativeLayouts(&uScreenCount);
 
-
         UINT uMergeAreaCount = 0;
         const RectF* pRelMergeAreas = this->m_oScreenLayoutDesigner.GetRelativeMergeAreas(&uMergeAreaCount);
-
 
         //选择配置文件中屏幕数等于当前实际屏幕数的布局,进行更新
         UINT uLayoutCount = sysCfgData.vecScreenLayouts.size();
@@ -734,7 +731,7 @@ void CIWBSensorManager::OnCameraPlugOut(LPCTSTR lpszDevicePath)
             //停止运行
             this->StopRunning(sensor.GetID());
 
-            sensor.ShowStatusInfo();
+            sensor.ShowMissStatusInfo();
 
             break;
         }
@@ -1165,7 +1162,7 @@ void CIWBSensorManager::OnIWBSensorLightSpotSamplingDone(BOOL bSuccess, int nSen
 
     const ALL_LIGHTSPOT_SAMPLE_SIZE&  screenSamples = m_wndLightSpotSampling.GetScreenSamples();
     m_vecSensors[m_nCurrentSensorID]->OnLightSpotSamplingDone(screenSamples, bSuccess);
-	if (nSensorId > -1)
+	if (nSensorId >= -1)
 	{
 		//说明是单屏采集。
 		return;

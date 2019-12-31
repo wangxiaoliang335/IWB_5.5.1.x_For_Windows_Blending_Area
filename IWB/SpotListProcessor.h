@@ -7,7 +7,7 @@ public:
     //@参数:pLightSpots，指向光斑列表的指针
     //      nLightSpotCount, 光斑个数
     //      dwCameraId, 从0开始的摄像头编号    
-    virtual BOOL WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId) = 0;
+    virtual BOOL WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId, E_CALIBRATE_MODEL eCalibrateModel) = 0;
 
     //@功能:启动处理
     virtual void StartProcess() = 0;
@@ -49,7 +49,7 @@ public:
     //      nLightSpotCount, 光斑个数    
     //      dwCameraId, 从0开始的摄像头编号
     //@功能:该函数被多个线程同时访问，因此需要确保线程安全
-    virtual BOOL WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId);
+    virtual BOOL WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId, E_CALIBRATE_MODEL eCalibrateModel);
 
     //@功能:复位处理器
     void Reset();
@@ -182,7 +182,8 @@ protected:
     HANDLE m_hExitEvent ;//退出事件
 
     static const int SAMPLE_CORRELATION_INTERVAL = 48 ;//摄像头采样相关最大允许间隔, 单位:ms
-
+	////记录这次校正模式是四点还是正常校正
+	E_CALIBRATE_MODEL m_eCalibrateModel;
 
 
 

@@ -21,7 +21,8 @@ m_uCameraCount(1),
 m_bLastHIDOwnnerAfterGR(true),
 m_bIsSmartPenReset(true),
 m_bSimulateMode(FALSE),
-m_bIsTriggeringGuesture(FALSE)
+m_bIsTriggeringGuesture(FALSE),
+m_eCalibrateModel(E_CALIBRATE_MODEL_GENERICAL_CAMERA)
 {
     Reset();
     m_hWriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -433,10 +434,12 @@ BOOL CSpotListProcessor::BuddyCameraFoundSpotInMergeArea(UINT CameraIndex)
 //      dwCameraId, 从0开始的摄像头编号
 //@功能:该函数被多个线程同时访问，因此需要确保线程安全
 //
-BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId)
+BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId, E_CALIBRATE_MODEL eCalibrateModel)
 {
     //加锁，线程安全保护
     CComCritSecLock<CComAutoCriticalSection> lock(m_csForSpotListGroupFIFO);
+
+	m_eCalibrateModel = eCalibrateModel;
 
     if(dwCameraId >= MAX_CAMERA_NUMBER) return FALSE;
 
@@ -671,8 +674,6 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
 
         //OutputDebugString(szDebug);
 
-
-
         char szData[128];
         sprintf_s(
             szData,
@@ -703,41 +704,54 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
     TContactInfo penInfo[PEN_NUM];
     int penCount = PEN_NUM;
 	/////add by zhaown 2019.10.09
-	if(GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL && (theApp.GetPalmTouchType() ==E_PLAM_TOUCHCONTROL_P1|| theApp.GetPalmTouchType() ==E_PLAM_TOUCHCONTROL_P3
-	    || theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P4 || theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P5))
+	if(GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL 
+		&& (   theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P1
+			|| theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P2
+			|| theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P3
+	        || theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P4 
+			|| theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_P5)  )
 	{
-		/////如果是手掌互动时，那么就不做平滑处理和插值处理。直接是原始的光斑值进行触控
-		int  nScreenX = GetSystemMetrics(SM_CXSCREEN);
-		int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
-		POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
-
-		for (int i = 0; i< nLightSpotCount; i++)
+		if (m_eCalibrateModel == E_CALIBRATE_MODEL_GENERICAL_CAMERA)
 		{
-			pts[i] = pLightSpots[i].ptPosInScreen;
-			if ( (pts[i].x > nScreenX/8 && pts[i].x < nScreenX*7/8)||(pts[i].y > nScreenY/8 && pts[i].y < nScreenY*7 / 8) )
-			{
-				pts[i].x  = pts[i].x + 5 ;
-				pts[i].y  = pts[i].y - 5 ;
-			}
-		}
-		m_oSmartPenMatch.DoMatch(pts, nLightSpotCount);
+		     /////如果是手掌互动时，那么就不做平滑处理和插值处理。直接是原始的光斑值进行触控
+		     int  nScreenX = GetSystemMetrics(SM_CXSCREEN);
+		     int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
+		     POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
+		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =30 ；
+		     ///////////在200英寸的时候，偏差的值PixelNumber =20 。这样列出一个线性方程式
+		     double  screenDigonalInMM = g_tSysCfgData.globalSettings.fScreenDiagonalPhysicalLength;
+		     double  PixelNumber = (10936 - screenDigonalInMM) / 296;
+		     if (PixelNumber< 0 )
+		     {
+			      PixelNumber = 0;
+		     }
+		     for (int i = 0; i< nLightSpotCount; i++)
+		     {
+			     pts[i] = pLightSpots[i].ptPosInScreen;
+			     if ( (pts[i].x > nScreenX/8 && pts[i].x < nScreenX*7/8)||(pts[i].y > nScreenY/8 && pts[i].y < nScreenY*7 / 8) )
+			     {
+				      pts[i].x  = pts[i].x + PixelNumber;
+				      pts[i].y  = pts[i].y - PixelNumber;
+			     }
+		      }
 
-		int nElementCount = 0;
-		const TMatchInfo* pMatchInfo = m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
+		      m_oSmartPenMatch.DoMatch(pts, nLightSpotCount);
+		      int nElementCount = 0;
+		      const TMatchInfo* pMatchInfo = m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
+		      penCount = nElementCount;
 
-		penCount = nElementCount;
+//		      m_oStrokFilter.DoFilter(penInfo, penCount);
 
-		for (int i = 0 ; i < penCount; i++ )
-		{
-			const TMatchInfo &refMInfo = pMatchInfo[i];
-			penInfo[i].ePenState = (refMInfo.eMatchState == E_MISMATCHED) ? E_PEN_STATE_UP : E_PEN_STATE_DOWN;
-			penInfo[i].uId = refMInfo.uId;
-			penInfo[i].pt = refMInfo.ptPos;
-		}
-
-		m_oVirtualHID.InputPoints(penInfo, penCount);
-
-		return;
+		     for (int i = 0 ; i < penCount; i++ )
+		     {
+			     const TMatchInfo &refMInfo = pMatchInfo[i];
+			     penInfo[i].ePenState = (refMInfo.eMatchState == E_MISMATCHED) ? E_PEN_STATE_UP : E_PEN_STATE_DOWN;
+			     penInfo[i].uId = refMInfo.uId;
+			     penInfo[i].pt = refMInfo.ptPos;
+		     }
+		     m_oVirtualHID.InputPoints(penInfo, penCount);
+		    return;
+		}//if
 	}
 
 	//////检测GLBoard白板是否是打开的

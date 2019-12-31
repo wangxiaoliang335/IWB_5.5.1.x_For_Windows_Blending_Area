@@ -926,7 +926,7 @@ protected:
 	std::vector<CPoint>  m_vecOnLinePt ;    //用来保存绘制屏蔽图时的采集点
 
 	static const  double SCREEN_DISTANCETWOSPOT_WIDTH_IN_MM;
-	int m_ScreenMinDistanceWidthInPixel ;
+	double m_ScreenMinDistanceWidthInPixel ;
 
 
     BOOL m_bMarkingBaseStone;//4点标定状态标志

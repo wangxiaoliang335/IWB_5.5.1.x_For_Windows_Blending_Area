@@ -327,8 +327,6 @@ void CIWBSensor::SetVideoDispParams(HWND hDispWnd, RECT& rcDispArea, HWND hNotif
     m_oVideoPlayer.SetDisplayWnd(hDispWnd);
     m_oVideoPlayer.SetDisplayArea(rcDispArea);
     m_oVideoPlayer.SetNotifyWnd(hNotifyWnd);
-
-
 }
 
 
@@ -338,7 +336,11 @@ BOOL CIWBSensor::Run()
 {
     //<<added by toxuke@gmail.com,2014/12/14
     //如果设备路径为空则不播放。
-    if (m_tDeviceInfo.m_strDevPath.IsEmpty()) return FALSE;
+	if (m_tDeviceInfo.m_strDevPath.IsEmpty())
+	{
+		ShowMissStatusInfo();
+		return FALSE;
+	}
     //>>
 
     BOOL bRet = m_oVideoPlayer.StartDetect(m_tDeviceInfo.m_strDevPath, &m_tFavoriteMediaType.videoInfoHeader);
@@ -394,7 +396,7 @@ BOOL CIWBSensor::Stop()
     return m_oVideoPlayer.StopDetect();
 }
 
-void CIWBSensor::ShowStatusInfo()
+void CIWBSensor::ShowMissStatusInfo()
 {
     m_oVideoPlayer.MissStatusInfo();
 }
@@ -412,35 +414,35 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
 
     switch (eMode)
     {
-    case E_VIDEO_TUNING_MODE:
+       case E_VIDEO_TUNING_MODE:
 
-        //禁用光笔
-        //g_oMouseEventGen.EnableOpticalPenControl(FALSE);
-        EnableOpticalPen(FALSE);
+          //禁用光笔
+          //g_oMouseEventGen.EnableOpticalPenControl(FALSE);
+          EnableOpticalPen(FALSE);
 
-        //打开滤光片
-        IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), FALSE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+          //打开滤光片
+          IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), FALSE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
-        //载入安装调试时的相机参数
-        bRet = m_oVideoPlayer.SetCameraParams(lensCfg.installTunningSettings.cameraParams);
-        if (!bRet)
-        {
-            AtlTrace(_T("Set CameraParam Failed!\n"));
-        }
+          //载入安装调试时的相机参数
+          bRet = m_oVideoPlayer.SetCameraParams(lensCfg.installTunningSettings.cameraParams);
+          if (!bRet)
+          {
+               AtlTrace(_T("Set CameraParam Failed!\n"));
+          }
 
-        {
-            SIZE videoSize;
-            bRet = m_oVideoPlayer.GetVideoSize(videoSize);
+          {
+              SIZE videoSize;
+              bRet = m_oVideoPlayer.GetVideoSize(videoSize);
 
-            if (bRet && videoSize.cx > 0 && videoSize.cy > 0)
-            {
-                //TOSDText::RectF rcText;
-                RectF rcText;
-				rcText.left = (float)lensCfg.rcGuideRectangle.left;  // / (float)videoSize.cx;
-				rcText.top = (float)lensCfg.rcGuideRectangle.top;   // / (float)videoSize.cy;
+              if (bRet && videoSize.cx > 0 && videoSize.cy > 0)
+              {
+                  //TOSDText::RectF rcText;
+                  RectF rcText;
+				  rcText.left = (float)lensCfg.rcGuideRectangle.left;  // / (float)videoSize.cx;
+				  rcText.top = (float)lensCfg.rcGuideRectangle.top;   // / (float)videoSize.cy;
 
-				rcText.right = (float)lensCfg.rcGuideRectangle.right;  // / (float)videoSize.cx;
-				rcText.bottom = (float)lensCfg.rcGuideRectangle.bottom;  // / (float)videoSize.cy;
+				  rcText.right = (float)lensCfg.rcGuideRectangle.right;  // / (float)videoSize.cx;
+				  rcText.bottom = (float)lensCfg.rcGuideRectangle.bottom;  // / (float)videoSize.cy;
 
                 m_oVideoPlayer.AddOSDText(
                     E_OSDTEXT_TYPE_GUIDE_BOX,
@@ -589,6 +591,9 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
     }
 
     m_eLensMode = eMode;
+	//add by vera_zhao 2109.12.18
+	//全局工作模式和第一个相机的相机的工作模式保持一致。
+	g_tSysCfgData.globalSettings.eLensMode = m_eLensMode;
 }
 
 //@功能:设置视频捕获设备信息
@@ -1889,4 +1894,9 @@ void CIWBSensor::ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
             NULL);
     }
    
+}
+
+void CIWBSensor::SetResolutionType(CAtlString  Value)
+{
+	m_tCfgData.strFavoriteMediaType = Value;
 }

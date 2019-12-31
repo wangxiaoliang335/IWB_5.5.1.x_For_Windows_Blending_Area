@@ -12,6 +12,7 @@ const DWORD ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING = 32863;       //¹â°ß²ÉÑù²Ëµ¥Ïîµ
 const DWORD ID_WORKMODE_IMAGE_TUNNING = 32845;                 //µ÷ÊÔÉãÏñÍ·Ä£Ê½²Ëµ¥ÏîµÄID
 const DWORD ID_WORKMODE_LASER_TUNNING = 32846;                 //µ÷ÊÔ¼¤¹âÆ÷Ä£Ê½²Ëµ¥ÏîµÄID
 const DWORD ID_SENSORCTXMENU_INSTALL_TIP = 32864;              //°²×°Ïòµ¼²Ëµ¥ÏîµÄID
+const DWORD ID_SENSORCTXMENU_FOURPOINTCALIBRATION = 32865;     //ËÄµã±ê¶¨
 
 const int   TIMER_WAITCONNECT_TIMEOUT = 503;
 const int   TIMER_WAITCONNECT_TIMEOUT_DELAY = 600 * 1000;

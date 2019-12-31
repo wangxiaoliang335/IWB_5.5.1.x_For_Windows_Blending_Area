@@ -72,6 +72,9 @@ BOOL CameraFmtDialog::OnInitDialog()
 	    m_SelectedCameraFmtValue = m_sCurrentCameraResution;
 	}
 
+	unsigned   char   *pIP = (unsigned   char*)&m_IPAddress;	
+	CIPAddress.SetAddress(*pIP ,*(pIP + 1), *(pIP + 2),*(pIP + 3) );
+
 	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
 	{
 		GetDlgItem(IDC_CHECK_TUIO)->EnableWindow(false);
@@ -83,9 +86,6 @@ BOOL CameraFmtDialog::OnInitDialog()
 	{
 	    ((CButton*)GetDlgItem(IDC_CHECK_HID))->SetCheck(g_tSysCfgData.globalSettings.bTouchHIDMode);
 	    ((CButton*)GetDlgItem(IDC_CHECK_TUIO))->SetCheck(g_tSysCfgData.globalSettings.bTouchTUIOMode);
-	
-	    unsigned   char   *pIP = (unsigned   char*)&m_IPAddress;
-	    CIPAddress.SetAddress(*pIP, *(pIP + 1), *(pIP + 2), *(pIP + 3));
 	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control

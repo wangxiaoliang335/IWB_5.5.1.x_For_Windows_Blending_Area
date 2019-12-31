@@ -24,6 +24,20 @@ EDeviceTouchType GetActualTouchType();
 //@返回值:
 SIZE GetActualScreenControlSize();
 
+struct AllUSBKeyTouchType
+{
+	EDeviceTouchType eUSBKeyTouchType;//
+	EPalmTouchControlType   ePalmTouchControlType;
+	EScreenMode    eScreenModeFromUsbKey;
+
+	AllUSBKeyTouchType()
+	{
+		eUSBKeyTouchType = E_DEVICE_NOFIND;
+		ePalmTouchControlType = E_PLAM_TOUCHCONTROL_UnKnow;
+		eScreenModeFromUsbKey = EScreenModeSingle;
+	}
+};
+
 class CIWBApp : public CWinApp
 {
 public:
@@ -47,8 +61,10 @@ public:
     
     EDeviceTouchType  GetUSBKeyTouchType() const;
 	EPalmTouchControlType GetPalmTouchType()const;
+	EFingerTouchControlType GetFingerTouchType() const;
 
-
+	int  GatAllUSBKeyTouchTypeCount();
+	const AllUSBKeyTouchType* GatAllUSBKeyTouchType() const;
     //int GetDoubleScreenMerge() const
     //{
     //  return m_nDoubleScreenType ;
@@ -101,7 +117,8 @@ public:
     //@参数:bFirstTime, 第一次检测UsbKey的存在
     //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
     //      第二次及以后则不再弹出兑换框。
-    void ReadUSBKey(BOOL bFirstTime = FALSE);
+    void ReadUSBKey(BOOL bFirstTime = FALSE, int nSersorcount=0);
+
 
 
 protected:
@@ -114,8 +131,11 @@ protected:
 
     //int    m_nUSBKeyTouchType;////0:为3DTouch电子白板,1:为手指触控电子白板，2:为高清手指触控，3:为手掌互动  
     EDeviceTouchType m_eUSBKeyTouchType;//
-	EPalmTouchControlType   m_ePalmTouchControlType;
 
+	EPalmTouchControlType   m_ePalmTouchControlType;    //手掌互动类型
+	EFingerTouchControlType  m_eFingerTouchControlType; //手指触控类型
+
+	std::vector<AllUSBKeyTouchType>  m_VecAllUsbKeyTouchType ;
     
     //EScreenType    m_eScreenType; //0:为单屏，1：为双屏
 
