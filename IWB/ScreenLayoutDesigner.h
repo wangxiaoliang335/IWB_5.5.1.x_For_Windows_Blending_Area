@@ -139,10 +139,9 @@ protected:
         UINT uID;//
         RECT rcBound;//矩形区域
         EAreaType eAreaType;//区域类型
-
         LPCTSTR szText;//文字信息
-
         ULONG  ulData;//关联的数据, 当活动区为分割条时, 用来保存分割条的索引号。
+
     };
 
     //屏幕分割条宽度
@@ -167,14 +166,22 @@ protected:
     BOOL OnSetCursor(HWND hWnd, UINT nHitTest, UINT message);
 
     //@功能:根据分割条的拖拽矩形的位置和分割条索引号, 来调整屏幕布局
-    //@参数:lpDragRect, 拖拽的矩形区域
-    //     nSplitterIndex，分割条索引号
-    //void AdjustLayout(const RECT* lpDragRect, const TActiveArea& splitterArea);
+    //@参数:dragRect, 拖拽的矩形区域
+    //     splitterArea，活动区域对象
     void OnDragSplitterDone(const RECT& dragRect, TActiveArea& splitterArea);
+
+    //@功能:融合区区边界拖拽完成事件响应函数
+    //@参数:
+    void OnDragMergeAreaBorderDone(const RECT& dragRect, TActiveArea& activeArea);
 
     //@功能:限制分割条的来限制鼠标移动范围
     //@参数:splitterArea, 分割条活动区域
     void ConfineSplitterCursor(const TActiveArea& splitterArea);
+
+
+    //@功能:限制融合区边界移动的范围
+    void ConfineMergeBorderCursor(const TActiveArea& activeArea);
+
     RECT m_rcClipCursorOld;
     
 

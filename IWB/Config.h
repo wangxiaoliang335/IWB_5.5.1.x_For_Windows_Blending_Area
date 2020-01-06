@@ -1134,7 +1134,7 @@ struct TSensorModeConfig
 //2018/01/11
 #endif
 		}
-			//
+			/*
 			lens.bInternalAndSymmetricDistortParamsIsValid = TRUE;
 
 			//相机内部参数
@@ -1152,6 +1152,7 @@ struct TSensorModeConfig
 			lens.lensInternalAndSymmetricDistortParams.radialDistrt[2] = 4.009577;
 			lens.lensInternalAndSymmetricDistortParams.radialDistrt[3] = -3.274776;
 			lens.lensInternalAndSymmetricDistortParams.radialDistrt[4] = 0.924704;
+            */
 
 		}//投射比为0.15镜头参数
 		{
@@ -1593,23 +1594,23 @@ struct TSensorModeConfig
 #endif
 		}
 			//
-			lens.bInternalAndSymmetricDistortParamsIsValid = TRUE;
+			//lens.bInternalAndSymmetricDistortParamsIsValid = TRUE;
 
-			//相机内部参数
-			//mu = 1.22754, mv = 1.22628
-			//u0 = 318.521, v0 = 247.995
-			//k(1) = 202.660577, k(2) = -1.567474, k(3) = 4.009577, k(4) = -3.274776, k(5) = 0.924704
-			lens.lensInternalAndSymmetricDistortParams.mu = 1.22754;
-			lens.lensInternalAndSymmetricDistortParams.mv = 1.22628;
-			lens.lensInternalAndSymmetricDistortParams.u0 = 318.521;
-			lens.lensInternalAndSymmetricDistortParams.v0 = 247.995;
+			////相机内部参数
+			////mu = 1.22754, mv = 1.22628
+			////u0 = 318.521, v0 = 247.995
+			////k(1) = 202.660577, k(2) = -1.567474, k(3) = 4.009577, k(4) = -3.274776, k(5) = 0.924704
+			//lens.lensInternalAndSymmetricDistortParams.mu = 1.22754;
+			//lens.lensInternalAndSymmetricDistortParams.mv = 1.22628;
+			//lens.lensInternalAndSymmetricDistortParams.u0 = 318.521;
+			//lens.lensInternalAndSymmetricDistortParams.v0 = 247.995;
 
-			//相机对称畸变参数
-			lens.lensInternalAndSymmetricDistortParams.radialDistrt[0] = 202.660577;
-			lens.lensInternalAndSymmetricDistortParams.radialDistrt[1] = -1.567474;
-			lens.lensInternalAndSymmetricDistortParams.radialDistrt[2] = 4.009577;
-			lens.lensInternalAndSymmetricDistortParams.radialDistrt[3] = -3.274776;
-			lens.lensInternalAndSymmetricDistortParams.radialDistrt[4] = 0.924704;
+			////相机对称畸变参数
+			//lens.lensInternalAndSymmetricDistortParams.radialDistrt[0] = 202.660577;
+			//lens.lensInternalAndSymmetricDistortParams.radialDistrt[1] = -1.567474;
+			//lens.lensInternalAndSymmetricDistortParams.radialDistrt[2] = 4.009577;
+			//lens.lensInternalAndSymmetricDistortParams.radialDistrt[3] = -3.274776;
+			//lens.lensInternalAndSymmetricDistortParams.radialDistrt[4] = 0.924704;
 
 		}
 		{
@@ -2053,23 +2054,23 @@ struct TSensorModeConfig
 #endif
 		   }
 				//
-				lens.bInternalAndSymmetricDistortParamsIsValid = TRUE;
+				//lens.bInternalAndSymmetricDistortParamsIsValid = TRUE;
 
-				//相机内部参数
-				//mu = 1.22754, mv = 1.22628
-				//u0 = 318.521, v0 = 247.995
-				//k(1) = 202.660577, k(2) = -1.567474, k(3) = 4.009577, k(4) = -3.274776, k(5) = 0.924704
-				lens.lensInternalAndSymmetricDistortParams.mu = 1.22754;
-				lens.lensInternalAndSymmetricDistortParams.mv = 1.22628;
-				lens.lensInternalAndSymmetricDistortParams.u0 = 318.521;
-				lens.lensInternalAndSymmetricDistortParams.v0 = 247.995;
+				////相机内部参数
+				////mu = 1.22754, mv = 1.22628
+				////u0 = 318.521, v0 = 247.995
+				////k(1) = 202.660577, k(2) = -1.567474, k(3) = 4.009577, k(4) = -3.274776, k(5) = 0.924704
+				//lens.lensInternalAndSymmetricDistortParams.mu = 1.22754;
+				//lens.lensInternalAndSymmetricDistortParams.mv = 1.22628;
+				//lens.lensInternalAndSymmetricDistortParams.u0 = 318.521;
+				//lens.lensInternalAndSymmetricDistortParams.v0 = 247.995;
 
-				//相机对称畸变参数
-				lens.lensInternalAndSymmetricDistortParams.radialDistrt[0] = 202.660577;
-				lens.lensInternalAndSymmetricDistortParams.radialDistrt[1] = -1.567474;
-				lens.lensInternalAndSymmetricDistortParams.radialDistrt[2] = 4.009577;
-				lens.lensInternalAndSymmetricDistortParams.radialDistrt[3] = -3.274776;
-				lens.lensInternalAndSymmetricDistortParams.radialDistrt[4] = 0.924704;
+				////相机对称畸变参数
+				//lens.lensInternalAndSymmetricDistortParams.radialDistrt[0] = 202.660577;
+				//lens.lensInternalAndSymmetricDistortParams.radialDistrt[1] = -1.567474;
+				//lens.lensInternalAndSymmetricDistortParams.radialDistrt[2] = 4.009577;
+				//lens.lensInternalAndSymmetricDistortParams.radialDistrt[3] = -3.274776;
+				//lens.lensInternalAndSymmetricDistortParams.radialDistrt[4] = 0.924704;
         }
     }
 };

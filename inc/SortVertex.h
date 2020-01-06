@@ -71,7 +71,8 @@ public:
 
         //搜索每个结点距离其最近的M个结点
         //保留最有可能是其邻接点的两个结点。
-        const int M = 7;
+        //const int M = 7;
+        const int M = 11;
 
         TNeighbour neighbours[M];//按照距离升序排列的数组
         int neighbourCount = 0;
