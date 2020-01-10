@@ -1,8 +1,8 @@
 #pragma once
 #ifdef EASISDKREG_INTERFACE_EXPORTS
-	#define EASISDKREG_INTERFACE_API _declspec(dllexport)
+    #define EASISDKREG_INTERFACE_API _declspec(dllexport)
 #else
-	#define EASISDKREG_INTERFACE_API _declspec(dllimport)
+    #define EASISDKREG_INTERFACE_API _declspec(dllimport)
 
 #endif
 
@@ -129,21 +129,23 @@ EASISDKREG_INTERFACE_API UINT SDKREG_GetUSBKeyCount();
 
 //@功  能:读取多屏拼接类型,和SDKREG_GetAppType返回的多屏拼接使能配合使用
 //@返回值:B0~31的定义如下
-//		 B0:双屏拼接
+//       B0:双屏拼接
 //       B1:3屏拼接
 //       B2:4屏拼接
-//	  	 B3:5屏拼接
+//       B3:5屏拼接
 //       B31~4:预留
 EASISDKREG_INTERFACE_API UINT SDKREG_GetMultiScreenMergeType(UINT uUSBKeyIndex = 0);
 
 
 //@功  能:返回应用参数类型
 //@返回值:
-//		 对手指触控:0:F0; 1:F1; 2:F2; 3:F3; 4:F4; 5:F5
-//       对手掌触控:0:P0; 1:P1; 2:P2; 3:P3; 4:P4; 5:P5
-//       
-//	  	 
-//       
+//       对手指触控:0:F0; 1:F1; 2:F2; 3:F3; 4:F4;  5:F5
+//       对手掌触控:0:P0; 1:P1; 2:P2; 3:P3; 4:P4;  5:P5;
+//                 6:T0; 7:T1; 8:T2; 9:T3;10:T4; 11:T5
+//                 12:TX1;13:TX2
+//
+//
+//
 EASISDKREG_INTERFACE_API UINT SDKREG_GetParamType(UINT uUSBKeyIndex = 0);
 
 
