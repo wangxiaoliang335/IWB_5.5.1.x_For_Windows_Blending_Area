@@ -267,6 +267,11 @@ public:
             TContactInfo* pPenInfo = pContactInfos + i;
 
             UINT uId = pPenInfo->uId;
+
+            if (uId >= MaxNum)
+            {
+                continue;//±ÜÃâÔ½½ç·ÃÎÊ
+            }
             
             switch(pPenInfo->ePenState)
             {

@@ -678,9 +678,11 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         sprintf_s(
             szData,
             _countof(szData),
-            "%d,%d\n",
+            "id=%d,%d,%d,%s\n",
+            contactInfos[i].uId,
             contactInfos[i].pt.x,
-            contactInfos[i].pt.y);
+            contactInfos[i].pt.y,
+            szEvent);
  
         fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
 
@@ -830,7 +832,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             {   //²»²åÖµ
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
-               // DebugContactInfo(penInfo, penCount);
+               DebugContactInfo(penInfo, penCount);
 #endif
             }
             else
@@ -846,15 +848,20 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                 {
                     const TContactInfo* pInterpolateContact;
                     int nItemCount = container.GetSlotData(slot, &pInterpolateContact);
+
                     if (nItemCount > 0)
                     {
 #ifdef _DEBUG
-                        //DebugContactInfo(pInterpolateContact, nItemCount);
+                        DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
-						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
+                        m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
 
                         //ÑÓ³Ù1ms
                         Sleep(1);
+                    }
+                    else
+                    {
+                        break;
                     }
                 }//for
             }

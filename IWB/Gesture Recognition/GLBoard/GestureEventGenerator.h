@@ -5,6 +5,7 @@
 //
 ////#include "headers.h"
 //#include "WGestureRecPublic.h"
+#include <GlobalDefine.h>
 #include "GLBoardPublic.h"
 
 /////长时间的停留在一个点上的类的处理
@@ -299,7 +300,7 @@ public:
     bool m_isLogPermit;
 
     //智能光笔匹配
-    static const int MAXMATCH_NUM = 10;
+    static const int MAXMATCH_NUM = MAX_TOUCH_COUNT;
     static const int MAX_CAMERA_NUMBER = 6;
     CSmartMatch<MAXMATCH_NUM> m_oSmartMatch;//
     CStrokeFilter<MAXMATCH_NUM>  m_oStrokFilter;//笔迹过滤器

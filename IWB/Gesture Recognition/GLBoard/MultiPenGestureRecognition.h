@@ -1,5 +1,4 @@
 #pragma once
-
 static const int            GLBOARDMAXPENNUM    = 10;
 static const int            GLBOARDMAXERASERNUM = 10;
 

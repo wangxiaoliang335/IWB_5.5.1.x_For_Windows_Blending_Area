@@ -682,7 +682,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
     }//for
 
-    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
+    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount>MAX_SUPPORT_TOUCH_COUNT ? MAX_SUPPORT_TOUCH_COUNT : nPenCount);
 
 
     return bRet;
@@ -861,7 +861,7 @@ POINTER_DEVICE_INFO* CVirtualHID::GetPointerDevice(LPCTSTR lpszProductString)
 
 BOOL CVirtualHID::OpenDeviceThreadSafe()
 {
-	CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirutalDevice);
+	CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirtualDevice);
 	m_hDev = EASI_OpenDevice();
 	m_oVirtualMouse.SetDeviceHandle(m_hDev);
 	if (m_hDev != INVALID_HANDLE_VALUE)
@@ -877,7 +877,7 @@ BOOL CVirtualHID::OpenDeviceThreadSafe()
 
 BOOL CVirtualHID::CloseDeviceThreadSafe()
 {
-	CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirutalDevice);
+	CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirtualDevice);
 	if (m_hDev != INVALID_HANDLE_VALUE)
 	{
 		BOOL bRet = EASI_CloseDevice(m_hDev);

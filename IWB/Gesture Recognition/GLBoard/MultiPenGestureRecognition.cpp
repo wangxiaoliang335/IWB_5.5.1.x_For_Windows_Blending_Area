@@ -65,7 +65,7 @@ bool CSmartMultiPen::DoRecognition(POINT *points, int nPointCount)
     m_isSmartMatchReset = false;
 
     int nElementCount = 0;
-    const TMatchInfo* pMatchInfo =  m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);    
+    const TMatchInfo* pMatchInfo =  m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
 
     TContactInfo penInfo[GLBOARDMAXPENNUM];
 

@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets">
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <RemoteTargetIP>192.168.1.107</RemoteTargetIP>
+    <RemoteTargetIP>192.168.1.151</RemoteTargetIP>
     <RemoteDir>\\$(RemoteTargetIP)\Share\IWB5.4</RemoteDir>
   </PropertyGroup>
   <PropertyGroup>
