@@ -678,9 +678,11 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         sprintf_s(
             szData,
             _countof(szData),
-            "%d,%d\n",
+            "%d,%d----%s,.......%d\n",
             contactInfos[i].pt.x,
-            contactInfos[i].pt.y);
+            contactInfos[i].pt.y,
+			szEvent,
+			nCount);
  
         fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
 
@@ -716,6 +718,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		     /////如果是手掌互动时，那么就不做平滑处理和插值处理。直接是原始的光斑值进行触控
 		     int  nScreenX = GetSystemMetrics(SM_CXSCREEN);
 		     int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
+
 		     POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
 		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =30 ；
 		     ///////////在200英寸的时候，偏差的值PixelNumber =20 。这样列出一个线性方程式
@@ -757,9 +760,10 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 	//////检测GLBoard白板是否是打开的
     bool bHandHID2Me = DoGLBoardGestureRecognition(pLightSpots, nLightSpotCount);
 
+ /* 
 #ifdef _DEBUG
 
-    if(g_hDebugSampleFile1)
+  if(g_hDebugSampleFile1)
     {       
         for(int i = 0; i < nLightSpotCount; i++)
         {
@@ -776,10 +780,10 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                 pLightSpots[i].ptPosInScreen.y);
 
             fwrite(szData,1,strlen(szData),g_hDebugSampleFile1);
-        }
-    }
+        }	
+    }    
 #endif
-
+ */
 
     if (bHandHID2Me)
     {
@@ -798,10 +802,10 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         {
            //平滑笔迹
             m_oStrokFilter.DoFilter(penInfo, penCount);
-
+   
 #ifdef _DEBUG
 
-            if (g_hDebugSampleFile2)
+         if (g_hDebugSampleFile2)
             {
                 for (int i = 0; i < nLightSpotCount; i++)
                 {
@@ -810,13 +814,16 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                     sprintf_s(
                         szData,
                         _countof(szData),
-                        "%d,%d\n",
+                        "%d,%d------%d,%d------%d\n",
+						pLightSpots[i].ptPosInScreen.x,
+						pLightSpots[i].ptPosInScreen.y,
                         penInfo[i].pt.x,
-                        penInfo[i].pt.y);
+                        penInfo[i].pt.y,
+						nLightSpotCount);
 
                     fwrite(szData, 1, strlen(szData), g_hDebugSampleFile2);
                 }
-            }
+            }   
 #endif
 
 			TSensorModeConfig* TSensorModeConfig = NULL;
@@ -849,7 +856,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                     if (nItemCount > 0)
                     {
 #ifdef _DEBUG
-                        //DebugContactInfo(pInterpolateContact, nItemCount);
+                        DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
 						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
 

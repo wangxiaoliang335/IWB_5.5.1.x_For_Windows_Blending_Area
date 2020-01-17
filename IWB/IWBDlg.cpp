@@ -389,7 +389,9 @@ m_pCurInstalledSensor(NULL),
 m_hUCShieldBitmap(NULL),
 m_bStartDrawOnlineScreenArea(false),
 m_bPreGuideRectangleVisible(false),
-m_pUSBDevDetector_HID(NULL)
+m_pUSBDevDetector_HID(NULL),
+m_nDrawOnlineAreaCount(-1),
+m_nActiveDetectCameraId(0)
 {
     m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -424,8 +426,6 @@ m_pUSBDevDetector_HID(NULL)
 	
 	//客户app通信消息
 	m_uAppCommMsg = RegisterWindowMessage(_T("EASI_8701715C-217D-440d-9404-F63C9CBC671B"));
-
-
 
 }
 
@@ -580,7 +580,8 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_WM_ERASEBKGND()
     ON_WM_LBUTTONDBLCLK()
   //  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_INSTALL_TIP, OnSensorCtxMenu)
-	ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN,ID_SENSORCTXMENU_FOURPOINTCALIBRATION, OnSensorCtxMenu)
+  //  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN,ID_SENSORCTXMENU_FOURPOINTCALIBRATION, OnSensorCtxMenu)
+	  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR, OnSensorCtxMenu)
 
     //ON_COMMAND_RANGE(ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS, ID_GUESTURESETTINGS_WINDOWSGESTURESETTINGS, OnGestureSettingMenu)
 
@@ -821,6 +822,8 @@ BOOL CIWBDlg::OnInitDialog()
 
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
+
+	LoadResolutionConfig();
     
 
     //KSCATEGORY_VIDEO     :{6994AD05-93EF-11D0-A3CC-00A0C9223196}
@@ -2878,21 +2881,14 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 		m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_UNCHECKED);
 	}
 	//////是否启用绘制的外部勾勒图
-	if (lpSensor)
+	if (this->m_oIWBSensorManager.IsEnableOnlineScreenArea())
 	{
-		UINT nSensorIndex = lpSensor->GetID();
-		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[nSensorIndex].vecSensorModeConfig[eProjectionMode].advanceSettings;	
-		bEnableOnlineScreenArea = advanceSettings.bIsOnLineScreenArea;
+        m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);	       
 	}
-	if (bEnableOnlineScreenArea)
+	else
 	{
-		m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);		
+        m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
 	}
-	else 
-	{
-       m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
-	}
-
 
     //如果"虚拟驱动"已打开, 则使能"Mouse"和"TouchPad"菜单项"
     InitDeviceUseModeMenuItemWithMenu(&m_oMenu);
@@ -2999,7 +2995,6 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             {
                 pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DISABLE, MF_BYCOMMAND|MF_CHECKED);
             }
-
         }
 
         //"自动校正..."菜单项
@@ -3031,11 +3026,21 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             }
         }
 
-		if (g_tSysCfgData.globalSettings.bEnable4PointsCalibrate)
+		if (g_tSysCfgData.globalSettings.bEnable4PointsCalibrate )
 		{
-			pSubMenu->EnableMenuItem(
-				ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
-				MF_BYCOMMAND | MF_ENABLED);
+			if (pSensor->IsDetecting())
+			{
+		    	pSubMenu->EnableMenuItem(
+				       ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
+				       MF_BYCOMMAND | MF_ENABLED);
+			}
+			else
+			{
+				pSubMenu->EnableMenuItem(
+					ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
+					MF_BYCOMMAND | MF_GRAYED);
+			}
+
 		}
 		else
 		{
@@ -3158,6 +3163,33 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
             }
         }
+		/////////只有在摄像头模式下才能进行屏蔽图绘制
+		if(FALSE == pSensor->IsDetecting() || pSensor->GetLensMode() != E_VIDEO_TUNING_MODE)
+		{
+			pSubMenu->EnableMenuItem(
+				ID_SENSORCTXMENU_DRAWMASKFRAME_START,
+				MF_BYCOMMAND | MF_GRAYED);
+
+			pSubMenu->EnableMenuItem(
+				ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE,
+				MF_BYCOMMAND | MF_GRAYED);
+
+			pSubMenu->EnableMenuItem(
+				ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR,
+				MF_BYCOMMAND | MF_GRAYED);
+		}
+		else
+		{
+			if (pSensor->IsEnableOnlineScreenArea())
+			{
+				pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);
+			}
+			else
+			{
+				pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
+			}
+
+		}
 
         //显示传感器快捷菜单
         pSubMenu->TrackPopupMenu(
@@ -4566,6 +4598,19 @@ void CIWBDlg::OnVideoTuningMode()
 void CIWBDlg::OnNormalUsageMode()
 {
     // TODO: Add your command handler code here
+	//如果正在绘制时切换到正常模式下，那么就需要退出绘制编辑状态，恢复正常模式状态
+    if (m_bStartDrawOnlineScreenArea)
+	{
+		m_bStartDrawOnlineScreenArea = false;
+	    CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+	    if (pSensor)
+	    {
+		    pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+			pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+			pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+		    pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
+	    }
+	}
 
     this->m_oIWBSensorManager.SwitchToMode(E_NORMAL_USAGE_MODE);
     //如果处于双屏拼接模式，则开启屏幕识别显示
@@ -4580,6 +4625,20 @@ void CIWBDlg::OnNormalUsageMode()
 void CIWBDlg::OnLaserTunningModel()
 {
     // TODO: Add your command handler code here
+	//如果正在绘制时切换到激光器模式下，那么就需要退出绘制编辑状态，恢复激光器模式状态
+	if (m_bStartDrawOnlineScreenArea)
+	{
+		m_bStartDrawOnlineScreenArea = false;
+		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+		if (pSensor)
+		{
+			pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+			pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+			pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+			pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
+		}
+	}
+
     this->m_oIWBSensorManager.SwitchToMode(E_LASER_TUNING_MODE);
 
     if(theApp.GetScreenMode() >= EScreenModeDouble)
@@ -4660,35 +4719,32 @@ BOOL CIWBDlg::OnEraseBkgnd(CDC* pDC)
 void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     // TODO: Add your message handler code here and/or call default
-
+	///双击响应的函数
     CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
     if(pSensor)
     {
 		if (m_bStartDrawOnlineScreenArea)
 		{
-			m_bStartDrawOnlineScreenArea = false;
-			////加上引导框
-			if (pSensor)
+			//m_nDrawOnlineAreaCount等于-1的话说明是单个屏绘制的，绘制完直接退出，如果不等于0说明不是单屏绘制，
+			if(m_nDrawOnlineAreaCount == -1)
 			{
-				pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
-
-				pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
-				pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
-				pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
-
-				//RECT rcGuideRectangle;
-				//DWORD dwRGBColor;
-				//pSensor->GetPenPosDetector()->GetGuideRectangle(&rcGuideRectangle, &dwRGBColor);
-
-				//pSensor->GetVideoPlayer()->AddOSDText(
-				//	E_OSDTEXT_TYPE_GUIDE_BOX,
-				//	g_oResStr[IDS_STRING465],
-				//	rcGuideRectangle,
-				//	DT_BOTTOM | DT_CENTER | DT_SINGLELINE,
-				//	8,
-				//	_T("Times New Roman"),
-				//	-1);
+                 m_bStartDrawOnlineScreenArea = false;
 			}
+			else
+			{
+			    m_nDrawOnlineAreaCount++;
+				if (m_nDrawOnlineAreaCount >= m_nActiveDetectCameraId)
+				{
+					m_bStartDrawOnlineScreenArea = false;
+				}
+			}			
+			////加上引导框
+			pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+
+			pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+			pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+			pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
+
 		}
 		else
 		{
@@ -4737,33 +4793,32 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
             m_oIWBSensorManager.StartRunning(m_pSelectedSensor->GetID());
 
         }
-
         break;
 
     case ID_SENSORCTXMENU_STOP:
-        m_oIWBSensorManager.StopRunning(m_pSelectedSensor->GetID());
+         m_oIWBSensorManager.StopRunning(m_pSelectedSensor->GetID());
         break;
 
     case ID_SENSORCTXMENU_DISABLE:
-        m_pSelectedSensor->EnableOpticalPen(!m_pSelectedSensor->IsOpticalPenControlling());
+         m_pSelectedSensor->EnableOpticalPen(!m_pSelectedSensor->IsOpticalPenControlling());
         break;
 
     case ID_SENSORCTXMENU_AUTO_CALIBRATE:
-        this->m_oIWBSensorManager.StartAutoCalibrate(m_AutoCalibrateColsType, this->GetSafeHwnd(), m_pSelectedSensor->GetID());
-
+         this->m_oIWBSensorManager.StartAutoCalibrate(m_AutoCalibrateColsType, this->GetSafeHwnd(), m_pSelectedSensor->GetID());
         break;
 
     case ID_SENSORCTXMENU_MANUAL_CALIBRATE:
-        this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, m_pSelectedSensor->GetID());
+         this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, m_pSelectedSensor->GetID());
         break;
 
 	case ID_SENSORCTXMENU_FOURPOINTCALIBRATION:
-		this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
+
+	     this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
 		break;
 
 
     case ID_SENSORCTXMENU_AUTOMASK:
-        this->m_oIWBSensorManager.StartSearchMaskArea(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
+         this->m_oIWBSensorManager.StartSearchMaskArea(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
         break;
 
     case ID_SENSORCTXMENU_IMAGE_SENSOR_SETTINGS:
@@ -4773,8 +4828,7 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
         break;
 
     case ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING:
-        this->m_oIWBSensorManager.StartLightSpotSampling(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
-
+          this->m_oIWBSensorManager.StartLightSpotSampling(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
         break;    
 
     case ID_SENSORCTXMENU_INSTALL_TIP:
@@ -4782,6 +4836,23 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
             OnStartIntallerWithTips(m_pSelectedSensor);
         }
         break;
+	case ID_SENSORCTXMENU_DRAWMASKFRAME_START:
+	{
+		m_bStartDrawOnlineScreenArea = true;
+		m_nDrawOnlineAreaCount = -1 ;
+		m_bPreGuideRectangleVisible =m_pSelectedSensor->GetPenPosDetector()->IsGuideRectangleVisible();
+		m_pSelectedSensor->OnStartDrawOnlineScreenArea();
+	}
+		break;
+
+	case ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE:
+		m_pSelectedSensor->OnEnableDrawOnlineScreenArea(!m_pSelectedSensor->IsEnableOnlineScreenArea());
+		break;
+
+	case ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR:
+		m_pSelectedSensor->OnClearDrawOnlineScreenArea();
+		 m_bStartDrawOnlineScreenArea = false;
+		break;
 
     }//switch
 
@@ -5337,11 +5408,13 @@ void CIWBDlg::OnMenuAdvancessetting()
 		for (size_t i = 0; i < devInfo.m_vecVideoFmt.size(); i++)
 		{
 			CAtlString strFormatName = GetVideoFormatName(devInfo.m_vecVideoFmt[i]);
-			int nIndex = strFormatName.Find(_T("MJPG"), 0);
-			int nIndex1 = strFormatName.Find(_T("YUY2"), 0);
-			if (nIndex >0 || nIndex1 >0)
+			for (size_t j =0; j< m_aryCandidateResolution.size(); j++)
 			{
-				vecCameraInfo.push_back(strFormatName);
+				if (_tcsicmp(strFormatName,m_aryCandidateResolution[j]) == 0)
+				{
+                     vecCameraInfo.push_back(strFormatName);
+					 break;
+				}
 			}
 		}
 	}
@@ -5405,66 +5478,46 @@ void CIWBDlg::OnMenuAdvancessetting()
 void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
-
 	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
-
 	m_bStartDrawOnlineScreenArea = true;
-	////去掉引导框
-	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
-	//m_bPreGuideRectangleVisible記錄上次引導框的顯示情況，方便后面的恢复。
-	if(lpSensor)
+	m_nDrawOnlineAreaCount = 0 ;   //绘制第几个屏蔽图
+	m_nActiveDetectCameraId = 0 ;  //实际运行的摄像头个数
+	for (int i = 0 ;i <nSensorCount ;i++)
 	{
-	     m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible();
-	     lpSensor->GetPenPosDetector()->ShowGuideRectangle(false);
-
-		 lpSensor->GetInterceptFilter()->SetStartDrawMaskFrame(m_bStartDrawOnlineScreenArea);
-		 /////清除数组中的数据
-		 lpSensor->GetPenPosDetector()->ClearOnLineScreenArea();
-		 lpSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
-
-		 ///在点击开始画时，如果是禁用状态的话，那么画好之后没有显示，无法判断，因此在开始画时，就要设置为非禁用状态
-		 EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
-		 g_tSysCfgData.vecSensorConfig[lpSensor->GetID()].vecSensorModeConfig[eProjectionMode].advanceSettings.bIsOnLineScreenArea = true;
-		 lpSensor->SetOnlineScreenArea(true);
-
-		 RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
-
-		 lpSensor->GetVideoPlayer()->AddOSDText(
-			 E_OSDTEXT_TYPE_SHOW_INFO,
-			 g_oResStr[IDS_STRING494],
-			 textArea,
-			 DT_BOTTOM | DT_LEFT | DT_SINGLELINE,
-			 14L,
-			 _T("Times New Roman"),
-			 -1);
+	   ////去掉引导框
+	   CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
+	   if (lpSensor)
+	   {
+		   ////如果没有运行，那么就不存在需要绘制屏蔽图了。
+		   if (lpSensor->IsDetecting())
+		   {
+			   m_nActiveDetectCameraId++;  //实际检测到打开的摄像头个数，因为有几个sensor不一定都打开。
+	           m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible();
+			   lpSensor->OnStartDrawOnlineScreenArea();
+		   }
+	   }
 	}
 }
 
 void CIWBDlg::OnMenuClearDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
-	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
-	if (lpSensor)
-	{
-    	lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
-	}	
 	m_bStartDrawOnlineScreenArea = false;
+	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
+	for(int i = 0 ; i <nSensorCount;i++)
+	{
+     	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
+	    if (lpSensor)
+	    {
+    	    lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
+	    }	
+	}
 }
-
 
 void CIWBDlg::OnMenuEnableDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
-    CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
-	if (lpSensor)
-	{
-	    int nIndex = lpSensor->GetID();
-	    EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
-	    TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[nIndex].vecSensorModeConfig[eProjectionMode].advanceSettings;
-	    advanceSettings.bIsOnLineScreenArea = !advanceSettings.bIsOnLineScreenArea;
-
-	    lpSensor->SetOnlineScreenArea(advanceSettings.bIsOnLineScreenArea);
-	}
+	this->m_oIWBSensorManager.EnableOnlineScreenArea(!this->m_oIWBSensorManager.IsEnableOnlineScreenArea());
 }
 
 void CIWBDlg::OnMenuTouchScreenLayoutDesigner()
@@ -5588,11 +5641,35 @@ HRESULT CIWBDlg::OnEnd4BasePointCalibrate(WPARAM wParam, LPARAM lParam)
     return 0L;
 }
 
-
-
-
 void CIWBDlg::OnOperationFourpointcalibration()
 {
     // TODO: Add your command handler code here
     this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), -1);
+}
+
+BOOL CIWBDlg::LoadResolutionConfig()
+{
+	const TCHAR* lpszXMLFileName = _T("DeviceResolution.xml");
+	TiXmlDocument oXMLDoc;
+	if (!oXMLDoc.LoadFile(CT2CA(lpszXMLFileName), TIXML_ENCODING_UTF8))
+	{
+		return FALSE;
+	}
+	TiXmlElement* pRootElement = oXMLDoc.RootElement();
+	if (pRootElement == NULL) return FALSE;
+	TiXmlNode* pChild = NULL;
+	while (pChild = pRootElement->IterateChildren("USBCamera", pChild))
+	{
+		const char* NodeName = pChild->Value();//节点名称
+		const char* lpszResolution = ((TiXmlElement*)pChild)->Attribute("Resolution");
+		if (lpszResolution == NULL || strlen(lpszResolution) == 0)
+		{
+			break;
+		}
+
+		CAtlString strDeviceResolution;
+		strDeviceResolution.Format(_T("%s"), (LPCTSTR)(CA2T(lpszResolution)));
+		m_aryCandidateResolution.push_back(strDeviceResolution);
+	}
+	return TRUE;
 }

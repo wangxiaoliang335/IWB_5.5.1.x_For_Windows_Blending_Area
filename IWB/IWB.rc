@@ -198,6 +198,12 @@ BEGIN
         MENUITEM "Auto Mask",                   ID_SENSORCTXMENU_AUTOMASK
         MENUITEM "Parameter Settings...",       ID_SENSORCTXMENU_IMAGE_SENSOR_SETTINGS
         MENUITEM "Light Spot Sampling",         ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING
+        POPUP "Manually Select Screen Area"
+        BEGIN
+            MENUITEM "Start",                       ID_SENSORCTXMENU_DRAWMASKFRAME_START
+            MENUITEM "Disable Preset ScreenArea",   ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE
+            MENUITEM "Clear",                        ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR
+        END
         MENUITEM SEPARATOR
         MENUITEM "Installation wizard",         ID_SENSORCTXMENU_INSTALL_TIP
     END

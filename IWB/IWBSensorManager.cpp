@@ -810,23 +810,20 @@ void CIWBSensorManager::EnableOpticalPen(BOOL bEnable)
 {
     for(size_t i=0; i<m_vecSensors.size(); i++)
     { 
-            if(!bEnable)//如果是禁用光笔, 可以无条件禁用
-            {
-                m_vecSensors[i]->EnableOpticalPen(bEnable);
-            }
-            else
-            {
-                //如果是使能光笔，只有在"正常使用模式下"才能使能光笔, 这样可以避免其他模式下,干扰光点造成的光斑乱跳。
-                if(m_vecSensors[i]->GetLensMode() == E_NORMAL_USAGE_MODE)
-                {
-                     m_vecSensors[i]->EnableOpticalPen(bEnable);
-                }
-
-            }
-
+         if(!bEnable)//如果是禁用光笔, 可以无条件禁用
+         {
+             m_vecSensors[i]->EnableOpticalPen(bEnable);
+         }
+         else
+         {
+             //如果是使能光笔，只有在"正常使用模式下"才能使能光笔, 这样可以避免其他模式下,干扰光点造成的光斑乱跳。
+             if(m_vecSensors[i]->GetLensMode() == E_NORMAL_USAGE_MODE)
+             {
+                  m_vecSensors[i]->EnableOpticalPen(bEnable);
+             }
+         }
     }
 }
-
 
 //@功能:判断光笔是否在控制中
 //@说明:只要有一支光笔在控制中,则返回TRUE
@@ -836,7 +833,7 @@ BOOL CIWBSensorManager::IsOpticalPenControlling()
 	BOOL bIsControlling = TRUE;
     for(size_t i=0; i<m_vecSensors.size(); i++)
     {   
-//        bIsControlling |= m_vecSensors[i]->IsOpticalPenControlling();
+//      bIsControlling |= m_vecSensors[i]->IsOpticalPenControlling();
 		bIsControlling &= m_vecSensors[i]->IsOpticalPenControlling();
     }
 
@@ -1599,4 +1596,26 @@ void CIWBSensorManager::OnIWBSensor4BasePointMarkingDone(BOOL bSuccess)
         }
     }
 
+}
+/////////////////////
+void CIWBSensorManager::EnableOnlineScreenArea(BOOL bEnable)
+{
+	for (size_t i = 0; i < m_vecSensors.size(); i++)
+	{
+		m_vecSensors[i]->SetOnlineScreenArea(bEnable);
+	}
+}
+
+BOOL CIWBSensorManager::IsEnableOnlineScreenArea()
+{
+	BOOL bIsControlling = TRUE;
+	for (size_t i = 0; i < m_vecSensors.size(); i++)
+	{
+		//判断运行中的，不运行就不计算了
+		if (m_vecSensors[i]->IsDetecting()) 
+		{
+		    bIsControlling &= m_vecSensors[i]->IsEnableOnlineScreenArea();
+		}
+	}
+	return bIsControlling;
 }

@@ -241,6 +241,11 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
         }
     }
 
+	//激光器底下的采样点向下偏移1/3间隔距离
+	int nOffsetY = nMonitorHeight / (m_nSampleNumEachCol - 1);
+	nOffsetY = nOffsetY * 1 / 4;
+	m_vecSampleSymbols[3].ptDisplay.y += nOffsetY;
+
 }
 
 void CCollectSpotSize::DrawCross(HDC hDC, const POINT& ptSymbol, COLORREF color,  const SIZE& size)

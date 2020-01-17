@@ -383,8 +383,7 @@ BOOL CGestureEventGenerator::FindTboardWnd(const TLightSpot * aryLightSpots,  co
 
 bool CGestureEventGenerator::DoDetection(const TLightSpot * aryLightSpots,  const int &nCount)
 {
-    bool isResponse = true;    
-         
+    bool isResponse = true;            
     //
     //允许多笔，检测当前白板是不是选择了多笔，
     //如果是，则只允许橡皮擦和多笔书写
@@ -416,7 +415,6 @@ bool CGestureEventGenerator::DoDetection(const TLightSpot * aryLightSpots,  cons
             m_bHadResetAllGRState = true;
             return true;
         }
-
         if(nCount == 0)
         {
             m_bHadResetAllGRState = true;

@@ -1272,14 +1272,9 @@ void CScreenLayoutDesigner::OnLButtonDown(UINT uFlags, const POINT& ptCursor)
             case E_AREA_TYPE_MERGE_BORDER:
                 ConfineMergeBorderCursor(*pActiveArea);
                 break;
-        }
-       
-    }
-    
-    
+        }      
+    }   
 }
-
-
 
 void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
 {

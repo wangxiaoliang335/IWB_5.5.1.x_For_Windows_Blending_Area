@@ -821,6 +821,12 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 					   case 11:
 						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_T5;
 						   break;
+					   case 12:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_TX1;
+						   break;
+					   case 13:
+						   ePalmTouchControlType = E_PLAM_TOUCHCONTROL_TX2;
+						   break;
 					   default:
 						   break;
 					}

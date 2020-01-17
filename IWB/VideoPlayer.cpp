@@ -1069,7 +1069,6 @@ BOOL CVideoPlayer::ChangeCaptureFreq(int  nFrequency)
         return FALSE;
     }
 
-
     CComPtr<IAMStreamConfig>  ptrConfig=NULL; 
 
     //hr = m_pCaptureGraphBuilder-> FindInterface(
@@ -1109,9 +1108,7 @@ BOOL CVideoPlayer::ChangeCaptureFreq(int  nFrequency)
                         break;
                     }
                 }
-
             }
-
             DeleteMediaType(pmt);
         }
 

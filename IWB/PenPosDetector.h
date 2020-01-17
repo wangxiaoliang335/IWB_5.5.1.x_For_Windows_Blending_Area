@@ -382,6 +382,7 @@ public:
     void SetTouchType(EDeviceTouchType eType);
     //>>
 
+
 	//@功能:设置关联的屏幕的尺寸
 	void SetAttachedMonitorSize(const RECT& rcMonitor);
     
@@ -480,6 +481,7 @@ public:
 
     void  SetLightSpotSampleSize(const ALL_LIGHTSPOT_SAMPLE_SIZE& sampleSize);//设置手动光斑采集时的数据
     void SetMinimumLightSpotSize(SIZE sizeMinimum) {this->m_szLightSpotMinimumSize = sizeMinimum; }
+	SIZE GetMinimumLightSpotSize() { return m_szLightSpotMinimumSize;     }
 
     int GetID()const {return this->m_nID;}
 

@@ -603,13 +603,17 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
 
     /////如果是高清摄像头的话，如果设置中不是1080*720或者1920*1080的话就默认为1080*720
     /////SONIX_PID是720P的摄像头PID，720P的摄像头需要显示640*480MJPG。
-//    if (m_tDeviceInfo.m_nPID == SONIX_PID && m_tDeviceInfo.m_nVID == SONIX_VID)
-//    {
+    if (m_tDeviceInfo.m_nPID == SONIX_PID && m_tDeviceInfo.m_nVID == SONIX_VID)
+    {
+		if(theApp.GetPalmTouchType()== E_PLAM_TOUCHCONTROL_TX1 || theApp.GetPalmTouchType() == E_PLAM_TOUCHCONTROL_TX2)
+		{
+			m_tCfgData.strFavoriteMediaType = "640 X 480 MJPG";
+		}
 //        if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
 //        {
 //            m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
 //        }
-//    }
+    }
 
     //选取最合适的视频格式
     for (size_t i = 0; i < m_tDeviceInfo.m_vecVideoFmt.size(); i++)
@@ -683,6 +687,7 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
     this->m_pInterceptFilter->SetImageAverageBrightness(lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
 
     const NormalUsageSettings* pNormalUsageSettings = NULL;
+
     //全局配置信息
     if (pGlobalSettings)
     {
@@ -726,6 +731,10 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
                break;
 
         }
+
+		RECT rcMonitor;
+		GetAttachedScreenArea(rcMonitor);
+		m_oPenPosDetector.SetAttachedMonitorSize(rcMonitor);
 
         //设置光斑检测门限
         m_oPenPosDetector.SetYThreshold(pNormalUsageSettings->cYThreshold);
@@ -1737,7 +1746,6 @@ void CIWBSensor::SetStrokeInterpolate(bool bEnableStrokeInterpolate)
 void CIWBSensor::SetOnlineScreenArea(bool bEnableOnlineScreenArea) 
 {
     EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
-
     m_tCfgData.vecSensorModeConfig[eProjectionMode].advanceSettings.bIsOnLineScreenArea = bEnableOnlineScreenArea;
 
     this->m_oPenPosDetector.EnableOnlineScreenArea(bEnableOnlineScreenArea);
@@ -1899,4 +1907,45 @@ void CIWBSensor::ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
 void CIWBSensor::SetResolutionType(CAtlString  Value)
 {
 	m_tCfgData.strFavoriteMediaType = Value;
+}
+
+void CIWBSensor::OnStartDrawOnlineScreenArea()
+{
+
+	this->m_oPenPosDetector.ShowGuideRectangle(false);
+	this->m_pInterceptFilter->SetStartDrawMaskFrame(true);
+	/////清除数组中的数据
+	this->m_oPenPosDetector.ClearOnLineScreenArea();
+	m_oVideoPlayer.ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
+	
+	///在点击开始画时，如果是禁用状态的话，那么画好之后没有显示，无法判断，因此在开始画时，就要设置为非禁用状态
+	this->m_oPenPosDetector.EnableOnlineScreenArea(!this->m_oPenPosDetector.IsEnableOnlineScreenArea());
+	SetOnlineScreenArea(true);
+
+	RectF textArea = { 0.0, 0.0, 1.0, 1.0 };
+
+	m_oVideoPlayer.AddOSDText(
+		E_OSDTEXT_TYPE_SHOW_INFO,
+		g_oResStr[IDS_STRING494],
+		textArea,
+		DT_BOTTOM | DT_LEFT | DT_SINGLELINE,
+		14L,
+		_T("Times New Roman"),
+		-1);
+}
+
+void CIWBSensor::OnClearDrawOnlineScreenArea()
+{
+	this->m_oPenPosDetector.DeleteOnLineScreenArea();
+
+}
+void CIWBSensor::OnEnableDrawOnlineScreenArea(BOOL Enable)
+{	
+	SetOnlineScreenArea(Enable);
+}
+
+
+BOOL CIWBSensor::IsEnableOnlineScreenArea()
+{
+	return this->m_oPenPosDetector.IsEnableOnlineScreenArea();
 }

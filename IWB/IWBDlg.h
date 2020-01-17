@@ -561,7 +561,7 @@ protected:
 	//更新加密锁的状态
 	void UpdateInfoAboutDongle();
 	//
-
+	BOOL LoadResolutionConfig();
 
 //====变量===========
 
@@ -631,7 +631,6 @@ protected:
 	CMenu                    m_oMenu                       ;
     CMenu                    m_oSubMenuMergMode;
 	CMenu                    m_mnuManualScreenAreaSettings ;//2011/11/03,手动屏幕区域指定快捷菜单。
-	//CMenu                    m_mnuSensorCtx                ;//
 	CIWBSensor*              m_pSelectedSensor             ;//选中的图像传感器对象指针
 
 	
@@ -835,8 +834,12 @@ public:
 	static UINT m_uAppCommMsg;
 	///add by vera_zhao 2019.10.28
 	bool    m_bStartDrawOnlineScreenArea;
-	bool    m_bPreGuideRectangleVisible;
+	bool    m_bPreGuideRectangleVisible ;
+	int     m_nDrawOnlineAreaCount      ;
+	int     m_nActiveDetectCameraId     ;
 
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnOperationFourpointcalibration();
+
+	std::vector<CAtlString>      m_aryCandidateResolution;
 };

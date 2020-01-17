@@ -54,7 +54,6 @@ protected:
 	//@功能:更新候选设备信息
 	BOOL UpdateCandidateDeviceInfo();
 
-
 	std::vector<CAtlString>                m_aryCandidateDeviceInfo  ;//候选设备信息
 	std::vector<TCaptureDeviceInstance>    m_aryCaptureDeviceInstance;//视频捕获设备实例
 

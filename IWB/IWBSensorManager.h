@@ -275,6 +275,8 @@ public:
 
     //@功能:4点标定结束响应函数
     void OnIWBSensor4BasePointMarkingDone(BOOL bSuccess);
+	void EnableOnlineScreenArea(BOOL bEnable);
+	BOOL IsEnableOnlineScreenArea();
 
 protected:
     void UpdateVideoLayout(const RECT& rcDisplayArea);
@@ -328,13 +330,13 @@ protected:
     HWND m_hNotifyWindow;
     E_AutoCalibratePattern m_eAutoCalibratePattern;
 
-    int m_nAutoCalibrateTryTimes                    ;//自动校正尝试次数
-    int m_nCurrentSensorID                          ;//正在校正的图像传感器的ID
-    static const int MAX_AUTOCALIBRATE_TRY_TIMES = 1;//自动校正尝试次数。
-    std::vector<BOOL> m_vecCalibrateResults         ;//保存每个传感器校正结果的数组,说明需要预先保存每个传感器的校正结果。因为传感器滤光片需要
-                                                     //在所有传感器都校正完成后才能够一齐合上。
+    int m_nAutoCalibrateTryTimes                    ;  //自动校正尝试次数
+    int m_nCurrentSensorID                          ;  //正在校正的图像传感器的ID
+    static const int MAX_AUTOCALIBRATE_TRY_TIMES = 1;  //自动校正尝试次数。
+    std::vector<BOOL> m_vecCalibrateResults         ;  //保存每个传感器校正结果的数组,说明需要预先保存每个传感器的校正结果。因为传感器滤光片需要
+                                                       //在所有传感器都校正完成后才能够一齐合上。
     //BOOL m_bAllScreenMergedOnOnePlane               ;//所有屏幕融合在一块平面上的标志
-	UINT m_uCurrentSelectSensordId;//当前选中的Sensor id
+	UINT m_uCurrentSelectSensordId;                    //当前选中的Sensor id
 
 
 };

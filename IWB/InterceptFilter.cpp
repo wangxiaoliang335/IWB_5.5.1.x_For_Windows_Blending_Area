@@ -535,17 +535,16 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
     }//else
 
-
     //<<2015-08-18
     //画面自动亮度控制
     if (m_bEnableBrightnessAutoRegulating)
     {
-        //static unsigned int  s_AutoControlCount = 0;
-        //if(s_AutoControlCount % 6== 0)
-        {
-            //    DoAutoBrightnessControl((const BYTE*)m_GraySrcFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
-        }
-        //s_AutoControlCount ++;
+      //  static unsigned int  s_AutoControlCount = 0;
+      //  if(s_AutoControlCount % 6== 0)
+      //  {
+                DoAutoBrightnessControl((const BYTE*)m_GraySrcFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
+      //  }
+      //   s_AutoControlCount ++;
     }
     //>>
 
@@ -651,9 +650,10 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
         if (m_pPenPosDetector->IsSpotSizeInfoVisible())
         {
+			SIZE MinSize = m_pPenPosDetector->GetMinimumLightSpotSize();
             int w = LightspotInfo[i].m_aryLightSpotBounds.right  - LightspotInfo[i].m_aryLightSpotBounds.left;
             int h = LightspotInfo[i].m_aryLightSpotBounds.bottom - LightspotInfo[i].m_aryLightSpotBounds.top;
-            if (w > 0 && h > 0)
+            if (w > MinSize.cx && h > MinSize.cy )
             {
                 sprintf_s(szSize, _countof(szSize), "<%d*%d>", w, h);
                 m_BGRAFrame.PutStr(LightspotInfo[i].m_aryLightSpotBounds.right, LightspotInfo[i].m_aryLightSpotBounds.bottom, szSize, ARGB_YELLOW, 16);
@@ -818,8 +818,6 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
         }//if(nBasePointCount)
     }
-
-
 
 	if (m_bStartDrawOnlineScreenArea)
 	{

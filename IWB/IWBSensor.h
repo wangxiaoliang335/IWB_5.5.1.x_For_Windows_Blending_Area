@@ -215,6 +215,12 @@ public:
 
 	  void SetResolutionType(CAtlString  Value);
 
+	  void OnStartDrawOnlineScreenArea();
+	  void OnClearDrawOnlineScreenArea();
+	  void OnEnableDrawOnlineScreenArea(BOOL bEnable);
+
+	  BOOL IsEnableOnlineScreenArea();
+
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;

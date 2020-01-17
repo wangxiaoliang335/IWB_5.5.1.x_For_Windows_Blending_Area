@@ -38,8 +38,7 @@ BOOL CUsbCameraDeviceList::UpdateCandidateDeviceInfo()
 	TiXmlNode* pChild = NULL;
 	
 	while(pChild = pRootElement->IterateChildren("USBCamera", pChild))
-	{
-	
+	{	
 		const char* NodeName = pChild->Value();//节点名称
 		const char* lpszVID  = ((TiXmlElement*)pChild)->Attribute("vid");
 		const char* lpszPID  = ((TiXmlElement*)pChild)->Attribute("pid");
@@ -55,7 +54,6 @@ BOOL CUsbCameraDeviceList::UpdateCandidateDeviceInfo()
 		m_aryCandidateDeviceInfo.push_back(strDevicePathInfo);
 	}
 
-	
 	return TRUE;
 }
 
@@ -63,10 +61,8 @@ BOOL CUsbCameraDeviceList::UpdateCandidateDeviceInfo()
 //@功能:更新设备列表
 void CUsbCameraDeviceList::UpdateDeviceList()
 {
-
 	//清空已有设备列表
 	m_aryCaptureDeviceInstance.clear();
-
 
 	//查找所有视频输入设备
 	CaptuerDeviceInstanceSet instanceSet;
@@ -145,8 +141,6 @@ BOOL CUsbCameraDeviceList::IsDevicePathExists(LPCTSTR lpszDevicePath)
 				break;
 			}			
 	}
-
-
 	return bFound;
 }
 
@@ -156,51 +150,40 @@ BOOL CUsbCameraDeviceList::IsDevicePathExists(LPCTSTR lpszDevicePath)
 const TCaptureDeviceInstance* CUsbCameraDeviceList::GetCaptureDeviceInstance(LPCTSTR lpszDevicePath)const
 {
 	BOOL bFound = FALSE;
-
 	for(UINT i=0; i < m_aryCaptureDeviceInstance.size(); i++)
 	{
 		const TCaptureDeviceInstance& instance = m_aryCaptureDeviceInstance[i];
-
-			if(_tcsicmp(instance.m_strDevPath, lpszDevicePath) == 0)
-			{
-				return &instance;
-				
-			}
+		if(_tcsicmp(instance.m_strDevPath, lpszDevicePath) == 0)
+		{
+			return &instance;			
+		}
 	}
     return NULL;
 }
-
 
 //@功能:根据视频格式名称获取指定设备的视频格式数据结构
 const VideoMediaType* CUsbCameraDeviceList::GetVideoFormat(LPCTSTR lpszDevicePath, LPCTSTR lpszVideoFormatName)
 {
 	const VideoMediaType* pVMT = 0;
-
-
 	for(UINT i=0; i < m_aryCaptureDeviceInstance.size(); i++)
 	{
 		const TCaptureDeviceInstance& instance = m_aryCaptureDeviceInstance[i];
-
-			if(_tcsicmp(instance.m_strDevPath, lpszDevicePath) == 0)
+		if(_tcsicmp(instance.m_strDevPath, lpszDevicePath) == 0)
+		{
+			UINT  fmtCount = instance.m_vecVideoFmt.size();
+			for(UINT j=0; j<fmtCount; j++)
 			{
-				UINT  fmtCount = instance.m_vecVideoFmt.size();
-				for(UINT j=0; j<fmtCount; j++)
+				CString strFmtName= GetVideoFormatName(instance.m_vecVideoFmt[j]);
+				if(strFmtName == lpszVideoFormatName)
 				{
-					CString strFmtName= GetVideoFormatName(instance.m_vecVideoFmt[j]);
-					if(strFmtName == lpszVideoFormatName)
-					{
-						pVMT = &instance.m_vecVideoFmt[j];			
-						break;
-					}
-
-				}//for j;
-			
-				break;
-			}			
-	}
-
-
-	return pVMT;
+					pVMT = &instance.m_vecVideoFmt[j];			
+					break;
+				}
+			}//for j;		
+			break;
+		 }			
+	 }
+	 return pVMT;
 
 }
 
@@ -217,7 +200,6 @@ BOOL CUsbCameraDeviceList::IsCandidateDevice(LPCTSTR lpszDevicePath)
             return TRUE;
         }
     }
-
     return FALSE;
 }
 

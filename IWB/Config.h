@@ -71,6 +71,8 @@ enum EPalmTouchControlType
 	E_PLAM_TOUCHCONTROL_T3 = 9, //(这个是标清的摄像头)手掌互动触控的类型，激光器是放在中间位置的。
 	E_PLAM_TOUCHCONTROL_T4 = 10, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
 	E_PLAM_TOUCHCONTROL_T5 = 11, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
+	E_PLAM_TOUCHCONTROL_TX1 =12,
+	E_PLAM_TOUCHCONTROL_TX2 = 13,
 	E_PLAM_TOUCHCONTROL_UnKnow = -1,
 };
 
