@@ -1159,7 +1159,7 @@ void CIWBSensorManager::OnIWBSensorLightSpotSamplingDone(BOOL bSuccess, int nSen
 
     const ALL_LIGHTSPOT_SAMPLE_SIZE&  screenSamples = m_wndLightSpotSampling.GetScreenSamples();
     m_vecSensors[m_nCurrentSensorID]->OnLightSpotSamplingDone(screenSamples, bSuccess);
-	if (nSensorId >= -1)
+	if (nSensorId >-1)
 	{
 		//说明是单屏采集。
 		return;
