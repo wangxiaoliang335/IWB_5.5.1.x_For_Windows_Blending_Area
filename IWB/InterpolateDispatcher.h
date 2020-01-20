@@ -46,8 +46,11 @@ public:
 
             if (!bFound)
             {
-                m_touchPoints[m_nActiveCount] = pPenInfos[i];
-                m_nActiveCount++;
+                if (m_nActiveCount < _countof(m_touchPoints))
+                {
+                    m_touchPoints[m_nActiveCount] = pPenInfos[i];
+                    m_nActiveCount++;
+                }
             }
         }
         
