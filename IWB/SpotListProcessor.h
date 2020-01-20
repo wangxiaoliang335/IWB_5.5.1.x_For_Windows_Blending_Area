@@ -1,5 +1,6 @@
 #pragma once
 #include <GlobalDefine.h>
+#include "InterpolateDispatcher.h"
 class ISpotListProcessor
 {
 public:
@@ -190,7 +191,7 @@ protected:
     //融合区域内的光斑合并器
     CSpotMerger m_oSpotMerger;//
 
-    static const int PEN_NUM = MAX_TOUCH_COUNT;
+    static const int PEN_NUM = MAX_SUPPORT_TOUCH_COUNT;
     //智能光笔匹配
     CSmartMatch<PEN_NUM> m_oSmartPenMatch;//
 
@@ -209,6 +210,7 @@ protected:
 
     CStrokeFilter<PEN_NUM>  m_oStrokFilter;//笔迹过滤器
 	CBezierInterpolator<PEN_NUM> m_oBezierInterpolator;//
+    CInterpolateDispatcher<PEN_NUM> m_oInterpolateDispatcher;
 
     //正在触发手势标志
     BOOL m_bIsTriggeringGuesture;
