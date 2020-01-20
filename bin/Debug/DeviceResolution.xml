@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<all>
+<USBCamera  Resolution="1920 X 1080 MJPG"></USBCamera>
+<USBCamera  Resolution="1280 X 720 MJPG"></USBCamera>
+<USBCamera  Resolution="640 X 480 MJPG"></USBCamera>
+<USBCamera  Resolution="320 X 240 MJPG"></USBCamera>
+<USBCamera  Resolution="640 X 480 YUY2"></USBCamera>
+<USBCamera  Resolution="320 X 240 YUY2"></USBCamera>
+</all>
