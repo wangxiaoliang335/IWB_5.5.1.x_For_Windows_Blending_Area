@@ -231,7 +231,7 @@ public:
                         break;
                     }
                     else
-                    {
+                    {   
                         strokeInterpolateData.junctionPoints[1].d[0] = (double)contactInfo.pt.x;
                         strokeInterpolateData.junctionPoints[1].d[1] = (double)contactInfo.pt.y;
                         strokeInterpolateData.state = E_INTERPOLATE_FIRST_SEGMENT;
@@ -285,15 +285,11 @@ public:
                         strokeInterpolateData.junctionPoints[2].d[0] = (double)contactInfo.pt.x;
                         strokeInterpolateData.junctionPoints[2].d[1] = (double)contactInfo.pt.y;
 
-
                         //计算控制点
                         CalculateControlPoint(RATIO_BOTTOM, RATIO_TOP, strokeInterpolateData.junctionPoints, strokeInterpolateData.controlPoints);
 
                         //计算插值点个数
                         interpolate_count = CalcInterpolateNumber(strokeInterpolateData.junctionPoints[0], strokeInterpolateData.junctionPoints[1]);
-
-
-                        
 
                         if(interpolate_count > 1)
                         t_inc = 1.0 /(double)(interpolate_count);
@@ -509,14 +505,7 @@ public:
         m_interpolatePoints.Reset();
     }
 
-    
 
-    //int GetInterpolateCount(TContactInfo** ppInterpolatePoints)
-    //{
-
-    //	if (ppInterpolatePoints) *ppInterpolatePoints = m_aryInterpolatePoints;
-    //	return m_nInterpolateCount;
-    //}
 protected:
     static const int MAX_INEROLATE_EACH_STROKE = 3;
 

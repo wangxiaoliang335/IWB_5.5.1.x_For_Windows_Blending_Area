@@ -1,4 +1,5 @@
 #pragma once
+#include "..\inc\GlobalDefine.h"
 #include "..\inc\EASI_TOUCHSCREEN_INTERFACE.h"
 #include "DeviceEventMonitor.h"
 #include "TouchScreenDblChecker.h"
@@ -95,7 +96,7 @@ protected:
 	bool     m_bSinglePointMode;
 
 
-	static const int MAX_TOUCH_POINT_COUNT = 10;
+	static const int MAX_TOUCH_POINT_COUNT = MAX_TOUCH_COUNT;
 	EASI_TouchPoint m_TouchPoints[MAX_TOUCH_POINT_COUNT];
 
 	static CVirtualMouse m_oVirtualMouse;//虚拟鼠标对象
@@ -117,7 +118,7 @@ protected:
 	//2018/01/04
 	//为了解决在开机自动运行时, 虚拟触屏设备打开失败的问题
 	//在打开设备设备失败时, 开启一个线程不断尝试打开触屏设备，直到成功或者达到最大尝试数目
-	CComAutoCriticalSection m_csForVirutalDevice;
+	CComAutoCriticalSection m_csForVirtualDevice;
 	BOOL OpenDeviceThreadSafe();
 
 	BOOL CloseDeviceThreadSafe();

@@ -439,8 +439,6 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
 
     int nActualMonitorLeft, nActualMonitorTop, nActualMonitorRight, nActualMonitorBottom, nActualMonitorWidth, nActualMonitorHeight;
     
-
-
     nActualMonitorLeft   = this->m_rcMonitorResolution.left  ;
     nActualMonitorTop    = this->m_rcMonitorResolution.top   ;
     nActualMonitorRight  = this->m_rcMonitorResolution.right ;
@@ -534,9 +532,6 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
 			}
             pPtScreen->d[1]  = nVSBottom;
         }
-
-
-
     }
 
     return TRUE;

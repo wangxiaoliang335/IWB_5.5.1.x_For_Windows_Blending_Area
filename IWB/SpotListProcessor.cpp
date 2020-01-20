@@ -58,12 +58,11 @@ FILE * g_hDebugRawInputData = NULL;
 //@说明:引用计数为0时启动处理线程, 调用一次,引用计数+1,
 void CSpotListProcessor::StartProcess()
 {
+	Reset();
+
     if(m_lReferenceCount == 0)
     {
-
-        Reset();
-
-        m_oVirtualHID.OpenDevice();
+		m_oVirtualHID.OpenDevice();
         StartProcessThread();
 
         //<<debug
@@ -678,15 +677,15 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         sprintf_s(
             szData,
             _countof(szData),
-            "%d,%d----%s,.......%d\n",
+            "id=%d,%d,%d,%s\n",
+            contactInfos[i].uId,
             contactInfos[i].pt.x,
             contactInfos[i].pt.y,
-			szEvent,
-			nCount);
- 
+            szEvent);
         fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
 
     }//for-each(i)
+
 }
 //@功能:所有光斑的后续处理程序
 //@参数:pLightSpots, 指向光斑列表的指针
@@ -760,7 +759,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 	//////检测GLBoard白板是否是打开的
     bool bHandHID2Me = DoGLBoardGestureRecognition(pLightSpots, nLightSpotCount);
 
- /* 
+  
 #ifdef _DEBUG
 
   if(g_hDebugSampleFile1)
@@ -783,7 +782,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         }	
     }    
 #endif
- */
+ 
 
     if (bHandHID2Me)
     {
@@ -837,7 +836,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             {   //不插值
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
-               // DebugContactInfo(penInfo, penCount);
+               DebugContactInfo(penInfo, penCount);
 #endif
             }
             else
@@ -853,17 +852,26 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                 {
                     const TContactInfo* pInterpolateContact;
                     int nItemCount = container.GetSlotData(slot, &pInterpolateContact);
+
                     if (nItemCount > 0)
                     {
 #ifdef _DEBUG
-                        DebugContactInfo(pInterpolateContact, nItemCount);
+                   //     DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
-						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);
+						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);		
 
                         //延迟1ms
                         Sleep(1);
                     }
+                    else
+                    {
+                        break;
+                    }
                 }//for
+
+			//	char szData[128];
+			//	sprintf_s(szData, _countof(szData), "------------------------------------\n");
+			//	fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
             }
         }
         else

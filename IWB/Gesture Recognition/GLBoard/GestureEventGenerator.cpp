@@ -227,24 +227,13 @@ void CGestureEventGenerator::Input2Device(const POINT *ptArry, const int &nActua
 
     if (needMatch)
     {
-        m_oSmartMatch.DoMatch(ptArry, nActualCount);        
+        m_oSmartMatch.DoMatch(ptArry, nActualCount);
         const TMatchInfo* pMatchInfo =  m_oSmartMatch.GetAllMatchInfo(&nElementCount);
  
         //g_oGLTraceLog.AddSpotInfo((GLMatchInfo*)pMatchInfo, nElementCount);
 
         if(nElementCount > _countof(penInfo)) nElementCount = _countof(penInfo);
 
-        //for(int i = 0; i < nElementCount; i++)
-        //{
-        //    penInfo[i].ePenState = (pMatchInfo[i].eMatchState == E_MISMATCHED)?E_PEN_STATE_UP:E_PEN_STATE_DOWN;
-        //    penInfo[i].uId       = pMatchInfo[i].uId;
-        //    penInfo[i].pt        = pMatchInfo[i].ptPos; 
-
-        //    /* if (nActualCount == 1)
-        //    {
-        //    AtlTrace(_T("########MatchState : %d  nElementCount\r\n"), pMatchInfo[i].eMatchState);            
-        //    }*/
-        //}  
 
         /*
         @说明：当板擦移动过程中，出现错误匹配时，uid=0的板擦弹起，而uid=*的板擦按下，而GLBoard中板擦是鼠标响应的，而鼠标接受的是uid=0笔
@@ -261,10 +250,10 @@ void CGestureEventGenerator::Input2Device(const POINT *ptArry, const int &nActua
                     {//uid = 0 橡皮擦失配了
                         //
                         m_oSmartMatch.Reset();
-                        refVirtualHid.Reset();  
+                        refVirtualHid.Reset();
 
-                        m_oSmartMatch.DoMatch(ptArry, nActualCount);        
-                        pMatchInfo =  m_oSmartMatch.GetAllMatchInfo(&nElementCount);                        
+                        m_oSmartMatch.DoMatch(ptArry, nActualCount);
+                        pMatchInfo =  m_oSmartMatch.GetAllMatchInfo(&nElementCount);
 
                         if(nElementCount > _countof(penInfo)) nElementCount = _countof(penInfo);
                     }

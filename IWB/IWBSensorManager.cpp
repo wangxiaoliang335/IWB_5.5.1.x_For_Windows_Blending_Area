@@ -1332,7 +1332,8 @@ void CIWBSensorManager::SwapSensorImage(UINT nFirstSensorId, UINT nSecondSensorI
 	this->m_vecSensors[nSecondSensorId]->SetDeviceInfo(devInstFirst);
 
 
-	//
+	//获取所有图像传感器的配置信息
+	GetCfgData(g_tSysCfgData);
 
     //停止
     StopRunning();

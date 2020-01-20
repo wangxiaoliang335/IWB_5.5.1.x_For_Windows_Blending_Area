@@ -5,6 +5,8 @@
     #define EASI_TOUCHSCREEN_API _declspec(dllimport)
 #endif
 
+#define MAX_SUPPORT_TOUCH_COUNT 10
+
 #define TIP_UP   0x02   //Ìá±Ê
 #define TIP_DOWN 0x03   //ÏÂ±Ê
 

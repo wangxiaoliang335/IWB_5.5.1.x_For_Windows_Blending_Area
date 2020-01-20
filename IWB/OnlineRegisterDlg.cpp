@@ -53,6 +53,12 @@ inline const TCHAR*  GetPalmTouchTypeString(EPalmTouchControlType ePalmTouchCont
 	    case E_PLAM_TOUCHCONTROL_T5:
 		     return _T("T5");
 		     break;
+		case E_PLAM_TOUCHCONTROL_TX1:
+			return _T("TX1");
+			break;
+		case E_PLAM_TOUCHCONTROL_TX2:
+			return _T("TX2");
+			break;
 	    default:
 		     break;
 	}

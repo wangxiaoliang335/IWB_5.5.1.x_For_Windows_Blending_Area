@@ -5211,6 +5211,7 @@ void CIWBDlg::OnSwapImageWithSensor(UINT uID)
     {
         this->m_oIWBSensorManager.SwapSensorImage(pSensor->GetID(), uSensorID);
     }
+
 }
 
 
