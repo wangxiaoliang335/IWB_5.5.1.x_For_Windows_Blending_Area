@@ -1312,6 +1312,8 @@ void CIWBSensor::OnAutoSearchMaskAreaDone(BOOL bSuccess)
     {
         //设置静态屏蔽图
         m_oPenPosDetector.SetStaticMaskFrame(m_oAutoCalibrator.GetMaskFrame());
+		//保存静态屏蔽图
+		m_oPenPosDetector.SaveStaticMaskFrame();
 
         //设置光点到屏幕编号的映射信息
         m_oPenPosDetector.GetVideoToScreenMap().SetScreenMap(m_oAutoCalibrator.GetScreenMap());

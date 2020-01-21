@@ -5,18 +5,19 @@
     #define EASI_TOUCHSCREEN_API _declspec(dllimport)
 #endif
 
-#define MAX_SUPPORT_TOUCH_COUNT 10
-
 #define TIP_UP   0x02   //提笔
 #define TIP_DOWN 0x03   //下笔
-
 
 //#define EASI_TOUCH_MAXIMUM_X 0x7FFF
 //#define EASI_TOUCH_MAXIMUM_Y 0x7FFF
 #define EASI_TOUCH_MAXIMUM_X (1920*8)
 #define EASI_TOUCH_MAXIMUM_Y (1080*8)
 
+//最大触控点个数
+#define MAX_CONTACT_COUNT 30
 
+//每个Report中包含的最大触控点个数
+#define MAX_CONTACT_COUNT_PER_REPORT 10
 
 struct EASI_TouchPoint
 {
@@ -35,6 +36,7 @@ struct EASI_TouchPoint
 
 #define EASI_MOUSE_MAXIMUM_X  0x7FFF
 #define EASI_MOUSE_MAXIMUM_Y  0x7FFF
+
 
 struct EASI_MouseInput
 {

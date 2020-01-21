@@ -488,11 +488,8 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
                     bDelayProcess = TRUE;
                     break;
                 }
-
             }
-
         }//for(i)
-
 
 
         //当前摄像头的光斑数据都在合并区以外时,要保证buddy摄像头的光斑也在融合区以外,
@@ -677,11 +674,12 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         sprintf_s(
             szData,
             _countof(szData),
-            "id=%d,%d,%d,%s\n",
+            "%d,%d,%d,%d\n",
             contactInfos[i].uId,
             contactInfos[i].pt.x,
             contactInfos[i].pt.y,
-            szEvent);
+            contactInfos[i].ePenState);
+ 
         fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
 
     }//for-each(i)
@@ -833,7 +831,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 			BOOL bEnableStrokeInterpolateTemp= TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate;
 
             if (FALSE == bEnableStrokeInterpolateTemp)
-            {   //不插值
+            { 
+     			//不插值
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
                DebugContactInfo(penInfo, penCount);
@@ -858,7 +857,13 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 #ifdef _DEBUG
                    //     DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
-						m_oVirtualHID.InputPoints(pInterpolateContact, nItemCount);		
+                        m_oInterpolateDispatcher.PreProcess(pInterpolateContact, nItemCount);
+
+                        int allPenCount;
+                        const TContactInfo* pAllContactInfo = m_oInterpolateDispatcher.GetAllContactData(&allPenCount);
+                        m_oVirtualHID.InputPoints(pAllContactInfo, allPenCount);
+
+                        m_oInterpolateDispatcher.PostProcess();
 
                         //延迟1ms
                         Sleep(1);
@@ -1040,6 +1045,8 @@ void CSpotListProcessor::Reset()
 
     //Bezier插值器复位
     this->m_oBezierInterpolator.Reset();
+
+    m_oInterpolateDispatcher.Reset();
 
     m_SpotListGroupFIFO.Reset();
 }

@@ -588,6 +588,8 @@ public:
      //@功能:判断是否正在进行4点标定
      BOOL IsMarkingBasestone()const;
 
+	 void StartTest30Point() { m_bStartTest30Point = TRUE;  }
+
 protected:
 
 	BOOL SimulateMannalCalibrate(LPCTSTR lpszAVIFilePath);    
@@ -941,5 +943,7 @@ protected:
     void LoadBaseStoneMarker();
 
     void InitBaseStoneFilePath(TCHAR* buf, int nBufSize);
+
+	BOOL  m_bStartTest30Point;
 };
 

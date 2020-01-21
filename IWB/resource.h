@@ -14,6 +14,8 @@
 #define IDM_CAPTURE_PICTURE             0x0027
 #define IDM_GPIO_ON                     0x0028
 #define IDM_GPIO_OFF                    0x0029
+#define IDM_TEST30POINT                 0x0030
+
 #define IDC_CURSOR_DRAW_SCREEN_AREA     100
 #define IDD_DIALOG_SIMULATE_CALIBRATION 101
 #define IDD_DIALOG_ADVANCED_SETTINGS    102

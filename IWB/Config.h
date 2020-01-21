@@ -524,7 +524,7 @@ struct TAdvancedSettings
 		bIsDynamicMaskFrame = FALSE;
 		bIsAntiJamming = FALSE;
 		bIsOnLineScreenArea = FALSE;
-		bDisableReflectionSpot = TRUE;
+		bDisableReflectionSpot = FALSE;
     }
 };
 

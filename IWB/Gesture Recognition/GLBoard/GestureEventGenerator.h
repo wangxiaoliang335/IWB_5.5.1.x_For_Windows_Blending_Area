@@ -300,7 +300,7 @@ public:
     bool m_isLogPermit;
 
     //ÖÇÄÜ¹â±ÊÆ¥Åä
-    static const int MAXMATCH_NUM = MAX_TOUCH_COUNT;
+    static const int MAXMATCH_NUM = MAX_SUPPORT_TOUCH_COUNT;
     static const int MAX_CAMERA_NUMBER = 6;
     CSmartMatch<MAXMATCH_NUM> m_oSmartMatch;//
     CStrokeFilter<MAXMATCH_NUM>  m_oStrokFilter;//±Ê¼£¹ýÂËÆ÷

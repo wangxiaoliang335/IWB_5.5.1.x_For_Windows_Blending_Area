@@ -96,7 +96,7 @@ protected:
 	bool     m_bSinglePointMode;
 
 
-	static const int MAX_TOUCH_POINT_COUNT = MAX_TOUCH_COUNT;
+	static const int MAX_TOUCH_POINT_COUNT = MAX_SUPPORT_TOUCH_COUNT;
 	EASI_TouchPoint m_TouchPoints[MAX_TOUCH_POINT_COUNT];
 
 	static CVirtualMouse m_oVirtualMouse;//–Èƒ‚ Û±Í∂‘œÛ

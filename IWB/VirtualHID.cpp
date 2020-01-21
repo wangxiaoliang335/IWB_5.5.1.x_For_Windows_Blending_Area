@@ -257,20 +257,20 @@ BOOL IsMonitorAttachedToPointerDevice(
             &cchData);
 
 
-		if (retCode == ERROR_SUCCESS && _tcsicmp(lpszMonitorDevicePath, achData) == 0)
-		{//发现了显示器设备路径了。
+        if (retCode == ERROR_SUCCESS && _tcsicmp(lpszMonitorDevicePath, achData) == 0)
+        {//发现了显示器设备路径了。
 
-			_tcsupr_s(
-				achValue,
-				cchValue + 1
-			);
+            _tcsupr_s(
+                achValue,
+                cchValue + 1
+            );
 
-			if (_tcsstr(achValue, lpszPointerDevicePath))
-			{//触控设备路径也对上了
-				bAttached = TRUE;
-				break;
-			}
-		}
+            if (_tcsstr(achValue, lpszPointerDevicePath))
+            {//触控设备路径也对上了
+                bAttached = TRUE;
+                break;
+            }
+        }
     }
     RegCloseKey(hKey);
 
@@ -290,21 +290,21 @@ CVirtualHID::CVirtualHID()
     m_aspectRatioNominator(16),
     m_aspectRatioDenominator(9),
     m_eTouchDataAdjustModel(E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO),
-	m_bTouchHIDMode(true),
-	m_bTouchTUIOMode(false),
-	m_bSinglePointMode(false)
+    m_bTouchHIDMode(true),
+    m_bTouchTUIOMode(false),
+    m_bSinglePointMode(false)
 
 {
     memset(&m_TouchPoints[0], 0, sizeof(m_TouchPoints));
-	RetrievePointerDevices();
+    RetrievePointerDevices();
 
-	m_oVirtualTUIOTouch.OpenTUIOServer();
+    m_oVirtualTUIOTouch.OpenTUIOServer();
 }
 
 
 CVirtualHID::~CVirtualHID()
 {
-    if(m_hDev != INVALID_HANDLE_VALUE)
+    if (m_hDev != INVALID_HANDLE_VALUE)
     {
         EASI_CloseDevice(m_hDev);
     }
@@ -316,32 +316,32 @@ BOOL CVirtualHID::OpenDevice()
     UpdateAttachedMonitorInfo();
 
     //m_hDev = EASI_OpenDevice();
- 	CloseAutoOpenThread();
+    CloseAutoOpenThread();
 
-	//尝试打开设备
-	OpenDeviceThreadSafe();
-    
+    //尝试打开设备
+    OpenDeviceThreadSafe();
+
     //if(m_hDev != INVALID_HANDLE_VALUE)
     //{
     //    //将设备句柄加入监控名单。
     //    m_oDeviceEventDetector.AddHandleMonitor(m_hDev, DeviceHandleEventCallBack, (LPVOID)this);
     //}
     //else
-	if(INVALID_HANDLE_VALUE == m_hDev)
+    if (INVALID_HANDLE_VALUE == m_hDev)
     {   //暂时打不开设备, 开始监控HID设备事件，以便HID设备就绪后能够打开设备。
         AtlTrace(_T("EASI_OpenDevice rerurn INVALID_HANDLE_VALUE\n"));
-		LOG_ERR("EASI_OpenDevice rerurn INVALID_HANDLE_VALUE\n");
+        LOG_ERR("EASI_OpenDevice rerurn INVALID_HANDLE_VALUE\n");
         //GUID guid_HID;
         //HidD_GetHidGuid(&guid_HID);
         //m_oDeviceEventDetector.AddDevIntefaceMonitor(guid_HID, DeviceInterfaceEventCallBack,(LPVOID)this);
         const GUID& interface_guid = EASI_GetDeviceInterfaceGUID();
-        m_oDeviceEventDetector.AddDevIntefaceMonitor(interface_guid, DeviceInterfaceEventCallBack,(LPVOID)this);
+        m_oDeviceEventDetector.AddDevIntefaceMonitor(interface_guid, DeviceInterfaceEventCallBack, (LPVOID)this);
 
-		//想要的模式
-		m_eDesiredHIDMode = m_eHIDDeviceMode;
+        //想要的模式
+        m_eDesiredHIDMode = m_eHIDDeviceMode;
 
-		//在开机自启动时,如果打开虚拟设备失败，则开启线程尝试自动打开
-		CreateAutoOpenThread();
+        //在开机自启动时,如果打开虚拟设备失败，则开启线程尝试自动打开
+        CreateAutoOpenThread();
 
         //驱动设备打不开，则强制使用鼠标模式
         m_eHIDDeviceMode = E_DEV_MODE_MOUSE;
@@ -351,8 +351,8 @@ BOOL CVirtualHID::OpenDevice()
 
 BOOL CVirtualHID::CloseDevice()
 {
-	CloseAutoOpenThread();
-	return CloseDeviceThreadSafe();
+    CloseAutoOpenThread();
+    return CloseDeviceThreadSafe();
 }
 
 //@功能:状态复位
@@ -361,19 +361,19 @@ BOOL CVirtualHID::CloseDevice()
 //      鼠标设备的按键全部弹起。
 void CVirtualHID::Reset()
 {
-    switch(m_eHIDDeviceMode)
+    switch (m_eHIDDeviceMode)
     {
     case E_DEV_MODE_MOUSE://复位鼠标
         this->m_oVirtualMouse.Reset();
         break;
 
     case E_DEV_MODE_TOUCHSCREEN://复位触摸屏
-        if(INVALID_HANDLE_VALUE == m_hDev) return;
+        if (INVALID_HANDLE_VALUE == m_hDev) return;
 
         //复位每个触屏点
-        for(int i=0; i < _countof(m_TouchPoints); i++)
+        for (int i = 0; i < _countof(m_TouchPoints); i++)
         {
-            if(m_TouchPoints[i].bStatus == TIP_DOWN)
+            if (m_TouchPoints[i].bStatus == TIP_DOWN)
             {
                 m_TouchPoints[i].bStatus = TIP_UP;
                 EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[i], 1);
@@ -390,58 +390,58 @@ void CVirtualHID::Reset()
 BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
 {
     BOOL bRet = FALSE;
-	//设备未打开，并且自动打开线程未开启
-	if (m_hDev == INVALID_HANDLE_VALUE && this->m_hAutoOpenThread == NULL)
+    //设备未打开，并且自动打开线程未开启
+    if (m_hDev == INVALID_HANDLE_VALUE && this->m_hAutoOpenThread == NULL)
     {
-        if(!OpenDevice())
+        if (!OpenDevice())
         {
             return FALSE;
         }
     }
 
-	if (m_bTouchHIDMode)
-	{
-       switch(m_eHIDDeviceMode)
-       {
-           case E_DEV_MODE_MOUSE:
-             //搜索编号为0的笔信息
-             for(int i=0; i < nPenCount; i++)
-             {
-                 if(pPenInfos[i].uId == 0)
-                 {
-                     m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);				
-                     break;
-                 }
-             }
-             break;
-          case E_DEV_MODE_TOUCHSCREEN:
-			  ////如果选择的是单点触控的话，只响应一个点就可以了
- 			  if (m_bSinglePointMode)
-			  {
-		          //搜索编号为0的笔信息
-		         for (int i = 0; i < nPenCount; i++)
-		         {
-			         if (pPenInfos[i].uId == 0)
-			         {
-			             InputTouchPoints(&pPenInfos[i], 1);
-				         break;
-			         }
-		         }
-			  }
-			  else
-			  {
-		          bRet = InputTouchPoints(pPenInfos, nPenCount);
-			  }
-		     break;
-           } //switch  
-	}
+    if (m_bTouchHIDMode)
+    {
+        switch (m_eHIDDeviceMode)
+        {
+        case E_DEV_MODE_MOUSE:
+            //搜索编号为0的笔信息
+            for (int i = 0; i < nPenCount; i++)
+            {
+                if (pPenInfos[i].uId == 0)
+                {
+                    m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
+                    break;
+                }
+            }
+            break;
+        case E_DEV_MODE_TOUCHSCREEN:
+            ////如果选择的是单点触控的话，只响应一个点就可以了
+            if (m_bSinglePointMode)
+            {
+                //搜索编号为0的笔信息
+                for (int i = 0; i < nPenCount; i++)
+                {
+                    if (pPenInfos[i].uId == 0)
+                    {
+                        InputTouchPoints(&pPenInfos[i], 1);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                bRet = InputTouchPoints(pPenInfos, nPenCount);
+            }
+            break;
+        } //switch  
+    }
 
-	if (m_bTouchTUIOMode)
-	{
-	    //模拟虚拟的TUIO
-	    m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
-	}
-   return bRet;
+    if (m_bTouchTUIOMode)
+    {
+        //模拟虚拟的TUIO
+        m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
+    }
+    return bRet;
 }
 
 
@@ -497,14 +497,14 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         if (NULL == pDisplayDevInfo) return FALSE;
         //if (NULL == pPointerDeviceInfo) return FALSE;
 
-        LONG nMonitorPixelLeft   = pDisplayDevInfo->rcMonitor.left;
-        LONG nMonitorPixelTop    = pDisplayDevInfo->rcMonitor.top;
-        LONG nMonitorPixelWidth  = pDisplayDevInfo->rcMonitor.right  - pDisplayDevInfo->rcMonitor.left;
+        LONG nMonitorPixelLeft = pDisplayDevInfo->rcMonitor.left;
+        LONG nMonitorPixelTop = pDisplayDevInfo->rcMonitor.top;
+        LONG nMonitorPixelWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
         LONG nMonitorPixelHeight = pDisplayDevInfo->rcMonitor.bottom - pDisplayDevInfo->rcMonitor.top;
 
 
         //确定触屏的宽高比
-        int aspectRatioNominator   = 16;
+        int aspectRatioNominator = 16;
         int aspectRatioDenominator = 9;
         ETouchScreenAspectRatio eRatio;
 
@@ -513,24 +513,24 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         switch (eRatio)
         {
         case E_TOUCH_SCREEN_ASPECT_RATIO_AUTO:
-            aspectRatioNominator   = m_aspectRatioNominator;
+            aspectRatioNominator = m_aspectRatioNominator;
             aspectRatioDenominator = m_aspectRatioDenominator;
             break;
 
         case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
-            aspectRatioNominator   = 16;
+            aspectRatioNominator = 16;
             aspectRatioDenominator = 9;
 
             break;
 
         case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
-            aspectRatioNominator   = 16;
+            aspectRatioNominator = 16;
             aspectRatioDenominator = 10;
 
             break;
 
         case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
-            aspectRatioNominator   = 4;
+            aspectRatioNominator = 4;
             aspectRatioDenominator = 3;
             break;
         }//switch
@@ -546,7 +546,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
         //如果屏幕发生旋转则将触控的屏幕坐标转换为未旋转时的屏幕坐标
         //switch (pPointerDeviceInfo->displayOrientation)
-        switch(pDisplayDevInfo->targetInfo.rotation)
+        switch (pDisplayDevInfo->targetInfo.rotation)
         {
         case DISPLAYCONFIG_ROTATION_IDENTITY:
             //Keep No Change
@@ -593,13 +593,13 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             OSVERSIONINFOEX osvinfex;
             if (IsWin10OrGreater())
             {
-                    /*Version	 OS build
-                    1909	18363.535
-                    1903	18362.535
-                    1809	17763.914
-                    1803	17134.1184
-                    1709	16299.1565
-                    */
+                /*Version OS build
+                1909    18363.535
+                1903    18362.535
+                1809    17763.914
+                1803    17134.1184
+                1709    16299.1565
+                */
 
                 m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
 
@@ -617,7 +617,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
                         }
                         else
                         {//屏幕嵌入在触屏内部的模型
-                          m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
+                            m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
                         }
                     }
                     //else if (osvinfex.dwBuildNumber == 17763)
@@ -634,38 +634,38 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
             switch (m_eTouchDataAdjustModel)
             {
-                case E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO:
-                {//触屏按指定宽高比拉伸模型
-                 //Windows内部按照屏幕的物理宽高比对触控位置做了修正
-                 //屏幕虚拟像素宽度和像素高度就是按照指定的宽高比例计算出的虚拟宽度和高度，
-                    int nMonitorVirtualPixelWidth = nMonitorPixelWidth;
-                    int nMonitorVirtualPixelHeight = nMonitorPixelHeight;
+            case E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO:
+            {//触屏按指定宽高比拉伸模型
+             //Windows内部按照屏幕的物理宽高比对触控位置做了修正
+             //屏幕虚拟像素宽度和像素高度就是按照指定的宽高比例计算出的虚拟宽度和高度，
+                int nMonitorVirtualPixelWidth = nMonitorPixelWidth;
+                int nMonitorVirtualPixelHeight = nMonitorPixelHeight;
 
-                    if (aspectRatioNominator * nMonitorPixelHeight > aspectRatioDenominator * nMonitorPixelWidth)
-                    { //物理宽高比大于实际像素的宽高比,垂直像素数目保持不变, 水平虚拟像素增加
-                        nMonitorVirtualPixelWidth = nMonitorVirtualPixelHeight * aspectRatioNominator / aspectRatioDenominator;
-                    }
-                    else if (aspectRatioNominator * nMonitorPixelHeight < aspectRatioDenominator * nMonitorPixelWidth)
-                    {//物理宽高比小于实际像素的宽高比, 水平像素数目保持不变，垂直虚拟像素增加
-                        nMonitorVirtualPixelHeight = nMonitorVirtualPixelWidth * aspectRatioDenominator / aspectRatioNominator;
-                    }
-
-                    wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
-                    wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
+                if (aspectRatioNominator * nMonitorPixelHeight > aspectRatioDenominator * nMonitorPixelWidth)
+                { //物理宽高比大于实际像素的宽高比,垂直像素数目保持不变, 水平虚拟像素增加
+                    nMonitorVirtualPixelWidth = nMonitorVirtualPixelHeight * aspectRatioNominator / aspectRatioDenominator;
                 }
-                break;
-
-                case E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL:
-                {//显示器内容嵌入在触屏中央模型
-                    const int& nSourceWidth = pDisplayDevInfo->sourceMode.width;
-                    const int& nSourceHeight = pDisplayDevInfo->sourceMode.height;
-                    const int& nTargetWidth = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cx;
-                    const int& nTargetHeight = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cy;
-
-                    wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth  ) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
-                    wYData = USHORT((contactPos.y - nMonitorPixelTop  + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+                else if (aspectRatioNominator * nMonitorPixelHeight < aspectRatioDenominator * nMonitorPixelWidth)
+                {//物理宽高比小于实际像素的宽高比, 水平像素数目保持不变，垂直虚拟像素增加
+                    nMonitorVirtualPixelHeight = nMonitorVirtualPixelWidth * aspectRatioDenominator / aspectRatioNominator;
                 }
-                break;
+
+                wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
+                wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
+            }
+            break;
+
+            case E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL:
+            {//显示器内容嵌入在触屏中央模型
+                const int& nSourceWidth = pDisplayDevInfo->sourceMode.width;
+                const int& nSourceHeight = pDisplayDevInfo->sourceMode.height;
+                const int& nTargetWidth = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cx;
+                const int& nTargetHeight = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cy;
+
+                wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
+                wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+            }
+            break;
             }//switch(m_eTouchDataAdjustModel)
 
             m_TouchPoints[i].wXData = wXData;
@@ -679,10 +679,9 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop ) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
         }
 
-
     }//for
 
-    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount>MAX_SUPPORT_TOUCH_COUNT ? MAX_SUPPORT_TOUCH_COUNT : nPenCount);
+    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
 
 
     return bRet;
@@ -691,97 +690,97 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 //@功能:判断虚拟驱动是否是打开的。
 BOOL CVirtualHID::IsVirtualDriverOpen()
 {
-    return this->m_hDev != INVALID_HANDLE_VALUE? TRUE:FALSE;
+    return this->m_hDev != INVALID_HANDLE_VALUE ? TRUE : FALSE;
 }
 
 
-void  CVirtualHID::DeviceHandleEventCallBack (const DeviceHandleMonitorEntry* pEntry, WPARAM dbtEvent)
+void  CVirtualHID::DeviceHandleEventCallBack(const DeviceHandleMonitorEntry* pEntry, WPARAM dbtEvent)
 {
-    if(!pEntry) return;
-    
+    if (!pEntry) return;
+
     CVirtualHID* lpThis = reinterpret_cast<CVirtualHID*>(pEntry->lpCtx);
 
     const TCHAR* lpszEvent = _T("Unkown Event");
-    switch(dbtEvent)
+    switch (dbtEvent)
     {
-        case DBT_DEVICEQUERYREMOVE:
+    case DBT_DEVICEQUERYREMOVE:
 
-            if (lpThis->m_hDev != INVALID_HANDLE_VALUE) 
-            {
-                    lpThis->CloseDevice();
+        if (lpThis->m_hDev != INVALID_HANDLE_VALUE)
+        {
+            lpThis->CloseDevice();
 
-                     //驱动若关闭则进入鼠标模式
-                     lpThis->m_eHIDDeviceMode = E_DEV_MODE_MOUSE;
+            //驱动若关闭则进入鼠标模式
+            lpThis->m_eHIDDeviceMode = E_DEV_MODE_MOUSE;
 
 
-                    //开始侦听设备接口状态。
-                    const GUID& interface_guid = EASI_GetDeviceInterfaceGUID();
-                    lpThis->m_oDeviceEventDetector.AddDevIntefaceMonitor(interface_guid,  CVirtualHID::DeviceInterfaceEventCallBack,(LPVOID)lpThis);
-            }
+            //开始侦听设备接口状态。
+            const GUID& interface_guid = EASI_GetDeviceInterfaceGUID();
+            lpThis->m_oDeviceEventDetector.AddDevIntefaceMonitor(interface_guid, CVirtualHID::DeviceInterfaceEventCallBack, (LPVOID)lpThis);
+        }
 
-            lpszEvent = _T("DBT_DEVICEQUERYREMOVE");
-            break;
+        lpszEvent = _T("DBT_DEVICEQUERYREMOVE");
+        break;
 
-        case DBT_DEVICEQUERYREMOVEFAILED:
-            lpszEvent = _T("DBT_DEVICEQUERYREMOVEFAILED");
-            break;
+    case DBT_DEVICEQUERYREMOVEFAILED:
+        lpszEvent = _T("DBT_DEVICEQUERYREMOVEFAILED");
+        break;
 
-        case DBT_DEVICEREMOVEPENDING:
-            lpszEvent = _T("DBT_DEVICEREMOVEPENDING");
-            break;
+    case DBT_DEVICEREMOVEPENDING:
+        lpszEvent = _T("DBT_DEVICEREMOVEPENDING");
+        break;
 
-        case DBT_DEVICEREMOVECOMPLETE:
-            lpszEvent = _T("DBT_DEVICEREMOVECOMPLETE");
-            break;
+    case DBT_DEVICEREMOVECOMPLETE:
+        lpszEvent = _T("DBT_DEVICEREMOVECOMPLETE");
+        break;
 
-		case DBT_DEVICEARRIVAL:
-			lpszEvent = _T("DBT_DEVICEARRIVAL");
-			break;
+    case DBT_DEVICEARRIVAL:
+        lpszEvent = _T("DBT_DEVICEARRIVAL");
+        break;
     };
 
     AtlTrace(_T("Device Event 0x%x:%s\n"), dbtEvent, lpszEvent);
-	LOG_INF("Device Event 0x%x:%s\n", dbtEvent, lpszEvent);
+    LOG_INF("Device Event 0x%x:%s\n", dbtEvent, lpszEvent);
 }
 
 
 //@功能:HID设备接口关联事件回调函数
 void  CVirtualHID::DeviceInterfaceEventCallBack(const DeviceIntetfaceMonitorEntry* pEntry, WPARAM dbtEvent)
 {
-    if(!pEntry) return;
-     CVirtualHID* lpThis = reinterpret_cast<CVirtualHID*>(pEntry->lpCtx);
-     const TCHAR* lpszEvent = _T("Unkown Event");
+    if (!pEntry) return;
+    CVirtualHID* lpThis = reinterpret_cast<CVirtualHID*>(pEntry->lpCtx);
+    const TCHAR* lpszEvent = _T("Unkown Event");
 
 
-     switch(dbtEvent)
+    switch (dbtEvent)
     {
-        case DBT_DEVICEARRIVAL:
+    case DBT_DEVICEARRIVAL:
+    {
+        int nTryTimes = 0;
+        //测试发现立即打开设备会失败 因此尝试多次
+        while (lpThis->m_hDev == INVALID_HANDLE_VALUE && nTryTimes < 10)
+        {
+            lpThis->OpenDevice();
+
+            if (lpThis->m_hDev == INVALID_HANDLE_VALUE)
             {
-                int nTryTimes = 0;
-                //测试发现立即打开设备会失败 因此尝试多次
-                while(lpThis->m_hDev == INVALID_HANDLE_VALUE && nTryTimes < 10) 
-                {
-                    lpThis->OpenDevice();
-
-                    if(lpThis->m_hDev == INVALID_HANDLE_VALUE)
-                    {
-                        Sleep(10);//10ms
-                    }
-                    nTryTimes ++;
-                }
+                Sleep(10);//10ms
             }
-			lpThis->RetrievePointerDevices();
-            lpszEvent = _T("DBT_DEVICEARRIVAL");
-            break;
+            nTryTimes++;
+        }
+    }
+    lpThis->RetrievePointerDevices();
+    lpszEvent = _T("DBT_DEVICEARRIVAL");
+    break;
 
-        case DBT_DEVICEREMOVECOMPLETE:
-			lpThis->RetrievePointerDevices();
+    case DBT_DEVICEREMOVECOMPLETE:
+        lpThis->RetrievePointerDevices();
 
-            lpszEvent = _T("DBT_DEVICEREMOVECOMPLETE");			
-            break;
+        lpszEvent = _T("DBT_DEVICEREMOVECOMPLETE");
+        break;
 
-        case DBT_DEVICEREMOVEPENDING:
-            lpszEvent = _T("DBT_DEVICEREMOVEPENDING");
-            break;
+    case DBT_DEVICEREMOVEPENDING:
+        lpszEvent = _T("DBT_DEVICEREMOVEPENDING");
+        break;
 
     };
 
@@ -809,28 +808,28 @@ void CVirtualHID::OnSetTouchScreenDimension(int  nPhysicalDiagonalLength, SIZE s
 
 BOOL CVirtualHID::RetrievePointerDevices()
 {
-	static CWin32UDllLibrary m_oWin32UDllLibrary;
-	//Windows版本小于Win8.0
-	if (!IsWindows8OrGreater()) return FALSE;
+    static CWin32UDllLibrary m_oWin32UDllLibrary;
+    //Windows版本小于Win8.0
+    if (!IsWindows8OrGreater()) return FALSE;
 
-	
-	m_vecPointerDeviceInfos.clear();
 
-	UINT32 dwCount = 0;
-	BOOL bRet  = m_oWin32UDllLibrary.GetPointerDevices(&dwCount, NULL);
-	if (!bRet) return FALSE;
+    m_vecPointerDeviceInfos.clear();
 
-	if (dwCount == 0) return FALSE;
+    UINT32 dwCount = 0;
+    BOOL bRet = m_oWin32UDllLibrary.GetPointerDevices(&dwCount, NULL);
+    if (!bRet) return FALSE;
 
-	m_vecPointerDeviceInfos.resize(dwCount);
+    if (dwCount == 0) return FALSE;
 
-	
-	if (!m_oWin32UDllLibrary.GetPointerDevices(&dwCount, &m_vecPointerDeviceInfos[0]))
-	{
-		return FALSE;
-	}
+    m_vecPointerDeviceInfos.resize(dwCount);
 
-	return TRUE;	
+
+    if (!m_oWin32UDllLibrary.GetPointerDevices(&dwCount, &m_vecPointerDeviceInfos[0]))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
@@ -841,113 +840,113 @@ const TCHAR* g_szUMDFTocuhProductString = _T("UMDF Virtual hidmini device Produc
 //        其他，指向POINTER_DEVICE_INFO的数据指针
 POINTER_DEVICE_INFO* CVirtualHID::GetPointerDevice(LPCTSTR lpszProductString)
 {
-	if (lpszProductString == NULL)
-	{
-		lpszProductString = g_szUMDFTocuhProductString;
-	}
-	for (size_t i = 0; i < m_vecPointerDeviceInfos.size(); i++)
-	{
-		if (_tcsicmp(m_vecPointerDeviceInfos[i].productString, lpszProductString) == 0)
-		{
-			return  &m_vecPointerDeviceInfos[i];
-		}
+    if (lpszProductString == NULL)
+    {
+        lpszProductString = g_szUMDFTocuhProductString;
+    }
+    for (size_t i = 0; i < m_vecPointerDeviceInfos.size(); i++)
+    {
+        if (_tcsicmp(m_vecPointerDeviceInfos[i].productString, lpszProductString) == 0)
+        {
+            return  &m_vecPointerDeviceInfos[i];
+        }
 
-	}//for
+    }//for
 
-	return NULL;
+    return NULL;
 
 }
 
 
 BOOL CVirtualHID::OpenDeviceThreadSafe()
 {
-	CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirtualDevice);
-	m_hDev = EASI_OpenDevice();
-	m_oVirtualMouse.SetDeviceHandle(m_hDev);
-	if (m_hDev != INVALID_HANDLE_VALUE)
-	{
-		//将设备句柄加入监控名单。
-		m_oDeviceEventDetector.AddHandleMonitor(m_hDev, DeviceHandleEventCallBack, (LPVOID)this);
+    CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirtualDevice);
+    m_hDev = EASI_OpenDevice();
+    m_oVirtualMouse.SetDeviceHandle(m_hDev);
+    if (m_hDev != INVALID_HANDLE_VALUE)
+    {
+        //将设备句柄加入监控名单。
+        m_oDeviceEventDetector.AddHandleMonitor(m_hDev, DeviceHandleEventCallBack, (LPVOID)this);
 
-		return TRUE;
-	}
-	
-	return FALSE;
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 BOOL CVirtualHID::CloseDeviceThreadSafe()
 {
-	CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirtualDevice);
-	if (m_hDev != INVALID_HANDLE_VALUE)
-	{
-		BOOL bRet = EASI_CloseDevice(m_hDev);
+    CComCritSecLock<CComAutoCriticalSection> lock(m_csForVirtualDevice);
+    if (m_hDev != INVALID_HANDLE_VALUE)
+    {
+        BOOL bRet = EASI_CloseDevice(m_hDev);
 
-		//将设备句柄移出监控名单
-		m_oDeviceEventDetector.RemoveHandleMonitor(m_hDev);
+        //将设备句柄移出监控名单
+        m_oDeviceEventDetector.RemoveHandleMonitor(m_hDev);
 
-		m_hDev = INVALID_HANDLE_VALUE;
-		m_oVirtualMouse.SetDeviceHandle(INVALID_HANDLE_VALUE);
-		
-		return bRet;
-	}
-	return FALSE;
+        m_hDev = INVALID_HANDLE_VALUE;
+        m_oVirtualMouse.SetDeviceHandle(INVALID_HANDLE_VALUE);
+
+        return bRet;
+    }
+    return FALSE;
 }
 
 
 BOOL CVirtualHID::CreateAutoOpenThread()
 {
-	if (m_hAutoOpenThread == NULL)
-	{
-		DWORD dwThreadId = 0;
-		m_bAutoOpenThreadExit = FALSE;
-		m_hAutoOpenThread = CreateThread(
-			NULL,
-			0,
-			AutoOpenThreadProc,
-			(LPVOID)this,
-			0,
-			&dwThreadId);
+    if (m_hAutoOpenThread == NULL)
+    {
+        DWORD dwThreadId = 0;
+        m_bAutoOpenThreadExit = FALSE;
+        m_hAutoOpenThread = CreateThread(
+            NULL,
+            0,
+            AutoOpenThreadProc,
+            (LPVOID)this,
+            0,
+            &dwThreadId);
 
 
-	}
+    }
 
-	return m_hAutoOpenThread == NULL?FALSE : TRUE;
+    return m_hAutoOpenThread == NULL ? FALSE : TRUE;
 }
 void CVirtualHID::CloseAutoOpenThread()
 {
-	m_bAutoOpenThreadExit = TRUE;
-	WaitForSingleObject(m_hAutoOpenThread, 1000);
-	m_hAutoOpenThread = NULL;
+    m_bAutoOpenThreadExit = TRUE;
+    WaitForSingleObject(m_hAutoOpenThread, 1000);
+    m_hAutoOpenThread = NULL;
 
 }
 
- DWORD WINAPI CVirtualHID::AutoOpenThreadProc(LPVOID lpCtx)
+DWORD WINAPI CVirtualHID::AutoOpenThreadProc(LPVOID lpCtx)
 {
-	CVirtualHID* lpThis = reinterpret_cast<CVirtualHID*>(lpCtx);
-	const int nMaxTryNumber = 60;
-	const int nTryInterval = 1000;//ms,尝试间隔
-	int nTryCount = 0;
-	while (!lpThis->m_bAutoOpenThreadExit 
-		&& 
-		lpThis->m_hDev == INVALID_HANDLE_VALUE 
-		&& 
-		nTryCount < nMaxTryNumber)
-	{
-		
-		if (lpThis->OpenDeviceThreadSafe())
-		{
-			LOG_INF("Open device succeeded in AutoOpenThreadProc.\n");
-			lpThis->SetHIDMode(lpThis->m_eDesiredHIDMode);
-			break;
-		}
+    CVirtualHID* lpThis = reinterpret_cast<CVirtualHID*>(lpCtx);
+    const int nMaxTryNumber = 60;
+    const int nTryInterval = 1000;//ms,尝试间隔
+    int nTryCount = 0;
+    while (!lpThis->m_bAutoOpenThreadExit
+        &&
+        lpThis->m_hDev == INVALID_HANDLE_VALUE
+        &&
+        nTryCount < nMaxTryNumber)
+    {
 
-		nTryCount++;
-		Sleep(nTryInterval);
-	}
-	lpThis->m_hAutoOpenThread = NULL;
+        if (lpThis->OpenDeviceThreadSafe())
+        {
+            LOG_INF("Open device succeeded in AutoOpenThreadProc.\n");
+            lpThis->SetHIDMode(lpThis->m_eDesiredHIDMode);
+            break;
+        }
 
-	CloseHandle(lpThis->m_hAutoOpenThread);
-	return 0U;
+        nTryCount++;
+        Sleep(nTryInterval);
+    }
+    lpThis->m_hAutoOpenThread = NULL;
+
+    CloseHandle(lpThis->m_hAutoOpenThread);
+    return 0U;
 }
 
 //@功能:更新触屏关联的屏幕信息
@@ -1008,43 +1007,43 @@ void CVirtualHID::UpdateAttachedMonitorInfo()
 
     if (!bMatched)
     {
-        m_aspectRatioNominator   = nMaxActiveCx;
+        m_aspectRatioNominator = nMaxActiveCx;
         m_aspectRatioDenominator = nMaxActiveCy;
     }
 }
 
 void CVirtualHID::SetTouchTUIOMode(bool  eMode)
 {
-	m_bTouchTUIOMode = eMode;
+    m_bTouchTUIOMode = eMode;
 }
 void CVirtualHID::SetTouchHIDMode(bool  eMode)
-{	
-	/////m_bTouchHIDMode = true; 
-	/////eMode = false ;
-	if (m_bTouchHIDMode && !eMode)
-	{
-		///停用掉HID触控模式，要Reset();
-		Reset();
-	}
-	m_bTouchHIDMode = eMode;
+{
+    /////m_bTouchHIDMode = true; 
+    /////eMode = false ;
+    if (m_bTouchHIDMode && !eMode)
+    {
+        ///停用掉HID触控模式，要Reset();
+        Reset();
+    }
+    m_bTouchHIDMode = eMode;
 }
 void CVirtualHID::SetSinglePointMode(bool eMode)
 {
-	m_bSinglePointMode = eMode;
+    m_bSinglePointMode = eMode;
 }
-void  CVirtualHID::SetIPadressAndPort(DWORD IP,int nPort)
+void  CVirtualHID::SetIPadressAndPort(DWORD IP, int nPort)
 {
-	m_oVirtualTUIOTouch.SetIPadressAndPort(IP, nPort);
+    m_oVirtualTUIOTouch.SetIPadressAndPort(IP, nPort);
 }
 
 DWORD CVirtualHID::GetIPadress()
 {
-	return m_oVirtualTUIOTouch.GetIPadress();
+    return m_oVirtualTUIOTouch.GetIPadress();
 }
 
 int CVirtualHID::GetPort()
 {
-	return m_oVirtualTUIOTouch.GetPort();
+    return m_oVirtualTUIOTouch.GetPort();
 }
 
 

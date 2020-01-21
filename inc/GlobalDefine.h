@@ -1,2 +1,2 @@
 #pragma once
-#define MAX_TOUCH_COUNT 30
+#define MAX_SUPPORT_TOUCH_COUNT 30

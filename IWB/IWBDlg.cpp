@@ -753,6 +753,10 @@ BOOL CIWBDlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_ON, _T("GPIO On"));
 			pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_OFF, _T("GPIO Off"));
 
+			//测试3个触控点
+			pSysMenu->AppendMenu(MF_SEPARATOR);
+			pSysMenu->AppendMenu(MF_STRING, IDM_TEST30POINT, _T("Test 30 Point"));
+
         }
     }
 
@@ -1057,6 +1061,14 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		if (pSensor)
 		{
 			GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), FALSE);
+		}
+	}
+	else if (nID == IDM_TEST30POINT)
+	{
+		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+		if (pSensor)
+		{
+			pSensor->GetPenPosDetector()->StartTest30Point();
 		}
 	}
     else if(nID == SC_CLOSE)
