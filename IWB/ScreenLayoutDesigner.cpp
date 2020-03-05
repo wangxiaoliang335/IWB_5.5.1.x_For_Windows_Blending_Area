@@ -1175,7 +1175,7 @@ void CScreenLayoutDesigner::ConfineMergeBorderCursor(const TActiveArea& activeAr
     LONG MAX_MERGE_AREA_WIDTH = ScreenWidth * 10 / 100;
 
 
-    if (m_vecMergeAreasAbs.size() > 1)
+    if (m_vecMergeAreasAbs.size() >= 1)
     {
         LONG left = 0;
         LONG right = 0;

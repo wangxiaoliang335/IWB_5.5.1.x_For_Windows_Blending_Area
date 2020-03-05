@@ -221,6 +221,8 @@ public:
 
 	  BOOL IsEnableOnlineScreenArea();
 
+	  BOOL GenerateMaskFrameWithCalibrateData(CImageFrame& maskFrame, const RECT& rect, int nMonitorId = 0);
+	  void GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfElements);
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;

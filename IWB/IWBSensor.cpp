@@ -76,12 +76,12 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
     switch (eCtrlMode)
     {
       case E_CAMERA_SHARPNESS_MAX://设置最大锐利度
-          lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
+           lpThis->m_oVideoPlayer.GetCameraParams(cameraParams);
 
            IRCUTSwtich(lpThis->m_oVideoPlayer.GetCaptureFilter(), FALSE, lpThis->m_tDeviceInfo.m_nPID, lpThis->m_tDeviceInfo.m_nVID);
 
-        //        cameraParams.Prop_VideoProcMap_Gain  = IRCUT_OFF;//保持滤光片打开
-        return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
+        //cameraParams.Prop_VideoProcMap_Gain  = IRCUT_OFF;//保持滤光片打开
+          return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
 
         break;
 
@@ -206,7 +206,15 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
     case E_CAMERA_CONTRAST:
     {
         if (!lpThis->m_oVideoPlayer.GetCameraParams(cameraParams)) return FALSE;
-        cameraParams.Prop_VideoProcAmp_Contrast = param1;
+		if(lpThis->m_tDeviceInfo.m_nPID == SONIX_PID && lpThis->m_tDeviceInfo.m_nVID == SONIX_VID) 
+		{
+            cameraParams.Prop_VideoProcAmp_Contrast = 40;
+		}
+		else
+		{
+			cameraParams.Prop_VideoProcAmp_Contrast = param1;
+		}
+
         return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
     }
 
@@ -261,7 +269,6 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
         return lpThis->m_oVideoPlayer.SetCameraParams(cameraParams);
 
         break;
-
 
     }//switch
 
@@ -420,11 +427,17 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
           //g_oMouseEventGen.EnableOpticalPenControl(FALSE);
           EnableOpticalPen(FALSE);
 
+		  TVideoProcAmpProperty cameraParams;
+		  bRet = m_oVideoPlayer.GetCameraParams(cameraParams);
+
           //打开滤光片
           IRCUTSwtich(m_oVideoPlayer.GetCaptureFilter(), FALSE, m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
           //载入安装调试时的相机参数
           bRet = m_oVideoPlayer.SetCameraParams(lensCfg.installTunningSettings.cameraParams);
+
+		  bRet = m_oVideoPlayer.GetCameraParams(cameraParams);
+
           if (!bRet)
           {
                AtlTrace(_T("Set CameraParam Failed!\n"));
@@ -609,6 +622,13 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
 		{
 			m_tCfgData.strFavoriteMediaType = "640 X 480 MJPG";
 		}
+		else
+		{
+			if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
+			{
+			    m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
+			}
+		}
 //        if (m_tCfgData.strFavoriteMediaType != "1280 X 720 MJPG" && m_tCfgData.strFavoriteMediaType != "1920 X 1080 MJPG")
 //        {
 //            m_tCfgData.strFavoriteMediaType = "1280 X 720 MJPG";
@@ -725,7 +745,7 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
 
                //加密狗为手掌互动模式, 强制工作模式为手掌互动模式
                m_oPenPosDetector.SetTouchType(E_DEVICE_PALM_TOUCH_CONTROL);
-               pNormalUsageSettings = &lensCfg.normalUsageSettings_FingerTouchControl;
+               pNormalUsageSettings = &lensCfg.normalUsageSettings_PalmTouchControl;
                 break;
            default:
                break;
@@ -800,7 +820,6 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
     {
         this->m_oPenPosDetector.GetVideoToScreenMap().SetActualMonitorResolution(rcArea);
     }
-
 
     //根据工作模式立即生效摄像头参数
     switch (m_eLensMode)
@@ -1125,12 +1144,6 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
         m_oVideoPlayer.SetDisplayInfo(g_oResStr[IDS_STRING481]);
         m_oPenPosDetector.SetCalibrateFailed(FALSE);
 
-
-        m_oPenPosDetector.SetStaticMaskFrame(m_oAutoCalibrator.GetMaskFrame());
-
-        //保存静态屏蔽图
-        m_oPenPosDetector.SaveStaticMaskFrame();
-
         CVideToScreenMap& vtsm = m_oPenPosDetector.GetVideoToScreenMap();
 
         const TCalibData* pCalibData = m_oAutoCalibrator.GetCalibrateData();
@@ -1157,8 +1170,32 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
             {
                 pSensorModeConfig->calibParam = *vtsm.GetCalibParams();
             }
+
+			//CImageFrame  maskFrame = m_oAutoCalibrator.GetMaskFrame();
+			CImageFrame  maskFrame ;
+			unsigned char init_value = 0x00;
+			maskFrame.SetSize(m_oAutoCalibrator.GetMaskFrame().Width(), m_oAutoCalibrator.GetMaskFrame().Height(),1,&init_value);
+
+			if (GenerateMaskFrameWithCalibrateData(maskFrame, pCalibData->allMonitorCalibData[0].rcMonitor) )
+			{
+				//把计算好的屏蔽图和动态静态屏蔽图进行与运算。
+			    CImageFrame AllMaskFrame = m_oAutoCalibrator.GetMaskFinderFrame(maskFrame);
+
+			    m_oPenPosDetector.SetStaticMaskFrame(AllMaskFrame);
+			    m_oPenPosDetector.SaveStaticMaskFrame();
+			}
+			else {
+				//设置静态屏蔽图
+				m_oPenPosDetector.SetStaticMaskFrame(m_oAutoCalibrator.GetMaskFrame());
+				//保存静态屏蔽图
+				m_oPenPosDetector.SaveStaticMaskFrame();
+			}
         }
 
+		//设置静态屏蔽图
+	//	m_oPenPosDetector.SetStaticMaskFrame(m_oAutoCalibrator.GetMaskFrame());
+		//保存静态屏蔽图
+	//	m_oPenPosDetector.SaveStaticMaskFrame();
 
         //设置光点到屏幕编号的映射信息
         m_oPenPosDetector.GetVideoToScreenMap().SetScreenMap(m_oAutoCalibrator.GetScreenMap());
@@ -1259,31 +1296,33 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
         if (vtsm.DoCalibrate())
         {
             pSensorModeConfig->calibParam = *vtsm.GetCalibParams();
+			CImageFrame maskFrame;
+			unsigned char init_value = 0x00;
+			maskFrame.SetSize(m_oManualCalibrator.GetScreenAreaMask().Width(), m_oManualCalibrator.GetScreenAreaMask().Height(), 1, &init_value);
+			///如果计算出来的屏蔽图有错误的话，那么就按以前找屏蔽图的方式。
+			if (!GenerateMaskFrameWithCalibrateData(maskFrame, calibData.allMonitorCalibData[0].rcMonitor))
+			{
+                 maskFrame = m_oManualCalibrator.GetScreenAreaMask();
+                 LOG_INF("maskFrameWidth=%d，maskFrameHeight=%d", maskFrame.Width(), maskFrame.Height());
+                 const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
-            CImageFrame maskFrame = m_oManualCalibrator.GetScreenAreaMask();
-
-            LOG_INF("maskFrameWidth=%d，maskFrameHeight=%d", maskFrame.Width(), maskFrame.Height());
-
-            const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
-
-            //适当腐蚀屏蔽区，扩到屏幕区域
-            for (int r = 0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r++)
-            {
-                Morph_Dilate8(
-                    maskFrame.GetData(),
-                    maskFrame.GetData(),
-                    maskFrame.Width(),
-                    maskFrame.Height());
-            }
+                 //适当腐蚀屏蔽区，扩到屏幕区域
+                 for (int r = 0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r++)
+                 {
+                     Morph_Dilate8(
+                           maskFrame.GetData(),
+                           maskFrame.GetData(),
+                           maskFrame.Width(),
+                           maskFrame.Height());
+                 }
+			}
 
             //将手动校正找到的屏幕区域屏蔽图合并到静态屏蔽图中去
             m_oPenPosDetector.MergeManualCalibScreenMask(maskFrame);
 
             //保存静态屏蔽图
             m_oPenPosDetector.SaveStaticMaskFrame();
-
         }
-
     }
 
     //无论成功失败都进入正常使用模式
@@ -1950,4 +1989,102 @@ void CIWBSensor::OnEnableDrawOnlineScreenArea(BOOL Enable)
 BOOL CIWBSensor::IsEnableOnlineScreenArea()
 {
 	return this->m_oPenPosDetector.IsEnableOnlineScreenArea();
+}
+
+/////@功能;根据校正的数据计算
+BOOL CIWBSensor::GenerateMaskFrameWithCalibrateData(CImageFrame& maskFrame, const RECT& rect, int nMonitorId)
+{
+	int Left = rect.left;
+	int Top = rect.top;
+	int Right = rect.right;
+	int Bottom = rect.bottom;
+	int x = Left;
+	int y = Top;
+	int ScreenWidth = Right - Left;
+	int ScreenHeight = Bottom - Top;
+
+	const int  INTERVAL_POINTS_COUNT = 4;
+	int  LEVEL_POINTS_COUNT = INTERVAL_POINTS_COUNT + 1;
+	int VERTROL_POINT_COUNT = LEVEL_POINTS_COUNT - 1;
+
+	const int BORDER_POINTS_COUNT = 16;
+	TPoint3D pt3DInScreen[BORDER_POINTS_COUNT];
+
+	//上一排
+	for (int i = 0; i < LEVEL_POINTS_COUNT; i++)
+	{
+		pt3DInScreen[i].d[0] = x+(i*ScreenWidth) / INTERVAL_POINTS_COUNT;
+		pt3DInScreen[i].d[1] = y;
+		pt3DInScreen[i].d[2] = 0;
+	}
+
+	//右竖一排
+	for (int  m = 1; m < VERTROL_POINT_COUNT; m++)   //LEVEL_POINTS_COUNT-1 = 4
+	{
+		pt3DInScreen[m+ VERTROL_POINT_COUNT].d[0] =  x + ScreenWidth;
+		pt3DInScreen[m + VERTROL_POINT_COUNT].d[1] = y + (ScreenHeight*m) / VERTROL_POINT_COUNT;
+		pt3DInScreen[m + VERTROL_POINT_COUNT].d[2] = 0;
+	}
+
+	//下一排
+	for (int j = 0; j < LEVEL_POINTS_COUNT; j++)
+	{
+		pt3DInScreen[j + LEVEL_POINTS_COUNT + (VERTROL_POINT_COUNT -1)].d[0] = x + (INTERVAL_POINTS_COUNT - j) *ScreenWidth / INTERVAL_POINTS_COUNT;//x
+		pt3DInScreen[j + LEVEL_POINTS_COUNT + (VERTROL_POINT_COUNT - 1)].d[1] = y + ScreenHeight;
+		pt3DInScreen[j + LEVEL_POINTS_COUNT + (VERTROL_POINT_COUNT - 1)].d[2] = 0;
+	}
+
+	//左竖一排
+	for (int k = 1; k <VERTROL_POINT_COUNT; k++)
+	{
+		pt3DInScreen[k+2*LEVEL_POINTS_COUNT+VERTROL_POINT_COUNT-2 ].d[0] = x;
+		pt3DInScreen[k + 2 * LEVEL_POINTS_COUNT + VERTROL_POINT_COUNT-2].d[1] = y + (ScreenHeight*(VERTROL_POINT_COUNT - k)) / VERTROL_POINT_COUNT;
+		pt3DInScreen[k + 2 * LEVEL_POINTS_COUNT + VERTROL_POINT_COUNT-2].d[2] = 0;
+	}
+
+	TPoint2D pt2DInImage[BORDER_POINTS_COUNT];
+	POINT    ptInImage[BORDER_POINTS_COUNT];
+	m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().MapWorldToImage(&pt3DInScreen[0], BORDER_POINTS_COUNT, &pt2DInImage[0], nMonitorId);
+	int nCount = 0;
+	for(int i = 0; i <BORDER_POINTS_COUNT ;i++)
+	{
+		if(pt2DInImage[i].d[0] <=0.00 && pt2DInImage[i].d[1] <= 0.00)
+		{
+			nCount++;
+		}
+
+		ptInImage[i].x = pt2DInImage[i].d[0];
+		ptInImage[i].y = pt2DInImage[i].d[1];
+	}
+	if (nCount > 10) 
+	{
+		return FALSE;
+	}
+	FillPolygon(maskFrame.GetData(),
+		maskFrame.Width(),
+		maskFrame.Height(),
+		&ptInImage[0],
+		BORDER_POINTS_COUNT,
+		0xff,
+		true);
+
+	//扩大几个像素
+	for (int i = 0; i < 5; i++)
+	{
+		Morph_Dilate8(maskFrame.GetData(), maskFrame.GetData(), maskFrame.Width(), maskFrame.Height());
+	}
+
+	return TRUE;
+}
+
+void CIWBSensor::GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfElements)
+{
+	if (g_tSysCfgData.globalSettings.eProjectionMode == E_PROJECTION_DESKTOP)
+	{
+		_stprintf_s(lpszbuf, numberOfElements, _T("%s\\Sensor%02d\\DesktopMode\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, m_nID, _T("CollectSpotCross.xml"));
+	}
+	else
+	{
+		_stprintf_s(lpszbuf, numberOfElements, _T("%s\\Sensor%02d\\WallMode\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, m_nID, _T("CollectSpotCross.xml"));
+	}
 }

@@ -146,6 +146,11 @@ const CImageFrame& CAutoCalibrator::GetMaskFrame()const
 
 }
 
+const CImageFrame& CAutoCalibrator::GetMaskFinderFrame(CImageFrame& maskframe)const
+{
+	return m_pAutoCalibratorImpl->GetMaskFinderFrame(maskframe);
+}
+
 
 //@功能:返回光点位置到屏幕编号的映射数组,以决定光斑处于哪个屏幕上
 const CImageFrame& CAutoCalibrator::GetScreenMap()const
@@ -246,7 +251,6 @@ void CAutoCalibrator::OnDeviceMissing()
 	}
 	return;
 }
-
 
 
 CBlobDetector::CBlobDetector()
@@ -440,7 +444,6 @@ void CalibrateAlgo::SetCalibParams(const TCalibParams& params)
 
     if (NULL == m_pCalibrateInst || params.eCalibrateModel != m_pCalibrateInst->GetCalibrateModel())
     {
-
         CreateCalibrateInst(params.eCalibrateModel);
     }
 
@@ -458,8 +461,21 @@ BOOL CalibrateAlgo::GetScreenCoord(const TPoint2D& ptVideo, TPoint2D* ptScreen, 
     {
         return FALSE;
     }
-
     return m_pCalibrateInst->GetScreenPt(ptVideo, ptScreen, nMonitorId, bWithoutAutoCalibCompensate, pDebugOutput);
+}
+
+
+//@功能:将3D世界坐标映射为2D相机图像坐标
+BOOL CalibrateAlgo::MapWorldToImage(const TPoint3D* ptWorld, int nPtCount, TPoint2D* ptImage, int nMonitorId)
+{
+	CComCritSecLock<CComCriticalSection> lock(*m_pcsForParam);
+
+	if (NULL == m_pCalibrateInst)
+	{
+		return FALSE;
+	}
+
+	return m_pCalibrateInst->MapWorldToImage(ptWorld, nPtCount, ptImage, nMonitorId);
 }
 
 

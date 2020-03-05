@@ -154,10 +154,20 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 
 	// TODO:  Add extra initialization here
 	m_ctlSpotProportion.SetRange(20, 80);
-	m_ctlNormalUserBrightness.SetRange(-255,255);
+
+
 	m_ctlAutoCalibrationAveBrightness.SetRange(0,255) ;
 	m_ctlAutoCalibrateHiLightGray.SetRange(0,255);
 	m_ctlVideoIsplayDelay.SetRange(0,200);
+
+	if (m_pSensor->GetDeviceInfo().m_nPID == 0x9230 && m_pSensor->GetDeviceInfo().m_nVID == 0x05a3)
+	{
+		m_ctlNormalUserBrightness.SetRange(-64, 64);
+	}
+	else
+	{
+		m_ctlNormalUserBrightness.SetRange(0, 255);
+	}
 	m_bInitDone = TRUE;
 
 	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
@@ -198,26 +208,41 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	 if (E_PROJECTION_DESKTOP == m_tGlobalSettings.eProjectionMode)
 	 {
 		 GetDlgItem(IDC_DESKTOPMODE)->EnableWindow(TRUE);
+		 GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL)->EnableWindow(TRUE);
+	 }
+	 else
+	 {
+		 GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL)->EnableWindow(FALSE);
 	 }
 
+	 //隐藏按钮
+	 GetDlgItem(IDC_CHECK_DOUBLE_SCREEN)->ShowWindow(SW_HIDE);
+	 GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_HIDE);
+
+	//勾选实际选择的镜头类型
+	CheckDlgButton(IDC_RADIO_THROW_RATIO_015 + int(this->m_tSensorConfig.eSelectedLensType), BST_CHECKED);
+
+
+
+	 //delete by vera_zhao 2020.2.24
      //只读信息, 双屏拼接
-     GetDlgItem(IDC_CHECK_DOUBLE_SCREEN)->EnableWindow(FALSE);
-     //CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenType() == EDoubleScreenMode?BST_CHECKED:BST_UNCHECKED);
-     CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenMode() >= EScreenModeDouble ? BST_CHECKED : BST_UNCHECKED);
-
-     //勾选实际选择的镜头类型
-      CheckDlgButton(IDC_RADIO_THROW_RATIO_015 + int(this->m_tSensorConfig.eSelectedLensType), BST_CHECKED);
- 
-
-     //如果是双屏则显示"屏幕选择"按钮
-     if(theApp.GetScreenMode() >= EScreenModeDouble)
-     {
-        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_SHOW);
-     }
-     else
-     {//否则隐藏"屏幕选择"按钮
-        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_HIDE);
-     }
+//     GetDlgItem(IDC_CHECK_DOUBLE_SCREEN)->EnableWindow(FALSE);
+//     //CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenType() == EDoubleScreenMode?BST_CHECKED:BST_UNCHECKED);
+//     CheckDlgButton(IDC_CHECK_DOUBLE_SCREEN, theApp.GetScreenMode() >= EScreenModeDouble ? BST_CHECKED : BST_UNCHECKED);
+//
+//     //勾选实际选择的镜头类型
+//      CheckDlgButton(IDC_RADIO_THROW_RATIO_015 + int(this->m_tSensorConfig.eSelectedLensType), BST_CHECKED);
+// 
+//
+//     //如果是双屏则显示"屏幕选择"按钮
+//     if(theApp.GetScreenMode() >= EScreenModeDouble)
+//     {
+//        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_SHOW);
+//     }
+//     else
+//     {//否则隐藏"屏幕选择"按钮
+//        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_HIDE);
+//     }
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
@@ -282,10 +307,10 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
 		   lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_FingerTouchWhiteBoard.defaultParams.Prop_VideoProcAmp_Brightness;
 		   break;
 	   case E_DEVICE_FINGER_TOUCH_CONTROL:
-		   lensCfg.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+		   lensCfg.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_FingerTouchControl.defaultParams.Prop_VideoProcAmp_Brightness;
 		   break;
 	   case E_DEVICE_PALM_TOUCH_CONTROL:
-		   lensCfg.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+		   lensCfg.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_PalmTouchControl.defaultParams.Prop_VideoProcAmp_Brightness;
 		   break;
 	   default:
 		   break;
@@ -566,6 +591,8 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 
 		m_tGlobalSettings.eProjectionMode = E_PROJECTION_WALL;
 
+		GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL)->EnableWindow(FALSE);
+
 		CString strText;
 		strText.Format(_T("%d"), m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.nSpotProportion);
 		GetDlgItem(IDC_EDIT_SPOTPROPORTION)->SetWindowText(strText);
@@ -629,7 +656,7 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 				((CButton*)GetDlgItem(IDC_RADIO_PEN_TOUCH))->SetCheck(false);
 				((CButton*)GetDlgItem(IDC_RADIO_FINGER_TOUCH))->SetCheck(false);
 
-				((CButton*)GetDlgItem(IDC_RADIO_FINGERTOUCHCONTROL))->SetCheck(false);
+				((CButton*)GetDlgItem(IDC_RADIO_FINGERTOUCHCONTROL))->SetCheck(true);
 				((CButton*)GetDlgItem(IDC_RADIO_PALMTOUCHCONTROL))->SetCheck(false);
 
 				break;
@@ -705,6 +732,8 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 	if (IsDlgButtonChecked(IDC_DESKTOPMODE) == BST_CHECKED)
 	{
 		m_tGlobalSettings.eProjectionMode = E_PROJECTION_DESKTOP;
+
+		GetDlgItem(IDC_CHECK_ANTIJAMMINGCONTROL)->EnableWindow(TRUE);
 
 		CString strText;
 		strText.Format(_T("%d"), m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.nSpotProportion);

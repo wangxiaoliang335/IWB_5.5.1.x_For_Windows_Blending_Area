@@ -23,6 +23,7 @@ public:
 
     //@功能:判断是否正在触发手势
     virtual BOOL IsTriggeringGuesture()const = 0;
+
 };
 
 
@@ -72,6 +73,7 @@ public:
 
     //@功能:判断是否正在触发手势
     virtual BOOL IsTriggeringGuesture()const;
+
 protected:
     //@功能:启动处理线程
     BOOL StartProcessThread();
@@ -215,6 +217,7 @@ protected:
     //正在触发手势标志
     BOOL m_bIsTriggeringGuesture;
 	BOOL m_bEnableStrokeInterpolateTemp;
+
 };
 
 ///////////////////////////////////////////////////////////////////////////

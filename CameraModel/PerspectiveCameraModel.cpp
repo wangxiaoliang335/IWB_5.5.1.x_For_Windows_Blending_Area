@@ -3,6 +3,7 @@
 //#include "../inc/CameraModel.h"
 #include "PerspectiveCameraModel.h"
 #include <Matrix.h>
+
 CPerspectiveCameraModel::CPerspectiveCameraModel()
     :
     m_H(*((double(*)[3][3])&m_Parameters[0]))
@@ -211,4 +212,23 @@ void CPerspectiveCameraModel::SetParameters(const double* pParameters, int nPara
     {
         m_Parameters[i] = pParameters[i];
     }
+}
+
+//@功能:映射3D世界坐标系中的点到相机图片上
+//@参数:ptWorld, 3D世界坐标数组
+//      nPtNumber, 3D世界坐标个数
+//      ptImage, 输出的2D图像坐标
+BOOL CPerspectiveCameraModel::MapWorldToImage(const TPoint3D* ptWorld, int nPtNumber, TPoint2D* ptImage) const
+{
+//	BOOL bRet = ForwardProject3D(
+//		ptWorld,
+//		nPtNumber,
+//		m_Parameters,
+//		EXTENDED_MODEL_INTERNAL_PARAMS_COUNT,
+//		m_Rs,
+//		m_ts,
+//		ptImage);
+
+//	return bRet;
+	return true;
 }

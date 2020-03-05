@@ -384,6 +384,10 @@ public:
     //       屏蔽图是一个黑白二值图, 值为0XFF的区域对应屏幕区域，0x00为
     //       需要遮蔽区域。
      const CImageFrame& GetMaskFrame()const;
+	 
+	 ///@功能:获取最后自动屏蔽的屏蔽图
+	 ///vera_zhao 2020.2.20
+	 const CImageFrame& GetMaskFinderFrame(CImageFrame& maskframe)const;
 
 
       //@功能:返回光点位置到屏幕编号的映射数组,以决定光斑处于哪个屏幕上
@@ -628,6 +632,8 @@ public:
        BOOL GetScreenCoord_Aug(const POINT* pImgPts,  const RECT* prcBounds, int nPtNumber, POINT* pScreenPts, int nMonitorId = 0);
        */
 
+       //@功能:将3D世界坐标映射为2D相机图像坐标
+       BOOL MapWorldToImage(const TPoint3D* ptWorld, int nPtCount, TPoint2D* ptImage, int nMonitorId = 0);
 
        /*
        //@功能:根据摄像头的视频坐标计算得出屏幕坐标

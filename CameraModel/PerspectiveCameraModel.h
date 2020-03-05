@@ -23,6 +23,14 @@ public:
 
     void SetParameters(const double* pParameters, int nParametersCount);
 
+	//@功能:映射3D世界坐标系中的点到相机图片上
+	//@参数:ptWorld, 3D世界坐标数组
+	//      nPtNumber, 3D世界坐标个数
+	//      ptImage, 输出的2D图像坐标
+	BOOL MapWorldToImage(const TPoint3D* ptWorld, int nPtNumber, TPoint2D* ptImage) const; 
+
+
+
     int GetParameterCount()const;
     const double* GetParameters()const;
 protected:

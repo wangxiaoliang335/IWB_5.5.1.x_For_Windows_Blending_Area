@@ -689,6 +689,21 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                 }
 
             }
+			else if (_stricmp(paramName, "ModifyResolution") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					globalSettings.bModifyResolution = TRUE;
+				}
+				else
+				{
+					globalSettings.bModifyResolution = FALSE;
+				}
+
+			}
+			{
+
+			}
 
         }//if
         else if(_stricmp(lpszElementName, "CMOS_CHIP") == 0)
@@ -923,6 +938,15 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pElement->SetAttribute("name", "Enable4PointCalibrate");
     pElement->SetAttribute("value", globalSettings.bEnable4PointsCalibrate ? "Yes" : "No");
     pNode->LinkEndChild(pElement);
+
+	//是否能修改分辨率
+	pXmlComment = new TiXmlComment("是否可以修改分辨率");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "ModifyResolution");
+	pElement->SetAttribute("value", globalSettings.bModifyResolution ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
 
     return TRUE;
 }
@@ -3048,10 +3072,6 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
 
     }while(pChild);
 
-
-
-
-
     return TRUE;
 }
 
@@ -3530,8 +3550,6 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& al
     }
     return TRUE;
 
-
-
 }
 
 //@功能:载入所有的视频布局
@@ -3636,7 +3654,6 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScre
             } while (pChild_L2);
             allScreenLayouts.push_back(layout);
         }//if
-
 
     } while (pChild_L1);
 

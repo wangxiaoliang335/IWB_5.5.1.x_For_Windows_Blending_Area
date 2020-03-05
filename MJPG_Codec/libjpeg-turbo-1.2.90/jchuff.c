@@ -393,7 +393,7 @@ dump_buffer (working_state * state)
 #endif
 
 
-#define BUFSIZE (DCTSIZE2 * 2)
+#define BUFSIZE (DCTSIZE2 * 4)
 
 #define LOAD_BUFFER() { \
   if (state->free_in_buffer < BUFSIZE) { \

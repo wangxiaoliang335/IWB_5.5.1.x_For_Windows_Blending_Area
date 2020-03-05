@@ -73,6 +73,7 @@ CParamsSettingPropertySheet::CParamsSettingPropertySheet(UINT nIDCaption, CWnd* 
 : CCBPropertySheet(nIDCaption, pParentWnd, iSelectPage)
 {
     AddPage(&m_advSettingPage);
+
     //m_advSettingPage.SetParent(this);
     AddPage(&m_gesSettingPage);
     //m_gesSettingPage.SetParent(this);
@@ -365,9 +366,6 @@ void CParamsSettingPropertySheet::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 		//实际上时挪动的是"确定", "取消", “应用"按钮。
 		m_Resizer.Resize(this);	
 	}
-
-
-
 }
 
 

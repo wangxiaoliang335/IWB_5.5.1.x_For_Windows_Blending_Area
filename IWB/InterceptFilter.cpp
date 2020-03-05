@@ -539,19 +539,18 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     //画面自动亮度控制
     if (m_bEnableBrightnessAutoRegulating)
     {
-		int PID = 0 ;
-		int VID = 0 ;
-		m_pSensor->GetPidVid(&PID,&VID);
-      //  static unsigned int  s_AutoControlCount = 0;
-      //  if(s_AutoControlCount % 6== 0)
-      //  {
-		if (PID == 0x9186 && VID == 0x18ec )
-		{
-             DoAutoBrightnessControl((const BYTE*)m_GraySrcFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
-		}
-               
-      //  }
-      //   s_AutoControlCount ++;
+        static unsigned int  s_AutoControlCount = 0;
+        if(s_AutoControlCount % 6== 0)
+        {
+			int PID = 0;
+			int VID = 0;
+			m_pSensor->GetPidVid(&PID, &VID);
+		    if (PID == 0x9186 && VID == 0x18ec )
+		   {
+                DoAutoBrightnessControl((const BYTE*)m_GraySrcFrame.GetData(), m_nRawImageWidth, m_nRawImageHeight);
+		   }        
+        }
+        s_AutoControlCount ++;
     }
     //>>
 

@@ -332,12 +332,6 @@ BOOL CIWBApp::InitInstance()
 
     }//for-each(i)
 
-
-
-
-
-
-
     ParseCmdLine(this->m_lpCmdLine);
 
     CIWBDlg dlg;
@@ -690,7 +684,7 @@ const AllUSBKeyTouchType* CIWBApp::GatAllUSBKeyTouchType() const
 //@功能:从USBKey中读取信息
 //@参数:bFirstTime, 第一次检测UsbKey的存在
 //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
-//      第二次及以后则不再弹出兑换框。
+//      第二次及以后则不再弹出对话框。
 void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 {
 
@@ -893,8 +887,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
         }//for
 
         if(!bFoundUSBKey)
-        {//未找到USBKey, 尝试读取在线注册信息
-
+        {
+			//未找到USBKey, 尝试读取在线注册信息
             if (bFirstTime)
             {
                 LOG_DBG("bFoundUSBKey=%s,SDKREG_IsBasicFunctionEnabled=%d\n",
@@ -909,7 +903,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
                     LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse / 1000.0);
                     Sleep(1000);//延迟等待1秒钟
 
-                    bFirstTime = FALSE;
+                    //bFirstTime = FALSE;
                     continue;
                 }
             }
@@ -944,30 +938,29 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
             {
                 if (bFirstTime)
                 {
-                    LOG_ERR("bitAnswer login in returns 0x%x\n", status);
-                    COnlineRegisterDlg onlineRegisterDlg;
-                    onlineRegisterDlg.DoModal();
+                   LOG_ERR("bitAnswer login in returns 0x%x\n", status);
+                   COnlineRegisterDlg onlineRegisterDlg;
+                   onlineRegisterDlg.DoModal();
 
-                    if (onlineRegisterDlg.IsRegisteredOk())
-                    {
-                        m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
+                   if (onlineRegisterDlg.IsRegisteredOk())
+                   {
+                       m_eUSBKeyTouchType = onlineRegisterDlg.GetTouchType();
 
-                        //bDoubleScreenTouchMerge = onlineRegisterDlg.GetScreenType() == EDoubleScreenMode ? TRUE : FALSE;
-                        if (m_eScreenModeFromUsbKey < onlineRegisterDlg.GetScreenMode())
-                        {
-                            m_eScreenModeFromUsbKey = onlineRegisterDlg.GetScreenMode();
-                        }
-                        break;
-                    }
+                      //bDoubleScreenTouchMerge = onlineRegisterDlg.GetScreenType() == EDoubleScreenMode ? TRUE : FALSE;
+                      if (m_eScreenModeFromUsbKey < onlineRegisterDlg.GetScreenMode())
+                      {
+                          m_eScreenModeFromUsbKey = onlineRegisterDlg.GetScreenMode();
+                      }
+                      break;
+                   }
 
-                    //开启试用版超时检测器。
-                    SetTimer(NULL, 0, 1000, timerProc);
-                    g_dwBeginTime = GetTickCount();
-                    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+                   //开启试用版超时检测器。
+                  SetTimer(NULL, 0, 1000, timerProc);
+                  g_dwBeginTime = GetTickCount();
+                  m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
 
-                    LOG_INF("Start Evaluation Timer\n");
-                }
-
+                  LOG_INF("Start Evaluation Timer\n");
+               }
             }//else
 
             break;//跳出大循环
@@ -980,27 +973,24 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 	}
 	else if (m_eUSBKeyTouchType == E_DEVICE_PALM_TOUCH_CONTROL && m_eScreenModeFromUsbKey ==EScreenModeSingle)
 	{
-		if (nUSBKeyTouchCount  >= nSersorcount )
-		{
-			switch (nSersorcount)
-			{
-			case 2:
-				m_eScreenModeFromUsbKey = EScreenModeDouble;
-				break;
-			case 3:
-				m_eScreenModeFromUsbKey = EScreenModeTriple;
-				break;
-			case 4:
-				m_eScreenModeFromUsbKey = EScreenModeQuad;
-				break;
-			case 5:
-				m_eScreenModeFromUsbKey = EScreenModeQuint;
-				break;
-			case 6:
-				m_eScreenModeFromUsbKey = EScreenModeHexa;
-				break;
-			}
-		}	
+	   switch (nSersorcount)
+	   {
+		  case 2:
+			  m_eScreenModeFromUsbKey = EScreenModeDouble;
+			  break;
+		  case 3:
+			  m_eScreenModeFromUsbKey = EScreenModeTriple;
+			  break;
+		  case 4:
+			  m_eScreenModeFromUsbKey = EScreenModeQuad;
+			  break;
+		  case 5:
+			  m_eScreenModeFromUsbKey = EScreenModeQuint;
+			  break;
+		  case 6:
+			  m_eScreenModeFromUsbKey = EScreenModeHexa;
+			  break;
+		}
 	}
 	else
 	{

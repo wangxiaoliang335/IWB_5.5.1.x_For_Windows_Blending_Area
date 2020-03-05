@@ -588,7 +588,7 @@ public:
      //@功能:判断是否正在进行4点标定
      BOOL IsMarkingBasestone()const;
 
-	 void StartTest30Point() { m_bStartTest30Point = TRUE;  }
+
 
 protected:
 
@@ -823,6 +823,8 @@ protected:
 
 	BOOL   m_bEnableOnlineScreenArea; //是否启用手动绘制的静态屏蔽图
 
+	BOOL   m_bExistOnlineScreenArea; //是否存在手动绘制静态屏蔽图的数据；
+
 	BOOL   m_bDisableReflectionSpot;   //是否响应反射点
 
 	BOOL m_bIsStaticMasking        ;//是否静态屏蔽干扰点标志
@@ -943,7 +945,5 @@ protected:
     void LoadBaseStoneMarker();
 
     void InitBaseStoneFilePath(TCHAR* buf, int nBufSize);
-
-	BOOL  m_bStartTest30Point;
 };
 

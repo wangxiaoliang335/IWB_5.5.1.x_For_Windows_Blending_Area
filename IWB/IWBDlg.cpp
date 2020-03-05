@@ -412,7 +412,7 @@ m_nActiveDetectCameraId(0)
 
      if(SUCCEEDED(hr))
      {
-         ICONINFO ii;
+        ICONINFO ii;
         GetIconInfo(shsii.hIcon, &ii);
 
         //ReplaceDIBColor(m_shieldIconInfo.hbmColor, RGB(0,0,0), GetSysColor(COLOR_MENU));
@@ -753,9 +753,9 @@ BOOL CIWBDlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_ON, _T("GPIO On"));
 			pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_OFF, _T("GPIO Off"));
 
-			//测试3个触控点
+			//测试30个触控点
 			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_TEST30POINT, _T("Test 30 Point"));
+			pSysMenu->AppendMenu(MF_STRING, IDM_DEBUG_MODE_TEST30POINT, _T("Start Test 30 TouchPoint"));
 
         }
     }
@@ -1063,13 +1063,43 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
 			GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), FALSE);
 		}
 	}
-	else if (nID == IDM_TEST30POINT)
+	else if (nID == IDM_DEBUG_MODE_TEST30POINT)
 	{
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor)
+		if (!m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTest30Point())
 		{
-			pSensor->GetPenPosDetector()->StartTest30Point();
+		    m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTest30Point(TRUE);
+
+			CMenu* pSysMenu = GetSystemMenu(FALSE);
+			if (pSysMenu != NULL)
+			{
+				MENUITEMINFO mii;
+				memset(&mii, 0, sizeof(mii));
+				mii.cbSize = sizeof(MENUITEMINFO);
+
+				mii.fMask = MIIM_STRING | MIIM_STATE;
+				mii.fState = MFS_ENABLED;
+				mii.dwTypeData = _T("Stop Test 30 TouchPoint");
+				pSysMenu->SetMenuItemInfo(IDM_DEBUG_MODE_TEST30POINT, &mii, FALSE);
+			}
 		}
+		else
+		{
+			m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTest30Point(FALSE);
+
+			CMenu* pSysMenu = GetSystemMenu(FALSE);
+			if (pSysMenu != NULL)
+			{
+				MENUITEMINFO mii;
+				memset(&mii, 0, sizeof(mii));
+				mii.cbSize = sizeof(MENUITEMINFO);
+
+				mii.fMask = MIIM_STRING | MIIM_STATE;
+				mii.fState = MFS_ENABLED;
+				mii.dwTypeData = _T("Start Test 30 TouchPoint");
+				pSysMenu->SetMenuItemInfo(IDM_DEBUG_MODE_TEST30POINT, &mii, FALSE);
+			}
+		}
+
 	}
     else if(nID == SC_CLOSE)
     {
@@ -4039,7 +4069,7 @@ void CIWBDlg::OnMenuAutoAddScreenMask()
     SetAutoCalibrationCameraParams();
 
     //通知IR CUT移除滤光片
-    ::IRCUTSwtich(m_oFilterGraphBuilder.GetCaptureFilter(),FALSE);
+   // ::IRCUTSwtich(m_oFilterGraphBuilder.GetCaptureFilter(),FALSE);
 
 
     //<<commented out by toxuke@gmail.com, 2014/02/24
@@ -4233,10 +4263,7 @@ void CIWBDlg::OnSpotCollectionSetting()
     {
         this->m_oIWBSensorManager.StartLightSpotSampling(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
     }
-
-
 }
-
 
 LRESULT CIWBDlg::OnSpotCollectionSetting_Par(WPARAM wParam, LPARAM lParam)
 {

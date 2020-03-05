@@ -3,8 +3,6 @@
 
 //////////////////////////////////////////////////////////////////////////
 
-
-
 //手势识别
 CGestureEventGenerator g_oGLBoardGR;
 CWindowsGestureRecognition g_oWinGR;
@@ -398,8 +396,6 @@ BOOL CSpotListProcessor::BuddyCameraFoundSpotInMergeArea(UINT CameraIndex)
         areaCount = 2;
     }
 
-
-
     for (int i = 0; i < areaCount; i++)
     {
         const RECT& area = mergeAreas[i];
@@ -614,9 +610,7 @@ void CSpotListProcessor::ProcessLightSpots()
             nAllLightSpotCount ++;
         }
         */
-        
-        
-        
+              
         for (int nCameraIndex = 0; nCameraIndex < MAX_CAMERA_NUMBER; nCameraIndex++)
         {
             for (int i = 0; i < pSpotListGroup->aryLightSpotsCount[nCameraIndex]; i++)
@@ -629,7 +623,6 @@ void CSpotListProcessor::ProcessLightSpots()
                 allLightSpots[nAllLightSpotCount] = spot;
                 nAllLightSpotCount++;
             }
-
         }
 
         //所有光斑的后续处理
@@ -717,10 +710,11 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		     int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
 
 		     POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
-		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =30 ；
-		     ///////////在200英寸的时候，偏差的值PixelNumber =20 。这样列出一个线性方程式
+		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =10 ；
+		     ///////////在200英寸的时候，偏差的值PixelNumber =6。这样列出一个线性方程式
 		     double  screenDigonalInMM = g_tSysCfgData.globalSettings.fScreenDiagonalPhysicalLength;
-		     double  PixelNumber = (10936 - screenDigonalInMM) / 296;
+//		     double  PixelNumber = (10936 - screenDigonalInMM) / 296;
+			 double  PixelNumber = 12 - (screenDigonalInMM / 720);
 		     if (PixelNumber< 0 )
 		     {
 			      PixelNumber = 0;
@@ -728,7 +722,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		     for (int i = 0; i< nLightSpotCount; i++)
 		     {
 			     pts[i] = pLightSpots[i].ptPosInScreen;
-			     if ( (pts[i].x > nScreenX/8 && pts[i].x < nScreenX*7/8)||(pts[i].y > nScreenY/8 && pts[i].y < nScreenY*7 / 8) )
+			     if ( (pts[i].x > nScreenX/8 && pts[i].x < nScreenX*7/8) && (pts[i].y > nScreenY/8 && pts[i].y < (nScreenY*7)/8) )
 			     {
 				      pts[i].x  = pts[i].x + PixelNumber;
 				      pts[i].y  = pts[i].y - PixelNumber;
@@ -832,10 +826,11 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
             if (FALSE == bEnableStrokeInterpolateTemp)
             { 
+
      			//不插值
                 m_oVirtualHID.InputPoints(penInfo, penCount);
 #ifdef _DEBUG
-               DebugContactInfo(penInfo, penCount);
+             //  DebugContactInfo(penInfo, penCount);
 #endif
             }
             else
@@ -861,6 +856,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
                         int allPenCount;
                         const TContactInfo* pAllContactInfo = m_oInterpolateDispatcher.GetAllContactData(&allPenCount);
+
+
                         m_oVirtualHID.InputPoints(pAllContactInfo, allPenCount);
 
                         m_oInterpolateDispatcher.PostProcess();
@@ -1225,7 +1222,6 @@ void CSpotListProcessor::OnDisplayChange(int nScreenWidth, int nScreenHeight)
     g_oGLBoardGR.OnSetTouchScreenDimension(nDiagonalPhysicalLength, sizeScreen);
 
 }
-
 
 //@功能:判断是否正在触发手势
 BOOL CSpotListProcessor::IsTriggeringGuesture()const

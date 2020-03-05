@@ -292,7 +292,8 @@ CVirtualHID::CVirtualHID()
     m_eTouchDataAdjustModel(E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO),
     m_bTouchHIDMode(true),
     m_bTouchTUIOMode(false),
-    m_bSinglePointMode(false)
+    m_bSinglePointMode(false),
+	m_bStartTest30Point(FALSE)
 
 {
     memset(&m_TouchPoints[0], 0, sizeof(m_TouchPoints));
@@ -399,48 +400,69 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
         }
     }
 
-    if (m_bTouchHIDMode)
-    {
-        switch (m_eHIDDeviceMode)
-        {
-        case E_DEV_MODE_MOUSE:
-            //搜索编号为0的笔信息
-            for (int i = 0; i < nPenCount; i++)
-            {
-                if (pPenInfos[i].uId == 0)
-                {
-                    m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
-                    break;
-                }
-            }
-            break;
-        case E_DEV_MODE_TOUCHSCREEN:
-            ////如果选择的是单点触控的话，只响应一个点就可以了
-            if (m_bSinglePointMode)
-            {
-                //搜索编号为0的笔信息
+	if (m_bStartTest30Point)
+	{
+		if (nPenCount>0)
+		{
+		    m_oTouchTester.Process(pPenInfos);
+		    const TContactInfo *pAllContactInfo = m_oTouchTester.GetContactInfo();
+
+		    int nCount = m_oTouchTester.GetContactCount();
+
+		    bRet = InputTouchPoints(pAllContactInfo, nCount);
+		}
+
+		/////说明已经弹起了，做Reset处理
+		if (pPenInfos[0].ePenState == E_PEN_STATE_UP)
+		{
+			m_oTouchTester.Reset();
+		}
+	}
+	else
+	{
+       if (m_bTouchHIDMode)
+       {
+          switch (m_eHIDDeviceMode)
+          {
+            case E_DEV_MODE_MOUSE:
+                 //搜索编号为0的笔信息
                 for (int i = 0; i < nPenCount; i++)
                 {
-                    if (pPenInfos[i].uId == 0)
-                    {
-                        InputTouchPoints(&pPenInfos[i], 1);
-                        break;
-                    }
+                   if (pPenInfos[i].uId == 0)
+                   {
+                       m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
+                       break;
+                   }
                 }
-            }
-            else
-            {
-                bRet = InputTouchPoints(pPenInfos, nPenCount);
-            }
-            break;
-        } //switch  
-    }
+                break;
+            case E_DEV_MODE_TOUCHSCREEN:
+                 ////如果选择的是单点触控的话，只响应一个点就可以了
+                 if (m_bSinglePointMode)
+                 {
+                     //搜索编号为0的笔信息
+                     for (int i = 0; i < nPenCount; i++)
+                     {
+                        if (pPenInfos[i].uId == 0)
+                        {
+                           InputTouchPoints(&pPenInfos[i], 1);
+                           break;
+                        }
+                     }
+                  }
+                  else
+                  {
+                      bRet = InputTouchPoints(pPenInfos, nPenCount);
+                  }
+                  break;
+            } //switch  
+        }
 
-    if (m_bTouchTUIOMode)
-    {
-        //模拟虚拟的TUIO
-        m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
-    }
+        if (m_bTouchTUIOMode)
+        {
+            //模拟虚拟的TUIO
+             m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
+        }
+	}
     return bRet;
 }
 
@@ -1046,4 +1068,12 @@ int CVirtualHID::GetPort()
     return m_oVirtualTUIOTouch.GetPort();
 }
 
+void CVirtualHID::SetTest30Point(BOOL bStart)
+{
+	m_bStartTest30Point = bStart;
+}
 
+BOOL CVirtualHID::GetTest30Point()
+{
+	return m_bStartTest30Point;
+}

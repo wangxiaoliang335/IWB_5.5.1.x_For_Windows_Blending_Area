@@ -4,6 +4,7 @@
 #include "DeviceEventMonitor.h"
 #include "TouchScreenDblChecker.h"
 #include "VirtualTUIO.h"
+#include "TouchTester.h"
 
 
 //参考:"Processing a Request to Remove a Device"实时检测设备驱动的状态。
@@ -68,6 +69,9 @@ public:
 
     //@功能:更新触屏关联的屏幕信息
     void UpdateAttachedMonitorInfo();
+	//@功能
+	void SetTest30Point(BOOL bStart);
+	BOOL GetTest30Point();
 
 protected:
 	//@功能:模拟触屏输入
@@ -95,6 +99,9 @@ protected:
 
 	bool     m_bSinglePointMode;
 
+	BOOL      m_bStartTest30Point;
+
+	CTouchTester  m_oTouchTester;
 
 	static const int MAX_TOUCH_POINT_COUNT = MAX_SUPPORT_TOUCH_COUNT;
 	EASI_TouchPoint m_TouchPoints[MAX_TOUCH_POINT_COUNT];

@@ -1732,7 +1732,6 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
         hr = ptrAMVideoProcAmp->Set(VideoProcAmp_BacklightCompensation, lBacklightCompensation, lCapsFlags);
     }while(0);
 
-
     //10.增益
     do
     {
@@ -1751,7 +1750,7 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
             break;
         }
 
-        long  lGain = newParams.Prop_VideoProcMap_Gain;
+		long  lGain =  newParams.Prop_VideoProcMap_Gain;
         if(lGain < lMin)
         {
             lGain = lMin;
@@ -1764,6 +1763,7 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
 
     }while(0);
 
+
 	/////////////////////////////////////曝光时间的设置
 	do
 	{
@@ -1771,7 +1771,8 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
 	    hr = m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void**)&ptrAMCameraControl);
 	    if (FAILED(hr))
 	    {
-			break;
+			return TRUE;
+//			break;
 	    }
 
 	    hr =
@@ -1784,7 +1785,8 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
 			   &lCapsFlags);
 		if (FAILED(hr))
 		{
-			break;
+			return TRUE;
+//			break;
 		}
 
 	    long lExposure = newParams.Prop_CameraControl_Exposure;
@@ -1796,6 +1798,7 @@ BOOL CVideoPlayer::SetCameraParams(const TVideoProcAmpProperty& newParams)
 	    {
 		    lExposure = lMax;
 	    }
+
 	    hr = ptrAMCameraControl->Set(CameraControl_Exposure, lExposure, CameraControl_Flags_Manual);
 
 	} while (0);
@@ -2046,11 +2049,12 @@ BOOL CVideoPlayer::GetCameraParams(TVideoProcAmpProperty& saveParams)
     }while(0);
 
 	////////////////曝光时间
+	///////////////曝光在7725的摄像头中都是失败的因此不能返回FALSE,要不后面的就不执行了。
 	CComPtr<IAMCameraControl> ptrAMCameraControl;
 	hr = m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void**)&ptrAMCameraControl);
 	if (FAILED(hr))
 	{
-		return FALSE;
+		return TRUE;
 	}
 
 	hr =
@@ -2061,7 +2065,7 @@ BOOL CVideoPlayer::GetCameraParams(TVideoProcAmpProperty& saveParams)
 
 	if (FAILED(hr))
 	{
-		return FALSE;
+		return TRUE;
 	}
 
     return TRUE;
