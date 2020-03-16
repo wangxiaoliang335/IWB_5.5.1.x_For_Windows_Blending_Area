@@ -18,8 +18,8 @@ public:
     //      nMergeAreaWidth, 屏幕融合区的宽度
     void SetMergeAreaInfo(int nSeperateX, int nMergeAreaWidth);
 
-    int GetMergeAreaRightBorder()const {return m_nMergeAreaRightBorder;}
-    int GetMergeAreaLeftBorder()const  {return m_nMergeAreaLeftBorder ;}
+    //int GetMergeAreaRightBorder()const {return m_nMergeAreaRightBorder;}
+    //int GetMergeAreaLeftBorder()const  {return m_nMergeAreaLeftBorder ;}
     int GetMergeDistThreshold() const  {return m_nMergeDistThreshold;  }
 
     
@@ -43,8 +43,8 @@ protected:
     //int m_nRightBorder;//屏幕融合区域的右边界
     //static const int MERGE_THRESHOLD = 20*20;
     int m_nSeperateX             ;//两屏幕拼接边的X坐标
-    int m_nMergeAreaLeftBorder   ;//融合区左边界
-    int m_nMergeAreaRightBorder  ;//融合区右边界
+    //int m_nMergeAreaLeftBorder   ;//融合区左边界
+    //int m_nMergeAreaRightBorder  ;//融合区右边界
     int m_nMergeDistThreshold    ;//融合距离门限，小于该值即融合
 
 

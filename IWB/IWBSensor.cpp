@@ -1980,7 +1980,7 @@ void CIWBSensor::OnClearDrawOnlineScreenArea()
 }
 void CIWBSensor::OnEnableDrawOnlineScreenArea(BOOL Enable)
 {	
-	SetOnlineScreenArea(Enable);
+	SetOnlineScreenArea(Enable?true:false);
 }
 
 

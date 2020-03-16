@@ -223,8 +223,6 @@ inline bool TestConvergence(
     }
 
     return bDone;
-
-
 }
 
 void DebugPrintHeader()

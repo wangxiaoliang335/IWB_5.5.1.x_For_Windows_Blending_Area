@@ -2,8 +2,7 @@
 //#include "headers.h"
 CSpotMerger::CSpotMerger()
 {
-    m_nSeperateX =  m_nMergeAreaLeftBorder = m_nMergeAreaRightBorder = 0;
-	//<<temp, 2017/08/22
+    
     int nCxScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     int nCyScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
@@ -222,6 +221,13 @@ void CSpotMerger::DoMerge(TLightSpot* pLightSpots, int* pLightSpotCount)
 
                         nSpotCount--;
                         bMergeHappened = TRUE;
+
+
+                        AtlTrace(
+                            _T("spot(%d,%d) of camera_%d is merged\n"),
+                            cmp_spot.ptPosInScreen.x, 
+                            cmp_spot.ptPosInScreen.y,
+                            cmp_spot.dwCameraId);
                     }//if(R2 < MERGE_THRESHOLD)
 
                 }//if(cmp_spot.aux.mergeAreaIndex == spot.aux.mergeAreaIndex)
@@ -254,10 +260,13 @@ void CSpotMerger::OnDisplayChange(int nScreenWidth, int nScreenHeight)
 {
     this->m_nSeperateX =nScreenWidth   >> 1;//Г§вд2
     int nMergeAreaWidth = nScreenWidth >> 6;//Г§вд64
-    this->m_nMergeAreaLeftBorder  = m_nSeperateX - nMergeAreaWidth/2;
-    this->m_nMergeAreaRightBorder = m_nSeperateX + nMergeAreaWidth/2;
+    //this->m_nMergeAreaLeftBorder  = m_nSeperateX - nMergeAreaWidth/2;
+    //this->m_nMergeAreaRightBorder = m_nSeperateX + nMergeAreaWidth/2;
 
-    m_nMergeDistThreshold = nScreenHeight * 2/ 100;
+    int nRange = nScreenWidth > nScreenHeight ? nScreenHeight : nScreenWidth;
+    //m_nMergeDistThreshold = nRange * 4/ 100;
+    //m_nMergeDistThreshold = this->m_nMergeAreaRightBorder - this->m_nMergeAreaLeftBorder;
+    m_nMergeDistThreshold = nMergeAreaWidth;
 }
 
 

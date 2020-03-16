@@ -530,6 +530,9 @@
       <Project>{92f8fb96-d945-433c-8568-aed1495e242c}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\libAVI\libAVI.vcxproj">
+      <Project>{7771fb19-e2ae-498c-b637-eba51584d173}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\MJPG_Codec\MJPG_Decoder\MJPG_Decoder.vcxproj">
       <Project>{2e86f259-6dbb-4815-acca-63d5a5033e1d}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

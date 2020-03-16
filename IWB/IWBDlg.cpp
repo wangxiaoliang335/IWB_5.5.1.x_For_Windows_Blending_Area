@@ -1776,7 +1776,7 @@ BOOL CIWBDlg::LoadConfig()
 
     //根据加密狗设置实际的笔触和手触模式
 	//所有的整成一個加密狗信息
-	for (int i = 0 ; i <::g_tSysCfgData.vecSensorConfig.size() ; i++ )
+	for (size_t i = 0 ; i < ::g_tSysCfgData.vecSensorConfig.size() ; i++ )
 	{
 		TSensorConfig& sensorConfig = ::g_tSysCfgData.vecSensorConfig[i];
 		for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
@@ -4878,7 +4878,7 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
 	{
 		m_bStartDrawOnlineScreenArea = true;
 		m_nDrawOnlineAreaCount = -1 ;
-		m_bPreGuideRectangleVisible =m_pSelectedSensor->GetPenPosDetector()->IsGuideRectangleVisible();
+		m_bPreGuideRectangleVisible =m_pSelectedSensor->GetPenPosDetector()->IsGuideRectangleVisible()?true:false;
 		m_pSelectedSensor->OnStartDrawOnlineScreenArea();
 	}
 		break;
@@ -5430,7 +5430,7 @@ void CIWBDlg::OnInstallationanddebuggingEnableinterpolate()
 	     {
 		     TAdvancedSettings &AdvancedSettings = g_tSysCfgData.vecSensorConfig[i].vecSensorModeConfig[eProjectionMode].advanceSettings;
 		     AdvancedSettings.bEnableStrokeInterpolate = !AdvancedSettings.bEnableStrokeInterpolate;
-		     pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate);
+		     pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate?true:false);
 	     }
 	}	
 }
@@ -5531,7 +5531,7 @@ void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
 		   if (lpSensor->IsDetecting())
 		   {
 			   m_nActiveDetectCameraId++;  //实际检测到打开的摄像头个数，因为有几个sensor不一定都打开。
-	           m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible();
+	           m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible()?true:false;
 			   lpSensor->OnStartDrawOnlineScreenArea();
 		   }
 	   }

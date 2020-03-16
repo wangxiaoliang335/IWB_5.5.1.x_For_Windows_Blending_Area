@@ -1348,3 +1348,33 @@ BOOL CVideToScreenMap::CalibrateFromDataFile(LPCTSTR lpszFileName)
 //}
 
 //>>
+
+//added by xuke, 2020/03/05
+//@功  能:判断屏幕坐标在屏幕以内
+//@返回值:true, 坐标点在屏幕内部
+//        false, 坐标点在屏幕外部
+bool CVideToScreenMap::IsOutsideOwnedArea(const POINT& ptScreen)const
+{
+    bool bOutSide = false;
+    if (ptScreen.x < m_rcMonitorResolution.left)
+    {
+        bOutSide = true;
+    }
+    
+    if (ptScreen.x > m_rcMonitorResolution.right)
+    {
+        bOutSide = true;
+    }
+
+    if (ptScreen.y < m_rcMonitorResolution.top)
+    {
+        bOutSide = true;
+    }
+
+    if (ptScreen.y > m_rcMonitorResolution.bottom)
+    {
+        bOutSide = true;
+    }
+
+    return bOutSide;
+}

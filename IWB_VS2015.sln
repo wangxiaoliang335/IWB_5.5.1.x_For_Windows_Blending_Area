@@ -12,6 +12,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IWB", "IWB\IWB.vcxproj", "{AE2A900D-7164-4238-9ECE-307FFD640442}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlgoLib", "AlgoLib\AlgoLib.vcxproj", "{E9E185B2-1A18-4B01-8857-5BBCE2B9BD8F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7771FB19-E2AE-498C-B637-EBA51584D173} = {7771FB19-E2AE-498C-B637-EBA51584D173}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KOR_RES", "KOR_RES\KOR_RES.vcxproj", "{EBF14A50-3844-4768-9A65-9876FE24BD8C}"
 EndProject
@@ -56,6 +59,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcxproj", "{0BA1506A-9CDA-47E2-B1DD-B042AA5E57A0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libTUIO", "IWB_TUIO\libTUIO.vcxproj", "{E1C28E7D-466C-4D0A-AEB1-CFFD0F6F5645}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libAVI", "libAVI\libAVI.vcxproj", "{7771FB19-E2AE-498C-B637-EBA51584D173}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -882,6 +887,42 @@ Global
 		{E1C28E7D-466C-4D0A-AEB1-CFFD0F6F5645}.RemoteRelease|Win32.ActiveCfg = RemoteRelease|Win32
 		{E1C28E7D-466C-4D0A-AEB1-CFFD0F6F5645}.RemoteRelease|Win32.Build.0 = RemoteRelease|Win32
 		{E1C28E7D-466C-4D0A-AEB1-CFFD0F6F5645}.RemoteRelease|x64.ActiveCfg = RemoteRelease|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Debug|Win32.Build.0 = Debug|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Debug|x64.ActiveCfg = Debug|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Debug|x64.Build.0 = Debug|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_CCDRoate90|Win32.ActiveCfg = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_CCDRoate90|Win32.Build.0 = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_CCDRoate90|x64.ActiveCfg = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_CCDRoate90|x64.Build.0 = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_HUAN_SUO|Win32.ActiveCfg = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_HUAN_SUO|Win32.Build.0 = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_HUAN_SUO|x64.ActiveCfg = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_HUAN_SUO|x64.Build.0 = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_Neutral|Win32.ActiveCfg = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_Neutral|Win32.Build.0 = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_Neutral|x64.ActiveCfg = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_Neutral|x64.Build.0 = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_PicoProjector|Win32.ActiveCfg = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_PicoProjector|Win32.Build.0 = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_PicoProjector|x64.ActiveCfg = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release_PicoProjector|x64.Build.0 = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release|Win32.ActiveCfg = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release|Win32.Build.0 = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release|x64.ActiveCfg = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.Release|x64.Build.0 = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug|Win32.ActiveCfg = RemoteDebug|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug|Win32.Build.0 = RemoteDebug|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug|x64.ActiveCfg = Debug|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug|x64.Build.0 = Debug|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug-xk|Win32.ActiveCfg = Debug|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug-xk|Win32.Build.0 = Debug|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug-xk|x64.ActiveCfg = Debug|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteDebug-xk|x64.Build.0 = Debug|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteRelease|Win32.ActiveCfg = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteRelease|Win32.Build.0 = Release|Win32
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteRelease|x64.ActiveCfg = Release|x64
+		{7771FB19-E2AE-498C-B637-EBA51584D173}.RemoteRelease|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

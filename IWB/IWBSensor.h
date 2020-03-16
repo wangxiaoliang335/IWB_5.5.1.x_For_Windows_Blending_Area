@@ -194,6 +194,11 @@ public:
       BOOL GetAttachedScreenArea(RECT& rcMonitor)const;
 
 
+      //@功能:获取相机看到的屏幕矩形区域, 该区域大于相机实际管辖的屏幕区域。
+      //@参数:uID, id of camera sensor
+       const RECT& GetVisibleScreenArea() const;
+
+
       void  OnTimer(LPVOID lpCtxData);
       void  SetStrokeInterpolate(bool bEnableStrokeInterpolate);
       void  SetOnlineScreenArea(bool bEnableOnlineScreenArea) ;

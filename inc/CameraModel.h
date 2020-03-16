@@ -11,7 +11,7 @@
 #include "MultiDimensionPoint.h"
 #include "CameraSpecs.h"
 
-
+#pragma warning(disable:4251)
 //通用相机模型
 enum CAMERA_MODEL_API EGenericCameraProjectionType
 {
@@ -295,3 +295,5 @@ protected:
     
 	BOOL m_bDebug;
 };
+
+#pragma warning(default:4251)

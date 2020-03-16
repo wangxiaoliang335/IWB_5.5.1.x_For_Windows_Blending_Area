@@ -956,8 +956,6 @@
     <ClInclude Include="..\bitanswer\BitanswerCpp.h" />
     <ClInclude Include="..\bitanswer\bitanswerError.h" />
     <ClInclude Include="..\bitanswer\BitAnswerException.h" />
-    <ClInclude Include="..\inc\AVI\AVIReader.h" />
-    <ClInclude Include="..\inc\AVI\AVIWriter.h" />
     <ClInclude Include="..\inc\DIB\Dib.h" />
     <ClInclude Include="..\inc\DIB\DibCanvas.h" />
     <ClInclude Include="..\inc\DispMonitorFinder.h" />

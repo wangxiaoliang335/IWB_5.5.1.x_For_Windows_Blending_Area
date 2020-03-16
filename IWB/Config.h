@@ -575,10 +575,10 @@ struct TLensConfig
 		//<<
 		float image_Default_Width = 1;
 		float image_Default_Height = 1;
-		rcGuideRectangle.left = 0.2;
-		rcGuideRectangle.right = 0.8;
-		rcGuideRectangle.top = 0.2;
-		rcGuideRectangle.bottom = 0.8;
+		rcGuideRectangle.left   = 0.2f;
+		rcGuideRectangle.right  = 0.8f;
+		rcGuideRectangle.top    = 0.2f;
+		rcGuideRectangle.bottom = 0.8f;
 
 		Referwidth = image_Default_Width;
 		ReferHeight = image_Default_Height;

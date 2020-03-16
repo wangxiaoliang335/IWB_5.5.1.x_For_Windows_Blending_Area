@@ -195,7 +195,7 @@ bool CameraFmtDialog::GetTouchHIDMode()
 
 bool CameraFmtDialog::GetTouchTUIOMode()
 {
-	return m_bTUIOMode;
+	return m_bTUIOMode?true:false;
 }
 
 void CameraFmtDialog::OnIpnFieldchangedIpaddressIp(NMHDR *pNMHDR, LRESULT *pResult)
