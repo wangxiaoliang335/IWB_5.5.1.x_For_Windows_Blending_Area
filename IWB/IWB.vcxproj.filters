@@ -33,9 +33,6 @@
     <Filter Include="Header Files\..%255cinc">
       <UniqueIdentifier>{c639a367-adf4-4474-ac0c-619d4ab53dec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\..%255cinc\.%255cAVI">
-      <UniqueIdentifier>{e7e35608-cf0a-4119-b355-7c46dbfde8c3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\..%255cinc\DIB">
       <UniqueIdentifier>{3cf06a48-caf5-4530-9dee-6502f1c0eb1f}</UniqueIdentifier>
     </Filter>
@@ -525,12 +522,6 @@
     </ClInclude>
     <ClInclude Include="..\inc\Round-RobinQueue.h">
       <Filter>Header Files\..%255cinc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inc\AVI\AVIReader.h">
-      <Filter>Header Files\..%255cinc\.%255cAVI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inc\AVI\AVIWriter.h">
-      <Filter>Header Files\..%255cinc\.%255cAVI</Filter>
     </ClInclude>
     <ClInclude Include="..\inc\DIB\Dib.h">
       <Filter>Header Files\..%255cinc\DIB</Filter>

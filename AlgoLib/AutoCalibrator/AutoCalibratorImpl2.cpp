@@ -1639,7 +1639,8 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
                if (m_bIsSimulatedCalibrating)
                {
                    PostThreadMessage(m_dwSimulatedCalibrateThreadId, WM_QUIT, 0, 0);
-                   m_oAVIInput.Close();
+                   //m_oAVIInput.Close();
+                   m_oAVIInput.close();
                }
                else
                {
@@ -1670,7 +1671,8 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
               if (m_bIsSimulatedCalibrating)
               {
                   PostThreadMessage(m_dwSimulatedCalibrateThreadId, WM_QUIT, 0, 0);
-                  m_oAVIInput.Close();
+                  //m_oAVIInput.Close();
+                  m_oAVIInput.close();
               }
               else
               {
@@ -1702,7 +1704,7 @@ void CAutoCalibratorImpl2::EndCalibrating()
         {
             PostThreadMessage(m_dwSimulatedCalibrateThreadId, WM_QUIT, 0, 0 );
             //WaitForSingleObject(m_hSimulatedCalibrateThread, INFINITE);
-            m_oAVIInput.Close();
+            m_oAVIInput.close();
         }
         else
         {
@@ -2862,7 +2864,7 @@ void CAutoCalibratorImpl2::OnMonitorCollectDataFail()
             //SQUARE_SIZE += (SQUARE_SIZE>>1);
         }
 
-        if (FALSE == this->m_bIsSimulatedCalibrating)
+        //if (FALSE == this->m_bIsSimulatedCalibrating)
         {
             //选取下一组画面数据
             int nIndex = m_nTryTimes % this->m_oautocalibrateparamslist.size();
@@ -4698,7 +4700,8 @@ BOOL CAutoCalibratorImpl2::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNo
         this->EndCalibrating();
     }
 
-    if(!m_oAVIInput.OpenFile(lpszAVIFilePath))
+    //if(!m_oAVIInput.OpenFile(lpszAVIFilePath))
+    if (!m_oAVIInput.open(CT2A(lpszAVIFilePath)))
     {
         return FALSE;
     }
@@ -5686,7 +5689,8 @@ void CAutoCalibratorImpl2::EndAutoMasking()
         {
             PostThreadMessage(m_dwSimulatedCalibrateThreadId, WM_QUIT, 0, 0 );
             //WaitForSingleObject(m_hSimulatedCalibrateThread, INFINITE);
-            m_oAVIInput.Close();
+            //m_oAVIInput.Close();
+            m_oAVIInput.close();
         }
         else
         {
@@ -5811,7 +5815,8 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
             LONG lSamples = 0;
             BOOL bRet = FALSE;
 
-            bRet = pCalibrator->m_oAVIInput.Read((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, &lSamples);
+            //bRet = pCalibrator->m_oAVIInput.Read((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, &lSamples);
+            bRet = pCalibrator->m_oAVIInput.readFrame((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, &lSamples);
             if (!bRet)
             {
 
@@ -5849,7 +5854,8 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
     pCalibrator->m_oDebugWindow.DestroyWindow();
     pCalibrator->m_bIsSimulatedCalibrating = FALSE;
     pCalibrator->m_bIsWorking = FALSE;
-    pCalibrator->m_oAVIInput.Close();
+    //pCalibrator->m_oAVIInput.Close();
+    pCalibrator->m_oAVIInput.close();
 
     return 0;
 

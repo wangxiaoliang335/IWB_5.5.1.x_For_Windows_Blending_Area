@@ -32,6 +32,7 @@
 #include "../inc/SplitArea.h"
 #include "../../inc/MJPG/MJPG_Decoder.h"
 #include "../../inc/FillPolygon.h"
+#include "../../libAVI/libAVI.h"
 
 typedef std::vector<POINT> PolygonVertices;
 
@@ -1490,7 +1491,9 @@ protected:
     //E_SubAreaCalibrateStage m_eSubareaCalibrateStage;//子区域校正阶段步骤
 
     //CAviWriter m_oAVIRecorder        ;//AVI录制对象
-    CAviReader m_oAVIInput              ;//AVI输入源
+    //CAviReader m_oAVIInput              ;//AVI输入源
+    CAVIFile m_oAVIInput;  //AVI输入
+
     BOOL m_bIsSimulatedCalibrating      ;//正在模拟校正。
     HANDLE m_hSimulatedCalibrateThread  ;//模拟校正线程
     DWORD m_dwSimulatedCalibrateThreadId;//模拟校正线程id

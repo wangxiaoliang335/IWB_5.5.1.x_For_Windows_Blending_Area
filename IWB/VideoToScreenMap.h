@@ -176,6 +176,11 @@ public:
 
 	void  ScreenOutAreaWidthInPixel(double screenDigonalInMM);
 
+    //@功  能:判断屏幕坐标在相机管辖的屏幕以内
+    //@返回值:true, 坐标点在屏幕内部
+    //        false, 坐标点在屏幕外部
+    bool IsOutsideOwnedArea(const POINT& ptScreen )const ;
+    //
 protected:
     //屏幕尺寸
     SIZE m_ScreenSize;

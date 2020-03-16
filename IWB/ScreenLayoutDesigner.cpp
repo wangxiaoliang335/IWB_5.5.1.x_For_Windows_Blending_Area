@@ -111,7 +111,7 @@ void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
     m_vecMergeAreasRelative.resize(nMergeAreaCount);
     m_vecMergeAreasAbs.resize(nMergeAreaCount);
 
-    float fMergeAreaHalfSize = 0.005;
+    float fMergeAreaHalfSize = 0.025;//融合区占屏幕宽度5%左右。
 
     for (int i = 0; i < nMergeAreaCount; i++)
     {
@@ -1175,7 +1175,7 @@ void CScreenLayoutDesigner::ConfineMergeBorderCursor(const TActiveArea& activeAr
     LONG MAX_MERGE_AREA_WIDTH = ScreenWidth * 10 / 100;
 
 
-    if (m_vecMergeAreasAbs.size() > 1)
+    if (m_vecMergeAreasAbs.size() >= 1)
     {
         LONG left = 0;
         LONG right = 0;
@@ -1436,13 +1436,11 @@ void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea
 //@参数:
 void CScreenLayoutDesigner::OnDragMergeAreaBorderDone(const RECT& dragRect, TActiveArea& activeArea)
 {
-
     UINT uBorderIndex = activeArea.ulData;
     UINT uSplitterIndex = (uBorderIndex >> 1);
     if (uSplitterIndex >= m_vecMergeAreasAbs.size()) return;
 
     LONG nNewBorderPos = (dragRect.left + dragRect.right) >> 1;
-
     if (uBorderIndex % 2 == 0)
     {//左边界
 

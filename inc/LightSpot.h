@@ -18,13 +18,16 @@ struct TLightSpot
 		TAux()
 		{
 			uMergeAreaIndex  = -1;
-			bBeyondMergeArea = false;
+			//bBeyondMergeArea = false;
+            bOutsideOwnedArea = false;
 		}
 
         UINT uMergeAreaIndex      ;//光斑所在的融合区索引号。
                                     //-1, 不在任何融合区
                                     //>=0, 融合区索引号
-        bool bBeyondMergeArea      ;//位置超越融合区标志
+        //bool bBeyondMergeArea      ;//位置超越融合区标志
+
+        bool bOutsideOwnedArea     ;//在相机管辖的屏幕区域以外标志
     }aux;
 
     //<<debug

@@ -23,6 +23,13 @@ public:
 
     //@功能:判断是否正在触发手势
     virtual BOOL IsTriggeringGuesture()const = 0;
+
+
+
+    //@功能:获取相机看到的屏幕矩形区域。该区域包括相机管辖区域和邻接的融合区
+    //@参数:uSensorID, id of camera sensor
+    //     monitorArea, 相机有效管辖的屏区域
+    virtual const RECT& GetVisibleScreenArea(UINT uSensorID, const RECT& monitorArea) const = 0;
 };
 
 
@@ -51,6 +58,7 @@ public:
     //      dwCameraId, 从0开始的摄像头编号
     //@功能:该函数被多个线程同时访问，因此需要确保线程安全
     virtual BOOL WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCount, DWORD dwCameraId, E_CALIBRATE_MODEL eCalibrateModel);
+    
 
     //@功能:复位处理器
     void Reset();
@@ -70,8 +78,16 @@ public:
     //      nScreenHeight,新的屏幕高度
     virtual void OnDisplayChange(int nScreenWidth, int nScreenHeight);
 
+
     //@功能:判断是否正在触发手势
     virtual BOOL IsTriggeringGuesture()const;
+
+
+    //@功能:获取相机看到的屏幕矩形区域。该区域包括相机管辖区域和邻接的融合区
+    //@参数:uCameraIndex, id of camera sensor
+    //     monitorArea, 相机有效管辖的屏区域
+    const RECT& GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const;
+
 protected:
     //@功能:启动处理线程
     BOOL StartProcessThread();
@@ -118,8 +134,7 @@ protected:
     //       bBeyondMergeArea, 超越融合区最外边界标志
     //@返回值:TRUE, 在融合区内出现。
     //       FALSE, 未在融合区内出现
-    BOOL AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, bool* bBeyondMergeArea, UINT* pMergeAreaIndex = NULL);
-
+    BOOL AppearInMergeArea(const TLightSpot& lightSpot, UINT CameraIndex, /*bool* bBeyondMergeArea,*/ UINT* pMergeAreaIndex = NULL);
 
 
     //@功 能:判断光斑是否被相邻的兄弟摄像头在融合区内看到
@@ -127,7 +142,8 @@ protected:
     //       CameraIndex, 看到光斑的镜头的ID号。
     //@返回值:TRUE, 否被相邻的兄弟摄像头看到。
     //       FALSE, 兄弟相机未看到
-    BOOL SeenInMergeAreaByBuddyCamera(const TLightSpot& lightSpot, UINT CameraIndex);
+    //BOOL SeenInMergeAreaByBuddyCamera(const TLightSpot& lightSpot, UINT CameraIndex);
+    BOOL SeenByBuddyCamera(const TLightSpot& spotTarget, UINT CameraIndex);
 
     //@功  能:判断兄弟相机是否在融合区内看到了光斑
     //@参  数:当前相机的Id, 由它来确定兄弟相机的id。
@@ -136,7 +152,7 @@ protected:
     //        FALSE, 兄弟相机是在融合区内没有发现光斑
     BOOL BuddyCameraFoundSpotInMergeArea(UINT CameraIndex);
 
-    
+
 protected:
     HANDLE m_hProcessThread;
    
