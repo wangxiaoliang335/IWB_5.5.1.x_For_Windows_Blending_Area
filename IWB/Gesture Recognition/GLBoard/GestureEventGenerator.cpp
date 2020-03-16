@@ -414,7 +414,7 @@ bool CGestureEventGenerator::DoDetection(const TLightSpot * aryLightSpots,  cons
         }
 
         //if (m_eWBS == E_WBS_IDLE && nCount == 0) return true;
-        isResponse = (bool)EraserTransPen(aryLightSpots, nCount);
+        isResponse = EraserTransPen(aryLightSpots, nCount)?true:false;
         
 
         POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];

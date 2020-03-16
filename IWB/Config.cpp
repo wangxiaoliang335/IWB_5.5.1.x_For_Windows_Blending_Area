@@ -3167,7 +3167,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 BOOL SaveConfig(TiXmlNode *pNode, const std::vector<TSensorConfig>& allSensorCfg,int nSersorCount)
 {
 	//for (size_t i = 0; i< allSensorCfg.size(); i++)
-	for (size_t i = 0; i< nSersorCount; i++)
+	for (size_t i = 0; i < (size_t)nSersorCount; i++)
 	{
 		TiXmlComment* pXmlComment = new TiXmlComment("摄像头传感器的配置参数");
 		pNode->LinkEndChild(pXmlComment);

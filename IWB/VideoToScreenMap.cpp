@@ -1355,7 +1355,7 @@ BOOL CVideToScreenMap::CalibrateFromDataFile(LPCTSTR lpszFileName)
 //        false, 坐标点在屏幕外部
 bool CVideToScreenMap::IsOutsideOwnedArea(const POINT& ptScreen)const
 {
-    BOOL bOutSide = false;
+    bool bOutSide = false;
     if (ptScreen.x < m_rcMonitorResolution.left)
     {
         bOutSide = true;

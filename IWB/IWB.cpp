@@ -904,7 +904,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
                 DWORD dwNow = GetTickCount();
                 DWORD dwElapse = dwNow - dwStartTick;
 
-                if (dwElapse < g_tSysCfgData.globalSettings.nMaxTimeInSearchDevice)
+                if (dwElapse < (DWORD)(g_tSysCfgData.globalSettings.nMaxTimeInSearchDevice))
                 {
                     LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse / 1000.0);
                     Sleep(1000);//延迟等待1秒钟

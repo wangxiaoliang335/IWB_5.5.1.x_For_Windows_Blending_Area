@@ -529,7 +529,7 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 	}
     this->m_pSpotListProcessor->GetVirtualHID().SetHIDMode(sysCfgData.globalSettings.eHIDDeviceMode);
 
-	this->m_pSpotListProcessor->GetVirtualHID().SetSinglePointMode(sysCfgData.globalSettings.bSinglePointMode);
+	this->m_pSpotListProcessor->GetVirtualHID().SetSinglePointMode(sysCfgData.globalSettings.bSinglePointMode?true:false);
 	//////add by zhaown 2019.9.25
 	////如果两种模式都为false的话，那么强行HID模式响应
 	if ((!sysCfgData.globalSettings.bTouchHIDMode) && (!sysCfgData.globalSettings.bTouchTUIOMode))
@@ -539,9 +539,9 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 	}
 	else
 	{
-    	this->m_pSpotListProcessor->GetVirtualHID().SetTouchHIDMode(sysCfgData.globalSettings.bTouchHIDMode);
+    	this->m_pSpotListProcessor->GetVirtualHID().SetTouchHIDMode(sysCfgData.globalSettings.bTouchHIDMode?true:false);
 	}
-	this->m_pSpotListProcessor->GetVirtualHID().SetTouchTUIOMode(sysCfgData.globalSettings.bTouchTUIOMode);
+	this->m_pSpotListProcessor->GetVirtualHID().SetTouchTUIOMode(sysCfgData.globalSettings.bTouchTUIOMode?true:false);
 
     //<Added by Jiqw 201412041914
     //<Added Reason: 解决触屏模式下，windows两触点手势与windows下手势的冲突问题/>
@@ -1603,7 +1603,7 @@ void CIWBSensorManager::EnableOnlineScreenArea(BOOL bEnable)
 {
 	for (size_t i = 0; i < m_vecSensors.size(); i++)
 	{
-		m_vecSensors[i]->SetOnlineScreenArea(bEnable);
+		m_vecSensors[i]->SetOnlineScreenArea(bEnable?true:false);
 	}
 }
 

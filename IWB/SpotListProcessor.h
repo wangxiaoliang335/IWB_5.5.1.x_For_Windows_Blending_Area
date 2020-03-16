@@ -29,7 +29,7 @@ public:
     //@功能:获取相机看到的屏幕矩形区域。该区域包括相机管辖区域和邻接的融合区
     //@参数:uSensorID, id of camera sensor
     //     monitorArea, 相机有效管辖的屏区域
-    virtual const RECT& GetVisibleScreenArea(UINT uSensorID, const RECT& monitorArea) const = 0;
+    virtual RECT GetVisibleScreenArea(UINT uSensorID, const RECT& monitorArea) const = 0;
 };
 
 
@@ -86,7 +86,7 @@ public:
     //@功能:获取相机看到的屏幕矩形区域。该区域包括相机管辖区域和邻接的融合区
     //@参数:uCameraIndex, id of camera sensor
     //     monitorArea, 相机有效管辖的屏区域
-    const RECT& GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const;
+    RECT GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const;
 
 protected:
     //@功能:启动处理线程

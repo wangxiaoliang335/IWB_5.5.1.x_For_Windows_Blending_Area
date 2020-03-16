@@ -1281,7 +1281,7 @@ BOOL CSpotListProcessor::IsTriggeringGuesture()const
 //@功能:获取相机看到的屏幕矩形区域。该区域包括相机管辖区域和邻接的融合区
 //@参数:uCameraIndex, id of camera sensor
 //     monitorArea, 相机有效管辖的屏区域
-const RECT& CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const
+RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const
 {
     RECT rcVisibleArea = monitorArea;
     
