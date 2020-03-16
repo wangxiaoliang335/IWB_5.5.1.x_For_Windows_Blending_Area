@@ -17,7 +17,7 @@ m_lReferenceCount(0L),
 m_hProcessThread(NULL),
 m_uCameraCount(1),
 m_bLastHIDOwnnerAfterGR(true),
-m_bIsSmartPenReset(true),
+//m_bIsSmartPenReset(true),
 m_bSimulateMode(FALSE),
 m_bIsTriggeringGuesture(FALSE),
 m_eCalibrateModel(E_CALIBRATE_MODEL_GENERICAL_CAMERA)
@@ -693,6 +693,10 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
     //复位手势触发标志
     m_bIsTriggeringGuesture = FALSE;
+	
+	//触控点匹配器,插值器,分配器是否复位标志
+	BOOL bNeedReset = FALSE;
+
     TContactInfo penInfo[PEN_NUM];
     int penCount = PEN_NUM;
 	/////add by zhaown 2019.10.09
@@ -777,17 +781,15 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
  
 
     if (bHandHID2Me)
-    {
+    {//GLBoard手势未触发
         if (!m_bLastHIDOwnnerAfterGR)
         {//上一次是白板手势识别对象操作的设备，故先把设备Reset
             //m_oVirtualHID.Reset();
             g_oGLBoardGR.ResetSmartMathch();
         }
-        //<<debug
-        BOOL bDebug = FALSE;
-        //debug>>
 
-        m_bIsSmartPenReset = false;
+
+        //m_bIsSmartPenReset = false;
 
         if (!DoWindowsGestureRecognition(pLightSpots, nLightSpotCount, penInfo, penCount))
         {
@@ -877,22 +879,35 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             }
         }
         else
-        {
-            //置位手势触发标志
-            m_bIsTriggeringGuesture = TRUE;
-            bDebug = TRUE;
+        {//Windows手势已触发
+		 //置位手势触发标志
+			
+			if(!m_bIsTriggeringGuesture)
+			{
+				bNeedReset = TRUE;
+				m_bIsTriggeringGuesture = TRUE;
+			}
+
         }
     }
     else
-    {
+    {//GLBoard手势已触发
+
         //置位手势触发标志
-        m_bIsTriggeringGuesture = TRUE;
-        if (!m_bIsSmartPenReset)
+        if (!m_bIsTriggeringGuesture)
         {
+			bNeedReset = TRUE;
             m_oSmartPenMatch.Reset();
-            m_bIsSmartPenReset = true;
+			m_bIsTriggeringGuesture = TRUE;
         }
     }
+
+
+	if (bNeedReset)
+	{	
+		m_oBezierInterpolator.Reset();
+		m_oInterpolateDispatcher.Reset();
+	}
 
     m_bLastHIDOwnnerAfterGR = bHandHID2Me;
 }

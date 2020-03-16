@@ -246,7 +246,7 @@ protected:
     int    m_nLightSpotDitherOffsetY;//垂直方向的抖动偏移距离
 
 	TCHAR     CollectSpotDragPath[MAX_PATH];
-	int       m_nSensorCount;                 //sensor的个数
+	int       m_nCollectSensorCount;                 //需要采集光斑的sensor个数
 
 	public:
 	  static SpotManualCollectInfoManager m_oSpotManualCollectInfoManager;

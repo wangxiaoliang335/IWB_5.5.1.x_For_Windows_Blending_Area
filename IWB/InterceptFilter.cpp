@@ -590,6 +590,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     //通知需要帧数据的事件槽
     NotifySink(&m_GraySrcFrame);
     ////如果是摄像头模式的话不做光斑检测工作。
+
     m_pPenPosDetector->DoDetect(&m_GraySrcFrame, m_pSensor->GetLensMode());
 
     if (this->m_pVideoPlayer)

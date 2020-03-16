@@ -43,7 +43,7 @@ m_nSampleNumEachRow(0),
 m_nSampleNumEachCol(0),
 m_nSensorID(-1),
 m_nSelectDragIndex(-1),
-m_nSensorCount(0)
+m_nCollectSensorCount(0)
 {
     WNDCLASSEX wnd;
     wnd.cbSize = sizeof wnd;
@@ -363,6 +363,9 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		   ptStart.y = m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.top + (m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.bottom - m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.top)*j /m_nSampleNumEachCol;
 		   ptEnd.x =   m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.right;
 		   ptEnd.y =   m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.top + (m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.bottom - m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.top)*j / m_nSampleNumEachCol;
+		   
+		   ScreenToClient(hWnd, &ptStart);
+		   ScreenToClient(hWnd, &ptEnd);
 		   DrawLine(ps.hdc, ptStart, ptEnd, ROYAL_BLUE);
 		}
         //垂直方向
@@ -372,6 +375,10 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		   ptStart.y = m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.top;
 		   ptEnd.x = m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.left + (m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.right - m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.left)*m / m_nSampleNumEachRow;
 		   ptEnd.y = m_ScreenLightspotSample[this->m_nCurMonitorAreaId].rcMonitor.bottom;
+
+		   ScreenToClient(hWnd, &ptStart);
+		   ScreenToClient(hWnd, &ptEnd);
+
 		   DrawLine(ps.hdc, ptStart, ptEnd, ROYAL_BLUE);
 		}
 
@@ -639,11 +646,15 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		POINT PtPosition;
 		PtPosition.x = LOWORD(lParam);
 		PtPosition.y = HIWORD(lParam);
+		ClientToScreen(hWnd,&PtPosition);
 		m_nSelectDragIndex = -1;
+		int nScreenOffsetX = m_vecSampleSymbols[0].ptCenter.x ;
+		int nScreenOffsetY = m_vecSampleSymbols[0].ptCenter.y ;
+
 		for(unsigned int i = 0; i < m_vecSampleSymbols.size(); i++)
 		{
-			if ( (PtPosition.x >  m_vecSampleSymbols[0].ptCenter.x + m_vecSampleSymbols[i].rcRect.left && PtPosition.x <  m_vecSampleSymbols[0].ptCenter.x + m_vecSampleSymbols[i].rcRect.right)
-				&& (PtPosition.y >m_vecSampleSymbols[0].ptCenter.y + m_vecSampleSymbols[i].rcRect.top && PtPosition.y < m_vecSampleSymbols[0].ptCenter.y + m_vecSampleSymbols[i].rcRect.bottom) )
+			if ( (PtPosition.x > nScreenOffsetX + m_vecSampleSymbols[i].rcRect.left && PtPosition.x < nScreenOffsetX + m_vecSampleSymbols[i].rcRect.right)
+				&& (PtPosition.y >nScreenOffsetY + m_vecSampleSymbols[i].rcRect.top && PtPosition.y < nScreenOffsetY + m_vecSampleSymbols[i].rcRect.bottom) )
 			{
 				m_nSelectDragIndex = i;
 				break;
@@ -656,10 +667,14 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		POINT PtPosition;
 		PtPosition.x = LOWORD(lParam);
 		PtPosition.y = HIWORD(lParam);
+		ClientToScreen(hWnd, &PtPosition);
+		int nScreenOffsetX = m_vecSampleSymbols[0].ptCenter.x;
+		int nScreenOffsetY = m_vecSampleSymbols[0].ptCenter.y;
+
 		if (m_nSelectDragIndex != -1)
 		{
-			if ( (PtPosition.x > m_vecSampleSymbols[0].ptCenter.x + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.left && PtPosition.x < m_vecSampleSymbols[0].ptCenter.x + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.right)
-				&& (PtPosition.y >m_vecSampleSymbols[0].ptCenter.y + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.top && PtPosition.y <m_vecSampleSymbols[0].ptCenter.y + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.bottom) )
+			if ( (PtPosition.x > nScreenOffsetX + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.left && PtPosition.x < nScreenOffsetX + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.right)
+				&& (PtPosition.y >nScreenOffsetY + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.top && PtPosition.y < nScreenOffsetY + m_vecSampleSymbols[m_nSelectDragIndex].rcRect.bottom) )
 			{
 		       if (!m_vecSampleSymbols[m_nSelectDragIndex].bSampled)
 		       {
@@ -818,7 +833,15 @@ BOOL  CCollectSpotSize::StartCollectSpotSize(const RECT* pMonitorAreas, int nAre
         
     }
 	m_nSensorID = nSensorId;
-	m_nSensorCount = nSensorCount;    //sersor的总数
+	if (nSensorId > -1)
+	{
+		//单屏采集
+		m_nCollectSensorCount = 1;
+	}
+	else
+	{  
+		m_nCollectSensorCount = nSensorCount;
+	}
 
 	wcscpy_s(CollectSpotDragPath, lpszbuf);
 
@@ -966,7 +989,7 @@ BOOL  CCollectSpotSize::LoadCollectSpotPoint()
 		{
 			const char* SensorCount = ((TiXmlElement*)pChild)->Attribute("number");
 			int nSensorCount = atoi(SensorCount);
-			if (nSensorCount != m_nSensorCount && nSensorCount != 0)
+			if (nSensorCount != m_nCollectSensorCount && nSensorCount != 0)
 			{
 				return FALSE;
 			}
@@ -1014,7 +1037,7 @@ BOOL  CCollectSpotSize::SaveCollectSpotPoint()
 	oXMLDoc.LinkEndChild(pConfig);
 
 	TiXmlElement * pSersorcount= new TiXmlElement("Sensor");
-	pSersorcount->SetAttribute("number", m_nSensorCount);
+	pSersorcount->SetAttribute("number", m_nCollectSensorCount);
 	pConfig->LinkEndChild(pSersorcount);
 
 

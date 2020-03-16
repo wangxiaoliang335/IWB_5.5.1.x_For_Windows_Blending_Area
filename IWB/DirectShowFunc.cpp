@@ -792,7 +792,7 @@ BOOL IRCUTSwtich(IBaseFilter *pCaptureFilter,BOOL bOn, int PID, int VID)
 		     do 
 		     {
 			     if (bOn)
-			     {				
+			     {	
 				      hr = ptrAMVideoProcAmp->Set(VideoProcAmp_Gain, 0x44aa, VideoProcAmp_Flags_Manual); //////*0x44aa*//* VideoProcAmp_Gain
 				      if(FAILED(hr))
 				      {

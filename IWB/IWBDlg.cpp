@@ -2021,7 +2021,6 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             //在检测到新设备时重新读取加密狗
                             theApp.ReadUSBKey();
 							UpdateInfoAboutDongle();
-
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
                         }
                     }

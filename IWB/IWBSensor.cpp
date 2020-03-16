@@ -537,6 +537,13 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
 
         EDeviceTouchType eTouchType;
         eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+		TVideoProcAmpProperty  camer;
+		m_oVideoPlayer.GetCameraParams(camer);
+		LOG_INF("Prop_VideoProcAmp_Brightness =%d, Prop_VideoProcAmp_Contrast =%d,Prop_VideoProcAmp_Gamma=%d,Prop_VideoProcAmp_Satuation=%d..",
+			     camer.Prop_VideoProcAmp_Brightness,
+			     camer.Prop_VideoProcAmp_Contrast,
+			     camer.Prop_VideoProcAmp_Gamma,
+			     camer.Prop_VideoProcAmp_Satuation);
 
         switch (eTouchType)
         {
@@ -558,14 +565,6 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
            default:
                break;
         }
-//      if(eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//      {
-//          m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams);
-//      }
-//      else
-//      {
-//          m_oVideoPlayer.SetCameraParams(lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams);
-//      }
 
         m_oVideoPlayer.ClearOSDText(E_OSDTEXT_TYPE_GUIDE_BOX);
         //合上滤光片
@@ -1303,7 +1302,6 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
 			if (!GenerateMaskFrameWithCalibrateData(maskFrame, calibData.allMonitorCalibData[0].rcMonitor))
 			{
                  maskFrame = m_oManualCalibrator.GetScreenAreaMask();
-                 LOG_INF("maskFrameWidth=%d，maskFrameHeight=%d", maskFrame.Width(), maskFrame.Height());
                  const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
                  //适当腐蚀屏蔽区，扩到屏幕区域
