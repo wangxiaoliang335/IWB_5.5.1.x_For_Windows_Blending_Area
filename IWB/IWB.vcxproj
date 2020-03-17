@@ -217,6 +217,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalOptions>/wd4430 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -927,6 +928,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RemoteRelease|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TouchTester.cpp" />
     <ClCompile Include="UpdateFirmwareDlg.cpp" />
     <ClCompile Include="USBDeviceList.cpp" />
     <ClCompile Include="VideoPlayer.cpp" />
@@ -1045,6 +1047,7 @@
     <ClInclude Include="TinyXML\tinystr.h" />
     <ClInclude Include="TinyXML\tinyxml.h" />
     <ClInclude Include="TouchScreenDblChecker.h" />
+    <ClInclude Include="TouchTester.h" />
     <ClInclude Include="UpdateFirmwareDlg.h" />
     <ClInclude Include="USBCameraDeviceList.h" />
     <ClInclude Include="USBDevDetector.h" />

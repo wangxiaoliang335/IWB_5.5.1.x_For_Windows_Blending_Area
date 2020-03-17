@@ -12,7 +12,8 @@ public:
     m_ExptectedBrightness(nExpectedBrightness),
 		m_nIndex(0),
         m_fpControl(fpControl),
-        m_lpCtxData(lpCtxData)
+        m_lpCtxData(lpCtxData),
+		m_nFrameCount(0)
     {
 
     }

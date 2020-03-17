@@ -81,7 +81,15 @@ BOOL CGestureSettingDlg::OnInitDialog()
     //从配置文件中读取GLBoard手势配置
     m_isGLBGRPeritted = g_oWGRConfig.IsGLBoardGRPermit();
 
-
+	if (theApp.GetUSBKeyTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+	{
+		GetDlgItem(IDC_EDIT_PBGRRATE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_EDIT_ERASERRRATE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CHECK_SALLWGESTURE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CHECK_SALLGLBGESTURE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_BUTTON_WGRMORE)->EnableWindow(FALSE);
+		GetDlgItem(IDC_BUTTON_GLBGRMORE)->EnableWindow(FALSE);
+	}
 
     UpdateData(FALSE);
 

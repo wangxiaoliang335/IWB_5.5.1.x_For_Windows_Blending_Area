@@ -125,7 +125,8 @@ public:
     virtual BOOL GetScreenCoord_Aug(const POINT* pImgPts,  const RECT* prcBounds, int nPtNumber, POINT* pScreenPts, int nMonitorId = 0) = 0;
     */
 
-
+	//@功能:将世界坐标系中的3维坐标映射维相机图片中的点
+	virtual BOOL MapWorldToImage(const TPoint3D* ptWorld, int nPtNumber, TPoint2D* ptImage, int nMonitorId = 0) = 0;
 
     /*
     //@功能:根据摄像头的视频坐标计算得出屏幕坐标
@@ -361,6 +362,21 @@ public:
     }
 
 
+    virtual BOOL MapWorldToImage(const TPoint3D* ptWorld, int nPtNumber, TPoint2D* ptImage, int nMonitorId)
+    {
+        if (nMonitorId < 0 || size_t(nMonitorId) >= m_vecCameraModels.size()) return FALSE;
+
+        BOOL bRet = m_vecCameraModels[nMonitorId].MapWorldToImage(ptWorld, nPtNumber, ptImage);
+        //if (bRet)
+        //{
+        //    for (int i = 0; i < nPtNumber; i++)
+        //    {
+        //        ptImage[i].d[0] /= m_tCMOSChipSpec.pixel_size;
+        //        ptImage[i].d[1] /= m_tCMOSChipSpec.pixel_size;
+        //    }
+        //}
+        return bRet;
+    }
 
     //@功能:计算自动校正时摄像头接收可见光,无红外滤光片和正常使用时有红外滤光片,通过940nm波长时,光斑的偏移距离
     TVector2D GetRefractionOffset(const CGenericCameraModel& camera, const TPoint2D& ptObj)
@@ -502,6 +518,7 @@ public:
 
 protected:
     std::vector<CGenericCameraModel> m_vecCameraModels     ;//相机投影模型数组, 每一个实际的屏幕对应一个模型。
+
 #ifdef USE_CYLINDER_BULB_MODEL
      std::vector<CylinderBulbModel>   m_vecCylinderBulbModel;//圆柱形灯泡模型。
 #endif
@@ -618,6 +635,21 @@ public:
     }
 
 
+	virtual BOOL MapWorldToImage(const TPoint3D* ptWorld, int nPtNumber, TPoint2D* ptImage, int nMonitorId)
+	{
+		if (nMonitorId < 0 || size_t(nMonitorId) >= m_vecCameraModels.size()) return FALSE;
+
+		BOOL bRet = m_vecCameraModels[nMonitorId].MapWorldToImage(ptWorld, nPtNumber, ptImage);
+		//if (bRet)
+		//{
+		//    for (int i = 0; i < nPtNumber; i++)
+		//    {
+		//        ptImage[i].d[0] /= m_tCMOSChipSpec.pixel_size;
+		//        ptImage[i].d[1] /= m_tCMOSChipSpec.pixel_size;
+		//    }
+		//}
+		return bRet;
+	}
 
     //@功能:返回校正方程参数
     virtual const TCalibParams* GetCalibParams()const

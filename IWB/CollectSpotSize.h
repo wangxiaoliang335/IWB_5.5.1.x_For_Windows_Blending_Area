@@ -60,6 +60,7 @@ typedef struct
     BOOL     bSampled       ;//已采样标志
     POINT ptCenter          ;//双线性插值是使用的坐标,为了更准确地进行双线性插值，
                              //我们将靠近屏幕边界的采样位置挪到屏幕边界处。
+	RECT    rcRect          ; //这个点所在的区域
 
 }TSampleSymbol;
 
@@ -121,7 +122,7 @@ public:
     //@参数:pMonitors, 屏幕区域数组
     //      nMonitorCount, 屏幕个数
     //BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, ESampleCollectPattern ePattern = E_SAMPLE_COLLECT_PATTERN_9_Points);
-    BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol,int nSensorId);
+    BOOL  StartCollectSpotSize(const RECT* pMonitorAreas, int nAreaCount, HWND hNotifyWnd, int nSampleNumEachRow, int nSampleNumEachCol,int nSensorId, TCHAR *lpszbuf, int nSensorCount);
 
     
 
@@ -149,6 +150,8 @@ public:
     void OnDeviceMissing();
     //>>
 
+	BOOL LoadCollectSpotPoint();
+	BOOL SaveCollectSpotPoint();
 
 protected:
 	BOOL Create();                          //创建窗体
@@ -163,7 +166,7 @@ protected:
 	static LRESULT CALLBACK WinProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam);   //回调函数
 	LRESULT  InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);       //运行函数
 	void  DrawCross(HDC hDC, const POINT& ptCenter, COLORREF color,  const SIZE& size); //画出点击点
-
+	void  DrawLine(HDC hDC, const POINT& ptStart ,const POINT& ptEnd, COLORREF color);
 public:
 
        HWND      m_hWnd;
@@ -206,6 +209,7 @@ protected:
 	int                               m_nSampleNumEachCol ;//每列的采样次数
     int                               m_nCurrentSampleNo  ;//当前校正符号编号,从0开始
 	std::vector<TSampleSymbol>        m_vecSampleSymbols  ;//校正符号信息
+
 	//std::vector<POINT>                m_vecStandardCross;//标准的坐标点
 	//std::vector<LightSpotSampleSize>  m_vecMaxSpot      ;//得到设置的点的坐标和面积。
 
@@ -218,6 +222,9 @@ protected:
 
 	std::vector<RECT>                m_vecMonitorAreas    ;//屏幕显示器信息
     int                              m_nCurMonitorAreaId  ;//当前显示器Id
+
+	int                             m_nSelectDragIndex    ;//选择拖拽的点的索引
+	std::vector<POINT>              m_vecConfigCross;//标准的坐标点
 
 	enum E_SPOTSAMPLING_STATE
 	{
@@ -237,6 +244,9 @@ protected:
 
     int    m_nLightSpotDitherOffsetX;//水平方向的抖动偏移距离
     int    m_nLightSpotDitherOffsetY;//垂直方向的抖动偏移距离
+
+	TCHAR     CollectSpotDragPath[MAX_PATH];
+	int       m_nCollectSensorCount;                 //需要采集光斑的sensor个数
 
 	public:
 	  static SpotManualCollectInfoManager m_oSpotManualCollectInfoManager;

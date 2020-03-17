@@ -162,6 +162,7 @@ public:
 
         SetWindowLong(m_hWnd, GWL_WNDPROC, (LONG)MF2GF<WNDPROC>(&CAutoCalibrateWnd::InternalWndProc, this));
 
+		m_rcPositionWnd = rcPosition;
         return bRet;
     };
 
@@ -259,6 +260,11 @@ public:
 
     }
 
+	BOOL GetWindowsRect(RECT& rcMonitor)
+	{
+		rcMonitor = m_rcPositionWnd;
+		return TRUE;
+	}
 
 
 protected:
@@ -271,4 +277,6 @@ protected:
     UINT m_uTimerID;//
     BOOL m_bTimeout;//≥¨ ±±Í÷æ
 	LONGLONG m_liLastTickCount;
+
+	RECT m_rcPositionWnd;
 };

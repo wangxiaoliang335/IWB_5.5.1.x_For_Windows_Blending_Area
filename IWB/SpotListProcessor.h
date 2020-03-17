@@ -215,7 +215,7 @@ protected:
     static CVirtualHID m_oVirtualHID;//  
 
     bool  m_bLastHIDOwnnerAfterGR;     //上次识别后，获取VirtualHID控制权的是否是本类的实例
-    bool  m_bIsSmartPenReset;    
+   // bool  m_bIsSmartPenReset;    
 
     //<<debug 
     //调试函数
@@ -231,6 +231,7 @@ protected:
     //正在触发手势标志
     BOOL m_bIsTriggeringGuesture;
 	BOOL m_bEnableStrokeInterpolateTemp;
+
 };
 
 ///////////////////////////////////////////////////////////////////////////

@@ -226,6 +226,8 @@ public:
 
 	  BOOL IsEnableOnlineScreenArea();
 
+	  BOOL GenerateMaskFrameWithCalibrateData(CImageFrame& maskFrame, const RECT& rect, int nMonitorId = 0);
+	  void GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfElements);
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;
@@ -282,7 +284,7 @@ protected:
   //光斑采集对象
 //  CCollectSpotSize   m_wndLightSpotSampling;
 
-  ISpotListProcessor* m_pSpotListProcessor;
+//  ISpotListProcessor* m_pSpotListProcessor;
 
   //传感器镜头模式
   ESensorLensMode m_eLensMode;

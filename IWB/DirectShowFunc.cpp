@@ -786,29 +786,24 @@ BOOL IRCUTSwtich(IBaseFilter *pCaptureFilter, BOOL bOn, int PID, int VID)
         CComPtr <IAMVideoProcAmp> ptrAMVideoProcAmp;
 
         HRESULT hr = pCaptureFilter->QueryInterface(IID_IAMVideoProcAmp, (void**)&ptrAMVideoProcAmp);
-
-        if (hr == S_OK)
-        {
-            do
-            {
-                if (bOn)
-                {
-                    hr = ptrAMVideoProcAmp->Set(VideoProcAmp_Gain, 0x44aa, VideoProcAmp_Flags_Manual); //////*0x44aa*//* VideoProcAmp_Gain
-                    if (FAILED(hr))
-                    {
-                        bRet = FALSE;
-                    }
-                }
-                else
-                {
-                    hr = ptrAMVideoProcAmp->Set(VideoProcAmp_Gain, 0x33aa, VideoProcAmp_Flags_Manual); /////// /*0x33aa*//*VideoProcAmp_Gain
-                    if (FAILED(hr))
-                    {
-                        bRet = FALSE;
-                    }
-                }
-
-            } while (0);
+		if (hr == S_OK)
+		{
+			if (bOn)
+			{
+				hr = ptrAMVideoProcAmp->Set(VideoProcAmp_Gain, 0x44aa, VideoProcAmp_Flags_Manual); //////*0x44aa*//* VideoProcAmp_Gain
+				if (FAILED(hr))
+				{
+					bRet = FALSE;
+				}
+			}
+			else
+			{
+				hr = ptrAMVideoProcAmp->Set(VideoProcAmp_Gain, 0x33aa, VideoProcAmp_Flags_Manual); /////// /*0x33aa*//*VideoProcAmp_Gain
+				if (FAILED(hr))
+				{
+					bRet = FALSE;
+				}
+			}
         }
         return bRet;
     }

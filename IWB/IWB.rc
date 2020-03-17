@@ -202,7 +202,7 @@ BEGIN
         BEGIN
             MENUITEM "Start",                       ID_SENSORCTXMENU_DRAWMASKFRAME_START
             MENUITEM "Disable Preset ScreenArea",   ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE
-            MENUITEM "Clear",                        ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR
+            MENUITEM "Clear",                       ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR
         END
         MENUITEM SEPARATOR
         MENUITEM "Installation wizard",         ID_SENSORCTXMENU_INSTALL_TIP
@@ -233,11 +233,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "FileDescription", "Laser Touch Calibration System "
-            VALUE "FileVersion", "5.4.0.8"
+            VALUE "FileVersion", "5.4.0.11"
             VALUE "InternalName", "Optical Pen"
             VALUE "OriginalFilename", "OpticalPen.exe"
             VALUE "ProductName", "Laser Touch  Calibration System"
-            VALUE "ProductVersion", "5.4.0.8"
+            VALUE "ProductVersion", "5.4.0.11"
         END
     END
     BLOCK "VarFileInfo"
@@ -434,7 +434,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
 IDD_OPTICALPEN_DIALOG DIALOGEX 0, 0, 528, 350
 STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Easi Gloview Laser Touch Calibration Program (Version 5.4.0.8)"
+CAPTION "Easi Gloview Laser Touch Calibration Program (Version 5.4.0.11)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 END
@@ -697,7 +697,7 @@ BEGIN
     LTEXT           "Set the proportion of the spot(20%~80%)",IDC_STATIC,12,20,138,8
     EDITTEXT        IDC_EDIT_SPOTPROPORTION,259,18,65,14,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_SPOTPROPORTION,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,325,17,11,15
-    LTEXT           "Brightness coefficient(0~250)",IDC_STATIC,12,40,96,8
+    LTEXT           "Brightness coefficient(-64~255)",IDC_STATIC,12,40,103,8
     EDITTEXT        IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT,259,39,65,14,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_SET_AUTOCALIBRATION_BRIGHTNESS,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,325,38,11,15
@@ -753,7 +753,7 @@ CAPTION "Gloview Laser Touch Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,211,10,20,20
-    LTEXT           "Gloview Laser Touch Calibration System 5.4.0.8",IDC_STATIC,8,10,148,8,SS_NOPREFIX
+    LTEXT           "Gloview Laser Touch Calibration System 5.4.0.11",IDC_STATIC,8,10,148,8,SS_NOPREFIX
     LTEXT           "EASI Tech Ltd. Copyright (C) 2017/07/25--2018/07/25",IDC_STATIC,8,21,200,8
     DEFPUSHBUTTON   "Ok",IDOK,171,72,50,16,WS_GROUP
     LTEXT           "Shanghai Easi Computer Technology Co.Ltd.",IDC_STATIC,8,32,140,8
@@ -770,7 +770,7 @@ CAPTION "Laser Touch Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,217,2,18,18
-    LTEXT           "Laser Touch Calibration System 5.4.0.8",IDC_STATIC,8,10,158,8,SS_NOPREFIX
+    LTEXT           "Laser Touch Calibration System 5.4.0.11",IDC_STATIC,8,10,158,8,SS_NOPREFIX
     DEFPUSHBUTTON   "Ok",IDOK,77,64,50,16,WS_GROUP
     LTEXT           "Copyright (C) 2017/07/25 --- 2018/07/25",IDC_STATIC,9,27,225,8
 END

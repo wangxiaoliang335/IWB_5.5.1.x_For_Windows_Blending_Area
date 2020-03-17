@@ -721,7 +721,6 @@ void CManualCalibrateWnd::UpdateScreenAreaMask()
         
     }
 
-
     //提取最右边一列校正点索引号
     for(int row = nLastRowNo; row > 0; row --)
     {

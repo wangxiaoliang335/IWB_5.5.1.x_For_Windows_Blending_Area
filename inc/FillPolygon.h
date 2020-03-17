@@ -3,6 +3,23 @@
 //分析:N个顶点组成的多边形,有N个线段。每条扫描线顶多和N个线段相交。
 //     需要记录每行水平扫描线与各个线段的交点。
 //
+inline void DebugHeap2()
+{
+	std::vector<int> vecTemp;
+	vecTemp.resize(10000);
+
+	DWORD dwFlags = 0x0;
+
+	BOOL bRet = HeapValidate(GetProcessHeap(), dwFlags, NULL);
+
+	vecTemp[0] = 2;
+
+	if (!bRet)
+	{
+		::DebugBreak();
+	}
+
+}
 class CPolygonScanLineInfo
 {
 public:
@@ -41,13 +58,12 @@ public:
                 m_LineStatistic = NULL;
             }
 
-            m_nHeight = nImageHeight;
-            m_LineStatistic = new int[m_nHeight];
+            m_LineStatistic = new int[nImageHeight];
 
         }
 
         //初始化
-        memset(m_LineStatistic, 0, sizeof(int)*m_nHeight);
+        memset(m_LineStatistic, 0, sizeof(int)*nImageHeight);
 
         if(nImageHeight != m_nHeight || nPolygonVetexNum != m_nMaxPtPerScanLine)
         {
@@ -57,11 +73,13 @@ public:
                 m_pHorzPos = NULL;
             }
             m_pHorzPos = new int[nImageHeight*nPolygonVetexNum];
-            m_nMaxPtPerScanLine = nPolygonVetexNum;
+         
+			m_nMaxPtPerScanLine = nPolygonVetexNum;
+			m_nHeight           = nImageHeight;
+
         }
-
+		
         memset(m_pHorzPos, 0, sizeof(int)*nImageHeight*nPolygonVetexNum);
-
     }
 
 
@@ -132,6 +150,7 @@ protected:
 };
 
 
+
 //@功能:在灰度图片中填充多边形
 //@参数:pCanvas, 指向画布的指针
 //      nWidth, 画布宽度
@@ -142,11 +161,24 @@ protected:
 //      bDrawBorder, 绘制边界标志
 inline void FillPolygon(BYTE* pCanvas, int nWidth, int nHeight, const POINT* pVertices, int nVertexNum, BYTE gray, BOOL bDrawBorder)
 {
-    static CPolygonScanLineInfo edgePointInfo;//扫描线信息
+     //static CPolygonScanLineInfo edgePointInfo;//扫描线信息，静态变量避免重复初始化，提高速度。
+	 CPolygonScanLineInfo edgePointInfo;//扫描线信息, 堆栈变量，便于多线程使用。
+	 static HANDLE s_oldHeap = (HANDLE)-1;
+
+	 if (s_oldHeap != GetProcessHeap())
+	 {
+		 if (s_oldHeap != (HANDLE)-1)
+		 {
+			 ::DebugBreak();
+		 }
+		 s_oldHeap = GetProcessHeap();
+	 } 
+
 
     edgePointInfo.SetSize(nHeight, nVertexNum);
 
     if(nVertexNum < 3) return;//顶点数目<3, 立即返回
+
 
     POINT  nextSegmentEndVertex,curSegmentStartVertex, curSegmentEndVertex;
 
@@ -312,6 +344,7 @@ inline void FillPolygon(BYTE* pCanvas, int nWidth, int nHeight, const POINT* pVe
             }
         }
     }//for
+
 
 
 }

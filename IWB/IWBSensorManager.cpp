@@ -944,7 +944,7 @@ void CIWBSensorManager::OnIWBSensorAutoCalibrateDone(BOOL bSuccess, BOOL bSimula
             
         }//while
          
-         for(unsigned int i=0; i<m_vecCalibrateResults.size(); i++)
+        for(unsigned int i=0; i<m_vecCalibrateResults.size(); i++)
         {
             m_vecSensors[i]->OnAutoCalibrateDone(m_vecCalibrateResults[i]);
         }
@@ -1141,13 +1141,24 @@ void CIWBSensorManager::StartLightSpotSampling(HWND hNotifyWindow, int nSensorID
 	else
 	{
         m_nCurrentSensorID = 0;
+
+		//所有传感器禁用光笔
+		for (size_t i = 0; i<m_vecSensors.size(); i++)
+		{
+			m_vecSensors[i]->EnableOpticalPen(FALSE);
+		}
 	}
     RECT rcArea;
     m_vecSensors[m_nCurrentSensorID]->GetAttachedScreenArea(rcArea);
-    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, hNotifyWindow, 3,3,nSensorID);
+
+	TCHAR szProfileFullPath[MAX_PATH];
+	m_vecSensors[m_nCurrentSensorID]->GetCollectSpotShowPath(szProfileFullPath,_countof(szProfileFullPath));
+
+    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, hNotifyWindow, 3,3,nSensorID, szProfileFullPath, m_vecSensors.size());
 
     //传感器进入光斑采样状态
     m_vecSensors[m_nCurrentSensorID]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);
+
 
     m_hNotifyWindow = hNotifyWindow;
 }
@@ -1166,11 +1177,21 @@ void CIWBSensorManager::OnIWBSensorLightSpotSamplingDone(BOOL bSuccess, int nSen
 	}
 
     m_nCurrentSensorID  ++;
-    if (m_nCurrentSensorID == m_vecSensors.size()) return;
-
+	if (m_nCurrentSensorID == m_vecSensors.size())
+	{
+		//所有传感器禁用光笔
+		for (size_t i = 0; i<m_vecSensors.size(); i++)
+		{
+			m_vecSensors[i]->EnableOpticalPen(TRUE);
+		}
+		return;
+	}
     RECT rcArea;
     m_vecSensors[m_nCurrentSensorID]->GetAttachedScreenArea(rcArea);
-    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, m_hNotifyWindow, 3, 3, nSensorId);
+	TCHAR szProfileFullPath[MAX_PATH];
+	m_vecSensors[m_nCurrentSensorID]->GetCollectSpotShowPath(szProfileFullPath, _countof(szProfileFullPath));
+
+    m_wndLightSpotSampling.StartCollectSpotSize(&rcArea, 1, m_hNotifyWindow, 3, 3, nSensorId, szProfileFullPath, m_vecSensors.size());
 
     //传感器进入光斑采样状态
     m_vecSensors[m_nCurrentSensorID]->StartLightSpotSampling(m_wndLightSpotSampling.m_hWnd);

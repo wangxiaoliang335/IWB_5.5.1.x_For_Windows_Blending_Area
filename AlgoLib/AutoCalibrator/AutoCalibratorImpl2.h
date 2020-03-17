@@ -129,7 +129,7 @@ inline void FillBoard(HWND hWnd, COLORREF clr, const RECT* pRect=NULL)
 class CStaticMaskFinder
 {
 public:
-        CStaticMaskFinder ()
+        CStaticMaskFinder()
             :
         m_cMaskThreshold(0x080),
         m_nCountDown(0),
@@ -182,10 +182,7 @@ public:
             else
             {
                 m_nCountDown = 25;
-            }
-
-
-            
+            }      
         }
 
 
@@ -529,11 +526,9 @@ protected:
     static const DWORD  BLACK_BOARD_SAMPLE_START_TIME = STAGE_MINIMUM_WAIT_TIME * 2;//开始采样黑板时需等待的时间
     static const DWORD  BLACK_BOARD_SAMPLE_END_TIME   = STAGE_MINIMUM_WAIT_TIME * 3;//结束采样黑板时需等待的时间
 
-
     ECalibDebugLevel m_eDebugLevel;//调试级别
     
 };
-
 
 
 inline void AccumulateImageFrame(const CImageFrame& srcFrame, const CImageFrame& maskFrame, CWordFrame& destFrame)
@@ -802,7 +797,6 @@ public:
 
      void OnDeviceMissing();
 
-
     //@功能:子区域校正
     //@参数:
     //     nExpectedMarkerNumber,期望找到的校正点的数目
@@ -842,7 +836,10 @@ public:
     
     //@功能:模拟校正
     BOOL DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNotifyWnd,  UINT uCx, UINT uCy, BYTE cBrightness, E_AutoCalibratePattern eGridsNumber=E_CALIBRATE_PATTERN_11_COLS);
-    struct TNeighbourVector
+    
+	CalibrateAlgo m_oCalibrateAlgo;
+
+	struct TNeighbourVector
     {
         int nQaudrant;//方位所在象限编号
         LONG lDx ;
@@ -966,8 +963,6 @@ public:
             }//foreach col
         }//foreach row
     }
-
-
 
     //@功能:预处理正图案画面,使得画面中的黑白对比更加强烈
     //@参数:patternFrame, 源图
@@ -1178,9 +1173,6 @@ public:
         CDib m_oDib;
     };
 
-
-
-
     static ULONG _stdcall SimulatedCalibrateProc(LPVOID lpCtx);
     //{
 
@@ -1300,7 +1292,6 @@ public:
 
     //}
 
-
     //@功能:返回8位格式的屏蔽位图
     virtual const CImageFrame& GetMaskFrame() const
     {
@@ -1308,6 +1299,9 @@ public:
         //多屏模式下，返回所有屏幕的屏蔽图合成的总屏蔽图
         return this->m_oAllMonitorMaskFrame;
     }
+
+	//@功能:返回8位格式的静态屏蔽图
+	virtual  const CImageFrame& GetMaskFinderFrame(CImageFrame& maskframe) ;
 
     //@功能:返回光点位置到屏幕编号的映射数组
     virtual const CImageFrame& GetScreenMap() const

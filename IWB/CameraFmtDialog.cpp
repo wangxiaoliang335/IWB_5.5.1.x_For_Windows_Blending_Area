@@ -86,6 +86,15 @@ BOOL CameraFmtDialog::OnInitDialog()
 	{
 	    ((CButton*)GetDlgItem(IDC_CHECK_HID))->SetCheck(g_tSysCfgData.globalSettings.bTouchHIDMode);
 	    ((CButton*)GetDlgItem(IDC_CHECK_TUIO))->SetCheck(g_tSysCfgData.globalSettings.bTouchTUIOMode);
+		if(!g_tSysCfgData.globalSettings.bTouchTUIOMode)
+		{
+			GetDlgItem(IDC_IPADDRESS_IP)->EnableWindow(false);
+			GetDlgItem(IDC_EDIT_PORT)->EnableWindow(false);
+		}
+	}
+	if (!g_tSysCfgData.globalSettings.bModifyResolution)
+	{
+		GetDlgItem(IDC_CAMERAFMT_COMBO)->EnableWindow(false);
 	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control

@@ -279,6 +279,9 @@
     <ClCompile Include="BaseStoneMarker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TouchTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt">
@@ -602,6 +605,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BaseStoneMarker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TouchTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
