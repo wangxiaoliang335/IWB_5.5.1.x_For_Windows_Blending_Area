@@ -284,7 +284,7 @@ protected:
   //光斑采集对象
 //  CCollectSpotSize   m_wndLightSpotSampling;
 
-  ISpotListProcessor* m_pSpotListProcessor;
+//  ISpotListProcessor* m_pSpotListProcessor;
 
   //传感器镜头模式
   ESensorLensMode m_eLensMode;

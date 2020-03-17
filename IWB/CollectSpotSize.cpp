@@ -259,7 +259,7 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
 	////前面是初始化状态。现在需要根据配置文件中的坐标值把显示的坐标值进行修改，如果没有配置文件就按照原来的执行
 	if (LoadCollectSpotPoint())
 	{
-		for(int i = 0 ; i <m_vecConfigCross.size() ;i++ )
+		for(unsigned int i = 0 ; i <m_vecConfigCross.size() ;i++ )
 		{
 			TSampleSymbol& symbol = m_vecSampleSymbols[i];
 
@@ -344,7 +344,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
         //if (g_oMouseEventGen.GetCollectSpotMode() == COLLECTSPOT_MODE_COLLECT)
         //if(m_eSpotSamplingMode == COLLECTSPOT_MODE_COLLECT)
-		for(int k = 0 ; k < m_vecSampleSymbols.size() ;k++)
+		for(unsigned int k = 0 ; k < m_vecSampleSymbols.size() ;k++)
 		{
 			POINT ptDisplay = m_vecSampleSymbols[k].ptDisplay;
 			ScreenToClient(hWnd, &ptDisplay);
@@ -687,7 +687,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		          InvalidateRect(m_hWnd, NULL, TRUE);
 		      }
 			}
-			m_nSelectDragIndex == -1;
+			m_nSelectDragIndex = -1;
 		}
 	}
     else if(uMsg == WM_RBUTTONDOWN)        //单击鼠标右键
@@ -1045,7 +1045,7 @@ BOOL  CCollectSpotSize::SaveCollectSpotPoint()
 	pLensConfig->SetAttribute("count", m_vecConfigCross.size());
 	pConfig->LinkEndChild(pLensConfig);
 
-	for (int i = 0; i < m_vecConfigCross.size(); i++)
+	for (unsigned int i = 0; i < m_vecConfigCross.size(); i++)
 	{
 		TiXmlElement * pElement = new TiXmlElement("Point");
 		pElement->SetDoubleAttribute("X", m_vecConfigCross[i].x );

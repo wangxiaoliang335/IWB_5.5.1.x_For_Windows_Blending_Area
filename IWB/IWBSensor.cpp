@@ -1109,14 +1109,11 @@ void  CIWBSensor::StartAutoMasking(HWND hNotifyWnd)
 
 }
 
-
-
 //@功能:在视频画面中显示错误信息
 void CIWBSensor::ShowErrInfo(LPCTSTR lpszInfo)
 {
     m_oVideoPlayer.SetDisplayInfo(lpszInfo);
 }
-
 
 //@功能:传感器自动校正完成后的事件响应函数
 //@参数:bSuccess, 成功/失败标志
@@ -1174,8 +1171,9 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
 			CImageFrame  maskFrame ;
 			unsigned char init_value = 0x00;
 			maskFrame.SetSize(m_oAutoCalibrator.GetMaskFrame().Width(), m_oAutoCalibrator.GetMaskFrame().Height(),1,&init_value);
-
-			if (GenerateMaskFrameWithCalibrateData(maskFrame, pCalibData->allMonitorCalibData[0].rcMonitor) )
+			
+			RECT Mrect = m_oPenPosDetector.GettSpotListProcessor()->GetVisibleScreenArea(m_nID, pCalibData->allMonitorCalibData[0].rcMonitor);
+			if ( GenerateMaskFrameWithCalibrateData(maskFrame, Mrect))
 			{
 				//把计算好的屏蔽图和动态静态屏蔽图进行与运算。
 			    CImageFrame AllMaskFrame = m_oAutoCalibrator.GetMaskFinderFrame(maskFrame);
@@ -1299,7 +1297,10 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
 			unsigned char init_value = 0x00;
 			maskFrame.SetSize(m_oManualCalibrator.GetScreenAreaMask().Width(), m_oManualCalibrator.GetScreenAreaMask().Height(), 1, &init_value);
 			///如果计算出来的屏蔽图有错误的话，那么就按以前找屏蔽图的方式。
-			if (!GenerateMaskFrameWithCalibrateData(maskFrame, calibData.allMonitorCalibData[0].rcMonitor))
+
+			RECT Mrect = m_oPenPosDetector.GettSpotListProcessor()->GetVisibleScreenArea(m_nID, calibData.allMonitorCalibData[0].rcMonitor);
+
+			if (!GenerateMaskFrameWithCalibrateData(maskFrame, Mrect))
 			{
                  maskFrame = m_oManualCalibrator.GetScreenAreaMask();
                  const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];

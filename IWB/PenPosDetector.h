@@ -418,6 +418,11 @@ public:
             m_pSpotListProcessor = pSpotListProcessor;
       }
 
+	  ISpotListProcessor* GettSpotListProcessor()
+	  {
+		  return m_pSpotListProcessor;
+	  }
+
 
      //<<校正相关函数
     //added by toxuke@gmail.com, 2014/11/21
