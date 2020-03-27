@@ -1,6 +1,6 @@
 #pragma once
-static const int            GLBOARDMAXPENNUM    = 10;
-static const int            GLBOARDMAXERASERNUM = 10;
+static const int            GLBOARDMAXPENNUM    = 30;
+static const int            GLBOARDMAXERASERNUM = 30;
 
 /*
  @功能：多笔模式下的手势识别，多笔模式下有两种手势，多笔和多橡皮擦，当传入的光斑大于一定阈值时，视为橡皮擦，否则为笔；

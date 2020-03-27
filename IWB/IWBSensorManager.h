@@ -279,6 +279,7 @@ public:
 	BOOL IsEnableOnlineScreenArea();
 
 protected:
+    void UpdateCalibrateToleranceDistribute();
     void UpdateVideoLayout(const RECT& rcDisplayArea);
 	void DrawSelectBound(HWND hWnd);
 	static const int SELECT_BOUND_WIDTH = 5;

@@ -428,7 +428,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                  //搜索编号为0的笔信息
                 for (int i = 0; i < nPenCount; i++)
                 {
-                   if (pPenInfos[i].uId == 0)
+                   if (!pPenInfos[i].bIgnored && pPenInfos[i].uId == 0 )
                    {
                        m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
                        break;
@@ -442,7 +442,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                      //搜索编号为0的笔信息
                      for (int i = 0; i < nPenCount; i++)
                      {
-                        if (pPenInfos[i].uId == 0)
+                        if (!pPenInfos[i].bIgnored && pPenInfos[i].uId == 0)
                         {
                            InputTouchPoints(&pPenInfos[i], 1);
                            break;
@@ -508,6 +508,10 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
     for (int i = 0; i < nPenCount; i++)
     {
+        if (aryContactInfos[i].bIgnored)
+        {
+            continue;
+        }
 
         m_TouchPoints[i].ContactId = aryContactInfos[i].uId;
         m_TouchPoints[i].bStatus = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN ? TIP_DOWN : TIP_UP;

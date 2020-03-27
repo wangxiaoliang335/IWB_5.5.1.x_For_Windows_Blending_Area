@@ -1,4 +1,5 @@
 #pragma once
+#include "ToleranceDistribute.h"
 //笔迹滤波器
 //X(smooth_new) = λ * X(smooth_last) + (1 - λ)*X(new)
 //滤波系数 λ∈[0,1], λ越大，滤波效果越明显
@@ -17,7 +18,7 @@
 //速度越大，采用越小的滤波系数；速度越小，采用越大的滤波系数
 //如何计算速度呢?
 //因为CPU的处理时间的变化不定，导致帧率时快时慢, 因此采用
-//移动距离的移动平均距离来标示速度。
+//移动距离的移动平均距离来表示速度。
 //调制系数
 //Beta(x) =  a/(a+x)
 template <int MAX_STROKE_NUM>
@@ -57,8 +58,15 @@ public:
         m_nMaxDistance *= (HISTORY_DISTANCE_LENGTH >>1);
 
         InitFilter();
+
+        m_oToleranceDistribute.SetScreenSize(szLogicalDimension);
     }
 
+
+    CToleranceDistribute& GetToleranceDistribute()
+    {
+        return m_oToleranceDistribute;
+    }
 
     //@功能:对输入的笔迹进行滤波处理
     //@参数:pContactInfo, 输入/输出参数, 触控点信息
@@ -83,22 +91,43 @@ public:
 
                 if(pContactInfo->ePenState == E_PEN_STATE_DOWN)
                 {
+                    //解决:"相机如果前后两帧捕获到一小一大两个光斑，右键功能很难触发"的问题
+                    pContactInfo->bIgnored = TRUE;//第一次按下,跳过当前帧
+#ifdef _DEBUG
+                    AtlTrace(_T("=======Skip First Frame of Pen %d.=====\n"), pContactInfo->uId);
 
-                    filter.m_eFilterState      = E_FILTER_STATE_DN;
-                    filter.m_LastSmoothPoint.d[0] = double(contactInfo.pt.x);
-                    filter.m_LastSmoothPoint.d[1] = double(contactInfo.pt.y);
-
-                    filter.m_LastInputPoint  = filter.m_LastSmoothPoint;
-                    filter.m_uRepeatSampleCount = 0;
-
-                    filter.m_nHistoryDistanceLength = 0;
-                    filter.m_dbTotalDistance = 0.0;
+#endif
+                    filter.m_eFilterState = E_FILTER_STATE_DN_1;
                 }
                  
                 break;
 
+            case E_FILTER_STATE_DN_1://光斑第一出现状态
+                if (contactInfo.ePenState == E_PEN_STATE_UP)
+                {
+                    //filter.m_uFrameCount  = 0;
+                    filter.m_eFilterState = E_FILTER_STATE_UP;
 
-            case E_FILTER_STATE_DN://"按下"稳态
+                    contactInfo.pt.x = long(filter.m_LastSmoothPoint.d[0] + .5);
+                    contactInfo.pt.y = long(filter.m_LastSmoothPoint.d[1] + .5);
+
+                }
+                else
+                {
+                    filter.m_LastSmoothPoint.d[0] = double(contactInfo.pt.x);
+                    filter.m_LastSmoothPoint.d[1] = double(contactInfo.pt.y);
+
+                    filter.m_LastInputPoint = filter.m_LastSmoothPoint;
+                    filter.m_uRepeatSampleCount = 0;
+
+                    filter.m_nHistoryDistanceLength = 0;
+                    filter.m_dbTotalDistance = 0.0;
+                    filter.m_eFilterState = E_FILTER_STATE_DN_2;
+                }
+                break;
+
+
+            case E_FILTER_STATE_DN_2://"按下"稳态
                 if(contactInfo.ePenState ==  E_PEN_STATE_UP)
                 {
                     //filter.m_uFrameCount  = 0;
@@ -121,7 +150,7 @@ public:
                     double dy = ptNewInput.d[1] - ptLastInput.d[1];
                     double dbNewDistance = sqrt(dx*dx + dy*dy);
 
-
+                    //对移动距离做移动平均
                     //记录历史距离
                     if (filter.m_nHistoryDistanceLength < _countof(filter.m_HistoryDistance))
                     {//距离数组未满
@@ -136,20 +165,15 @@ public:
                         filter.m_nHistoryDistanceLength++;
                     }
                     else
-                    {//距离数组未满
-
+                    {//距离数组已满
                         filter.m_dbTotalDistance -= filter.m_HistoryDistance[0];
-
                         //移出一个老的数据，补充一个新的数据
                         for (int k = 1; k < _countof(filter.m_HistoryDistance); k++)
                         {
                             filter.m_HistoryDistance[k - 1] = filter.m_HistoryDistance[k];
                         }
-
-
                         filter.m_HistoryDistance[_countof(filter.m_HistoryDistance) - 1] = dbNewDistance;
                         filter.m_dbTotalDistance += dbNewDistance;
-
                     }
 
 #ifdef _DEBUG
@@ -200,8 +224,15 @@ public:
                         //double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - distance / m_nMaxDistance);
                         double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - filter.m_dbTotalDistance / m_nMaxDistance);
 
-                        ptSmooth.d[0] = smooth_coef * ptLastSmooth.d[0] + (1.0 - smooth_coef) * ptNewInput.d[0];
-                        ptSmooth.d[1] = smooth_coef * ptLastSmooth.d[1] + (1.0 - smooth_coef) * ptNewInput.d[1];
+                        //根据不同的书写区的定位公差不同来调制平滑系数
+                        double dbModulationFactorX = 1.0;
+                        double dbModulationFactorY = 1.0;
+                        this->m_oToleranceDistribute.GetModulateFactors(contactInfo.pt, &dbModulationFactorX, &dbModulationFactorY);
+                        double smooth_coef_x = smooth_coef*dbModulationFactorX;
+                        double smooth_coef_y = smooth_coef*dbModulationFactorY;
+
+                        ptSmooth.d[0] = smooth_coef_x * ptLastSmooth.d[0] + (1.0 - smooth_coef_x) * ptNewInput.d[0];
+                        ptSmooth.d[1] = smooth_coef_y * ptLastSmooth.d[1] + (1.0 - smooth_coef_y) * ptNewInput.d[1];
                     }
                     else
                     {
@@ -222,9 +253,16 @@ public:
                     contactInfo.pt.x = long(ptSmooth.d[0] + .5);
                     contactInfo.pt.y = long(ptSmooth.d[1] + .5);
 
+#ifdef _DEBUG
+                    AtlTrace(
+                        _T("[smooth]input dx=%.2f,dy=%.2f, smooth dx=%.2f, dy=%.2f\n"), 
+                        ptNewInput.d[0] - filter.m_LastInputPoint.d[0],
+                        ptNewInput.d[1] - filter.m_LastInputPoint.d[1],
+                        ptSmooth.d[0]   - filter.m_LastSmoothPoint.d[0],
+                        ptSmooth.d[1]   - filter.m_LastSmoothPoint.d[1]
+                        );
+#endif
                     filter.m_LastSmoothPoint = ptSmooth;
-                    //filter.m_LastInputPoint.d[0] = double(ptNewInput.x);
-                    //filter.m_LastInputPoint.d[1] = double(ptNewInput.y);
                     filter.m_LastInputPoint   = ptNewInput;
                 }
 
@@ -232,10 +270,8 @@ public:
 
             }//switch
 
-
         }
-        
-        
+
     }
 
 private:
@@ -262,9 +298,9 @@ protected:
     enum E_FilterState
     {
         E_FILTER_STATE_UP   ,//光笔弹起状态
-        E_FILTER_STATE_DN   ,//光笔按下状态
-        //E_FILTER_STATE_DN_1 ,//光斑第一次按下状态
-        //E_FILTER_STATE_DN_2 ,//光斑持续按下状态
+        //E_FILTER_STATE_DN   ,//光笔按下状态
+        E_FILTER_STATE_DN_1 ,//光斑第一次按下状态
+        E_FILTER_STATE_DN_2 ,//光斑持续按下状态
     };
 
     static const int DEBOUCNE_DELAY = 2;//消抖延迟
@@ -310,7 +346,7 @@ protected:
 
 #endif
 
-
+    CToleranceDistribute m_oToleranceDistribute;
 
 
 };

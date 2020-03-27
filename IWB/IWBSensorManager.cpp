@@ -167,6 +167,8 @@ void CIWBSensorManager::SetVideoDispParams(HWND hDispWnd, HWND hNotifyWnd, RECT&
 //		nSensorID, 传感器编号(0~n), -1时指全体传感器
 BOOL CIWBSensorManager::StartRunning(int nSensorID)
 {
+    LOG_FUNC_CALL;
+
     int nSensorCount = (int)m_vecSensors.size();
     if(nSensorCount == 0) return FALSE;
 
@@ -957,6 +959,8 @@ void CIWBSensorManager::OnIWBSensorAutoCalibrateDone(BOOL bSuccess, BOOL bSimula
 
     }
 
+    //更新校正公差分布
+    UpdateCalibrateToleranceDistribute();
 }
 
 
@@ -1041,6 +1045,9 @@ void CIWBSensorManager::OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCt
             m_vecSensors[i]->OnManualCalibrateDone(m_vecCalibrateResults[i]);
         }
     }
+
+    //更新校正公差分布
+    UpdateCalibrateToleranceDistribute();
 }
 
 
@@ -1640,4 +1647,149 @@ BOOL CIWBSensorManager::IsEnableOnlineScreenArea()
 		}
 	}
 	return bIsControlling;
+}
+
+//@功能:更新校正公差分布。
+void CIWBSensorManager::UpdateCalibrateToleranceDistribute()
+{
+    const UINT nRows = 10;
+    const UINT nCols = 10;
+    const UINT nPtCount = nRows*nCols;
+
+    int nCx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    int nCy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+
+    std::vector<TPoint2D> vecPtsOnScreen;
+    vecPtsOnScreen.resize(nPtCount);
+    
+    //Y坐标采样点
+    std::vector<double> vecY;
+    vecY.resize(nRows);
+   
+    int interval  = nCy / nRows;
+    int remainder = nCy % nRows;
+    int y0 = 0;
+    int remainderCount = 0;
+    for (UINT r = 0; r < nRows; r++)
+    {
+        int y1 = y0 + interval;
+        
+        remainderCount += remainder;
+
+        if (remainderCount > nRows)
+        {
+            remainderCount -= nRows;
+            y1 ++;
+        }
+
+        vecY[r] = double(y0 + y1) / 2.0;
+
+        y0 = y1;
+    }
+    
+    //X坐标采样点
+    std::vector<double> vecX;
+    vecX.resize(nCols);
+    interval  = nCx / nCols;
+    remainder = nCx % nCols;
+    remainderCount = 0;
+    int x0 = 0;
+    for (UINT c = 0; c < nCols; c++)
+    {
+        int x1 = x0 + interval;
+
+        remainderCount += remainder;
+        if (remainderCount > nCols)
+        {
+            x1 ++;
+            remainderCount -= nCols;
+        }
+
+        vecX[c] = double(x0 + x1) / 2.0;
+
+        x0 = x1;
+    }
+
+
+    for (UINT r = 0; r < nRows; r++)
+    {
+        TPoint2D pt;
+        pt.d[1] = vecY[r];
+
+        for (UINT c = 0; c < nCols; c++)
+        {            
+            pt.d[0] = vecX[c];
+            vecPtsOnScreen[r*nCols + c] = pt;
+        }
+    }
+
+    std::vector<double> vecTolX;//X坐标方向的定位公差
+    std::vector<double> vecTolY;//Y坐标方向的定位公差
+    vecTolX.resize(nPtCount);
+    vecTolY.resize(nPtCount);
+
+    for (size_t i = 0; i < nPtCount; i++)
+    {
+        vecTolX[i] = 0.0;
+        vecTolY[i] = 0.0;
+    }
+
+    //计算每个采样点处的校正公差
+    for (UINT i = 0; i < vecPtsOnScreen.size(); i++)
+    {
+        TPoint3D  pt3DWorld;
+        pt3DWorld.d[0] = vecPtsOnScreen[i].d[0];
+        pt3DWorld.d[1] = vecPtsOnScreen[i].d[1];
+        pt3DWorld.d[2] = 0;
+
+        for (UINT j = 0; j < m_vecSensors.size(); j++)
+        {
+            CIWBSensor* pSensor = m_vecSensors[j];
+            if (pSensor == NULL)
+            {
+                continue;
+            }
+            RECT rcMonitorArea = {0, 0, 0, 0};
+            pSensor->GetAttachedScreenArea(rcMonitorArea);
+
+            POINT pt;
+            pt.x = pt3DWorld.d[0];
+            pt.y = pt3DWorld.d[1];
+
+            if (!::PtInRect(&rcMonitorArea, pt))
+            {
+                continue;
+            }
+
+            //屏幕上的点位于传感器的管辖范围内,由该传感器负责计算
+            CalibrateAlgo&  calibrateAlgo = pSensor->GetPenPosDetector()->GetVideoToScreenMap().GetCalibAlog();
+
+            TPoint2D pt2DImage;
+            calibrateAlgo.MapWorldToImage(&pt3DWorld, 1, &pt2DImage, 0);
+
+            
+            TPoint2D pt2DScreen;
+            calibrateAlgo.GetScreenCoord(pt2DImage, &pt2DScreen,0, TRUE/*bWithoutAutoCalibCompensate*/);
+
+            TPoint2D pt2DImageDeviate;
+            //相机图像坐标在水平和垂直方向分别偏移0.5个像素
+            pt2DImageDeviate.d[0] = pt2DImage.d[0] + 0.5;
+            pt2DImageDeviate.d[1] = pt2DImage.d[1] + 0.5;
+
+
+            TPoint2D pt2DScreenDeviate;
+            calibrateAlgo.GetScreenCoord(pt2DImageDeviate, &pt2DScreenDeviate,0, TRUE/*bWithoutAutoCalibCompensate*/);
+
+            vecTolX[i] = fabs(pt2DScreenDeviate.d[0] - pt2DScreen.d[0]);
+            vecTolY[i] = fabs(pt2DScreenDeviate.d[1] - pt2DScreen.d[1]);
+            break;
+        }
+
+    }
+
+    CToleranceDistribute& toleranceDistribute = m_pSpotListProcessor->GetToleranceDistribute();
+
+    toleranceDistribute.UpdateToleranceDistribute(nRows, nCols, &vecTolX[0], &vecTolY[0]);
+
 }

@@ -691,6 +691,7 @@ void CIWBDlg::InitMenu()
 
 BOOL CIWBDlg::OnInitDialog()
 {
+    LOG_FUNC_CALL;
     CDialog::OnInitDialog();
 
     // Add "About..." menu item to system menu.

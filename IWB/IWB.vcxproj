@@ -1046,6 +1046,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TinyXML\tinystr.h" />
     <ClInclude Include="TinyXML\tinyxml.h" />
+    <ClInclude Include="ToleranceDistribute.h" />
     <ClInclude Include="TouchScreenDblChecker.h" />
     <ClInclude Include="TouchTester.h" />
     <ClInclude Include="UpdateFirmwareDlg.h" />

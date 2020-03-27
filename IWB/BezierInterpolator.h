@@ -186,6 +186,11 @@ public:
         for (int i = 0; i < nCount; i++)
         {
             const TContactInfo& contactInfo = pContactInfos[i];
+            if (contactInfo.bIgnored)
+            {
+                continue;
+            }
+
             UINT32 uId = contactInfo.uId;
 
             if (uId >= MAX_STROKE_NUM)
@@ -250,6 +255,7 @@ public:
                     ciP1.uId = uId;
                     ciP1.pt.x = int(strokeInterpolateData.junctionPoints[1].d[0]);
                     ciP1.pt.y = int(strokeInterpolateData.junctionPoints[1].d[1]);
+                    ciP1.bIgnored = FALSE;
 
                     AddInterpolatePoint(0, ciP1);
                     
@@ -269,6 +275,7 @@ public:
                         ciP1.uId = uId;
                         ciP1.pt.x = int(strokeInterpolateData.junctionPoints[1].d[0]);
                         ciP1.pt.y = int(strokeInterpolateData.junctionPoints[1].d[1]);
+                        ciP1.bIgnored = FALSE;
 
                         //无法插值直接输出P1, P2
                         AddInterpolatePoint(0, ciP1);
@@ -350,6 +357,7 @@ public:
                     TContactInfo ciInterpolate;
                     ciInterpolate.uId = uId;
                     ciInterpolate.ePenState = E_PEN_STATE_DOWN;
+    
 
                     TPoint2D& P0 = strokeInterpolateData.junctionPoints[0];
                     TPoint2D& P1 = strokeInterpolateData.junctionPoints[1];

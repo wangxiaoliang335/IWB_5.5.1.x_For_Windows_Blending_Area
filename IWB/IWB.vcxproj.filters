@@ -610,6 +610,9 @@
     <ClInclude Include="TouchTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ToleranceDistribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Arrows\bottom_left.bmp">
