@@ -388,7 +388,7 @@ protected:
 	afx_msg BOOL OnQueryEndSession();
 	afx_msg void OnNcLButtonDblClk(UINT nHitTest, CPoint point);
 
-     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 
     afx_msg void OnOperationLightspotsampling();
@@ -440,8 +440,6 @@ protected:
     //@参数:lpszConfigFilePath, 配置文件的完成路径
     BOOL SaveConfig();
     void Exit();
-
-
 
 //	afx_msg void OnBnClickedButtonStartStop();
 	HRESULT OnFpsNotify         (WPARAM wParam,LPARAM lParam);
@@ -563,6 +561,9 @@ protected:
 	//
 	BOOL LoadResolutionConfig();
 
+
+
+	HRESULT OnPowerBroadcast(WPARAM wParam, LPARAM lParam);
 //====变量===========
 
 

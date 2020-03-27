@@ -2484,7 +2484,7 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 		            (ImageType >> 24) & 0xFF
 		             );
 
-	      PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)m_szStatusText, (LPARAM)nId);
+	      PostMessageW(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)m_szStatusText, (LPARAM)nId);
 		  PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, (WPARAM)(fps*2), (LPARAM)nId);
 	     ////SendMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
 	}

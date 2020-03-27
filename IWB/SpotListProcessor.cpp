@@ -870,6 +870,14 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		
 			BOOL bEnableStrokeInterpolateTemp= TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate;
 
+		//	if (nLightSpotCount > 0)
+		//	{
+		//		for (int i = 0; i < penCount; i++)
+		//		{
+		//			AtlTrace(_T("***###penCount=%d penInfo(%d) :<x, y> = <%d, %d> ::<xx,yy> = <%d,%d>\r\n"), penCount, i, penInfo[i].pt.x, penInfo[i].pt.y, pLightSpots[i].ptPosInScreen.x, pLightSpots[i].ptPosInScreen.y);
+		//		}
+		//	}
+
             if (FALSE == bEnableStrokeInterpolateTemp)
             { 
 
@@ -902,7 +910,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
                         int allPenCount;
                         const TContactInfo* pAllContactInfo = m_oInterpolateDispatcher.GetAllContactData(&allPenCount);
-
 
                         m_oVirtualHID.InputPoints(pAllContactInfo, allPenCount);
 

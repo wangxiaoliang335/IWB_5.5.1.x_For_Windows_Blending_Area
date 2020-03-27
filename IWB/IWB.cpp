@@ -275,9 +275,15 @@ BOOL CIWBApp::InitInstance()
     m_oUSBCameraList.UpdateDeviceList();
 
     int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
-
-    ReadUSBKey(TRUE, nDeviceCount);
-
+	//说明没有发现任何实例。那么就需要弹出没有摄像头。
+	if (nDeviceCount == 0)
+	{
+		MessageBox(NULL, g_oResStr[IDS_STRING445], g_oResStr[107], MB_ICONINFORMATION | MB_OK);
+	}
+	else
+	{
+        ReadUSBKey(TRUE, nDeviceCount);
+	}
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
     //del>>
@@ -299,9 +305,6 @@ BOOL CIWBApp::InitInstance()
         nVScreenLeft,
         nVScreenTop,
         (m_eScreenModeFromUsbKey >= EScreenModeDouble)? "Yes" : "No");
-
-
-
 
     int nDisplayDevCount = m_oDispMonitorFinder.GetDisplayDevCount();
 
@@ -693,7 +696,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
     m_eScreenModeFromUsbKey = EScreenModeSingle;
 
     //手触/笔触模式
-    m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
 	//手掌互动是计算加密狗的个数；
 	int nUSBKeyTouchCount = 0;
 

@@ -613,6 +613,8 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_MESSAGE(WM_END_4_BASE_POINT_CALIBRATE, &CIWBDlg::OnEnd4BasePointCalibrate)
     ON_WM_RBUTTONUP()
     ON_COMMAND(ID_MENU_FOURPOINTCALIBRATION, &CIWBDlg::OnOperationFourpointcalibration)
+
+	ON_MESSAGE(WM_POWERBROADCAST, &CIWBDlg::OnPowerBroadcast)
 END_MESSAGE_MAP()
 
 
@@ -1413,7 +1415,6 @@ HRESULT CIWBDlg::OnTrayNotifyMsg(WPARAM wParam,LPARAM lParam)
 
     case WM_RBUTTONDOWN:
 
-
         TRACE("OnTrayNotifyMsg::WM_RBUTTONDOWN\n");
         break;
 
@@ -1526,8 +1527,6 @@ HRESULT CIWBDlg::OnTrayNotifyMsg(WPARAM wParam,LPARAM lParam)
 
         TRACE("OnTrayNotifyMsg::NIN_BALLOONSHOW\n");
         break;
-
-
 
     case NIN_BALLOONHIDE://Sent when the balloon disappears—for example, when the icon is deleted. This message is not sent if the balloon is dismissed because of a timeout or a mouse click.
         TRACE("OnTrayNotifyMsg::NIN_BALLOONHIDE\n");
@@ -1826,7 +1825,7 @@ HRESULT CIWBDlg::OnFpsNotify (WPARAM wParam,LPARAM lParam)
 
 HRESULT CIWBDlg::OnCameraStatusNotify(WPARAM wParam,LPARAM lParam)
 {
-    LPCTSTR lpszText = (LPCTSTR)wParam;
+    LPCTSTR lpszText =(LPCTSTR)wParam;
     int    nCameraID = lParam;
 	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
     if(0 == nCameraID)
@@ -2186,6 +2185,7 @@ void CIWBDlg::OnMenuParameterSettings()
 			if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
 			{
 		         TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
+				 pSensor->SetStrokeInterpolate(TRUE);
 			}
 		}
 
@@ -2909,7 +2909,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
 	if (lpSensor)
 	{
-		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[eProjectionMode].advanceSettings;
+		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[lpSensor->GetID()].vecSensorModeConfig[eProjectionMode].advanceSettings;
 		bEnableStrokeInterpolateTemp = advanceSettings.bEnableStrokeInterpolate;
 	}
 	////是否进行插值
@@ -4999,6 +4999,7 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 			 if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
 			 {
 				 TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
+				 pSensor->SetStrokeInterpolate(TRUE);
 			 }
 		 }
 
@@ -5430,7 +5431,7 @@ void CIWBDlg::OnInstallationanddebuggingEnableinterpolate()
 	     {
 		     TAdvancedSettings &AdvancedSettings = g_tSysCfgData.vecSensorConfig[i].vecSensorModeConfig[eProjectionMode].advanceSettings;
 		     AdvancedSettings.bEnableStrokeInterpolate = !AdvancedSettings.bEnableStrokeInterpolate;
-		     pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate?true:false);
+		     pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate?TRUE:FALSE);
 	     }
 	}	
 }
@@ -5711,4 +5712,22 @@ BOOL CIWBDlg::LoadResolutionConfig()
 		m_aryCandidateResolution.push_back(strDeviceResolution);
 	}
 	return TRUE;
+}
+
+
+HRESULT CIWBDlg::OnPowerBroadcast(WPARAM wParam, LPARAM lParam)
+{
+	if (wParam == PBT_APMRESUMEAUTOMATIC)
+	{
+		int nSensorCount  = this->m_oIWBSensorManager.GetSensorCount();
+		for (int i = 0; i < nSensorCount; i++)
+		{
+		//	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
+		//	pSensor->SwitchLensMode(pSensor->GetLensMode());
+		//	AtlTrace("AAAAAAAAAAAAAAAAAAAAAAAAAA.....\r\n");
+		}
+
+
+	}
+	return S_OK;
 }
