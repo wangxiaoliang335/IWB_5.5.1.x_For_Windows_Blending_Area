@@ -24,6 +24,8 @@ m_nID(nID),
 m_nDisplayTimesCounter(0),
 m_sCurrentCameraResolution("")
 {
+    LOG_FUNC_CALL;
+
     m_eVideoState = E_VIDEO_STOP;
 
     DbgSetModuleLevel(LOG_TRACE, 5);
@@ -45,21 +47,18 @@ m_sCurrentCameraResolution("")
     //m_hFont    = CreateFontIndirect(&lf);
 
     //ReleaseDC(GetDesktopWindow(), hdcDesktop);
-#ifdef _LOG
-    LOG_INF("Call CVideoPlayer()");
-#endif
+
 }
 
 CVideoPlayer::~CVideoPlayer()
 {
+    LOG_FUNC_CALL;
 
     UnInitializeVideo();
 
     //DeleteObject(m_hFont);
 
-#ifdef _LOG
-    LOG_INF("Call ~CVideoPlayer()");
-#endif
+
 }
 
 void CVideoPlayer::SetInterceptFilter(CInterceptFilter* pFilter)
@@ -362,9 +361,7 @@ HRESULT CVideoPlayer::FindCaptureDevice(IBaseFilter **ppSrcFilter)
 
 HRESULT CVideoPlayer::PlayVideo(HWND hWnd,  HWND hNotifyWnd)
 {
-#ifdef _LOG
-    LOG_INF("(%s) Enter", __FUNCTION__);
-#endif
+    LOG_FUNC_CALL;
 
     HRESULT hr = CloseInterfaces();
     if(hWnd != NULL)
@@ -492,9 +489,6 @@ HRESULT CVideoPlayer::PlayVideo(HWND hWnd,  HWND hNotifyWnd)
 
     }
 
-#ifdef _LOG
-    LOG_INF("(%s) leave.", __FUNCTION__);
-#endif
 
     return hr;
 }
@@ -516,7 +510,7 @@ HRESULT CVideoPlayer::Stop()
 //
 HRESULT CVideoPlayer::BuildGraph()
 {
-    LOG_INF("(%s) Enter", __FUNCTION__);
+    LOG_FUNC_CALL;
 
     HRESULT hr = S_OK;
 
@@ -794,8 +788,6 @@ HRESULT CVideoPlayer::BuildGraph()
     PrintFilterGraph(m_pFilterGraph);
 #endif
 
-    LOG_INF("(%s)Leave", __FUNCTION__);
-
     return hr;
 
 }
@@ -863,9 +855,7 @@ BOOL CVideoPlayer::StartDetect(LPCTSTR lpszDevicePath,  const VIDEOINFOHEADER* p
 //   Ê§°Ü,·µ»ØFALSE
 BOOL CVideoPlayer::StartDetect( HWND hPlayWnd, const RECT& rcDispArea, HWND hNotifyWnd, LPCTSTR lpszDevicePath,  const VIDEOINFOHEADER* pVideoInfoHeader)
 {
-#ifdef _LOG
-    LOG_INF("enter %s", __FUNCTION__);
-#endif
+    LOG_FUNC_CALL;
 
 	if (m_bIsClosing)
 	{
@@ -913,9 +903,6 @@ BOOL CVideoPlayer::StartDetect( HWND hPlayWnd, const RECT& rcDispArea, HWND hNot
 	PostMessage(this->m_hNotifyWnd, WM_FPSNOTIFY, (WPARAM)0, (LPARAM)m_nID);
 	PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING442], (LPARAM)m_nID);
     
-#ifdef _LOG
-    LOG_INF("Leave %s", __FUNCTION__);
-#endif
     return bRet;
 
 }
@@ -923,13 +910,11 @@ BOOL CVideoPlayer::StartDetect( HWND hPlayWnd, const RECT& rcDispArea, HWND hNot
 
 BOOL CVideoPlayer::StopDetect( )
 {
+    LOG_FUNC_CALL;
+
     BOOL bRet = FALSE;
    if(m_eVideoState == E_VIDEO_RUNNING)
    {
-
-#ifdef _LOG
-    LOG_INF("(%s) Enter.", __FUNCTION__);
-#endif
 
     if(!m_pInterceptFilter) return E_FAIL;
 
@@ -939,9 +924,6 @@ BOOL CVideoPlayer::StopDetect( )
 
     CloseInterfaces();
 
-#ifdef _LOG
-    LOG_INF("(%s) Leave.", __FUNCTION__);
-#endif
       m_eVideoState = E_VIDEO_STOP;
 
       //Í¨ÖªÍ£Ö¹×´Ì¬

@@ -341,6 +341,7 @@ void CIWBSensor::SetVideoDispParams(HWND hDispWnd, RECT& rcDispArea, HWND hNotif
 //@参数:
 BOOL CIWBSensor::Run()
 {
+    LOG_FUNC_CALL;
     //<<added by toxuke@gmail.com,2014/12/14
     //如果设备路径为空则不播放。
 	if (m_tDeviceInfo.m_strDevPath.IsEmpty())
@@ -969,7 +970,6 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
         AutoCalibrateParams  params;
         params.autoCalibrateImageParams  = lensCfg.autoCalibrateSettingsList[i].calibrateImageParams;
         params.videoprocampproperty = lensCfg.autoCalibrateSettingsList[i].cameraParams;
-
         autoCalibrateParams.autocalibrateparamslist.push_back(params);
     }
 

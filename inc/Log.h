@@ -379,7 +379,25 @@ inline BOOL _cdecl AsyncTypedLog(int nType, const char* szFormat,...)
     return bRet;
 }
 
+class CAutoFuncLog
+{
+public:
+    CAutoFuncLog(const char* szFuncName)
+    {
+        strcpy_s(m_szFuncName, _countof(m_szFuncName), szFuncName);
+        AsyncTypedLog(LOG_TYPE_INF, "Enter,%s", m_szFuncName);
+    }
+
+    ~CAutoFuncLog()
+    {
+        AsyncTypedLog(LOG_TYPE_INF, "Leave,%s", m_szFuncName);
+    }
+protected:
+    char m_szFuncName[1024];
+};
  
+#define LOG_FUNC_CALL  CAutoFuncLog __log__(__FUNCTION__)
+
 #ifdef LOG_ENABLED
 
 //#define LOG_INIT(FileName)  AsyncLogInit(FileName)
@@ -422,6 +440,7 @@ inline BOOL _cdecl AsyncTypedLog(int nType, const char* szFormat,...)
 
 //µ÷ÊÔÐÅÏ¢
 #define LOG(format,...) 
+
 
 
 #endif

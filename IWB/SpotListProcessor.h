@@ -88,6 +88,7 @@ public:
     //     monitorArea, 相机有效管辖的屏区域
     RECT GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const;
 
+    CToleranceDistribute& GetToleranceDistribute();
 protected:
     //@功能:启动处理线程
     BOOL StartProcessThread();

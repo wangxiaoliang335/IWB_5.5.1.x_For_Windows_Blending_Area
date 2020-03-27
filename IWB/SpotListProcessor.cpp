@@ -733,12 +733,13 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         sprintf_s(
             szData,
             _countof(szData),
-            "%d,%d,%d,%d\n",
+            "%d,%d,%d,%d,%d\n",
             contactInfos[i].uId,
             contactInfos[i].pt.x,
             contactInfos[i].pt.y,
-            contactInfos[i].ePenState);
- 
+            contactInfos[i].ePenState,
+            contactInfos[i].bIgnored);
+        OutputDebugStringA(szData);
         fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
         fflush(g_hDebugRawInputData);
 
@@ -904,7 +905,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                     if (nItemCount > 0)
                     {
 #ifdef _DEBUG
-                   //     DebugContactInfo(pInterpolateContact, nItemCount);
+                      //DebugContactInfo(pInterpolateContact, nItemCount);
 #endif
                         m_oInterpolateDispatcher.PreProcess(pInterpolateContact, nItemCount);
 
@@ -1072,6 +1073,7 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
 
             penInfo[i].uId       = refMInfo.uId;
             penInfo[i].pt        = refMInfo.ptPos;
+            penInfo[i].bIgnored = FALSE;
         }
 
         /*CPerfDetector perf(_T("****DoWindowsGestureRecognition()"));*/
@@ -1085,6 +1087,7 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
             penInfo[i].ePenState = (refMInfo.eMatchState == E_MISMATCHED)?E_PEN_STATE_UP:E_PEN_STATE_DOWN;
             penInfo[i].uId       = refMInfo.uId;
             penInfo[i].pt        = refMInfo.ptPos;  
+            penInfo[i].bIgnored  = FALSE;
 
         }
     }    
@@ -1333,4 +1336,10 @@ RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& mon
     }
 
     return rcVisibleArea;
+}
+
+
+CToleranceDistribute& CSpotListProcessor::GetToleranceDistribute()
+{
+    return this->m_oStrokFilter.GetToleranceDistribute();
 }
