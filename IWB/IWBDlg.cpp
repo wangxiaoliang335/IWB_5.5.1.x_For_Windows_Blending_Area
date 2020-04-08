@@ -1946,7 +1946,6 @@ HRESULT CIWBDlg::OnDisplayChange (WPARAM wParam, LPARAM lParam)
     //搜索屏幕信息
     theApp.GetMonitorFinder().SearchDisplayDev();
 
-
     //通知屏幕尺寸发生变化
     OnDisplayChangeHelper(::GetActualScreenControlSize());
 
@@ -5466,8 +5465,10 @@ void CIWBDlg::OnMenuAdvancessetting()
 
 	DWORD dIP = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetIPadress();
 	int nPort = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetPort();
+	int Width = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetScreenWidth();
+	int Height= m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetScreenHeight();
 
-	camerafmtdlg.SetIPadressAndPort(dIP, nPort);
+	camerafmtdlg.SetTUIOParams(dIP, nPort, Width, Height);
 	///////////////////////////////////
 	CAtlString  SelectValue;
 	if (camerafmtdlg.DoModal() == IDOK)
@@ -5504,7 +5505,7 @@ void CIWBDlg::OnMenuAdvancessetting()
 		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchTUIOMode(bTUIOMode);
 		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchHIDMode(bHIDMode);
 
-		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetIPadressAndPort(camerafmtdlg.GetIPAddress(),camerafmtdlg.GetPort());
+		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTUIOParams(camerafmtdlg.GetIPAddress(),camerafmtdlg.GetPort(), camerafmtdlg.GetScreenWidth(), camerafmtdlg.GetScreenHeight());
 
 		////////////////////////保存数据
 		int nCount = this->m_oIWBSensorManager.GetSensorCount();
@@ -5720,15 +5721,13 @@ HRESULT CIWBDlg::OnPowerBroadcast(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == PBT_APMRESUMEAUTOMATIC)
 	{
+		Sleep(500);
 		int nSensorCount  = this->m_oIWBSensorManager.GetSensorCount();
 		for (int i = 0; i < nSensorCount; i++)
 		{
-		//	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
-		//	pSensor->SwitchLensMode(pSensor->GetLensMode());
-		//	AtlTrace("AAAAAAAAAAAAAAAAAAAAAAAAAA.....\r\n");
+			CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
+			pSensor->SwitchLensMode(pSensor->GetLensMode());
 		}
-
-
 	}
 	return S_OK;
 }

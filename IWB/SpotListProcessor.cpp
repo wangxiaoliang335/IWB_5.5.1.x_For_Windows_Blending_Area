@@ -61,6 +61,9 @@ void CSpotListProcessor::StartProcess()
     if(m_lReferenceCount == 0)
     {
 		m_oVirtualHID.OpenDevice();
+		////add by vera_zhao
+		m_oVirtualHID.OpenTUIOServer(true);
+
         StartProcessThread();
 
         //<<debug
@@ -733,12 +736,11 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
         sprintf_s(
             szData,
             _countof(szData),
-            "%d,%d,%d,%d,%d\n",
+            "%d,%d,%d,%d\n",
             contactInfos[i].uId,
             contactInfos[i].pt.x,
             contactInfos[i].pt.y,
-            contactInfos[i].ePenState,
-            contactInfos[i].bIgnored);
+            contactInfos[i].ePenState);
         OutputDebugStringA(szData);
         fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
         fflush(g_hDebugRawInputData);
@@ -838,7 +840,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         if (!DoWindowsGestureRecognition(pLightSpots, nLightSpotCount, penInfo, penCount))
         {
            //平滑笔迹
-            m_oStrokFilter.DoFilter(penInfo, penCount);
+           m_oStrokFilter.DoFilter(penInfo, penCount);
    
 #ifdef _DEBUG
 
@@ -870,14 +872,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 			TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[0].vecSensorModeConfig[eProjectionMode];
 		
 			BOOL bEnableStrokeInterpolateTemp= TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate;
-
-		//	if (nLightSpotCount > 0)
-		//	{
-		//		for (int i = 0; i < penCount; i++)
-		//		{
-		//			AtlTrace(_T("***###penCount=%d penInfo(%d) :<x, y> = <%d, %d> ::<xx,yy> = <%d,%d>\r\n"), penCount, i, penInfo[i].pt.x, penInfo[i].pt.y, pLightSpots[i].ptPosInScreen.x, pLightSpots[i].ptPosInScreen.y);
-		//		}
-		//	}
 
             if (FALSE == bEnableStrokeInterpolateTemp)
             { 
@@ -924,10 +918,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                         break;
                     }
                 }//for
-
-			//	char szData[128];
-			//	sprintf_s(szData, _countof(szData), "------------------------------------\n");
-			//	fwrite(szData, 1, strlen(szData), g_hDebugRawInputData);
             }
         }
         else
@@ -1073,7 +1063,7 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
 
             penInfo[i].uId       = refMInfo.uId;
             penInfo[i].pt        = refMInfo.ptPos;
-            penInfo[i].bIgnored = FALSE;
+            //penInfo[i].bIgnored = FALSE;
         }
 
         /*CPerfDetector perf(_T("****DoWindowsGestureRecognition()"));*/
@@ -1087,7 +1077,7 @@ bool CSpotListProcessor::DoWindowsGestureRecognition(const TLightSpot* pLightSpo
             penInfo[i].ePenState = (refMInfo.eMatchState == E_MISMATCHED)?E_PEN_STATE_UP:E_PEN_STATE_DOWN;
             penInfo[i].uId       = refMInfo.uId;
             penInfo[i].pt        = refMInfo.ptPos;  
-            penInfo[i].bIgnored  = FALSE;
+            //penInfo[i].bIgnored  = FALSE;
 
         }
     }    
@@ -1289,6 +1279,8 @@ void CSpotListProcessor::OnDisplayChange(int nScreenWidth, int nScreenHeight)
 
     //给GLBoard手势和笔迹设置屏幕物理尺寸和屏幕分辨率
     g_oGLBoardGR.OnSetTouchScreenDimension(nDiagonalPhysicalLength, sizeScreen);
+
+	this->m_oVirtualHID.SetTUIOScreenDisplayChange(sizeScreen.cx, sizeScreen.cy);
 
 }
 

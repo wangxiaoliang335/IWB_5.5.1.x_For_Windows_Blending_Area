@@ -53,9 +53,13 @@ public:
 	bool GetSinglePointMode()const { return m_bSinglePointMode; }
 
 	/////////////////
-	void    SetIPadressAndPort(DWORD IP, int nPort);
+	void    SetTUIOParams(DWORD IP, int nPort, int nScreenWindth, int nScreenHeight);
+	void    OpenTUIOServer(bool bStart);
 	DWORD   GetIPadress();
 	int     GetPort();
+	int     GetScreenWidth();
+	int     GetScreenHeight();
+	void    SetTUIOScreenDisplayChange(int nScreenX, int nScreenY);
 
 	static CVirtualMouse& GetVirtualMouse() { return m_oVirtualMouse; }
 

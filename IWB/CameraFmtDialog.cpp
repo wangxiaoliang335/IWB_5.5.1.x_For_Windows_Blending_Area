@@ -18,6 +18,8 @@ CameraFmtDialog::CameraFmtDialog(CWnd* pParent /*=NULL*/)
 	, m_bTUIOMode(FALSE)
 	, m_IPAddress(0)
 	, m_strPort(_T(""))
+	, m_nTUIOScreenWidth(0)
+	, m_nTUIOScreenHeight(0)
 {
 
 }
@@ -37,6 +39,8 @@ void CameraFmtDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_PORT, m_strPort);
 	DDX_Control(pDX, IDC_IPADDRESS_IP, CIPAddress);
 	DDX_Control(pDX, IDC_EDIT_PORT, CPortEdit);
+	DDX_Text(pDX, IDC_EDIT_SCREENWIDTH, m_nTUIOScreenWidth);
+	DDX_Text(pDX, IDC_EDIT_SCREENHEIGHT, m_nTUIOScreenHeight);
 }
 
 
@@ -48,6 +52,7 @@ BEGIN_MESSAGE_MAP(CameraFmtDialog, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_TUIO, &CameraFmtDialog::OnBnClickedCheckTuio)
 	ON_NOTIFY(IPN_FIELDCHANGED, IDC_IPADDRESS_IP, &CameraFmtDialog::OnIpnFieldchangedIpaddressIp)
 	ON_EN_CHANGE(IDC_EDIT_PORT, &CameraFmtDialog::OnEnChangeEditPort)
+	ON_BN_CLICKED(IDC_BUTTON_DEFAULT, &CameraFmtDialog::OnBnClickedButtonDefault)
 END_MESSAGE_MAP()
 
 
@@ -81,6 +86,9 @@ BOOL CameraFmtDialog::OnInitDialog()
 		GetDlgItem(IDC_CHECK_HID)->EnableWindow(false);
 		GetDlgItem(IDC_IPADDRESS_IP)->EnableWindow(false);
 		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(false);
+		GetDlgItem(IDC_EDIT_SCREENWIDTH)->EnableWindow(false);
+		GetDlgItem(IDC_EDIT_SCREENHEIGHT)->EnableWindow(false);
+		GetDlgItem(IDC_BUTTON_DEFAULT)->EnableWindow(false);
 	}
 	else
 	{
@@ -107,10 +115,12 @@ void CameraFmtDialog::SetCameraResolution(std::vector<CAtlString>& CameraInfo, C
 	m_sCurrentCameraResution = CurrentCameraInfo;
 }
 
-void CameraFmtDialog::SetIPadressAndPort(DWORD IP, int nPort)
+void CameraFmtDialog::SetTUIOParams(DWORD IP, int nPort, int nScreenWindth, int nScreenHeight)
 {
 	m_IPAddress = IP;
 	m_strPort.Format(_T("%d"), nPort);
+	m_nTUIOScreenWidth =  nScreenWindth;
+	m_nTUIOScreenHeight = nScreenHeight;
 }
 
 void CameraFmtDialog::OnBnClickedOk()
@@ -149,6 +159,16 @@ DWORD CameraFmtDialog::GetIPAddress()
 int CameraFmtDialog::GetPort()
 {
 	return  _ttoi(m_strPort);
+}
+
+int CameraFmtDialog::GetScreenWidth()
+{
+	return m_nTUIOScreenWidth;
+}
+
+int CameraFmtDialog::GetScreenHeight()
+{
+	return m_nTUIOScreenHeight;
 }
 
 void CameraFmtDialog::OnBnClickedCheckHid()
@@ -216,4 +236,18 @@ void CameraFmtDialog::OnEnChangeEditPort()
 
 	// TODO:  Add your control notification handler code here
 	UpdateData(true);
+}
+
+
+void CameraFmtDialog::OnBnClickedButtonDefault()
+{
+	// TODO: Add your control notification handler code here
+
+	CString  strScreen;
+	strScreen.Format(_T("%d"), GetSystemMetrics(SM_CXSCREEN));
+	GetDlgItem(IDC_EDIT_SCREENWIDTH)->SetWindowTextW(strScreen);
+
+	strScreen.Format(_T("%d"), GetSystemMetrics(SM_CYSCREEN));
+	GetDlgItem(IDC_EDIT_SCREENHEIGHT)->SetWindowTextW(strScreen);
+
 }

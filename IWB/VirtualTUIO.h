@@ -30,7 +30,7 @@ public:
 	CVirtualTUIO();
 	~CVirtualTUIO();
 public:
-	void   OpenTUIOServer();
+	void   OpenTUIOServer(bool bStart);
 	void   CloseTUIOServer();
 	void   InitTuio();
 	BOOL   InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount);
@@ -39,10 +39,12 @@ public:
 	void   Reset();
 	void   ReopenTUIOServer();
 	////////////////
-	void     SetIPadressAndPort(DWORD IP, int nPort);
+	void     SetTUIOParams(DWORD IP, int nPort, int nScreenWindth, int nScreenHeight);
 	DWORD    GetIPadress();
 	int      GetPort();
-
+	int      GetScreenWidth();
+	int      GetScreenHeight();
+	void     SetTUIOScreenDisplayChange(int nScreenX, int nScreenY);
 protected:
 	TuioServer  *tuioServer;
 	OscSender   *tcp_sender;
@@ -51,6 +53,7 @@ protected:
 	int         m_nCyScreen;   //ÆÁÄ»µÄ¸ß¶È
 	char        szIP[24];
 	int         m_nPort;
+ 
 	std::list<VecTuioCursor> ActiveCursorList;
 
 };

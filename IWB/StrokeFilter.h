@@ -71,15 +71,18 @@ public:
     //@功能:对输入的笔迹进行滤波处理
     //@参数:pContactInfo, 输入/输出参数, 触控点信息
     //      nCount, 输入的触控点个数
-    void DoFilter(TContactInfo* pContactInfo, int nCount)
+    void DoFilter(TContactInfo* pContactInfo, int& nCount)
     {
-        for(int i=0; i < nCount; i++)
+        //for(int i=0; i < nCount; i++)
+        int i = 0;
+        while(i < nCount)
         {
             TContactInfo& contactInfo = pContactInfo[i];
             UINT32 uId = contactInfo.uId;
 
             if(uId >= MAX_STROKE_NUM)
             {//数组下标越界。
+                i++;
                 continue;
             }
 
@@ -92,12 +95,21 @@ public:
                 if(pContactInfo->ePenState == E_PEN_STATE_DOWN)
                 {
                     //解决:"相机如果前后两帧捕获到一小一大两个光斑，右键功能很难触发"的问题
-                    pContactInfo->bIgnored = TRUE;//第一次按下,跳过当前帧
+                    //pContactInfo->bIgnored = TRUE;//第一次按下,跳过当前帧
+
+                    //Ith元素后面的元素往前挪动一个位置
+                    for (int j = i + 1; j < nCount; j++)
+                    {
+                        pContactInfo[j - 1] = pContactInfo[j];
+                    }
+                    nCount -= 1;//输出的触点数目-1;
 #ifdef _DEBUG
                     AtlTrace(_T("=======Skip First Frame of Pen %d.=====\n"), pContactInfo->uId);
 
 #endif
                     filter.m_eFilterState = E_FILTER_STATE_DN_1;
+
+                    continue;
                 }
                  
                 break;
@@ -270,7 +282,8 @@ public:
 
             }//switch
 
-        }
+            i++;
+        }//while
 
     }
 

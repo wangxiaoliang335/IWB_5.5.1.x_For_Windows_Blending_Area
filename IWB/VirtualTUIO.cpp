@@ -10,7 +10,6 @@ CVirtualTUIO::CVirtualTUIO()
 	szIP("127.0.0.1"),
 	m_nPort(3333)
 {
-	LoadTUIOConfig();
 }
 
 CVirtualTUIO::~CVirtualTUIO()
@@ -21,8 +20,12 @@ CVirtualTUIO::~CVirtualTUIO()
     }
 }
 
-void CVirtualTUIO::OpenTUIOServer()
+void CVirtualTUIO::OpenTUIOServer(bool bStart)
 {
+	if(bStart)
+	{
+	   LoadTUIOConfig();
+	}
 	if (tuioServer == NULL)
 	{
 		if ( (strcmp(szIP,"127.0.0.1")==0) && m_nPort ==3333)
@@ -137,7 +140,6 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 			iter++;
 		}
 	}
-
 //	tuioServer->stopUntouchedMovingCursors();
 	tuioServer->commitFrame(); //时间
 
@@ -146,14 +148,13 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 
 void CVirtualTUIO::Reset()
 {
-
 	ActiveCursorList.clear();
 }
 
 void CVirtualTUIO::ReopenTUIOServer()
 {
 	CloseTUIOServer();
-	OpenTUIOServer();
+	OpenTUIOServer(false);
 }
 
 bool CVirtualTUIO::LoadTUIOConfig()
@@ -168,25 +169,43 @@ bool CVirtualTUIO::LoadTUIOConfig()
 	if (pRootElement == NULL) return false;
 
 	TiXmlNode* pChild = NULL;
-	if (pChild = pRootElement->IterateChildren("Address", pChild))
+	do
 	{
-		const char* NodeName = pChild->Value();//节点名称
-		const char* lpszIP = ((TiXmlElement*)pChild)->Attribute("IP");
-		const char* lpszPort = ((TiXmlElement*)pChild)->Attribute("Port");
-		if (lpszIP == NULL || strlen(lpszIP) == 0 || lpszPort == NULL || strlen(lpszPort) == 0)
+		pChild = pRootElement->IterateChildren(pChild);
+		if (NULL == pChild) break;
+		const char* lpszElementName = pChild->Value();
+		if (_stricmp(lpszElementName, "Address") == 0)
 		{
-			return false;
+			const char* NodeName = pChild->Value();//节点名称
+			const char* lpszIP = ((TiXmlElement*)pChild)->Attribute("IP");
+			const char* lpszPort = ((TiXmlElement*)pChild)->Attribute("Port");
+			if (lpszIP == NULL || strlen(lpszIP) == 0 || lpszPort == NULL || strlen(lpszPort) == 0)
+			{
+				return false;
+			}
+			strcpy_s(szIP, _countof(szIP), lpszIP);
+			m_nPort = atoi(lpszPort);
 		}
-		strcpy_s(szIP, _countof(szIP),lpszIP);
-		m_nPort = atoi(lpszPort);
-	}
+		else if(_stricmp(lpszElementName, "Screen") == 0)
+		{
+			const char* NodeName = pChild->Value();//节点名称
+			const char* lpszWidth = ((TiXmlElement*)pChild)->Attribute("Width");
+			const char* lpszHeight = ((TiXmlElement*)pChild)->Attribute("Height");
+			if (lpszWidth == NULL || strlen(lpszWidth) == 0 || lpszHeight == NULL || strlen(lpszHeight) == 0)
+			{
+				return false;
+			}
+
+			m_nCxScreen = atoi(lpszWidth);
+			m_nCyScreen = atoi(lpszHeight);
+		}
+	} while (pChild);
 
 	return true;
 }
 
 bool CVirtualTUIO::SaveTUIOConfig()
 {
-
 	const TCHAR* lpszConfigFilePath = _T("TUIOConfig.xml");
 	TiXmlDocument oXMLDoc;
 	TiXmlDeclaration Declaration("1.0", "UTF-8", "no");
@@ -198,6 +217,12 @@ bool CVirtualTUIO::SaveTUIOConfig()
 	TiXmlElement * pElement = new TiXmlElement("Address");
 	pElement->SetAttribute("IP", szIP);
 	pElement->SetAttribute("Port", m_nPort);
+	pConfig->LinkEndChild(pElement);
+
+	pElement = new TiXmlElement("Screen");
+	pElement->SetAttribute("Width", m_nCxScreen);
+	pElement->SetAttribute("Height", m_nCyScreen);
+
 	pConfig->LinkEndChild(pElement);
 
 	//以UTF-8编码格式保存
@@ -252,7 +277,7 @@ bool CVirtualTUIO::SaveTUIOConfig()
 }
 //@功能：设置TUIO时的IP地址和端口号
 ////////////////////////////////
-void  CVirtualTUIO::SetIPadressAndPort(DWORD IP,int nPort)
+void  CVirtualTUIO::SetTUIOParams(DWORD IP,int nPort, int nScreenWindth, int nScreenHeight)
 {
 	char szTempIP[24];
 	sprintf_s(szTempIP,_countof(szTempIP),"%d.%d.%d.%d", (IP & 0xFF000000)>>24 , (IP & 0x00FF0000) >> 16, (IP & 0x0000FF00) >> 8, (IP & 0x000000FF));
@@ -262,9 +287,12 @@ void  CVirtualTUIO::SetIPadressAndPort(DWORD IP,int nPort)
 	   strcpy_s(szIP,_countof(szIP), szTempIP);
 	   m_nPort = nPort;
 
-       SaveTUIOConfig();
 	   ReopenTUIOServer();
 	}
+	m_nCxScreen = nScreenWindth ;
+	m_nCyScreen = nScreenHeight ;
+
+    SaveTUIOConfig();
 }
 
 //@功能：得到TUIO时的IP地址
@@ -280,4 +308,18 @@ DWORD  CVirtualTUIO::GetIPadress()
 int CVirtualTUIO::GetPort()
 {
 	return m_nPort;
+}
+int CVirtualTUIO::GetScreenWidth()
+{
+	return m_nCxScreen;
+}
+int CVirtualTUIO::GetScreenHeight()
+{
+	return m_nCyScreen;
+}
+
+void CVirtualTUIO::SetTUIOScreenDisplayChange(int nScreenX,int nScreenY)
+{
+	m_nCxScreen = nScreenX ;
+	m_nCyScreen = nScreenY ;
 }

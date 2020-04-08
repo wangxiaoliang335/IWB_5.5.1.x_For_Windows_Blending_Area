@@ -186,10 +186,6 @@ public:
         for (int i = 0; i < nCount; i++)
         {
             const TContactInfo& contactInfo = pContactInfos[i];
-            if (contactInfo.bIgnored)
-            {
-                continue;
-            }
 
             UINT32 uId = contactInfo.uId;
 
@@ -246,7 +242,7 @@ public:
                 break;
 
 
-            case E_INTERPOLATE_FIRST_SEGMENT://插值第一条曲线
+            case E_INTERPOLATE_FIRST_SEGMENT://插值第一条曲线,只使用一个控制点进行二阶Bezier插值
 
                 if (contactInfo.ePenState == E_PEN_STATE_UP)
                 {//无法插值直接输出P1, P2
@@ -255,7 +251,7 @@ public:
                     ciP1.uId = uId;
                     ciP1.pt.x = int(strokeInterpolateData.junctionPoints[1].d[0]);
                     ciP1.pt.y = int(strokeInterpolateData.junctionPoints[1].d[1]);
-                    ciP1.bIgnored = FALSE;
+                    //ciP1.bIgnored = FALSE;
 
                     AddInterpolatePoint(0, ciP1);
                     
@@ -267,15 +263,20 @@ public:
                 }
                 else if (contactInfo.ePenState == E_PEN_STATE_DOWN)
                 {
-                    if (IsSamePoint(strokeInterpolateData.junctionPoints[1], contactInfo.pt))
-                    {//同一个点
+                    if (IsSamePoint(strokeInterpolateData.junctionPoints[1], contactInfo.pt)
+                        ||
+                        IsSamePoint(strokeInterpolateData.junctionPoints[0], contactInfo.pt)
+                        )
+                    {//当前输入触控点和junctionPoints[1]为同一个点，则跳过插值，直接输出junctionPoints[1]
+                     //另外一种极端情形:
+                    //juntionPoints[0]和当前输入触控点为同一点，
 
                         TContactInfo ciP1;
                         ciP1.ePenState = E_PEN_STATE_DOWN;
                         ciP1.uId = uId;
                         ciP1.pt.x = int(strokeInterpolateData.junctionPoints[1].d[0]);
                         ciP1.pt.y = int(strokeInterpolateData.junctionPoints[1].d[1]);
-                        ciP1.bIgnored = FALSE;
+                        //ciP1.bIgnored = FALSE;
 
                         //无法插值直接输出P1, P2
                         AddInterpolatePoint(0, ciP1);
@@ -284,7 +285,6 @@ public:
                         strokeInterpolateData.junctionPoints[0].d[0] = (double)contactInfo.pt.x;
                         strokeInterpolateData.junctionPoints[0].d[1] = (double)contactInfo.pt.y;
                         strokeInterpolateData.state = E_FIRST_JUNCT_READY;
-
                     }
                     else
                     {
@@ -293,7 +293,14 @@ public:
                         strokeInterpolateData.junctionPoints[2].d[1] = (double)contactInfo.pt.y;
 
                         //计算控制点
-                        CalculateControlPoint(RATIO_BOTTOM, RATIO_TOP, strokeInterpolateData.junctionPoints, strokeInterpolateData.controlPoints);
+                        BOOL bSuccess = CalculateControlPoint(RATIO_BOTTOM, RATIO_TOP, strokeInterpolateData.junctionPoints, strokeInterpolateData.controlPoints);
+
+                        if (!bSuccess)
+                        {
+                            OutputDebugString(_T("Interpolate CalculateControlPoint failed!\n"));
+                            break;
+                        }
+
 
                         //计算插值点个数
                         interpolate_count = CalcInterpolateNumber(strokeInterpolateData.junctionPoints[0], strokeInterpolateData.junctionPoints[1]);
@@ -338,7 +345,7 @@ public:
                 break;
 
 
-            case E_INTERPOLATE_INTERM_SEGMENT://插值中间线段
+            case E_INTERPOLATE_INTERM_SEGMENT://插值中间线段,每条线段可以使用两个控制点进行三阶Bezier插值
                 if(contactInfo.ePenState == E_PEN_STATE_UP)
                 {   //光笔弹起，插值最后一条线段
 
@@ -389,11 +396,10 @@ public:
                 }
                 else if (contactInfo.ePenState == E_PEN_STATE_DOWN)
                 {
-                    
-                    
                     if (IsSamePoint(strokeInterpolateData.junctionPoints[1], contactInfo.pt))
                     {
-                        //计算插值点个数
+                       // 当前输入触控点和junctionPoints[1]为同一个点，则跳过插值，直接输出junctionPoints[1]
+                       //计算插值点个数
                         interpolate_count = CalcInterpolateNumber(strokeInterpolateData.junctionPoints[0], strokeInterpolateData.junctionPoints[1]);
 
                         if (interpolate_count > 1)	t_inc = 1.0 / (double)interpolate_count;
@@ -430,6 +436,23 @@ public:
                         strokeInterpolateData.state = E_FIRST_JUNCT_READY;
 
                     }
+                    else if (IsSamePoint(strokeInterpolateData.junctionPoints[0], contactInfo.pt))
+                    {//另外一种极端情形:
+                     //juntionPoints[0]和当前输入触控点为同一点，则不能做插值操作，直接输出中间结点和当前输入点
+                        TContactInfo ciP1;
+                        ciP1.uId = uId;
+                        ciP1.ePenState = E_PEN_STATE_DOWN;
+                        ciP1.pt.x = int(strokeInterpolateData.junctionPoints[1].d[0]);
+                        ciP1.pt.y = int(strokeInterpolateData.junctionPoints[1].d[1]);
+
+                        //Add ciP1
+                        AddInterpolatePoint(0, ciP1);
+                        AddInterpolatePoint(1, contactInfo);
+
+                        strokeInterpolateData.junctionPoints[0].d[0] = (double)contactInfo.pt.x;
+                        strokeInterpolateData.junctionPoints[0].d[1] = (double)contactInfo.pt.y;
+                        strokeInterpolateData.state = E_FIRST_JUNCT_READY;
+                    }
                     else
                     {
                         //光笔按下
@@ -437,13 +460,18 @@ public:
                         strokeInterpolateData.junctionPoints[2].d[1] = (double)contactInfo.pt.y;
 
                         //计算控制点
-                        CalculateControlPoint(RATIO_BOTTOM, RATIO_TOP, strokeInterpolateData.junctionPoints, &strokeInterpolateData.controlPoints[1]);
+                        BOOL bSuccess = CalculateControlPoint(RATIO_BOTTOM, RATIO_TOP, strokeInterpolateData.junctionPoints, &strokeInterpolateData.controlPoints[1]);
+
+                        if (!bSuccess)
+                        {
+                            OutputDebugString(_T("Interpolate CalculateControlPoint failed!\n"));
+                            break;
+                        }
+
 
                         //计算插值点个数
                         interpolate_count = CalcInterpolateNumber(strokeInterpolateData.junctionPoints[0], strokeInterpolateData.junctionPoints[1]);
 
-                        
-                        
                         if (interpolate_count > 1)	t_inc = 1.0 / (double)interpolate_count;
                         t = t_inc;
                         TPoint2D& P0 = strokeInterpolateData.junctionPoints[0];

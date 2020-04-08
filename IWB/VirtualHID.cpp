@@ -297,9 +297,7 @@ CVirtualHID::CVirtualHID()
 
 {
     memset(&m_TouchPoints[0], 0, sizeof(m_TouchPoints));
-    RetrievePointerDevices();
-
-    m_oVirtualTUIOTouch.OpenTUIOServer();
+    RetrievePointerDevices();    
 }
 
 
@@ -428,7 +426,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                  //搜索编号为0的笔信息
                 for (int i = 0; i < nPenCount; i++)
                 {
-                   if (!pPenInfos[i].bIgnored && pPenInfos[i].uId == 0 )
+                   if (pPenInfos[i].uId == 0 )
                    {
                        m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
                        break;
@@ -442,12 +440,12 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                      //搜索编号为0的笔信息
                      for (int i = 0; i < nPenCount; i++)
                      {
-                        if (!pPenInfos[i].bIgnored && pPenInfos[i].uId == 0)
+                        if (pPenInfos[i].uId == 0)
                         {
                            InputTouchPoints(&pPenInfos[i], 1);
                            break;
                         }
-                     }
+					 }
                   }
                   else
                   {
@@ -508,11 +506,6 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
     for (int i = 0; i < nPenCount; i++)
     {
-        if (aryContactInfos[i].bIgnored)
-        {
-            continue;
-        }
-
         m_TouchPoints[i].ContactId = aryContactInfos[i].uId;
         m_TouchPoints[i].bStatus = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN ? TIP_DOWN : TIP_UP;
 
@@ -1057,9 +1050,14 @@ void CVirtualHID::SetSinglePointMode(bool eMode)
 {
     m_bSinglePointMode = eMode;
 }
-void  CVirtualHID::SetIPadressAndPort(DWORD IP, int nPort)
+void  CVirtualHID::SetTUIOParams(DWORD IP, int nPort, int nScreenWindth, int nScreenHeight)
 {
-    m_oVirtualTUIOTouch.SetIPadressAndPort(IP, nPort);
+    m_oVirtualTUIOTouch.SetTUIOParams(IP, nPort, nScreenWindth, nScreenHeight);
+}
+
+void CVirtualHID::OpenTUIOServer(bool bStart)
+{
+	m_oVirtualTUIOTouch.OpenTUIOServer(bStart);
 }
 
 DWORD CVirtualHID::GetIPadress()
@@ -1070,6 +1068,20 @@ DWORD CVirtualHID::GetIPadress()
 int CVirtualHID::GetPort()
 {
     return m_oVirtualTUIOTouch.GetPort();
+}
+int CVirtualHID::GetScreenWidth()
+{
+	return m_oVirtualTUIOTouch.GetScreenWidth();
+}
+
+int CVirtualHID::GetScreenHeight()
+{
+	return m_oVirtualTUIOTouch.GetScreenHeight();
+}
+
+void CVirtualHID::SetTUIOScreenDisplayChange(int nScreenX ,int nScreenY)
+{
+	m_oVirtualTUIOTouch.SetTUIOScreenDisplayChange(nScreenX, nScreenY);
 }
 
 void CVirtualHID::SetTest30Point(BOOL bStart)

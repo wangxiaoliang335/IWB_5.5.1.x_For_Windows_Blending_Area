@@ -233,11 +233,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "FileDescription", "Laser Touch Calibration System "
-            VALUE "FileVersion", "5.4.0.11"
+            VALUE "FileVersion", "5.4.0.13"
             VALUE "InternalName", "Optical Pen"
             VALUE "OriginalFilename", "OpticalPen.exe"
             VALUE "ProductName", "Laser Touch  Calibration System"
-            VALUE "ProductVersion", "5.4.0.11"
+            VALUE "ProductVersion", "5.4.0.13"
         END
     END
     BLOCK "VarFileInfo"
@@ -434,7 +434,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
 IDD_OPTICALPEN_DIALOG DIALOGEX 0, 0, 528, 350
 STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Easi Gloview Laser Touch Calibration Program (Version 5.4.0.11)"
+CAPTION "Laser Touch Calibration Program (Version 5.4.0.13)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 END
@@ -670,15 +670,15 @@ BEGIN
     PUSHBUTTON      "Clear Log",IDC_BUTTON_CLEAR_RESULT,294,119,96,18
 END
 
-IDD_DIALOG_ADANCEDSETTINGS DIALOGEX 0, 0, 211, 109
+IDD_DIALOG_ADANCEDSETTINGS DIALOGEX 0, 0, 211, 137
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advance Settings Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,74,88,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,144,88,50,14
-    COMBOBOX        IDC_CAMERAFMT_COMBO,86,60,92,42,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Set Camera Format:",IDC_STATIC,16,63,65,8
+    DEFPUSHBUTTON   "OK",IDOK,80,119,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,150,119,50,14
+    COMBOBOX        IDC_CAMERAFMT_COMBO,91,97,92,42,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Set Camera Format:",IDC_STATIC,16,100,65,8
     LTEXT           "Touch Mode:",IDC_STATIC,15,18,42,8
     CONTROL         "HID Mode",IDC_CHECK_HID,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,65,17,47,10
     CONTROL         "TUIO Mode",IDC_CHECK_TUIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,133,17,52,10
@@ -686,6 +686,11 @@ BEGIN
     CONTROL         "",IDC_IPADDRESS_IP,"SysIPAddress32",WS_TABSTOP,65,35,72,13
     LTEXT           ":",IDC_STATIC,140,37,8,8
     EDITTEXT        IDC_EDIT_PORT,148,35,36,13,ES_AUTOHSCROLL
+    LTEXT           "TUIO ScreenWidth:",IDC_STATIC,16,57,63,8
+    LTEXT           "TUIO ScreenHeight:",IDC_STATIC,16,77,65,8
+    EDITTEXT        IDC_EDIT_SCREENWIDTH,91,54,40,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SCREENHEIGHT,91,75,40,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Default",IDC_BUTTON_DEFAULT,146,65,41,14
 END
 
 IDD_DIALOG_ADVANCED_SETTINGS DIALOGEX 0, 0, 349, 425
@@ -753,7 +758,7 @@ CAPTION "Gloview Laser Touch Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,211,10,20,20
-    LTEXT           "Gloview Laser Touch Calibration System 5.4.0.11",IDC_STATIC,8,10,148,8,SS_NOPREFIX
+    LTEXT           "Gloview Laser Touch Calibration System 5.4.0.13",IDC_STATIC,8,10,148,8,SS_NOPREFIX
     LTEXT           "EASI Tech Ltd. Copyright (C) 2017/07/25--2018/07/25",IDC_STATIC,8,21,200,8
     DEFPUSHBUTTON   "Ok",IDOK,171,72,50,16,WS_GROUP
     LTEXT           "Shanghai Easi Computer Technology Co.Ltd.",IDC_STATIC,8,32,140,8
@@ -770,7 +775,7 @@ CAPTION "Laser Touch Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,217,2,18,18
-    LTEXT           "Laser Touch Calibration System 5.4.0.11",IDC_STATIC,8,10,158,8,SS_NOPREFIX
+    LTEXT           "Laser Touch Calibration System 5.4.0.13",IDC_STATIC,8,10,158,8,SS_NOPREFIX
     DEFPUSHBUTTON   "Ok",IDOK,77,64,50,16,WS_GROUP
     LTEXT           "Copyright (C) 2017/07/25 --- 2018/07/25",IDC_STATIC,9,27,225,8
 END
@@ -903,7 +908,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 204
         TOPMARGIN, 10
-        BOTTOMMARGIN, 102
+        BOTTOMMARGIN, 130
         HORZGUIDE, 53
         HORZGUIDE, 79
     END

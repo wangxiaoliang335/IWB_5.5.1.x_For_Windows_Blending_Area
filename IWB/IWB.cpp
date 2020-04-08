@@ -223,7 +223,6 @@ BOOL CIWBApp::InitInstance()
     }
     g_oResStr.Initialize();
 
-
     m_hMutex = CreateMutex(NULL, TRUE, _T("Global\\OpticalPen_20140630"));
     if (m_hMutex != NULL)
     {

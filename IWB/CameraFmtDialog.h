@@ -36,9 +36,11 @@ public:
 	bool    GetTouchHIDMode();
 	bool    GetTouchTUIOMode();
 
-	void   SetIPadressAndPort(DWORD IP, int nPort);
+	void   SetTUIOParams(DWORD IP, int nPort,int nScreenWindth ,int nScreenHeight);
 	DWORD  GetIPAddress();
 	int    GetPort();
+	int    GetScreenWidth();
+	int    GetScreenHeight();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -55,4 +57,7 @@ public:
 	CIPAddressCtrl CIPAddress;
 	CEdit CPortEdit;
 
+	int m_nTUIOScreenWidth;
+	int m_nTUIOScreenHeight;
+	afx_msg void OnBnClickedButtonDefault();
 };
