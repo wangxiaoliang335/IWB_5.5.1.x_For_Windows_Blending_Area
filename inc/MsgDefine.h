@@ -97,6 +97,7 @@
 #define WM_REAR_PROJECTION                             (WM_USER+ 34)
 #define WM_CHANGE_VIDEODISPLAYDELAY                    (WM_USER+ 35)
 
+
 //摄像头状态
 //WPARAM, LPCTSTR字符串
 //LPARAM, 摄像头编号
@@ -139,3 +140,7 @@
 
 //四点标定结束标志
 #define WM_END_4_BASE_POINT_CALIBRATE       (WM_USER + 44)
+
+//摄像头参数设置
+#define WM_CHANGE_INSTALL_BRIGHTNESS  (WM_USER+ 45)
+#define WM_CHANGE_INSTALL_GRAMMA      (WM_USER+ 46)

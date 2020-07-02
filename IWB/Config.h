@@ -43,6 +43,13 @@ enum EDeviceTouchType
 	E_DEVICE_NOFIND                 , //没发现加密狗
 };
 
+//触控方式类型
+enum EAIROPERATE_CLICKMODE
+{
+	E_MODE_CLICK,
+	E_MODE_DOUBLE_CLICK,
+};
+
 /////手指触控的类型
 enum EFingerTouchControlType
 {
@@ -200,6 +207,9 @@ struct GlobalSettings
     BOOL                   bEnable4PointsCalibrate;//使能4点标定
 	BOOL                   bModifyResolution      ;//是否可以修改分辨率
 
+	BOOL                   bAirOperatePermission  ;
+	EAIROPERATE_CLICKMODE   eClickMode             ;
+
     GlobalSettings()
     {
         langCode                 = _T("");
@@ -234,6 +244,9 @@ struct GlobalSettings
         bSinglePointMode   = FALSE;
         bEnable4PointsCalibrate = FALSE;
 		bModifyResolution = FALSE;
+
+		bAirOperatePermission = FALSE;
+		eClickMode = E_MODE_CLICK;
     }
 };
 

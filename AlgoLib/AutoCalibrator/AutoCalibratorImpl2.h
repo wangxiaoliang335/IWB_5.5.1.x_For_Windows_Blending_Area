@@ -848,6 +848,7 @@ public:
         int nVertexIndex;//矢量关联的校正点下标
     };
 
+    //static const int MAX_NEIBHBOUR = 16;
     static const int MAX_NEIBHBOUR = 16;
 
     struct TVertex
@@ -926,6 +927,9 @@ public:
    // vecImage2ScreenMap, 每个视频图像中的角点到屏幕校正点编号的映射数组。
    BOOL DoCornerMatch(const std::vector<TImageCalibPoint>& corners, std::vector<int>& vecImage2ScreenMap);
 
+   //@功能:过滤不合格的边界点
+   //@返回:合格的边界点个数
+   int FilteroutUnqualifiedOutlayerVertex(TVertex* pVertex, int nVertexCount);
 
     //@功能:YUV分量累加黑白图像
     void Covert2MonochromeFrame_YUV(const CImageFrame& YUVFrame, CImageFrame& monoFrame)

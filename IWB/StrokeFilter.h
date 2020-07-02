@@ -302,8 +302,9 @@ private:
             m_aryFilters[i].m_eFilterState       = E_FILTER_STATE_UP;
         }
 
-        m_dbMaxSmoothCoef = 1.0;
         m_dbMinSmoothCoef = 0.0;
+        m_dbMaxSmoothCoef = 1.0;
+
     }
     //>
 

@@ -458,7 +458,6 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
     if (g_hDebugSampleFile1)
     {
 
-
         //输出光斑个数
         sprintf_s(
             szData,
@@ -490,32 +489,8 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
         fwrite("\n", 1, 1, g_hDebugSampleFile1);
         fflush(g_hDebugSampleFile1);
 
-
-
-
-        //for (int i = 0; i < nLightSpotCount; i++)
-        //{
-        //    char szData[128];
-        //    sprintf_s(
-        //        szData,
-        //        _countof(szData),
-        //        "[%06d]cam%02d,%g,%g,%d,%d,%d\n",
-        //        s_BatchNo,
-        //        dwCameraId,
-        //        pLightSpots[i].pt2dPosInVideo[0],
-        //        pLightSpots[i].pt2dPosInVideo[1],
-        //        pLightSpots[i].ptPosInScreen.x,
-        //        pLightSpots[i].ptPosInScreen.y,
-        //        pLightSpots[i].aux.bOutsideOwnedArea);
-
-        //    fwrite(szData, 1, strlen(szData), g_hDebugSampleFile1);
-        //    fflush(g_hDebugSampleFile1);
-        //}
     }
 
-
-
-    //
 #endif
 
     if(nLightSpotCount >  MAX_OBJ_NUMBER)
@@ -617,7 +592,6 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
         return FALSE;
     }
     
-
     //光斑组写入FIFO中去
     m_SpotListGroupFIFO.Write(m_InputSpotListGroup);
 
@@ -784,7 +758,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		     int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
 
 		     POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
-		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =10 ；
+		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =12 ；
 		     ///////////在200英寸的时候，偏差的值PixelNumber =6。这样列出一个线性方程式
 		     double  screenDigonalInMM = g_tSysCfgData.globalSettings.fScreenDiagonalPhysicalLength;
 //		     double  PixelNumber = (10936 - screenDigonalInMM) / 296;
@@ -798,8 +772,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 			     pts[i] = pLightSpots[i].ptPosInScreen;
 			     if ( (pts[i].x > nScreenX/8 && pts[i].x < nScreenX*7/8) && (pts[i].y > nScreenY/8 && pts[i].y < (nScreenY*7)/8) )
 			     {
-				      pts[i].x  = pts[i].x + PixelNumber;
-				      pts[i].y  = pts[i].y - PixelNumber;
+				      pts[i].x  = pts[i].x + (int)PixelNumber;
+				      pts[i].y  = pts[i].y - (int)PixelNumber;
 			     }
 		      }
 
@@ -808,7 +782,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		      const TMatchInfo* pMatchInfo = m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
 		      penCount = nElementCount;
 
-//		      m_oStrokFilter.DoFilter(penInfo, penCount);
+		      m_oStrokFilter.DoFilter(penInfo, penCount);
 
 		     for (int i = 0 ; i < penCount; i++ )
 		     {
@@ -833,8 +807,6 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
             //m_oVirtualHID.Reset();
             g_oGLBoardGR.ResetSmartMathch();
         }
-
-
         //m_bIsSmartPenReset = false;
 
         if (!DoWindowsGestureRecognition(pLightSpots, nLightSpotCount, penInfo, penCount))

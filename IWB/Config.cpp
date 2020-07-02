@@ -701,6 +701,29 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
 				}
 
 			}
+			else if(_stricmp(paramName, "AirOperatePermission") == 0)
+			{
+				if(paramValue && _stricmp(paramValue, "Yes") == 0)
+				{
+					globalSettings.bAirOperatePermission = TRUE;
+				}
+				else
+				{
+					globalSettings.bAirOperatePermission = FALSE;
+				}
+			}
+			else if(_stricmp(paramName, "AirOperateMode") == 0)
+			{
+				if (paramValue && _stricmp(paramValue, "Double_Click") == 0)
+				{
+					globalSettings.eClickMode = E_MODE_DOUBLE_CLICK;
+				}
+				else
+				{
+					globalSettings.eClickMode = E_MODE_CLICK;
+				}
+			}
+			else
 			{
 
 			}
@@ -946,6 +969,24 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
 	pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "ModifyResolution");
 	pElement->SetAttribute("value", globalSettings.bModifyResolution ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	///是否启用隔空操作设置
+	pXmlComment = new TiXmlComment("是否启用隔空操作设置");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "AirOperatePermission");
+	pElement->SetAttribute("value", globalSettings.bAirOperatePermission? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	//如果选择隔空操作的话，那么光斑消失后选择时单击还是双击
+	pXmlComment = new TiXmlComment("启用隔空操作后选择的点击方式");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "AirOperateMode");
+	pElement->SetAttribute("value", globalSettings.eClickMode == E_MODE_CLICK ? "Click" : "Double_Click");
 	pNode->LinkEndChild(pElement);
 
     return TRUE;

@@ -228,6 +228,8 @@ public:
 
 	  BOOL GenerateMaskFrameWithCalibrateData(CImageFrame& maskFrame, const RECT& rect, int nMonitorId = 0);
 	  void GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfElements);
+
+	  void UpdateUsbKey();
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;

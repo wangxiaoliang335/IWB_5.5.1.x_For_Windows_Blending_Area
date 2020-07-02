@@ -4,6 +4,8 @@
 #include "GestureSettingDlg.h"
 #include "CBPropertySheet.h"
 #include "DlgItemResizer.h"
+#include  "SparateOperationSettingDlg.h"
+
 
 class CParamsSettingPropertySheet :
     public CCBPropertySheet
@@ -18,6 +20,10 @@ protected:
 
     afx_msg void OnDestroy();
 
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
+	afx_msg void OnWindowPosChanging(WINDOWPOS* lpwndpos);
+
     DECLARE_MESSAGE_MAP()
 
 public:
@@ -30,7 +36,16 @@ public:
     void SetGlobalSettingInfo(const GlobalSettings& globalSettings);
 
     const TSensorConfig&   GetSensorConfig()const;
-    const GlobalSettings& GetGlobalSettings()const;
+//    const GlobalSettings& GetGlobalSettings()const;
+	const GlobalSettings& GetGlobalSettings();
+	void  GetAirOperateInfo();
+	virtual INT_PTR DoModal();
+
+public:
+	CAdvancedSettingsDlg        m_advSettingPage;
+	CGestureSettingDlg          m_gesSettingPage;
+	CSparateOperationSettingDlg   m_sparateOperatePage;
+
 
 protected:
 	//计算每个标签页面相对于PropertySheet左上角的矩形可视区
@@ -47,14 +62,4 @@ protected:
 	int m_nTabControlMarginTop   ;
 	int m_nTabControlMarginBottom;
 
-public:
-    CAdvancedSettingsDlg        m_advSettingPage;
-    CGestureSettingDlg          m_gesSettingPage;
-
-    afx_msg void OnSize(UINT nType, int cx, int cy);
-
-
-	virtual INT_PTR DoModal();
-	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
-	afx_msg void OnWindowPosChanging(WINDOWPOS* lpwndpos);
 };

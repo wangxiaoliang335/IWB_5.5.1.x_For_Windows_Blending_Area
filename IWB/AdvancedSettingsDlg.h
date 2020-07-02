@@ -1,6 +1,7 @@
 #pragma once
 #include "afxwin.h"
 #include "ScrollablePropertyPage.h"
+#include "afxcmn.h"
 // CAdvancedSettingsDlg dialog
 class CAdvancedSettingsDlg : public CScrollablePropertyPage
 {
@@ -59,6 +60,8 @@ public:
 	CSpinButtonCtrl  m_ctlVideoIsplayDelay;
 
 
+	CSpinButtonCtrl m_ctlInstallBrightness;
+	CSpinButtonCtrl m_ctlInstallGramma;
 
     //<<added by toxuke@gmail.com, 2012/08/20
 	//int m_nCalibrationDeviationXCompensation;
@@ -107,6 +110,16 @@ public:
     const TSensorConfig&   GetSensorConfig()const;
     const GlobalSettings& GetGlobalSettings()const;
 
+	afx_msg void OnBnClickedButtonAttachToAScreen();
+	afx_msg void OnBnClickedCheckDynamicmaskframecontrol();
+	afx_msg void OnBnClickedCheckAntijammingcontrol();
+
+	afx_msg void OnBnClickedCheckSinglepointmode();
+	afx_msg void OnBnClickedCheckDisablereflectionpoint();
+	afx_msg void OnEnChangeEditVideodisplaydelay();
+	afx_msg void OnChangeEditInstallbrightness();
+	afx_msg void OnChangeEditInstallgamma();
+
 
     TSensorConfig m_tSensorConfig;
 	GlobalSettings m_tGlobalSettings;	  
@@ -124,11 +137,6 @@ public:
     CScreenRecognition m_oScreenRecognition;//屏幕识别类。
     CIWBSensor*        m_pSensor           ;//指向传感器的指针
     
-	afx_msg void OnBnClickedButtonAttachToAScreen();
-	afx_msg void OnBnClickedCheckDynamicmaskframecontrol();
-	afx_msg void OnBnClickedCheckAntijammingcontrol();
 
-	afx_msg void OnBnClickedCheckSinglepointmode();
-	afx_msg void OnBnClickedCheckDisablereflectionpoint();
-	afx_msg void OnEnChangeEditVideodisplaydelay();
+
 };

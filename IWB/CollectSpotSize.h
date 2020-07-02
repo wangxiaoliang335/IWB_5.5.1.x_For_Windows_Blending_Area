@@ -54,9 +54,10 @@ typedef struct
 {
     POINT ptDisplay         ;//显示位置坐标
 
-    SIZE  size              ;//采样符号的尺寸尺寸
-    COLORREF clrSampleBefore;//采样前十字的颜色
-    COLORREF clrSampleAfter ;//采样后的十字的颜色
+    SIZE  size              ;       //采样符号的尺寸尺寸
+    COLORREF clrSampleBefore;       //采样前十字的颜色
+    COLORREF clrSampleAfter ;       //采样后的十字的颜色
+	COLORREF clrSampleAdjustment;   //采样调整的十字的颜色
     BOOL     bSampled       ;//已采样标志
     POINT ptCenter          ;//双线性插值是使用的坐标,为了更准确地进行双线性插值，
                              //我们将靠近屏幕边界的采样位置挪到屏幕边界处。
@@ -247,6 +248,7 @@ protected:
 
 	TCHAR     CollectSpotDragPath[MAX_PATH];
 	int       m_nCollectSensorCount;                 //需要采集光斑的sensor个数
+	BOOL      m_ShowFlag           ;
 
 	public:
 	  static SpotManualCollectInfoManager m_oSpotManualCollectInfoManager;

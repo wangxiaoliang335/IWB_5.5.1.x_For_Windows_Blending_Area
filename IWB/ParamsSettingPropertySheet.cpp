@@ -77,6 +77,8 @@ CParamsSettingPropertySheet::CParamsSettingPropertySheet(UINT nIDCaption, CWnd* 
     //m_advSettingPage.SetParent(this);
     AddPage(&m_gesSettingPage);
     //m_gesSettingPage.SetParent(this);
+
+	AddPage(&m_sparateOperatePage);
 }
 
 CParamsSettingPropertySheet::CParamsSettingPropertySheet(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage)
@@ -84,6 +86,8 @@ CParamsSettingPropertySheet::CParamsSettingPropertySheet(LPCTSTR pszCaption, CWn
 {
     AddPage(&m_advSettingPage);
     AddPage(&m_gesSettingPage);
+
+	AddPage(&m_sparateOperatePage);
 }
 
 CParamsSettingPropertySheet::~CParamsSettingPropertySheet(void)
@@ -109,6 +113,8 @@ void CParamsSettingPropertySheet::OnApply()
 {  
     m_advSettingPage.OnApply();
     m_gesSettingPage.OnApply();
+
+	m_sparateOperatePage.OnApply();
 }
 
 void CParamsSettingPropertySheet::OnCancel()
@@ -253,6 +259,9 @@ void CParamsSettingPropertySheet::SetIWBSensorInfo(CIWBSensor* pSensor, int nSen
 void CParamsSettingPropertySheet::SetGlobalSettingInfo(const GlobalSettings& globalSettings)
 {	
 	m_advSettingPage.m_tGlobalSettings = globalSettings;
+
+	m_sparateOperatePage.m_IsAirOperationPermitted = globalSettings.bAirOperatePermission;
+	m_sparateOperatePage.m_nAPClick = globalSettings.eClickMode ;
 }
 
 const TSensorConfig&   CParamsSettingPropertySheet::GetSensorConfig()const
@@ -260,8 +269,9 @@ const TSensorConfig&   CParamsSettingPropertySheet::GetSensorConfig()const
     return m_advSettingPage.m_tSensorConfig;
 }
 
-const GlobalSettings& CParamsSettingPropertySheet::GetGlobalSettings()const
+ const GlobalSettings& CParamsSettingPropertySheet::GetGlobalSettings()
 {
+	GetAirOperateInfo();
     return m_advSettingPage.m_tGlobalSettings;
 }
 
@@ -284,7 +294,6 @@ BOOL CParamsSettingPropertySheet::CalcPageRect(RECT *pPageRect)
 	if (NULL == pActivePage)  return FALSE;
 	pActivePage->GetWindowRect(&rcActivePage);
 	ScreenToClient(&rcActivePage);
-	
 
 	CRect rcTab;
 	CalcTabCtrlRect(&rcTab);
@@ -402,3 +411,10 @@ void CParamsSettingPropertySheet::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 		
 	}
 }
+
+void CParamsSettingPropertySheet::GetAirOperateInfo()
+{
+    m_advSettingPage.m_tGlobalSettings.bAirOperatePermission = m_sparateOperatePage.m_IsAirOperationPermitted;
+	m_advSettingPage.m_tGlobalSettings.eClickMode = (EAIROPERATE_CLICKMODE)m_sparateOperatePage.m_nAPClick;
+}
+

@@ -293,7 +293,9 @@ CVirtualHID::CVirtualHID()
     m_bTouchHIDMode(true),
     m_bTouchTUIOMode(false),
     m_bSinglePointMode(false),
-	m_bStartTest30Point(FALSE)
+	m_bStartTest30Point(FALSE),
+	m_bAirOperationMode(FALSE),
+	m_eClickMode(E_MODE_CLICK)
 
 {
     memset(&m_TouchPoints[0], 0, sizeof(m_TouchPoints));
@@ -424,14 +426,29 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
           {
             case E_DEV_MODE_MOUSE:
                  //搜索编号为0的笔信息
-                for (int i = 0; i < nPenCount; i++)
-                {
-                   if (pPenInfos[i].uId == 0 )
+				if(m_bAirOperationMode)
+				{
+					for (int i = 0; i < nPenCount; i++)
+					{
+						if (pPenInfos[i].uId == 0)
+						{
+							m_oVirtualMouse.Input_AirOperate(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt, m_eClickMode);
+							break;
+						}
+					}
+				}
+				else
+				{
+                   for (int i = 0; i < nPenCount; i++)
                    {
-                       m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
-                       break;
+                      if (pPenInfos[i].uId == 0 )
+                      {
+                          m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
+                          break;
+                      }
                    }
-                }
+				}
+
                 break;
             case E_DEV_MODE_TOUCHSCREEN:
                  ////如果选择的是单点触控的话，只响应一个点就可以了
@@ -440,11 +457,11 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                      //搜索编号为0的笔信息
                      for (int i = 0; i < nPenCount; i++)
                      {
-                        if (pPenInfos[i].uId == 0)
-                        {
-                           InputTouchPoints(&pPenInfos[i], 1);
-                           break;
-                        }
+                         if (pPenInfos[i].uId == 0)
+                         {
+                             InputTouchPoints(&pPenInfos[i], 1);
+                             break;
+                         }
 					 }
                   }
                   else
@@ -534,6 +551,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         case E_TOUCH_SCREEN_ASPECT_RATIO_AUTO:
             aspectRatioNominator = m_aspectRatioNominator;
             aspectRatioDenominator = m_aspectRatioDenominator;
+
             break;
 
         case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
@@ -580,12 +598,19 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             contactPos.x = y;
             contactPos.y = nMonitorPixelHeight - x;
 
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //2020/07/02>>
+
             break;
 
         case DISPLAYCONFIG_ROTATION_ROTATE180:
             contactPos.x = nMonitorPixelWidth - x;
             contactPos.y = nMonitorPixelHeight - y;
             break;
+
 
         case DISPLAYCONFIG_ROTATION_ROTATE270:
             temp = nMonitorPixelWidth;
@@ -594,6 +619,13 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
             contactPos.x = nMonitorPixelWidth - y;
             contactPos.y = x;
+
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //>>
+
             break;
 
         }//switch
@@ -696,6 +728,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         {
             m_TouchPoints[i].wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
             m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop ) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
+
         }
 
     }//for
@@ -704,6 +737,259 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
 
     return bRet;
+}
+
+BOOL CVirtualHID::InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int nPenCount, EAIROPERATE_CLICKMODE  eClickMode)
+{
+
+	if (nPenCount > _countof(m_TouchPoints))
+	{
+		nPenCount = _countof(m_TouchPoints);
+	}
+
+	if (nPenCount == 0) return FALSE;
+
+	if (m_hDev == INVALID_HANDLE_VALUE)
+	{
+		return FALSE;
+
+	}
+
+	TContactInfo aryContactInfos[MAX_TOUCH_POINT_COUNT];
+
+	if (nPenCount > _countof(aryContactInfos))
+	{
+		nPenCount = _countof(aryContactInfos);
+	}
+	memcpy(&aryContactInfos[0], pPenInfos, nPenCount * sizeof(TContactInfo));
+	
+	int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
+	int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
+	int nScreenLeft = 0;
+	int nScreenTop = 0;
+
+	for (int i = 0; i < nPenCount; i++)
+	{
+		m_TouchPoints[i].ContactId = aryContactInfos[i].uId;
+		m_TouchPoints[i].bStatus = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN ? TIP_UP : TIP_DOWN;
+
+		const POINT& ptContact = aryContactInfos[i].pt;
+
+		const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(ptContact.x, ptContact.y);
+		//POINTER_DEVICE_INFO* pPointerDeviceInfo = GetPointerDevice();
+		if (NULL == pDisplayDevInfo) return FALSE;
+		//if (NULL == pPointerDeviceInfo) return FALSE;
+
+		LONG nMonitorPixelLeft = pDisplayDevInfo->rcMonitor.left;
+		LONG nMonitorPixelTop = pDisplayDevInfo->rcMonitor.top;
+		LONG nMonitorPixelWidth = pDisplayDevInfo->rcMonitor.right - pDisplayDevInfo->rcMonitor.left;
+		LONG nMonitorPixelHeight = pDisplayDevInfo->rcMonitor.bottom - pDisplayDevInfo->rcMonitor.top;
+
+
+		//确定触屏的宽高比
+		int aspectRatioNominator = 16;
+		int aspectRatioDenominator = 9;
+		ETouchScreenAspectRatio eRatio;
+
+		eRatio = g_tSysCfgData.globalSettings.eTouchScreenAspectRatio;
+
+		switch (eRatio)
+		{
+		case E_TOUCH_SCREEN_ASPECT_RATIO_AUTO:
+			aspectRatioNominator = m_aspectRatioNominator;
+			aspectRatioDenominator = m_aspectRatioDenominator;
+
+			break;
+
+		case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
+			aspectRatioNominator = 16;
+			aspectRatioDenominator = 9;
+
+			break;
+
+		case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
+			aspectRatioNominator = 16;
+			aspectRatioDenominator = 10;
+
+			break;
+
+		case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
+			aspectRatioNominator = 4;
+			aspectRatioDenominator = 3;
+			break;
+		}//switch
+
+
+
+		POINT contactPos = aryContactInfos[i].pt;
+
+		long x = contactPos.x;
+		long y = contactPos.y;
+		long temp = 0;
+
+
+		//如果屏幕发生旋转则将触控的屏幕坐标转换为未旋转时的屏幕坐标
+		//switch (pPointerDeviceInfo->displayOrientation)
+		switch (pDisplayDevInfo->targetInfo.rotation)
+		{
+		case DISPLAYCONFIG_ROTATION_IDENTITY:
+			//Keep No Change
+			break;
+
+		case DISPLAYCONFIG_ROTATION_ROTATE90:
+
+			temp = nMonitorPixelWidth;
+			nMonitorPixelWidth = nMonitorPixelHeight;
+			nMonitorPixelHeight = temp;
+
+			contactPos.x = y;
+			contactPos.y = nMonitorPixelHeight - x;
+
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //2020/07/02>>
+
+			break;
+
+		case DISPLAYCONFIG_ROTATION_ROTATE180:
+			contactPos.x = nMonitorPixelWidth - x;
+			contactPos.y = nMonitorPixelHeight - y;
+			break;
+
+		case DISPLAYCONFIG_ROTATION_ROTATE270:
+			temp = nMonitorPixelWidth;
+			nMonitorPixelWidth = nMonitorPixelHeight;
+			nMonitorPixelHeight = temp;
+
+			contactPos.x = nMonitorPixelWidth - y;
+			contactPos.y = x;
+
+
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //2020/07/02>>
+
+			break;
+
+		}//switch
+
+
+		BOOL bDone = FALSE;
+
+
+		if (DISPLAYCONFIG_SCALING_ASPECTRATIOCENTEREDMAX == pDisplayDevInfo->targetInfo.scaling
+			||
+			DISPLAYCONFIG_SCALING_IDENTITY == pDisplayDevInfo->targetInfo.scaling
+			||
+			DISPLAYCONFIG_SCALING_CENTERED == pDisplayDevInfo->targetInfo.scaling)
+		{
+			WORD wXData = 0, wYData = 0;
+			OSVERSIONINFOEX osvinfex;
+			if (IsWin10OrGreater())
+			{
+				/*Version OS build
+				1909    18363.535
+				1903    18362.535
+				1809    17763.914
+				1803    17134.1184
+				1709    16299.1565
+				*/
+
+				m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+
+				if (RtlGetVersionWrapper(&osvinfex))
+				{
+					if (osvinfex.dwBuildNumber <= 16299)
+					{//版本1709(OS内部版本 16299.125)
+					 //m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+					}
+					else if (osvinfex.dwBuildNumber == 17134)
+					{//版本1803(OS内部版本 17134.1184)
+						if (pDisplayDevInfo->displayAdapterInfos.size() >= 2)
+						{//屏幕复制模式
+						 //m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+						}
+						else
+						{//屏幕嵌入在触屏内部的模型
+							m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL;
+						}
+					}
+					//else if (osvinfex.dwBuildNumber == 17763)
+					//{   //版本1809(OS内部版本 17763.253)
+					//m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+					//}
+
+				}
+			}
+			else
+			{
+				m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
+			}
+
+			switch (m_eTouchDataAdjustModel)
+			{
+			case E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO:
+			{//触屏按指定宽高比拉伸模型
+			 //Windows内部按照屏幕的物理宽高比对触控位置做了修正
+			 //屏幕虚拟像素宽度和像素高度就是按照指定的宽高比例计算出的虚拟宽度和高度，
+				int nMonitorVirtualPixelWidth = nMonitorPixelWidth;
+				int nMonitorVirtualPixelHeight = nMonitorPixelHeight;
+
+				if (aspectRatioNominator * nMonitorPixelHeight > aspectRatioDenominator * nMonitorPixelWidth)
+				{ //物理宽高比大于实际像素的宽高比,垂直像素数目保持不变, 水平虚拟像素增加
+					nMonitorVirtualPixelWidth = nMonitorVirtualPixelHeight * aspectRatioNominator / aspectRatioDenominator;
+				}
+				else if (aspectRatioNominator * nMonitorPixelHeight < aspectRatioDenominator * nMonitorPixelWidth)
+				{//物理宽高比小于实际像素的宽高比, 水平像素数目保持不变，垂直虚拟像素增加
+					nMonitorVirtualPixelHeight = nMonitorVirtualPixelWidth * aspectRatioDenominator / aspectRatioNominator;
+				}
+
+				wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
+				wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
+			}
+			break;
+
+			case E_TOUCH_DATA_AJUST_WITH_EMEBED_MODEL:
+			{//显示器内容嵌入在触屏中央模型
+				const int& nSourceWidth = pDisplayDevInfo->sourceMode.width;
+				const int& nSourceHeight = pDisplayDevInfo->sourceMode.height;
+				const int& nTargetWidth = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cx;
+				const int& nTargetHeight = pDisplayDevInfo->targetMode.targetVideoSignalInfo.activeSize.cy;
+
+				wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
+				wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+			}
+			break;
+			}//switch(m_eTouchDataAdjustModel)
+
+			m_TouchPoints[i].wXData = wXData;
+			m_TouchPoints[i].wYData = wYData;
+			bDone = TRUE;
+		}
+
+		if (!bDone)
+		{
+
+			m_TouchPoints[i].wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
+			m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
+		}
+	}//for
+
+	BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
+	for(int j = 0; j < nPenCount; j++)
+	{
+		if(m_TouchPoints[j].bStatus == TIP_DOWN)
+		{
+			m_TouchPoints[j].bStatus = TIP_UP;
+		}
+	}
+    bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
+
+	return bRet;
 }
 
 //@功能:判断虚拟驱动是否是打开的。
@@ -925,11 +1211,10 @@ BOOL CVirtualHID::CreateAutoOpenThread()
             (LPVOID)this,
             0,
             &dwThreadId);
-
-
     }
 
     return m_hAutoOpenThread == NULL ? FALSE : TRUE;
+
 }
 void CVirtualHID::CloseAutoOpenThread()
 {
@@ -1050,6 +1335,7 @@ void CVirtualHID::SetSinglePointMode(bool eMode)
 {
     m_bSinglePointMode = eMode;
 }
+
 void  CVirtualHID::SetTUIOParams(DWORD IP, int nPort, int nScreenWindth, int nScreenHeight)
 {
     m_oVirtualTUIOTouch.SetTUIOParams(IP, nPort, nScreenWindth, nScreenHeight);
@@ -1092,4 +1378,10 @@ void CVirtualHID::SetTest30Point(BOOL bStart)
 BOOL CVirtualHID::GetTest30Point()
 {
 	return m_bStartTest30Point;
+}
+
+void CVirtualHID::SetAirOperateMode(BOOL eMode,EAIROPERATE_CLICKMODE  eClickMode)
+{
+	m_bAirOperationMode = eMode;
+	m_eClickMode = eClickMode;
 }

@@ -172,8 +172,12 @@ BOOL COnlineRegisterDlg::OnInitDialog()
 	   {
 	         const AllUSBKeyTouchType *eAllUSBKeyTouchType = theApp.GatAllUSBKeyTouchType();
 	         m_strText.Append(g_oResStr[IDS_STRING497]);
+			 int nUsbKeyCount = 0;
 	         for (int i = 0; i < nCount; i++)
 	         {
+				 if (eAllUSBKeyTouchType[i].eUSBKeyTouchType == E_DEVICE_NOFIND) continue;
+
+				 nUsbKeyCount++;
 		          CString   strEachUSBKey = _T("");
 		          CString   strEachKey = _T("");
 		          CString   strEachPalmTouch = _T("--");
@@ -199,7 +203,7 @@ BOOL COnlineRegisterDlg::OnInitDialog()
 		           }
 		           CString  strFusion =_T("");
 		           strFusion.Format(g_oResStr[IDS_STRING464], (int)eAllUSBKeyTouchType[i].eScreenModeFromUsbKey+1);
-		           strEachKey.Format(_T("\r\n(%d:)%s(%s),%s"),i, strEachUSBKey, strEachPalmTouch, 
+		           strEachKey.Format(_T("\r\n(%d:)%s(%s),%s"), nUsbKeyCount, strEachUSBKey, strEachPalmTouch,
 			       eAllUSBKeyTouchType[i].eScreenModeFromUsbKey >= EScreenModeDouble ? (LPCTSTR)strFusion : g_oResStr[IDS_STRING463]);
 	               m_strText.Append(strEachKey);
 	         }

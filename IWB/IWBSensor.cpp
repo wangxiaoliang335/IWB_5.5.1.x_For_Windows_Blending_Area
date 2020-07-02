@@ -2087,3 +2087,9 @@ void CIWBSensor::GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfEle
 		_stprintf_s(lpszbuf, numberOfElements, _T("%s\\Sensor%02d\\WallMode\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, m_nID, _T("CollectSpotCross.xml"));
 	}
 }
+
+void CIWBSensor::UpdateUsbKey()
+{
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+	m_tCfgData.vecSensorModeConfig[eProjectionMode].advanceSettings.m_eTouchType = theApp.GetUSBKeyTouchType();
+}

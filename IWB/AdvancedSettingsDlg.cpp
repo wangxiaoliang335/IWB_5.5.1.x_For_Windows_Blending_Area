@@ -28,69 +28,76 @@ CAdvancedSettingsDlg::~CAdvancedSettingsDlg()
 
 void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialog::DoDataExchange(pDX);
+	CDialog::DoDataExchange(pDX);
 
 	TSensorModeConfig* TSensorModeConfig = NULL;
 
 	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
-	
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
-    DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, TSensorModeConfig->advanceSettings.nSpotProportion);
-    DDX_Control(pDX, IDC_SPIN_SPOTPROPORTION, m_ctlSpotProportion);
+	TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
-    DDX_Control(pDX, IDC_SPIN_SET_AUTOCALIBRATION_BRIGHTNESS, m_ctlNormalUserBrightness);
-    DDX_Text(pDX, IDC_EDIT_SET_AUTOCALIBRATE_AVERAGE_BRIGHTNESS, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
-    DDX_Control(pDX, IDC_SPIN_AUTOCALIBRATE_AVERAGE_BRIGHTNESS, m_ctlAutoCalibrationAveBrightness);
-    DDX_Text(pDX, IDC_EDIT_AUTOCALIBRATE_HILIGHT_GRAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray);
-    DDX_Control(pDX, IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY, m_ctlAutoCalibrateHiLightGray);
+	DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, TSensorModeConfig->advanceSettings.nSpotProportion);
+	DDX_Control(pDX, IDC_SPIN_SPOTPROPORTION, m_ctlSpotProportion);
+
+	DDX_Control(pDX, IDC_SPIN_SET_AUTOCALIBRATION_BRIGHTNESS, m_ctlNormalUserBrightness);
+	DDX_Text(pDX, IDC_EDIT_SET_AUTOCALIBRATE_AVERAGE_BRIGHTNESS, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
+	DDX_Control(pDX, IDC_SPIN_AUTOCALIBRATE_AVERAGE_BRIGHTNESS, m_ctlAutoCalibrationAveBrightness);
+	DDX_Text(pDX, IDC_EDIT_AUTOCALIBRATE_HILIGHT_GRAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray);
+	DDX_Control(pDX, IDC_SPINAUTOCALIBRATE_HILIGHT_GRAY, m_ctlAutoCalibrateHiLightGray);
 
 	DDX_Text(pDX, IDC_EDIT_VIDEODISPLAYDELAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.videoDislayDelay);
 	DDX_Control(pDX, IDC_SPIN_VIDEODISPLAYDELAY, m_ctlVideoIsplayDelay);
 
-    DDX_Radio(pDX, IDC_RADIO_PEN_TOUCH,  (int&)TSensorModeConfig->advanceSettings.m_eTouchType);
+	DDX_Radio(pDX, IDC_RADIO_PEN_TOUCH, (int&)TSensorModeConfig->advanceSettings.m_eTouchType);
 
-	DDX_Radio(pDX, IDC_DESKTOPMODE,(int&)m_tGlobalSettings.eProjectionMode);
+	DDX_Radio(pDX, IDC_DESKTOPMODE, (int&)m_tGlobalSettings.eProjectionMode);
 
-    //根据手触和笔触的不同设置不同的摄像头亮度参数。
+	//根据手触和笔触的不同设置不同的摄像头亮度参数。
 	//<<add by vera_zhao 2019.10.08
 	switch (TSensorModeConfig->advanceSettings.m_eTouchType)
 	{
-	    case E_DEVICE_PEN_TOUCH_WHITEBOARD:
-			DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
-		   break;
-	    case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
-			DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
-		   break;
-		case E_DEVICE_FINGER_TOUCH_CONTROL:
-			DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness);
-			break;
-		case E_DEVICE_PALM_TOUCH_CONTROL:
-			DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness);
+	case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+		DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
+		break;
+	case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+		DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
+		break;
+	case E_DEVICE_FINGER_TOUCH_CONTROL:
+		DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness);
+		break;
+	case E_DEVICE_PALM_TOUCH_CONTROL:
+		DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness);
 
-			break;
-		default:
-			break;
+		break;
+	default:
+		break;
 	}
-	//>>>end
-   //delete by vera_zhao
-//     DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT,
-//        (TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)?
-//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness
-//        :
-//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness
-//        );
 
-    DDX_Check(pDX, IDC_CHECK_RECORD_VIDEO, m_tGlobalSettings.bRecordVideo);
-    DDX_Check(pDX, IDC_CHECK_REAR_PROJECTOR,TSensorModeConfig->advanceSettings.bIsRearProjection);
+	//摄像头模式参数
+	DDX_Text(pDX, IDC_EDIT_INSTALLBRIGHTNESS, lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness);
+	DDX_Text(pDX, IDC_EDIT_INSTALLGAMMA, lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma);
+
+	//>>>end
+	//delete by vera_zhao
+	//     DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT,
+	//        (TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)?
+	//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness
+	//        :
+	//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness
+	//        );
+
+	DDX_Check(pDX, IDC_CHECK_RECORD_VIDEO, m_tGlobalSettings.bRecordVideo);
+	DDX_Check(pDX, IDC_CHECK_REAR_PROJECTOR, TSensorModeConfig->advanceSettings.bIsRearProjection);
 
 	/////////////////
-	DDX_Check(pDX,IDC_CHECK_DYNAMICMASKFRAMECONTROL,TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame);
+	DDX_Check(pDX, IDC_CHECK_DYNAMICMASKFRAMECONTROL, TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame);
 	DDX_Check(pDX, IDC_CHECK_ANTIJAMMINGCONTROL, TSensorModeConfig->advanceSettings.bIsAntiJamming);
 
 	DDX_Check(pDX, IDC_CHECK_DISABLEREFLECTIONPOINT, TSensorModeConfig->advanceSettings.bDisableReflectionSpot);
 	DDX_Check(pDX, IDC_CHECK_SINGLEPOINTMODE, m_tGlobalSettings.bSinglePointMode);
 
+	DDX_Control(pDX, IDC_SPIN_INSTALLBRIGHTNESS, m_ctlInstallBrightness);
+	DDX_Control(pDX, IDC_SPIN_INSTALLGAMMA, m_ctlInstallGramma);
 }
 
 
@@ -130,6 +137,8 @@ BEGIN_MESSAGE_MAP(CAdvancedSettingsDlg, CScrollablePropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_DISABLEREFLECTIONPOINT, &CAdvancedSettingsDlg::OnBnClickedCheckDisablereflectionpoint)
 	ON_EN_CHANGE(IDC_EDIT_VIDEODISPLAYDELAY, &CAdvancedSettingsDlg::OnEnChangeEditVideodisplaydelay)
 
+	ON_EN_CHANGE(IDC_EDIT_INSTALLBRIGHTNESS, &CAdvancedSettingsDlg::OnChangeEditInstallbrightness)
+	ON_EN_CHANGE(IDC_EDIT_INSTALLGAMMA, &CAdvancedSettingsDlg::OnChangeEditInstallgamma)
 END_MESSAGE_MAP()
 
 
@@ -160,13 +169,17 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	m_ctlAutoCalibrateHiLightGray.SetRange(0,255);
 	m_ctlVideoIsplayDelay.SetRange(0,200);
 
+	m_ctlInstallGramma.SetRange(0,1000);
+
 	if (m_pSensor->GetDeviceInfo().m_nPID == 0x9230 && m_pSensor->GetDeviceInfo().m_nVID == 0x05a3)
 	{
 		m_ctlNormalUserBrightness.SetRange(-64, 64);
+		m_ctlInstallBrightness.SetRange(-64,64);
 	}
 	else
 	{
 		m_ctlNormalUserBrightness.SetRange(0, 255);
+		m_ctlInstallBrightness.SetRange(0, 255);
 	}
 	m_bInitDone = TRUE;
 
@@ -316,14 +329,11 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
 		   break;
 
 	}
-//   if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//   {
-//        lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_PenTouchWhiteBoard.defaultParams.Prop_VideoProcAmp_Brightness;
-//    }
-//    else if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
-//    {
-//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_FingerTouchWhiteBoard.defaultParams.Prop_VideoProcAmp_Brightness;
-//    }
+
+	/////摄像头模式的参数调入
+	lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.installTunningSettings.defaultParams.Prop_VideoProcAmp_Brightness;
+	lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma = lensCfg.installTunningSettings.defaultParams.Prop_VideoProcAmp_Gamma;
+
 
     lensCfg.autoMaskSettings.cAutoMaskDetectThreshold =  lensCfg.autoMaskSettings.cAutoMaskDetectThresholdDefault;
 
@@ -620,15 +630,16 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		    default:
 			    break;
 		}
-//		if (m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
-//		{
-//		     strBrightnessCoefficient.Format(_T("%d"), lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
-//		}
-//		else {
-//			strBrightnessCoefficient.Format(_T("%d"), lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
-//		}
 
 		GetDlgItem(IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT)->SetWindowText(strBrightnessCoefficient);
+
+		strBrightnessCoefficient.Format(_T("%d"), lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness);
+		GetDlgItem(IDC_EDIT_INSTALLBRIGHTNESS)->SetWindowText(strBrightnessCoefficient);
+		CString  strGammaCoefficient;
+		strGammaCoefficient.Format(_T("%d"), lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma);
+
+		GetDlgItem(IDC_EDIT_INSTALLGAMMA)->SetWindowText(strGammaCoefficient);
+	     
 
 		//更新触控方式
 		switch (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType)
@@ -672,15 +683,6 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		    default:
 			    break;
 		}
-//		if (m_tSensorConfig.vecSensorModeConfig[1].advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//		{
-//			((CButton*)GetDlgItem(IDC_RADIO_PEN_TOUCH))->SetCheck(true);
-//			((CButton*)GetDlgItem(IDC_RADIO_FINGER_TOUCH))->SetCheck(false);
-//		}
-//		else {
-//			((CButton*)GetDlgItem(IDC_RADIO_PEN_TOUCH))->SetCheck(false);
-//			((CButton*)GetDlgItem(IDC_RADIO_FINGER_TOUCH))->SetCheck(true);
-//		}
 
 		CString  autoCalibrateExpectedBrightness;
 		autoCalibrateExpectedBrightness.Format(_T("%d"), lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
@@ -719,8 +721,6 @@ void CAdvancedSettingsDlg::OnBnClickedRadioWallMode()
 		else {
 			((CButton*)GetDlgItem(IDC_CHECK_DISABLEREFLECTIONPOINT))->SetCheck(false);
 		}
-
-
 
 		//更新到变量中去
 		UpdateData(TRUE);
@@ -762,13 +762,17 @@ void CAdvancedSettingsDlg::OnBnClickedRadioDeskTopMode()
 		   default:
 			  break;
 		}
-//		if (m_tSensorConfig.vecSensorModeConfig[0].advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD) {
-//			strBrightnessCoefficient.Format(_T("%d"), lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
-//		}
-//		else {
-//			strBrightnessCoefficient.Format(_T("%d"), lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
-//		}
+
 		GetDlgItem(IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT)->SetWindowText(strBrightnessCoefficient);
+
+		strBrightnessCoefficient.Format(_T("%d"), lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness);
+		GetDlgItem(IDC_EDIT_INSTALLBRIGHTNESS)->SetWindowText(strBrightnessCoefficient);
+		CString  strGammaCoefficient;
+		strGammaCoefficient.Format(_T("%d"), lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma);
+
+		GetDlgItem(IDC_EDIT_INSTALLGAMMA)->SetWindowText(strGammaCoefficient);
+
+
 		/////更新触控方式
 		switch (m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode].advanceSettings.m_eTouchType)
 		{
@@ -946,23 +950,6 @@ void CAdvancedSettingsDlg::OnEnChangeEditAutomaskdetectthreshold()
 			break;
 
 	}
-
-//    if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-//    {
-//        if (npos > lensCfg.normalUsageSettings_PenTouchWhiteBoard.cYThreshold)
-//        {
-//            npos = lensCfg.normalUsageSettings_PenTouchWhiteBoard.cYThreshold;
-//            bForceValidate = TRUE;
-//        }
-//    }
-//    else if(TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
-//    {
-//        if (npos > lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cYThreshold)
-//        {
-//            npos = lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cYThreshold;
-//            bForceValidate = TRUE;
-//        }
-//    }
 
 	if (bForceValidate)
 	{
@@ -1402,5 +1389,92 @@ void CAdvancedSettingsDlg::OnEnChangeEditVideodisplaydelay()
 		::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_VIDEODISPLAYDELAY, (WPARAM)0, (LPARAM)npos);
 	}
 
+	SetModified(TRUE);
+}
+
+
+void CAdvancedSettingsDlg::OnChangeEditInstallbrightness()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CScrollablePropertyPage::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+
+	if (!m_bInitDone)
+	{
+		return;
+	}
+	CString strText;
+	GetDlgItem(IDC_EDIT_INSTALLBRIGHTNESS)->GetWindowText(strText);
+
+	int npos = _ttoi(strText);
+	int bForceValidate = FALSE;
+
+	if (npos < AUTOCALIBRATION_BRIGHTNESS_MIX)
+	{
+		npos = AUTOCALIBRATION_BRIGHTNESS_MIX;
+		bForceValidate = TRUE;
+	}
+	if (npos > AUTOCALIBRATION_BRIGHTNESS_MAX)
+	{
+		npos = AUTOCALIBRATION_BRIGHTNESS_MAX;
+		bForceValidate = TRUE;
+	}
+
+	if (bForceValidate)
+	{
+		strText.Format(_T("%d"), npos);
+		GetDlgItem(IDC_EDIT_INSTALLBRIGHTNESS)->SetWindowText(strText);
+	}
+	else
+	{
+		::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_INSTALL_BRIGHTNESS, (WPARAM)0, (LPARAM)npos);
+	}
+	SetModified(TRUE);
+
+}
+
+
+void CAdvancedSettingsDlg::OnChangeEditInstallgamma()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CScrollablePropertyPage::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+
+	if (!m_bInitDone)
+	{
+		return;
+	}
+	CString strText;
+	GetDlgItem(IDC_EDIT_INSTALLGAMMA)->GetWindowText(strText);
+
+	int npos = _ttoi(strText);
+	int bForceValidate = FALSE;
+
+	if (npos < MIN_GAMMA_VAL)
+	{
+		npos = MIN_GAMMA_VAL;
+		bForceValidate = TRUE;
+	}
+	if (npos > MAX_GAMMA_VAL)
+	{
+		npos = MAX_GAMMA_VAL;
+		bForceValidate = TRUE;
+	}
+
+	if (bForceValidate)
+	{
+		strText.Format(_T("%d"), npos);
+		GetDlgItem(IDC_EDIT_INSTALLGAMMA)->SetWindowText(strText);
+	}
+	else
+	{
+		::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_INSTALL_GRAMMA, (WPARAM)0, (LPARAM)npos);
+	}
 	SetModified(TRUE);
 }

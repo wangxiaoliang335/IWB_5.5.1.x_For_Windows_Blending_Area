@@ -35,7 +35,7 @@ CVirtualMouse &g_oRefVirtualMouse = GetVirtualMouse();
 #define                MOUSE_MOVE_DISTANCE                           3
 #define                COLLECT_POINT_COUNT                           30
 #define                MOVE_DISTANCE                                 40
-#define                ROAM_INTERVAL_DISTANCE                        150 
+#define                ROAM_INTERVAL_DISTANCE                        100    //modify by vera 2020.5.9 150
 
 #define                TWOTOUCHS_MISSTOLERANCE_OFFSTATE              18
 

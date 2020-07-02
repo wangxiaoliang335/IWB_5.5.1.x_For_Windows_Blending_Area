@@ -236,8 +236,15 @@ BOOL CIWBApp::InitInstance()
     else
     {
         DWORD dwError = GetLastError();
+		//
+		if (ERROR_ACCESS_DENIED == dwError)
+		{
+			MessageBox(NULL, g_oResStr[IDS_STRING106], g_oResStr[IDS_STRING107], MB_ICONINFORMATION);
+			return FALSE;
+		}
         CAtlString strError = GetErrorMessage(dwError);
         LOG_ERR("CreateMutex Failed(0x%x):%s", dwError, (const char*)CT2CA(strError));
+
     }
 
     //AsyncLogInit(_T("OpticalPen.log"));
@@ -695,7 +702,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
     m_eScreenModeFromUsbKey = EScreenModeSingle;
 
     //手触/笔触模式
-    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+    m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
 	//手掌互动是计算加密狗的个数；
 	int nUSBKeyTouchCount = 0;
 
@@ -713,6 +720,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 			float fVersion = 0.0f;
 			int   nPalmType = 0;
 			int   nFingerContorlType = 0;
+			HRESULT hr = SDKREG_GetVersion(&fVersion, uKeyIndex);
+
             if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
             {
                 continue;
