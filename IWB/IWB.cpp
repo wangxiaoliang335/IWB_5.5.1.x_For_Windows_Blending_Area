@@ -321,6 +321,13 @@ BOOL CIWBApp::InitInstance()
         const DisplayDevInfo* pDisplayDevInfo = m_oDispMonitorFinder.GetDisplayDevInfo(i);
 
         if (pDisplayDevInfo == NULL) continue;
+
+        LOG_INF("Display Monitor Left=%d, top=%d right=%d, bottom=%d",
+            pDisplayDevInfo->rcMonitor.left,
+            pDisplayDevInfo->rcMonitor.top,
+            pDisplayDevInfo->rcMonitor.right,
+            pDisplayDevInfo->rcMonitor.bottom);
+
         int nDiplayAdpaterInfoCount = pDisplayDevInfo->displayAdapterInfos.size();
 
         for (int j = 0; j < nDiplayAdpaterInfoCount; j++)
