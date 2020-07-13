@@ -597,6 +597,12 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             contactPos.x = y;
             contactPos.y = nMonitorPixelHeight - x;
 
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //2020/07/02>>
+
             break;
 
         case DISPLAYCONFIG_ROTATION_ROTATE180:
@@ -611,6 +617,13 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
             contactPos.x = nMonitorPixelWidth - y;
             contactPos.y = x;
+
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //>>
+
             break;
 
         }//switch
@@ -828,6 +841,12 @@ BOOL CVirtualHID::InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int
 			contactPos.x = y;
 			contactPos.y = nMonitorPixelHeight - x;
 
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //2020/07/02>>
+
 			break;
 
 		case DISPLAYCONFIG_ROTATION_ROTATE180:
@@ -842,6 +861,14 @@ BOOL CVirtualHID::InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int
 
 			contactPos.x = nMonitorPixelWidth - y;
 			contactPos.y = x;
+
+
+            //<<2020/07/02
+            temp = nCxScreen;
+            nCxScreen = nCyScreen;
+            nCyScreen = temp;
+            //2020/07/02>>
+
 			break;
 
 		}//switch
