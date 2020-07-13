@@ -38,6 +38,7 @@
 #define IDD_DIALOG_ADANCEDSETTINGS      161
 #define IDC_CURSOR_SPLIT_HORZ           164
 #define IDC_CURSOR_HAND                 165
+#define IDD_DIALOG_SEPARATE_OPERATION   166
 #define IDS_ABOUTBOX                    400
 #define IDS_STRING102                   401
 #define IDS_STRING103                   402
@@ -236,6 +237,15 @@
 #define IDC_CHECK_SINGLEPOINTMODE       1137
 #define IDC_EDIT_VIDEODISPLAYDELAY      1138
 #define IDC_SPIN_VIDEODISPLAYDELAY      1139
+#define IDC_EDIT_INSTALLBRIGHTNESS      1140
+#define IDC_EDIT_INSTALLGAMMA           1141
+#define IDC_SPIN_INSTALLBRIGHTNESS      1142
+#define IDC_SPIN_INSTALLGAMMA           1143
+#define IDC_CHECK_AIROPERATION          1148
+#define IDC_RADIO_CLICK                 1149
+#define IDC_RADIO_DOUBLECLICK           1150
+#define IDC_SLIDER_SMOOTH               1155
+#define IDC_EDIT_SMOOTH                 1156
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
@@ -249,7 +259,6 @@
 #define IDC_EDIT_SCREENWIDTH            1211
 #define IDC_EDIT_SCREENHEIGHT           1212
 #define IDC_BUTTON_DEFAULT              1213
-
 #define IDC_STATIC_CAMERA_LIST          10000
 #define IDC_COMBO_CAMERA                10001
 #define IDC_STATIC_IMAGE_FORMAT         10002
@@ -451,9 +460,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_RESOURCE_VALUE        171
 #define _APS_NEXT_COMMAND_VALUE         32911
-#define _APS_NEXT_CONTROL_VALUE         1135
+#define _APS_NEXT_CONTROL_VALUE         1157
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

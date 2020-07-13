@@ -213,6 +213,8 @@ BOOL CIWBSensorManager::StartRunning(int nSensorID)
 //@参数:nSensorID, 传感器编号(0~n), -1时指全体传感器 
 BOOL CIWBSensorManager::StopRunning(int nSensorID)
 {
+	GetCfgData(g_tSysCfgData);
+
     int nSensorCount = (int)m_vecSensors.size();
     if(nSensorCount == 0) return FALSE;
 
@@ -532,6 +534,8 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
     this->m_pSpotListProcessor->GetVirtualHID().SetHIDMode(sysCfgData.globalSettings.eHIDDeviceMode);
 
 	this->m_pSpotListProcessor->GetVirtualHID().SetSinglePointMode(sysCfgData.globalSettings.bSinglePointMode?true:false);
+
+	this->m_pSpotListProcessor->GetVirtualHID().SetAirOperateMode(sysCfgData.globalSettings.bAirOperatePermission?true:false, sysCfgData.globalSettings.eClickMode);
 	//////add by zhaown 2019.9.25
 	////如果两种模式都为false的话，那么强行HID模式响应
 	if ((!sysCfgData.globalSettings.bTouchHIDMode) && (!sysCfgData.globalSettings.bTouchTUIOMode))
@@ -544,6 +548,7 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
     	this->m_pSpotListProcessor->GetVirtualHID().SetTouchHIDMode(sysCfgData.globalSettings.bTouchHIDMode?true:false);
 	}
 	this->m_pSpotListProcessor->GetVirtualHID().SetTouchTUIOMode(sysCfgData.globalSettings.bTouchTUIOMode?true:false);
+
 
     //<Added by Jiqw 201412041914
     //<Added Reason: 解决触屏模式下，windows两触点手势与windows下手势的冲突问题/>
@@ -591,12 +596,11 @@ void CIWBSensorManager::SetGlobalCfgData(TSysConfigData& sysCfgData)
 //@参数:allCfgData, 所有图像传感器的配置信息
 BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
 {
-    //sysCfgData.globalSettings.eHIDDeviceMode = this->m_oSpotListProcessor.GetVirtualHID().GetHIDMode();
     sysCfgData.globalSettings.eHIDDeviceMode = this->m_pSpotListProcessor->GetVirtualHID().GetHIDMode();
 
     size_t nSensorCount = m_vecSensors.size();
     if(nSensorCount == 0)return FALSE;
-//    sysCfgData.vecSensorConfig.resize(nSensorCount);
+//  sysCfgData.vecSensorConfig.resize(nSensorCount);
 
     for(size_t i=0; i < nSensorCount; i++)
     {
@@ -677,10 +681,12 @@ void CIWBSensorManager::OnCameraPlugIn(const TCaptureDeviceInstance& devInst)
     for(size_t i=0; i<m_vecSensors.size(); i++)
     {
         CIWBSensor& sensor = *m_vecSensors[i];
+
         if(sensor.IsDetecting()) continue;
+		//如果是从新插入摄像头，并且加密狗有变化
+		sensor.UpdateUsbKey();
 
         const TCaptureDeviceInstance& devInfo = sensor.GetDeviceInfo();
-
         ////如果是路径相等的话还要比较是不是PID和VID相等//modify by zhaown 
         if( (_tcsicmp(devInfo.m_strDevPath, devInst.m_strDevPath) == 0) &&(devInfo.m_nPID == devInst.m_nPID)&&(devInfo.m_nVID == devInst.m_nVID))
         {
@@ -1294,25 +1300,41 @@ BOOL CIWBSensorManager::StopRecording()
 //      lpszVideoPath2,传感器2的路径
 void CIWBSensorManager::LoadSrcFromAVI(LPCTSTR lpszVideoPath1, LPCTSTR lpszVideoPath2)
 {
+	int nSensorID = 0;
     if(lpszVideoPath1 && _tcslen(lpszVideoPath1))
     {
-        if(m_vecSensors[0] && m_vecSensors[0]->IsDetecting())
+		CString strpath1 = lpszVideoPath1;
+		int pos = strpath1.ReverseFind(_T('Sensor'));
+		if (pos > -1)
+		{
+			strpath1 = strpath1.Mid(pos + _tcslen(_T("Sensor")), 1);
+		    nSensorID = _ttoi(strpath1);
+		}
+
+        if(m_vecSensors[nSensorID] && m_vecSensors[nSensorID]->IsDetecting())
         {
-            m_vecSensors[0]->GetInterceptFilter()->InputFromAVIFile(lpszVideoPath1);
+            m_vecSensors[nSensorID]->GetInterceptFilter()->InputFromAVIFile(lpszVideoPath1);
         }
     }
 
     if (m_vecSensors.size() > 1)//2019/10/15
     {
+	    nSensorID = 1;
         if (lpszVideoPath2 && _tcslen(lpszVideoPath2))
         {
-            if (m_vecSensors[1] && m_vecSensors[1]->IsDetecting())
+			CString strpath2 = lpszVideoPath1;
+			int pos = strpath2.ReverseFind(_T('Sensor'));
+			if (pos > -1)
+			{
+				strpath2 = strpath2.Mid(pos + _tcslen(_T("Sensor")), 1);
+			    nSensorID = _ttoi(strpath2);
+			}
+            if (m_vecSensors[nSensorID] && m_vecSensors[nSensorID]->IsDetecting())
             {
-                m_vecSensors[1]->GetInterceptFilter()->InputFromAVIFile(lpszVideoPath2);
+                m_vecSensors[nSensorID]->GetInterceptFilter()->InputFromAVIFile(lpszVideoPath2);
             }
         }
     }
-
 }
 
 ////@功能:交换两个图像传感器的显示画面

@@ -189,6 +189,7 @@
     <OutDir>..\bin\$(Configuration)\</OutDir>
     <IntDir>..\Intermidate\$(ProjectName)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PicoProjector|Win32'">
     <OutDir>..\bin\$(Configuration)\</OutDir>
@@ -217,7 +218,6 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalOptions>/wd4430 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -480,7 +480,6 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>../inc;../BaseClasses;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;LOG_ENABLED;NO_COMPANY_INFORMATION; _LOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -488,6 +487,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;LOG_ENABLED;NO_COMPANY_INFORMATION;_LOG;STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -495,7 +495,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>uafxcw.lib;Libcmt.lib;../lib/$(Configuration)/strmbase.lib;Winmm.lib;strmiids.lib;../lib/$(Configuration)/AlgoLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>uafxcw.lib;Libcmt.lib;../lib/$(Configuration)/strmbase.lib;Winmm.lib;strmiids.lib;../lib/$(Configuration)/AlgoLib.lib;glut32.lib;sdl.lib;sdlmain.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)IWB.exe</OutputFile>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
@@ -509,6 +509,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreSpecificDefaultLibraries>uafxcw.lib;Libcmt.lib;MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>../IWB_TUIO/sdl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>../SignTools/sign.cmd "$(TargetPath)"</Command>
@@ -832,6 +833,7 @@
     <ClCompile Include="SensorTimerAction.cpp" />
     <ClCompile Include="Shortcut.cpp" />
     <ClCompile Include="SimulateCalibarationParamDlg.cpp" />
+    <ClCompile Include="SparateOperationSettingDlg.cpp" />
     <ClCompile Include="SpotListProcessor.cpp" />
     <ClCompile Include="SpotMeger.cpp" />
     <ClCompile Include="SpotSettingDlg.cpp" />
@@ -847,6 +849,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_JinYanWei|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RemoteDebug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RemoteRelease|Win32'">Create</PrecompiledHeader>
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
     <ClCompile Include="TinyXML\tinystr.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -1036,6 +1039,7 @@
     <ClInclude Include="Shortcut.h" />
     <ClInclude Include="SimulateCalibarationParamDlg.h" />
     <ClInclude Include="SmartMatch.h" />
+    <ClInclude Include="SparateOperationSettingDlg.h" />
     <ClInclude Include="SpotListProcessor.h" />
     <ClInclude Include="SpotMerger.h" />
     <ClInclude Include="SpotSettingDlg.h" />

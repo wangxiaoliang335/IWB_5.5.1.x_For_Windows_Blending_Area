@@ -670,6 +670,7 @@ protected:
 //      pTurnPoints, 拐点数组
 //      nTurnPoints, 拐点数组元素个数
 template<class TVertex, class TTurnPoint>
+
 int SearchTurnPoint(const TVertex* pVertices, int nVerticeCount, TTurnPoint* pTurnPoints, int nTurnPointBuf)
 {
     int nFound = 0;

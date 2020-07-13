@@ -224,7 +224,7 @@ public:
 
     void Clear(T value = T(0x00))
     {
-        int nLoopCount = m_nPixelCount;
+        long nLoopCount = m_nPixelCount;
         int i = 0;
         while(nLoopCount--)
         {

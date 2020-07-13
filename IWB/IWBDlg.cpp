@@ -2020,6 +2020,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             //在检测到新设备时重新读取加密狗
                             theApp.ReadUSBKey();
 							UpdateInfoAboutDongle();
+
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
                         }
                     }
@@ -2180,7 +2181,10 @@ void CIWBDlg::OnMenuParameterSettings()
 
 		TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
         //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
-		if (g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15)
+		if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
+			|| g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
+			|| g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
+			)
 		{
 			if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
 			{
@@ -2224,6 +2228,7 @@ void CIWBDlg::OnMenuParameterSettings()
 		else {
 			pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
 		}
+		//是否单点操作
 		if (g_tSysCfgData.globalSettings.bSinglePointMode)
 		{
 		    this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
@@ -2233,6 +2238,19 @@ void CIWBDlg::OnMenuParameterSettings()
 			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
 		}
 
+		/////是否进行隔空操作
+		EAIROPERATE_CLICKMODE eClickMode = g_tSysCfgData.globalSettings.eClickMode;
+		if(g_tSysCfgData.globalSettings.bAirOperatePermission)
+		{
+			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(true, eClickMode);
+		}
+		else
+		{
+			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(false, eClickMode);
+		}
+
+		//设置平滑系数
+		this->m_oIWBSensorManager.GetSpotListProcessor().SetSmoothCoefficient(TSensorModeConfig->advanceSettings.nSmoothCoefficient);
 
     }//if
 }
@@ -2966,7 +2984,6 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
             }
         }
     }
-
 
     //
     if (!g_tSysCfgData.globalSettings.bEnable4PointsCalibrate)
@@ -4994,7 +5011,10 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 		 TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
 
 		 //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
-		 if (g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15)
+		 if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
+			 || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
+			 || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
+			)
 		 {
 			 if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
 			 {
@@ -5046,6 +5066,20 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 		 {
 			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
 		 }
+
+		 /////是否进行隔空操作
+		 EAIROPERATE_CLICKMODE eClickMode = g_tSysCfgData.globalSettings.eClickMode;
+		 if (g_tSysCfgData.globalSettings.bAirOperatePermission)
+		 {
+			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(true, eClickMode);
+		 }
+		 else
+		 {
+			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(false, eClickMode);
+		 }
+
+		 //设置平滑系数
+		 this->m_oIWBSensorManager.GetSpotListProcessor().SetSmoothCoefficient(TSensorModeConfig->advanceSettings.nSmoothCoefficient);
 
     }//if
 
@@ -5560,6 +5594,7 @@ void CIWBDlg::OnMenuEnableDrawOnlineScreenArea()
 {
 	// TODO: Add your command handler code here
 	this->m_oIWBSensorManager.EnableOnlineScreenArea(!this->m_oIWBSensorManager.IsEnableOnlineScreenArea());
+
 }
 
 void CIWBDlg::OnMenuTouchScreenLayoutDesigner()

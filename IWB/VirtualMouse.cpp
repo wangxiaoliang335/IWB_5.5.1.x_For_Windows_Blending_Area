@@ -20,7 +20,6 @@ void CVirtualMouse::SetDeviceHandle(HANDLE hDriverDevice)
 }
 
 
-
 //功能:给虚拟鼠标输入光笔数据
 //参数:bPenOn, 光笔亮灭标志
 //     pPos, 光笔位置,屏幕坐标
@@ -119,6 +118,77 @@ void CVirtualMouse::Input(BOOL bPenOn, const POINT* pPos, BOOL bForceUseWinAPI)
         break;
     }//switch
 
+}
+
+
+//功能:给虚拟鼠标输入光笔数据
+//参数:bPenOn, 光笔亮灭标志
+//     pPos, 光笔位置,屏幕坐标
+//     hDriverDevice, 驱动设备句柄
+void CVirtualMouse::Input_AirOperate(BOOL bPenOn, const POINT* pPos, EAIROPERATE_CLICKMODE eClickMode, BOOL bForceUseWinAPI)
+{
+	POINT ptPenPos;
+	ptPenPos.x = ptPenPos.y = 0;
+	if (pPos)
+	{
+		ptPenPos.x = pPos->x;
+		ptPenPos.y = pPos->y;
+	}
+
+	m_bForceUseWinAPI = bForceUseWinAPI;
+	//状态机描述
+	switch (m_eVirutalMouseState)
+	{
+	case VIRTUAL_MOUSE_STATE_IDLE:
+
+		if (bPenOn)
+		{
+			GenEvent(ptPenPos, E_MOUSE_MOVE);
+			m_ptLastPenAbsolutePos = ptPenPos;
+			m_eVirutalMouseState = VIRTUAL_MOUSE_STATE_MOVE;
+		}
+		break;
+
+	case VIRTUAL_MOUSE_STATE_MOVE://模拟鼠标的移动功能
+
+		if (bPenOn)
+		{
+			if (m_ptLastPenAbsolutePos != ptPenPos)
+			{
+				GenEvent(ptPenPos, E_MOUSE_MOVE);
+				m_ptLastPenAbsolutePos = ptPenPos;
+			}
+		}
+		else
+		{
+			switch(eClickMode)
+			{
+			   case E_MODE_CLICK:
+
+				    GenEvent(ptPenPos, E_LBUTTON_DOWN);
+					GenEvent(ptPenPos, E_LBUTTON_UP);
+				  break;
+
+			   case E_MODE_DOUBLE_CLICK:
+
+				   GenEvent(ptPenPos, E_LBUTTON_DOWN);
+				   GenEvent(ptPenPos, E_LBUTTON_UP);
+
+				   GenEvent(ptPenPos, E_LBUTTON_DOWN);
+				   GenEvent(ptPenPos, E_LBUTTON_UP);
+
+				  break;
+			   default:
+				   break;
+
+			}
+			m_eVirutalMouseState = VIRTUAL_MOUSE_STATE_IDLE;
+		}
+		break;
+
+	default:
+		break;
+	}//switch
 
 }
 

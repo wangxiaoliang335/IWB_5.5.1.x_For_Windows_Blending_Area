@@ -455,9 +455,9 @@ HRESULT CVideoPlayer::PlayVideo(HWND hWnd,  HWND hNotifyWnd)
         //AtlTrace(_T("IMediaControl::Run return Error:%s\r\n"), lpMsgBuf);
 
         //ֹ֪ͨͣ״̬
-        CString strStatusText;
-        strStatusText.Format(_T("%s,%s"), g_oResStr[IDS_STRING443],lpMsgBuf);
-        PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)strStatusText, (LPARAM)m_nID);
+//      CString strStatusText;
+//      strStatusText.Format(_T("%s,%s"), g_oResStr[IDS_STRING443],lpMsgBuf);
+        PostMessage(m_hNotifyWnd, WM_CAMERA_STATUS_NOTIFY, (WPARAM)(LPCTSTR)g_oResStr[IDS_STRING443], (LPARAM)m_nID);
 
         LOG_ERR("(%s) m_pMC->Run() failed with error code: 0x%x, %s", __FUNCTION__, hr, (const char*)CT2CA((LPTSTR)lpMsgBuf));
         LocalFree(lpMsgBuf);
@@ -1163,7 +1163,6 @@ BOOL CVideoPlayer::SetImageFormat(const VIDEOINFOHEADER& vih)
             }
         }
 
-
 #ifdef _DEBUG
         PrintObjRef(m_pCaptureFilter);
 #endif
@@ -1192,8 +1191,6 @@ BOOL CVideoPlayer::SetImageFormat(const VIDEOINFOHEADER& vih)
                     {
                         LOG_ERR("IAMStreamConfig Set Image Format Failed With Error 0x%x \r\n", hr);
                     }
-
-
                 }
 
 #ifdef _DEBUG
@@ -1237,7 +1234,6 @@ BOOL CVideoPlayer::GetVideoSize(SIZE&  size)
         return FALSE;
     }
 
-
      AM_MEDIA_TYPE*   pmt = NULL;
     
      hr = ptrConfig->GetFormat(&pmt);
@@ -1258,8 +1254,6 @@ BOOL CVideoPlayer::GetVideoSize(SIZE&  size)
          {
              return FALSE;
          }
-
-
      }
      else if (pmt->formattype == FORMAT_VideoInfo2)
      {
@@ -1288,7 +1282,6 @@ HRESULT CVideoPlayer::ShowPropertyPage(HWND hwndParent)
 {	
     if(!m_pCaptureFilter) return E_POINTER;
     HRESULT hr = S_OK;
-
 
     CComPtr<ISpecifyPropertyPages> ptrSpecify = NULL;
 

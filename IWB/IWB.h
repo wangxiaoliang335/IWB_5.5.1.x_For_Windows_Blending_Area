@@ -119,7 +119,7 @@ public:
     //      第二次及以后则不再弹出兑换框。
     void ReadUSBKey(BOOL bFirstTime = FALSE, int nSersorcount=0);
 
-
+	const double* GetCompensateParams(long *nCount);
 
 protected:
     DECLARE_MESSAGE_MAP()
@@ -139,10 +139,9 @@ protected:
     
     //EScreenType    m_eScreenType; //0:为单屏，1：为双屏
 
-
     EScreenMode    m_eScreenModeFromUsbKey;//从机密狗注册信息中得到的屏幕模式
-    
-    
+   
+
     BOOL           m_bFoundHardwareUSBKey;//发现硬件USB Key标志
     BOOL           m_bIsOnlineRegistered;//是否在线注册了。
     CString m_strLanguageCode;//语言编码
@@ -151,6 +150,8 @@ protected:
 
 	CUsbCameraDeviceList   m_oUSBCameraList;//视频设备列表
 
+	const static   int     COMPENSATE_NUM = 5;
+	double    m_pParams[COMPENSATE_NUM];
     //static const int m_nStartDelayTime = 5000;//10000ms,最大启动延迟时间
 
 };

@@ -77,11 +77,15 @@ public:
 	void SetTest30Point(BOOL bStart);
 	BOOL GetTest30Point();
 
+	void SetAirOperateMode(BOOL eMode, EAIROPERATE_CLICKMODE  eClickMode);
+
 protected:
 	//@功能:模拟触屏输入
 	//@参数:penInfos, 指向光笔数组的指针
 	//      nPenCount, 光笔支数
 	BOOL InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount);
+
+	BOOL InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int nPenCount, EAIROPERATE_CLICKMODE  eClickMode);
 
 	//@功能:检索指针设备信息
 	BOOL RetrievePointerDevices();
@@ -101,11 +105,13 @@ protected:
 	bool     m_bTouchHIDMode  ;
 	bool     m_bTouchTUIOMode ;
 
-	bool     m_bSinglePointMode;
-
-	BOOL      m_bStartTest30Point;
-
+	bool     m_bSinglePointMode;  //是否开启单点响应
+	BOOL     m_bStartTest30Point; //用来测试这个系统是否支持三十点触控
 	CTouchTester  m_oTouchTester;
+
+	BOOL     m_bAirOperationMode;
+	EAIROPERATE_CLICKMODE  m_eClickMode;
+
 
 	static const int MAX_TOUCH_POINT_COUNT = MAX_SUPPORT_TOUCH_COUNT;
 	EASI_TouchPoint m_TouchPoints[MAX_TOUCH_POINT_COUNT];

@@ -561,8 +561,6 @@ public:
 					for(unsigned int j=0; j< 4;j++)
 					{
 						BYTE cData = dwData & 0xFF;
-
-
 						if(0x00 == cData)
 						{
 							bBreak = TRUE;

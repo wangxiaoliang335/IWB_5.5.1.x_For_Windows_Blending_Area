@@ -71,7 +71,7 @@ public:
     //@功能:对输入的笔迹进行滤波处理
     //@参数:pContactInfo, 输入/输出参数, 触控点信息
     //      nCount, 输入的触控点个数
-    void DoFilter(TContactInfo* pContactInfo, int& nCount)
+    void DoFilter(TContactInfo* pContactInfo, int& nCount, double nSmoothCoefficient = 0.1)
     {
         //for(int i=0; i < nCount; i++)
         int i = 0;
@@ -239,7 +239,7 @@ public:
                         //根据不同的书写区的定位公差不同来调制平滑系数
                         double dbModulationFactorX = 1.0;
                         double dbModulationFactorY = 1.0;
-                        this->m_oToleranceDistribute.GetModulateFactors(contactInfo.pt, &dbModulationFactorX, &dbModulationFactorY);
+                        this->m_oToleranceDistribute.GetModulateFactors(contactInfo.pt, nSmoothCoefficient,&dbModulationFactorX, &dbModulationFactorY);
                         double smooth_coef_x = smooth_coef*dbModulationFactorX;
                         double smooth_coef_y = smooth_coef*dbModulationFactorY;
 
@@ -302,8 +302,9 @@ private:
             m_aryFilters[i].m_eFilterState       = E_FILTER_STATE_UP;
         }
 
-        m_dbMaxSmoothCoef = 1.0;
         m_dbMinSmoothCoef = 0.0;
+        m_dbMaxSmoothCoef = 1.0;
+
     }
     //>
 

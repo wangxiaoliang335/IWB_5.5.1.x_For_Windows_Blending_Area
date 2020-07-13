@@ -338,7 +338,7 @@ public:
     //     ptMouse, 光笔位置,屏幕坐标
 
     void Input(BOOL bPenOn, const POINT* ptMouse, BOOL bUseWinAPI = FALSE);
-
+	void Input_AirOperate(BOOL bPenOn, const POINT* ptMouse, EAIROPERATE_CLICKMODE eClickMode, BOOL bUseWinAPI = FALSE);
 
     //功能:状态复位
     void Reset();

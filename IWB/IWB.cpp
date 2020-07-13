@@ -98,9 +98,6 @@ SIZE GetActualScreenControlSize()
     return szScreen;
 }
 
-
-
-
 // CIWBApp
 BEGIN_MESSAGE_MAP(CIWBApp, CWinApp)
     ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
@@ -123,7 +120,6 @@ m_bIsOnlineRegistered(FALSE)
 {
     // TODO: add construction code here,
     // Place all significant initialization in InitInstance
-
     //提升程序进程优先级为实时
     SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
 }
@@ -154,7 +150,6 @@ VOID CALLBACK  timerProc(
     _In_ DWORD    dwTime)
 {
 
-
     DWORD dwElapseTime = dwTime - g_dwBeginTime;
 
     if (dwElapseTime > EVALUATION_USE_TIME)
@@ -183,14 +178,12 @@ BOOL CIWBApp::InitInstance()
 
     //载入配置信息
     ::LoadConfig(PROFILE::CONFIG_FILE_NAME, g_tSysCfgData);
-
     m_strLanguageCode = g_tSysCfgData.globalSettings.langCode;
 
     //事先载入语言资源，因为如果有多个实例时需要给出提示信息
     //查找OEM_RES.dll文件, 如果有则载入, 否则载入
     HINSTANCE hResource = NULL;
     hResource = LoadOEMResource();
-
 
     if (!hResource)//载入OEM资源失败,则依照
     {
@@ -212,14 +205,12 @@ BOOL CIWBApp::InitInstance()
         //载入失败则缺省载入英文资源
         m_strLanguageCode = _T("EN");
         g_oResStr.SetResInst(AfxGetResourceHandle());
-
     }
     else
     {
         AfxSetResourceHandle(hResource);
         _AtlBaseModule.SetResourceInstance(hResource);
         g_oResStr.SetResInst(hResource);
-
     }
     g_oResStr.Initialize();
 
@@ -236,6 +227,12 @@ BOOL CIWBApp::InitInstance()
     else
     {
         DWORD dwError = GetLastError();
+		//
+		if (ERROR_ACCESS_DENIED == dwError)
+		{
+			MessageBox(NULL, g_oResStr[IDS_STRING106], g_oResStr[IDS_STRING107], MB_ICONINFORMATION);
+			return FALSE;
+		}
         CAtlString strError = GetErrorMessage(dwError);
         LOG_ERR("CreateMutex Failed(0x%x):%s", dwError, (const char*)CT2CA(strError));
     }
@@ -256,7 +253,6 @@ BOOL CIWBApp::InitInstance()
     InitCommonControlsEx(&InitCtrls);
 
     CWinApp::InitInstance();
-
     AfxEnableControlContainer();
 
     //
@@ -280,8 +276,8 @@ BOOL CIWBApp::InitInstance()
 		MessageBox(NULL, g_oResStr[IDS_STRING445], g_oResStr[107], MB_ICONINFORMATION | MB_OK);
 	}
 	else
-	{
-        ReadUSBKey(TRUE, nDeviceCount);
+	{     
+		ReadUSBKey(TRUE, nDeviceCount);
 	}
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
@@ -350,7 +346,6 @@ BOOL CIWBApp::InitInstance()
         //  dismissed with Cancel
     }
 
-
     //AsyncLogUninit();
 
     // Since the dialog has been closed, return FALSE so that we exit the
@@ -358,10 +353,9 @@ BOOL CIWBApp::InitInstance()
     LOG_INF("Exit CIWBApp::InitInstance()");
 
     SKDREG_Uninit();
+
     return FALSE;
 }
-
-
 
 
 BOOL CIWBApp::ParseCmdLine(LPCTSTR lpCmdLine)
@@ -631,12 +625,10 @@ void CIWBApp::InitDirectoryInformation()
                     }
                 }
             }
-
         }
         iDrive++;
         dwMaskBits >>= 1;
     }//while
-
 
     if (bConfigUSBDiskFound)
     {
@@ -683,19 +675,19 @@ const AllUSBKeyTouchType* CIWBApp::GatAllUSBKeyTouchType() const
 }
 
 
+
 //@功能:从USBKey中读取信息
 //@参数:bFirstTime, 第一次检测UsbKey的存在
 //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
 //      第二次及以后则不再弹出对话框。
 void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 {
-
     //屏幕模式缺省为单屏模式
     //m_eScreenMode      = EScreenModeSingle;
     m_eScreenModeFromUsbKey = EScreenModeSingle;
 
     //手触/笔触模式
-    m_eUSBKeyTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+    m_eUSBKeyTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
 	//手掌互动是计算加密狗的个数；
 	int nUSBKeyTouchCount = 0;
 
@@ -707,12 +699,19 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
     {
         UINT uKeyNum = SDKREG_GetUSBKeyCount();
 		m_VecAllUsbKeyTouchType.resize(uKeyNum);
+
         for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
-        {    
+        {
+
+			//读校正数据
+			int nCount = SDKREG_ReadEEPROMCompensate(m_pParams, COMPENSATE_NUM, uKeyIndex);
+
 			int nAppType = 0;
 			float fVersion = 0.0f;
 			int   nPalmType = 0;
 			int   nFingerContorlType = 0;
+			HRESULT hr = SDKREG_GetVersion(&fVersion, uKeyIndex);
+
             if (SDKREG_GetVersion(&fVersion, uKeyIndex) != S_OK)
             {
                 continue;
@@ -886,6 +885,7 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 			}
 
             bFoundUSBKey = TRUE;//找到加密狗退出
+
         }//for
 
         if(!bFoundUSBKey)
@@ -1032,4 +1032,13 @@ int CIWBApp::GetScreenModeFromUSBKeyCount()const
 EScreenMode CIWBApp::GetScreenModeFromUSBKey()const
 {
     return m_eScreenModeFromUsbKey;
+}
+
+const double* CIWBApp::GetCompensateParams(long *nCount) 
+{ 
+	if(m_pParams[0] !=0.000 && m_pParams[1] != 0.000)
+	{
+		*nCount = COMPENSATE_NUM;
+	}
+	return &m_pParams[0]; 
 }

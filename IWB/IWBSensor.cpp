@@ -171,7 +171,6 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
         cameraParams.Prop_VideoProcMap_Gain       = IRCUT_OFF  ;//保持滤光片打开
         */
 
-
         return lpThis->m_oVideoPlayer.SetCameraParams(lBrightness, VideoProcAmp_Brightness);
     }
     break;
@@ -443,7 +442,6 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
           {
                AtlTrace(_T("Set CameraParam Failed!\n"));
           }
-
           {
               SIZE videoSize;
               bRet = m_oVideoPlayer.GetVideoSize(videoSize);
@@ -789,14 +787,44 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
 
         //设置是否是背投模式
         m_oPenPosDetector.GetVideoToScreenMap().SetRearProjectMode(pSensorModeConfig->advanceSettings.bIsRearProjection);
-
-        //设置"自动校正补偿系数"
-        m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+		
+		long nCount = 0;
+		const double *dol = theApp.GetCompensateParams(&nCount);
+		if (nCount == 5)
+		{
+		   TAutoCalibCompCoefs  autoCalibCompCoefs;
+		   autoCalibCompCoefs.u0 = *dol;
+		   autoCalibCompCoefs.v0 = *(dol + 1);
+		   autoCalibCompCoefs.k[0] = *(dol + 2);
+		   autoCalibCompCoefs.k[1] = *(dol + 3);
+		   autoCalibCompCoefs.k[2] = *(dol + 4);
+		   m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetAutoCalibCompCoefs(autoCalibCompCoefs);
+		}
+		else
+		{
+            //设置"自动校正补偿系数"
+            m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+		}
 
         //设置CMOS芯片规格数据
         if (pGlobalSettings)
         {
-            m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetCMOSChipSpecification(pGlobalSettings->CMOSChipSpecification);
+			m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+			if (m_eCameraType == E_CAMERA_MODEL_2)
+			{
+				TCMOSChipSpecification CMOSChipSpecification;
+				CMOSChipSpecification.pixel_size = 0.003;
+				CMOSChipSpecification.height_in_mm = pGlobalSettings->CMOSChipSpecification.height_in_mm;
+				CMOSChipSpecification.height_in_pixel = pGlobalSettings->CMOSChipSpecification.height_in_pixel;
+				CMOSChipSpecification.width_in_mm = pGlobalSettings->CMOSChipSpecification.width_in_mm;
+				CMOSChipSpecification.width_in_pixel = pGlobalSettings->CMOSChipSpecification.width_in_pixel;
+				m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetCMOSChipSpecification(CMOSChipSpecification);
+			}
+			else
+			{
+               m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetCMOSChipSpecification(pGlobalSettings->CMOSChipSpecification);
+			}
+
         }
 
         //设置镜头规格数据
@@ -1893,9 +1921,7 @@ void CIWBSensor::On4BasePointMarkingDone(BOOL bSuccess)
 
             //保存静态屏蔽图
             m_oPenPosDetector.SaveStaticMaskFrame();
-
         }
-
     }
 
     //无论成功失败都进入正常使用模式
@@ -1921,16 +1947,44 @@ void CIWBSensor::ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
 
         const TSensorModeConfig&  sensorModeConfig = m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-
         const TLensConfig& lensCfg = sensorModeConfig.lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
-
         //设置"自动校正补偿系数"
-        calibAlgo.SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+		long nCount = 0;
+		const double *dol = theApp.GetCompensateParams(&nCount);
+		if (nCount == 5)
+		{
+			TAutoCalibCompCoefs  autoCalibCompCoefs;
+			autoCalibCompCoefs.u0 = *dol;
+			autoCalibCompCoefs.v0 = *(dol + 1);
+			autoCalibCompCoefs.k[0] = *(dol + 2);
+			autoCalibCompCoefs.k[1] = *(dol + 3);
+			autoCalibCompCoefs.k[2] = *(dol + 4);
+			calibAlgo.SetAutoCalibCompCoefs(autoCalibCompCoefs);
+		}
+		else
+		{
+             calibAlgo.SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+		}
 
-        //设置CMOS芯片规格数据
 
-        calibAlgo.SetCMOSChipSpecification(globalSettings.CMOSChipSpecification);
+        //设置CMOS芯片规格数据 
+		m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+		if (m_eCameraType == E_CAMERA_MODEL_2)
+		{
+			TCMOSChipSpecification CMOSChipSpecification;
+			CMOSChipSpecification.pixel_size = 0.003;
+			CMOSChipSpecification.height_in_mm = globalSettings.CMOSChipSpecification.height_in_mm;
+			CMOSChipSpecification.height_in_pixel = globalSettings.CMOSChipSpecification.height_in_pixel;
+			CMOSChipSpecification.width_in_mm = globalSettings.CMOSChipSpecification.width_in_mm;
+			CMOSChipSpecification.width_in_pixel = globalSettings.CMOSChipSpecification.width_in_pixel;
+			calibAlgo.SetCMOSChipSpecification(CMOSChipSpecification);
+		}
+		else
+		{
+             calibAlgo.SetCMOSChipSpecification(globalSettings.CMOSChipSpecification);
+		}
+
 
 
         //设置镜头规格数据
@@ -2086,4 +2140,10 @@ void CIWBSensor::GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfEle
 	{
 		_stprintf_s(lpszbuf, numberOfElements, _T("%s\\Sensor%02d\\WallMode\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, m_nID, _T("CollectSpotCross.xml"));
 	}
+}
+
+void CIWBSensor::UpdateUsbKey()
+{
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+	m_tCfgData.vecSensorModeConfig[eProjectionMode].advanceSettings.m_eTouchType = theApp.GetUSBKeyTouchType();
 }

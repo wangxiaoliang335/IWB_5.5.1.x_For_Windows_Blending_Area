@@ -97,6 +97,7 @@
     <IntDir>..\Intermidate\$(ProjectName)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>IWBCreateShortcut</TargetName>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RemoteDebug|Win32'">
     <OutDir>$(RemoteDir)\$(Configuration)\</OutDir>

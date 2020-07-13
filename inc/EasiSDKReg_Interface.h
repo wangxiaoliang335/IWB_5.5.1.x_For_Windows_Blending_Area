@@ -147,7 +147,17 @@ EASISDKREG_INTERFACE_API UINT SDKREG_GetMultiScreenMergeType(UINT uUSBKeyIndex =
 //
 //
 EASISDKREG_INTERFACE_API UINT SDKREG_GetParamType(UINT uUSBKeyIndex = 0);
+//@功  能:读出补偿的校正参数的数值
+//@返回值
+//pVersion
+//
+EASISDKREG_INTERFACE_API  UINT SDKREG_ReadEEPROMCompensate(double* pVersion, int nLength, UINT uUSBKeyIndex = 0);
 
+//@功  能:写入补偿的校正参数的数值
+//@返回值
+//pVersion
+//
 
+EASISDKREG_INTERFACE_API  HRESULT SDKREG_WriteEEPROMCompensate(const double* pVersion, int nLength, UINT uUSBKeyIndex = 0);
 
 }

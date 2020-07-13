@@ -13,9 +13,9 @@ public:
 
         m_ScreenSize.cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         m_ScreenSize.cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-        m_dbMaxModulateCoef = 1.0;
-        m_dbMinModulateCoef = 0.0;
+		//modify by vera_zhao 2020.07.03
+        m_dbMinModulateCoef = 0.0;        
+		m_dbMaxModulateCoef = 1.0;
 
         m_dbMinToleranceX = 0.0;
         m_dbMaxToleranceX = 0.0;
@@ -25,7 +25,42 @@ public:
 
         //载入数据
         Load();
-        
+
+		double dbMinToleranceX = (std::numeric_limits<double>::max)();
+		double dbMaxToleranceX = (std::numeric_limits<double>::min)();
+		double dbMinToleranceY = (std::numeric_limits<double>::max)();
+		double dbMaxToleranceY = (std::numeric_limits<double>::min)();
+
+		int nCellCount = m_nRows*m_nCols;
+		for (size_t i = 0; i < nCellCount; i++)
+		{
+			if (dbMinToleranceX > m_vecToleranceX[i])
+			{
+				dbMinToleranceX = m_vecToleranceX[i];
+			}
+
+			if (dbMaxToleranceX < m_vecToleranceX[i])
+			{
+				dbMaxToleranceX = m_vecToleranceX[i];
+			}
+
+			if (dbMinToleranceY > m_vecToleranceY[i])
+			{
+				dbMinToleranceY = m_vecToleranceY[i];
+			}
+
+			if (dbMaxToleranceY < m_vecToleranceY[i])
+			{
+				dbMaxToleranceY = m_vecToleranceY[i];
+			}
+		}
+
+		m_dbMinToleranceX = dbMinToleranceX;
+		m_dbMaxToleranceX = dbMaxToleranceX;
+
+		m_dbMinToleranceY = dbMinToleranceY;
+		m_dbMaxToleranceY = dbMaxToleranceY;
+		
     }
 
     ~CToleranceDistribute()
@@ -94,8 +129,10 @@ public:
     }
 
     //@功能:获取x方向和y方向的调制系数
-    void GetModulateFactors(const POINT& ptScreen, double* pModulateFactorX, double* pModulateFactorY)
+    void GetModulateFactors(const POINT& ptScreen,double nMinModulateCoef, double* pModulateFactorX, double* pModulateFactorY)
     {
+		m_dbMinModulateCoef = nMinModulateCoef;
+
         double dbToleranceX = 0.0;
         double dbToleranceY = 0.0;
 

@@ -282,6 +282,9 @@
     <ClCompile Include="TouchTester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SparateOperationSettingDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt">
@@ -611,6 +614,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ToleranceDistribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SparateOperationSettingDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

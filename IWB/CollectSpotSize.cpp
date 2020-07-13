@@ -2,11 +2,11 @@
 //#include "headers.h"
 #define YELLOW RGB(255,255,0)
 #define RED    RGB(255,0,0)
-#define GREEN  RGB(0  ,255,0)  
+#define GREEN  RGB(0  ,255,0)
 #define BKGND_COLOR RGB(0,0,255)
 #define ROYAL_BLUE  RGB(65,105,225)
 
-#define MARGIN_WIDTH 30  /////
+#define MARGIN_WIDTH 30  
 #define SYMBOL_SIZE  20
 
 
@@ -62,6 +62,7 @@ m_nCollectSensorCount(0)
 
     m_nCxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     m_nCyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	m_ShowFlag = TRUE;
 
     //if (theApp.GetDoubleScreenMerge())
     //{
@@ -212,7 +213,7 @@ void CCollectSpotSize::InitSamplePosition(const RECT& rcMonitor)
 			RECT rect = {(col*nMonitorWidth)/ m_nSampleNumEachRow,(row*nMonitorHeight)/ m_nSampleNumEachCol,((col+1)*nMonitorWidth)/ m_nSampleNumEachRow,((row+1)*nMonitorHeight)/ m_nSampleNumEachCol };
             
 			TSampleSymbol& symbol   = m_vecSampleSymbols[nSymbolIndex];
-
+			symbol.clrSampleAdjustment = YELLOW;
             symbol.clrSampleBefore = RED;
             symbol.clrSampleAfter  = GREEN;
             symbol.bSampled        = FALSE;
@@ -351,7 +352,7 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 			DrawCross(
 				ps.hdc,
 				ptDisplay,
-				m_vecSampleSymbols[k].clrSampleBefore,
+				m_vecSampleSymbols[k].clrSampleAdjustment,
 				m_vecSampleSymbols[k].size);
 		}
 
@@ -382,20 +383,44 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		   DrawLine(ps.hdc, ptStart, ptEnd, ROYAL_BLUE);
 		}
 
-        for (int i =0; i <= m_nCurrentSampleNo; i++)
-        {
-			POINT ptDisplay = m_vecSampleSymbols[i].ptDisplay;
-			ScreenToClient(hWnd, &ptDisplay);
-            DrawCross(
-					ps.hdc,
-					ptDisplay,
-                    m_vecSampleSymbols[i].bSampled ? m_vecSampleSymbols[i].clrSampleAfter : m_vecSampleSymbols[i].clrSampleBefore,
-                    m_vecSampleSymbols[i].size);
-        }
-            
-        DrawText(ps.hdc,g_oResStr[IDS_STRING432],_tcslen(g_oResStr[IDS_STRING432]),&this->m_rcCurrentMonitor, DT_CENTER|DT_TOP);
 
+		if (m_ShowFlag)
+		{
+            for (int i =0; i <= m_nCurrentSampleNo; i++)
+            {
+			    POINT ptDisplay = m_vecSampleSymbols[i].ptDisplay;
+			    ScreenToClient(hWnd, &ptDisplay);
+                DrawCross(		
+			       ps.hdc,
+				   ptDisplay,
+                   m_vecSampleSymbols[i].bSampled ? m_vecSampleSymbols[i].clrSampleAfter : m_vecSampleSymbols[i].clrSampleBefore,
+                   m_vecSampleSymbols[i].size);			
+            }
+			m_ShowFlag = FALSE;
+		}
+		else
+		{
+			for (int i = 0; i <= m_nCurrentSampleNo; i++)
+			{
+				POINT ptDisplay = m_vecSampleSymbols[i].ptDisplay;
+				ScreenToClient(hWnd, &ptDisplay);
+				if (m_vecSampleSymbols[i].bSampled)
+				{
+			    	DrawCross(
+					        ps.hdc,
+					        ptDisplay,
+					        m_vecSampleSymbols[i].clrSampleAfter,
+					        m_vecSampleSymbols[i].size);
+				}
+			}
+			m_ShowFlag = TRUE;
+		}
+
+
+        DrawText(ps.hdc,g_oResStr[IDS_STRING432],_tcslen(g_oResStr[IDS_STRING432]),&this->m_rcCurrentMonitor, DT_CENTER|DT_TOP);
         EndPaint(hWnd,&ps);
+
+        ::SetTimer(m_hWnd, 1, 1000, NULL);  
     }
 
     else if (uMsg == WM_COLLECT_SPOT_DATA)//光斑采集消息响应
@@ -766,6 +791,8 @@ LRESULT CCollectSpotSize::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
     }
     else if(uMsg == WM_TIMER)                                  //定时器
     {
+		InvalidateRect(m_hWnd, NULL, TRUE); 
+
         //if (g_oMouseEventGen.GetCollectSpotMode() == COLLECTSPOT_MODE_MANUAL)
         //{
         //	CAtlString  m_Point;
