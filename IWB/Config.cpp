@@ -1858,6 +1858,9 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 	pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
 	pNode->LinkEndChild(pElement);
 
+	pXmlComment = new TiXmlComment("设置平滑系数");
+	pNode->LinkEndChild(pXmlComment);
+
 	pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "SetSmoothCoefficient");
 	pElement->SetAttribute("value", advanceSettings.nSmoothCoefficient);

@@ -712,6 +712,10 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 
 			//读校正数据
 			int nCount = SDKREG_ReadEEPROMCompensate(m_pParams, COMPENSATE_NUM, uKeyIndex);
+			for (int i = 0; i < 6; i++)
+			{
+				LOG_INF("m_pParams[%d] = %f\n", i,m_pParams[i]);
+			}
 
 			int nAppType = 0;
 			float fVersion = 0.0f;

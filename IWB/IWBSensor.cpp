@@ -790,7 +790,7 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
 		
 		long nCount = 0;
 		const double *dol = theApp.GetCompensateParams(&nCount);
-		if (nCount == 5)
+		if (nCount == 6)
 		{
 		   TAutoCalibCompCoefs  autoCalibCompCoefs;
 		   autoCalibCompCoefs.u0 = *dol;
@@ -1952,7 +1952,7 @@ void CIWBSensor::ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
         //设置"自动校正补偿系数"
 		long nCount = 0;
 		const double *dol = theApp.GetCompensateParams(&nCount);
-		if (nCount == 5)
+		if (nCount == 6)
 		{
 			TAutoCalibCompCoefs  autoCalibCompCoefs;
 			autoCalibCompCoefs.u0 = *dol;

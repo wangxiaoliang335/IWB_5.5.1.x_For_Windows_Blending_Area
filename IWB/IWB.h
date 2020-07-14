@@ -150,7 +150,7 @@ protected:
 
 	CUsbCameraDeviceList   m_oUSBCameraList;//视频设备列表
 
-	const static   int     COMPENSATE_NUM = 5;
+	const static   int     COMPENSATE_NUM = 6;
 	double    m_pParams[COMPENSATE_NUM];
     //static const int m_nStartDelayTime = 5000;//10000ms,最大启动延迟时间
 
