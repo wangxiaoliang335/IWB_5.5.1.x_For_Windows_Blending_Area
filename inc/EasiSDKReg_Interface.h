@@ -6,6 +6,7 @@
 
 #endif
 
+#include <string>
 extern "C"
 {
 
@@ -147,17 +148,29 @@ EASISDKREG_INTERFACE_API UINT SDKREG_GetMultiScreenMergeType(UINT uUSBKeyIndex =
 //
 //
 EASISDKREG_INTERFACE_API UINT SDKREG_GetParamType(UINT uUSBKeyIndex = 0);
+
+
+
+#define COMPENSATE_PARAM_COUNT   6
+#define DATA_PREFIX_BYTE_COUNT 3
+#define DATA_SUFFIX_BYTE_COUNT 3
+
+
 //@功  能:读出补偿的校正参数的数值
-//@返回值
-//pVersion
-//
-EASISDKREG_INTERFACE_API  UINT SDKREG_ReadEEPROMCompensate(double* pVersion, int nLength, UINT uUSBKeyIndex = 0);
+//@参 数:pParamsBuf, 保存补偿参数的首地址
+//       nParamsBufCount, 参数个数
+//       uUSBKeyIndex, USB设备索引.
+//       devPathBuf, 保存设备路径的缓冲区, 用来标识不同的设备。
+//@返回值:读取的double参数个数
+EASISDKREG_INTERFACE_API  UINT SDKREG_ReadE2PROMCompensateParams(double* pParamsBuf, int nParamsBufCount, UINT uUSBKeyIndex, char* devPathBuf = NULL, int bufSize = 0);
 
 //@功  能:写入补偿的校正参数的数值
-//@返回值
-//pVersion
-//
-
-EASISDKREG_INTERFACE_API  HRESULT SDKREG_WriteEEPROMCompensate(const double* pVersion, int nLength, UINT uUSBKeyIndex = 0);
+//@参  数:
+//        pParams, 要写入的参数值首地址
+//        nParamCount, 写入的参数个数
+//         uUSBKeyIndex, USB设备索引.
+//@返回值:  S_OK, 成功
+//         E_FAIL, 失败
+EASISDKREG_INTERFACE_API  HRESULT SDKREG_WriteE2PROMCompensateParams(const double* pParams, int nParamCount, UINT uUSBKeyIndex);
 
 }

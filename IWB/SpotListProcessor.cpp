@@ -266,7 +266,12 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
     for (int i = 0; i < _countof(mergeAreas); i++)
     {
         const RECT& area = mergeAreas[i];
-        if (area.left < lightSpot.ptPosInScreen.x && lightSpot.ptPosInScreen.x < area.right)
+		const POINT& ptPosInScreen = lightSpot.ptPosInScreen;
+	
+        if (area.left < ptPosInScreen.x && ptPosInScreen.x < area.right
+			 &&
+			area.top < ptPosInScreen.y && ptPosInScreen.y < area.bottom
+			)
         {//光斑在融合区范围以内
             if (pMergeAreaIndex)
             {
@@ -757,8 +762,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		     int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
 
 		     POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
-		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =12 ；
-		     ///////////在200英寸的时候，偏差的值PixelNumber =6。这样列出一个线性方程式
+		     //在默认值80英寸的时候，偏差的值PixelNumber =12 ；
+		     //在200英寸的时候，偏差的值PixelNumber =6。这样列出一个线性方程式
 		     double  screenDigonalInMM = g_tSysCfgData.globalSettings.fScreenDiagonalPhysicalLength;
 //		     double  PixelNumber = (10936 - screenDigonalInMM) / 296;
 			 double  PixelNumber = 12 - (screenDigonalInMM / 720);

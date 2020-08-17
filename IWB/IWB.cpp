@@ -15,6 +15,7 @@ CBitAnswer  g_bitanswer;//比特安索在线注册对象。
 //>>
 //#endif
 
+
 #define new DEBUG_NEW
 
 //@功能:返回实际的触控类型
@@ -267,18 +268,19 @@ BOOL CIWBApp::InitInstance()
 
 
     //Sleep(5000);//延迟启动5秒中
-    m_oUSBCameraList.UpdateDeviceList();
+    //m_oUSBCameraList.UpdateDeviceList();
 
-    int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
+    //int nDeviceCount = m_oUSBCameraList.GetDeviceInstanceCount();
 	//说明没有发现任何实例。那么就需要弹出没有摄像头。
-	if (nDeviceCount == 0)
-	{
-		MessageBox(NULL, g_oResStr[IDS_STRING445], g_oResStr[107], MB_ICONINFORMATION | MB_OK);
-	}
-	else
-	{     
-		ReadUSBKey(TRUE, nDeviceCount);
-	}
+	//if (nDeviceCount == 0)
+	//{
+		//MessageBox(NULL, g_oResStr[IDS_STRING445], g_oResStr[107], MB_ICONINFORMATION | MB_OK);
+	//}
+	//else
+	//{     
+	BOOL bFirstTime = TRUE;
+	ReadUSBKey(bFirstTime);
+	//}
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
     //del>>
@@ -687,7 +689,7 @@ const AllUSBKeyTouchType* CIWBApp::GatAllUSBKeyTouchType() const
 //@参数:bFirstTime, 第一次检测UsbKey的存在
 //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
 //      第二次及以后则不再弹出对话框。
-void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
+void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 {
     //屏幕模式缺省为单屏模式
     //m_eScreenMode      = EScreenModeSingle;
@@ -707,15 +709,35 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
         UINT uKeyNum = SDKREG_GetUSBKeyCount();
 		m_VecAllUsbKeyTouchType.resize(uKeyNum);
 
+		ResetCompensateData();
+
         for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
         {
 
-			//读校正数据
-			int nCount = SDKREG_ReadEEPROMCompensate(m_pParams, COMPENSATE_NUM, uKeyIndex);
-			for (int i = 0; i < 6; i++)
+			//读校正数据,读数据之前初始化数组
+			char szDevPath[MAX_PATH];
+
+			TAutoCalibrateCompensateData compensateData;
+
+			int nCount = SDKREG_ReadE2PROMCompensateParams((double*)&compensateData, COMPENSATE_PARAM_COUNT, uKeyIndex, szDevPath, _countof(szDevPath));
+			
+			std::string strDevPath = szDevPath;
+
+			if (nCount == COMPENSATE_PARAM_COUNT && strDevPath != "")
 			{
-				LOG_INF("m_pParams[%d] = %f\n", i,m_pParams[i]);
+				m_allCompensateCoefs[strDevPath] = compensateData;
+
+				LOG_INF(
+						"autocalibrate compensate coefs:\nthrow-ratio=%e\nu0=%e\nv0=%e\nk1=%e\nk2=%e\nk3=%e\n",
+						compensateData.throwRatioOfLens,
+						compensateData.coefs.u0,
+						compensateData.coefs.v0,
+						compensateData.coefs.k[0],
+						compensateData.coefs.k[1],
+						compensateData.coefs.k[2]);
 			}
+
+
 
 			int nAppType = 0;
 			float fVersion = 0.0f;
@@ -915,8 +937,6 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
                 {
                     LOG_INF("Not find USBKey then delay 1 second, time has elapsed %fs\n", (float)dwElapse / 1000.0);
                     Sleep(1000);//延迟等待1秒钟
-
-                    //bFirstTime = FALSE;
                     continue;
                 }
             }
@@ -986,6 +1006,10 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime, int nSersorcount)
 	}
 	else if (m_eUSBKeyTouchType == E_DEVICE_PALM_TOUCH_CONTROL && m_eScreenModeFromUsbKey ==EScreenModeSingle)
 	{
+
+		CUsbCameraDeviceList   usbCameraList;//视频设备列表
+		usbCameraList.UpdateDeviceList();
+		int nSersorcount = usbCameraList.GetDeviceInstanceCount();
 	   switch (nSersorcount)
 	   {
 		  case 2:
@@ -1045,11 +1069,40 @@ EScreenMode CIWBApp::GetScreenModeFromUSBKey()const
     return m_eScreenModeFromUsbKey;
 }
 
-const double* CIWBApp::GetCompensateParams(long *nCount) 
-{ 
-	if(m_pParams[0] !=0.000 && m_pParams[1] != 0.000)
+const TAutoCalibrateCompensateData* CIWBApp::GetCompensateData(const char* strDevPath)const
+{
+	std::unordered_map<std::string, TAutoCalibrateCompensateData>::const_iterator iter;
+	iter = m_allCompensateCoefs.find(strDevPath);
+	if (iter != m_allCompensateCoefs.end())
 	{
-		*nCount = COMPENSATE_NUM;
+		return &iter->second;
 	}
-	return &m_pParams[0]; 
+
+	return NULL;
 }
+
+void CIWBApp::ResetCompensateData()
+{
+	m_allCompensateCoefs.clear();
+}
+
+//@功能:获取所有自动补偿校正系数
+void CIWBApp::GetAllCompensateData(std::vector<TAutoCalibrateCompensateData>& allCompensateData)
+{
+	allCompensateData.resize(m_allCompensateCoefs.size());
+
+	std::unordered_map<std::string, TAutoCalibrateCompensateData>::const_iterator iter;
+
+	uint32_t index = 0;
+
+	iter = m_allCompensateCoefs.begin();
+	while (iter != m_allCompensateCoefs.end())
+	{
+		allCompensateData[index] = iter->second;
+		index++;
+		iter++;
+	}
+
+}
+
+

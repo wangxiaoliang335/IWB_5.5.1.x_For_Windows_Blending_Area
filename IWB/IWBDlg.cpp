@@ -609,7 +609,7 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
 
 
     ON_COMMAND(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, &CIWBDlg::OnMenuTouchScreenLayoutDesigner)
-    ON_MESSAGE(WM_END_SCREEN_LAYOUT_DESIGN, &CIWBDlg::OnEndScreenLayoutDesign)
+    ON_MESSAGE(WM_CREEN_LAYOUT_DESIGN_BUTTON_CLICK, &CIWBDlg::OnScreenLayoutDesignBtnEvent)
     ON_MESSAGE(WM_END_4_BASE_POINT_CALIBRATE, &CIWBDlg::OnEnd4BasePointCalibrate)
     ON_WM_RBUTTONUP()
     ON_COMMAND(ID_MENU_FOURPOINTCALIBRATION, &CIWBDlg::OnOperationFourpointcalibration)
@@ -5548,7 +5548,7 @@ void CIWBDlg::OnMenuAdvancessetting()
 			pSensor->SetResolutionType(SelectValue);			
 		}
 		//写入配置文件
-		SaveConfig();
+SaveConfig();
 	}
 }
 void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
@@ -5556,22 +5556,22 @@ void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
 	// TODO: Add your command handler code here
 	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
 	m_bStartDrawOnlineScreenArea = true;
-	m_nDrawOnlineAreaCount = 0 ;   //绘制第几个屏蔽图
-	m_nActiveDetectCameraId = 0 ;  //实际运行的摄像头个数
-	for (int i = 0 ;i <nSensorCount ;i++)
+	m_nDrawOnlineAreaCount = 0;   //绘制第几个屏蔽图
+	m_nActiveDetectCameraId = 0;  //实际运行的摄像头个数
+	for (int i = 0; i < nSensorCount; i++)
 	{
-	   ////去掉引导框
-	   CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
-	   if (lpSensor)
-	   {
-		   ////如果没有运行，那么就不存在需要绘制屏蔽图了。
-		   if (lpSensor->IsDetecting())
-		   {
-			   m_nActiveDetectCameraId++;  //实际检测到打开的摄像头个数，因为有几个sensor不一定都打开。
-	           m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible()?true:false;
-			   lpSensor->OnStartDrawOnlineScreenArea();
-		   }
-	   }
+		////去掉引导框
+		CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
+		if (lpSensor)
+		{
+			////如果没有运行，那么就不存在需要绘制屏蔽图了。
+			if (lpSensor->IsDetecting())
+			{
+				m_nActiveDetectCameraId++;  //实际检测到打开的摄像头个数，因为有几个sensor不一定都打开。
+				m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible() ? true : false;
+				lpSensor->OnStartDrawOnlineScreenArea();
+			}
+		}
 	}
 }
 
@@ -5580,13 +5580,13 @@ void CIWBDlg::OnMenuClearDrawOnlineScreenArea()
 	// TODO: Add your command handler code here
 	m_bStartDrawOnlineScreenArea = false;
 	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
-	for(int i = 0 ; i <nSensorCount;i++)
+	for (int i = 0; i < nSensorCount; i++)
 	{
-     	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
-	    if (lpSensor)
-	    {
-    	    lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
-	    }	
+		CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
+		if (lpSensor)
+		{
+			lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
+		}
 	}
 }
 
@@ -5599,51 +5599,92 @@ void CIWBDlg::OnMenuEnableDrawOnlineScreenArea()
 
 void CIWBDlg::OnMenuTouchScreenLayoutDesigner()
 {
-    CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
-    if (NULL == pInstallMenu) return;
-    
-    BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
-    this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(!bIsVisible);
-    
+	CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
+	if (NULL == pInstallMenu) return;
+
+	BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
+	this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(!bIsVisible);
+
 }
 
 
 //@功能:结束屏幕布局设计
-HRESULT CIWBDlg::OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam)
+HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
 {
-    UINT uID = UINT(lParam);
-    
-    if (uID == BUTTON_ID_OK)
-    {//
-        //隐藏屏幕布局编辑工具
-        this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
+	UINT uID = UINT(lParam);
 
-        this->m_oIWBSensorManager.ApplyScreenLayout();
-        SaveConfig();
-    }
-    else if (uID == BUTTON_ID_CANCEL)
-    {//
-        //隐藏屏幕布局编辑工具
-        this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
+	switch (uID)
+	{
+	case BUTTON_ID_OK:
+	{//
+		//隐藏屏幕布局编辑工具
+		this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
 
-        for (UINT uLayoutIndex = 0; uLayoutIndex < g_tSysCfgData.vecScreenLayouts.size(); uLayoutIndex++)
-        {
-            const TScreenLayout&layout = g_tSysCfgData.vecScreenLayouts[uLayoutIndex];
+		this->m_oIWBSensorManager.ApplyScreenLayout();
+		SaveConfig();
+	}
+	break;
 
-            if (layout.vecScreens.size() == this->m_oIWBSensorManager.GetSensorCount())
-            {
+	case BUTTON_ID_CANCEL:
+	{//
+		//隐藏屏幕布局编辑工具
+		this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
 
-                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenRelativeLayouts(&layout.vecScreens[0], layout.vecScreens.size());
-                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetRelativeMergeAreas(&layout.vecMergeAreas[0], layout.vecMergeAreas.size());
-                break;
-            }
-        }
-    }
-    else if (uID == BUTTON_ID_RESET)
-    {
+		/*
+		for (UINT uLayoutIndex = 0; uLayoutIndex < g_tSysCfgData.vecScreenLayouts.size(); uLayoutIndex++)
+		{
+			const TScreenLayout&layout = g_tSysCfgData.vecScreenLayouts[uLayoutIndex];
 
-        this->m_oIWBSensorManager.GetScreenLayoutDesigner().Reset();
-    }   
+			if (layout.vecScreens.size() == this->m_oIWBSensorManager.GetSensorCount())
+			{
+
+				this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenRelativeLayouts(&layout.vecScreens[0], layout.vecScreens.size());
+				this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetRelativeMergeAreas(&layout.vecMergeAreas[0], layout.vecMergeAreas.size());
+				break;
+			}
+		}
+		*/
+
+			const ESplitScreeMode& eSelectedSplitScreenMode = g_tSysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
+			const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+			
+			//if (pScreenLayout)
+			{
+				this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+			}
+			
+
+		}
+		break;
+
+		case BUTTON_ID_RESET:
+		{
+
+			this->m_oIWBSensorManager.GetScreenLayoutDesigner().Reset();
+		}
+		break;
+
+		case BUTTON_ID_ROTATE_90:
+		{
+			ESplitScreeMode eSelectedSplitScreenMode = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetSplitScreenMode();
+			
+			//交换水平分割模式和垂直分割模式
+			if (E_SPLIT_SCREEN_VERT == eSelectedSplitScreenMode)
+			{
+				eSelectedSplitScreenMode = E_SPLIT_SCREEN_HORZ;
+			}			
+			else if (E_SPLIT_SCREEN_HORZ == eSelectedSplitScreenMode)
+			{
+				eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+			}
+			
+			const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+
+			this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+
+		}
+		break;
+	}
     return 0L;
 
 }
@@ -5766,3 +5807,4 @@ HRESULT CIWBDlg::OnPowerBroadcast(WPARAM wParam, LPARAM lParam)
 	}
 	return S_OK;
 }
+

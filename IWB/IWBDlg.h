@@ -548,8 +548,9 @@ protected:
 	HRESULT OnApplySensorConfig(WPARAM wParam, LPARAM lParam);
 
 
-    //@功能:结束屏幕布局设计
-    HRESULT OnEndScreenLayoutDesign(WPARAM wParam, LPARAM lParam);
+    //@功能:屏幕布局设计按钮事件响应函数
+	//@参数:wParam, 虚拟按钮ID, 
+    HRESULT OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam);
 
 
     //@功能:”结束4点标定“消息响应函数

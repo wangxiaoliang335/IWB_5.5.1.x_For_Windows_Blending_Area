@@ -137,7 +137,8 @@ public:
     CScreenRecognition m_oScreenRecognition;//屏幕识别类。
     CIWBSensor*        m_pSensor           ;//指向传感器的指针
     
-	CSliderCtrl m_ctrlSliderSmooth;
-	CEdit m_ctrlEditSmooth;
+	//CSliderCtrl m_ctrlSliderSmooth;
+	CEdit m_ctrlEditSmoothCoef;
+	CSpinButtonCtrl m_ctrlSpinSmoothCoef;
 
 };

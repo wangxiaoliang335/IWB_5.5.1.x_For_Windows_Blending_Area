@@ -109,8 +109,9 @@ public:
 #endif
                     filter.m_eFilterState = E_FILTER_STATE_DN_1;
 
-                    continue;
+                    continue;//继续第i个元素,避免执行i++
                 }
+
                  
                 break;
 
@@ -118,11 +119,22 @@ public:
                 if (contactInfo.ePenState == E_PEN_STATE_UP)
                 {
                     //filter.m_uFrameCount  = 0;
-                    filter.m_eFilterState = E_FILTER_STATE_UP;
+                   //contactInfo.pt.x = long(filter.m_LastSmoothPoint.d[0] + .5);
+                   //contactInfo.pt.y = long(filter.m_LastSmoothPoint.d[1] + .5);
 
-                    contactInfo.pt.x = long(filter.m_LastSmoothPoint.d[0] + .5);
-                    contactInfo.pt.y = long(filter.m_LastSmoothPoint.d[1] + .5);
+					//<<2020/07/27, by xuke
+					//不稳定状态下的E_PEN_STATE_UP也跳过, 因为E_PEN_STATE_DN已经被跳过了
+					//Ith元素后面的元素往前挪动一个位置
+					for (int j = i + 1; j < nCount; j++)
+					{
+						pContactInfo[j - 1] = pContactInfo[j];
+					}
+					nCount -= 1;//输出的触点数目-1;
 
+					filter.m_eFilterState = E_FILTER_STATE_UP;
+
+					continue;//继续第i个元素,避免执行i++
+					//2020/07/27>>
                 }
                 else
                 {
@@ -266,13 +278,15 @@ public:
                     contactInfo.pt.y = long(ptSmooth.d[1] + .5);
 
 #ifdef _DEBUG
-                    AtlTrace(
+                   /*
+					AtlTrace(
                         _T("[smooth]input dx=%.2f,dy=%.2f, smooth dx=%.2f, dy=%.2f\n"), 
                         ptNewInput.d[0] - filter.m_LastInputPoint.d[0],
                         ptNewInput.d[1] - filter.m_LastInputPoint.d[1],
                         ptSmooth.d[0]   - filter.m_LastSmoothPoint.d[0],
                         ptSmooth.d[1]   - filter.m_LastSmoothPoint.d[1]
                         );
+						*/
 #endif
                     filter.m_LastSmoothPoint = ptSmooth;
                     filter.m_LastInputPoint   = ptNewInput;

@@ -136,7 +136,7 @@
 #define WM_APPLY_SENSOR_CONFIG            (WM_USER + 42)
 
 
-#define WM_END_SCREEN_LAYOUT_DESIGN       (WM_USER + 43)
+#define WM_CREEN_LAYOUT_DESIGN_BUTTON_CLICK       (WM_USER + 43)
 
 //四点标定结束标志
 #define WM_END_4_BASE_POINT_CALIBRATE       (WM_USER + 44)

@@ -11,7 +11,8 @@ CScreenLayoutDesigner::CScreenLayoutDesigner()
     m_hFontButton(NULL),
     m_hFontOld(NULL),
     m_bIsDragging(FALSE),
-    m_pDragArea(NULL)
+    m_pDragArea(NULL),
+	m_eSplitScreenModel(E_SPLIT_SCREEN_VERT)
 {
     m_DisplaySize.cx = ::GetSystemMetrics(SM_CXSCREEN);
 
@@ -22,6 +23,9 @@ CScreenLayoutDesigner::CScreenLayoutDesigner()
 
     //水平切分光标
     m_hCursorSplit_Horz = theApp.LoadCursor(IDC_CURSOR_SPLIT_HORZ);
+
+	//垂直切分光标
+	m_hCursorSplit_Vert = theApp.LoadCursor(IDC_CURSOR_SPLIT_VERT);
 
     //鼠标光标
     m_hCursorArrow = LoadCursor(NULL, IDC_ARROW);
@@ -60,84 +64,192 @@ void CScreenLayoutDesigner::Init(int nScreenCount, int nDisplayWidth, int  nDisp
 
 void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
 {
-    m_vecScreenRelativeLayouts.resize(nScreenCount);
-    m_vceScreenAbsLayouts.resize(nScreenCount);
+	switch (m_eSplitScreenModel)
+	{
+	case E_SPLIT_SCREEN_VERT:
+		SliceScreenAreaVert(nScreenCount);
+		break;
 
-    //均分时，每个屏幕的宽度
-    int nWidthEachArea = m_DisplaySize.cx / nScreenCount;
+	case E_SPLIT_SCREEN_HORZ:
+		SliceScreenAreaHorz(nScreenCount);
+		break;
 
+	}
 
-    int nRemainder = m_DisplaySize.cx % nScreenCount;
-
-    //余数计数
-    int nRemainderCount = 0;
-
-    RECT  absArea = { 0   ,    0,    0, m_DisplaySize.cy };
-    RectF relArea = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-    //计算每个屏幕区域的相对尺寸和绝对尺寸
-    for (int i = 0; i < nScreenCount; i++)
-    {
-
-        absArea.right = absArea.left + nWidthEachArea;
-
-        nRemainderCount += nRemainder;
-
-        if (nRemainderCount >= nScreenCount)
-        {
-            nRemainderCount -= nScreenCount;
-            absArea.right++;
-        }
-
-        m_vceScreenAbsLayouts[i] = absArea;
-
-        relArea.right = (float)absArea.right / (float)m_DisplaySize.cx;
-
-        m_vecScreenRelativeLayouts[i] = relArea;
-
-        //
-        absArea.left = absArea.right;
-
-        //
-        relArea.left = relArea.right;
-
-
-    }//for
-
-
-    int nMergeAreaCount = nScreenCount - 1;
-
-    //计算每个融合区的尺寸
-    m_vecMergeAreasRelative.resize(nMergeAreaCount);
-    m_vecMergeAreasAbs.resize(nMergeAreaCount);
-
-    float fMergeAreaHalfSize = 0.025;//融合区占屏幕宽度5%左右。
-
-    for (int i = 0; i < nMergeAreaCount; i++)
-    {
-        RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
-
-        RectF relArea;
-        relArea.top = 0.0f;
-        relArea.bottom = 1.0f;
-        relArea.left = relScreenArea.right - fMergeAreaHalfSize;
-        relArea.right = relScreenArea.right + fMergeAreaHalfSize;
-
-        //融合区相对尺寸
-        m_vecMergeAreasRelative[i] = relArea;
-
-        //融合区绝对尺寸
-        RECT absArea;
-        absArea.top = 0;
-        absArea.bottom = m_DisplaySize.cy;
-        absArea.left  = (LONG)(relArea.left  * m_DisplaySize.cx);
-        absArea.right = (LONG)(relArea.right * m_DisplaySize.cx);
-
-        m_vecMergeAreasAbs[i] = absArea;
-
-    }//for
 
 }
+
+//@功能:沿垂直方向分割屏幕
+void CScreenLayoutDesigner::SliceScreenAreaVert(int nScreenCount)
+{
+	m_vceScreenAbsLayouts.resize(nScreenCount);
+
+	int nMergeAreaCount = nScreenCount - 1;
+	m_screenLayout.vecScreens.resize(nScreenCount);
+	m_screenLayout.vecMergeAreas.resize(nMergeAreaCount);
+
+	//水平均分时，每个屏幕的宽度
+	int nWidthEachArea = m_DisplaySize.cx / nScreenCount;
+	int nRemainder = m_DisplaySize.cx % nScreenCount;
+
+	//余数计数
+	int nRemainderCount = 0;
+
+	RECT  absArea = { 0   ,    0,    0, m_DisplaySize.cy };
+	RectF relArea = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	//计算每个屏幕区域的相对尺寸和绝对尺寸
+	for (int i = 0; i < nScreenCount; i++)
+	{
+
+		absArea.right = absArea.left + nWidthEachArea;
+
+		nRemainderCount += nRemainder;
+
+		if (nRemainderCount >= nScreenCount)
+		{
+			nRemainderCount -= nScreenCount;
+			absArea.right++;
+		}
+
+		m_vceScreenAbsLayouts[i] = absArea;
+
+		relArea.right = (float)absArea.right / (float)m_DisplaySize.cx;
+
+		m_screenLayout.vecScreens[i] = relArea;
+			
+		absArea.left = absArea.right;
+		
+		relArea.left = relArea.right;
+	}//for
+	
+
+	 //计算每个融合区的尺寸
+	 //m_vecMergeAreasRelative.resize(nMergeAreaCount);
+	m_vecMergeAreasAbs.resize(nMergeAreaCount);
+
+	float fMergeAreaHalfSize = 0.025;//融合区占屏幕宽度5%左右。
+
+	for (int i = 0; i < nMergeAreaCount; i++)
+	{
+		//RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
+		RectF& relScreenArea = m_screenLayout.vecScreens[i];
+
+
+		RectF relArea;
+		relArea.top = 0.0f;
+		relArea.bottom = 1.0f;
+		relArea.left = relScreenArea.right - fMergeAreaHalfSize;
+		relArea.right = relScreenArea.right + fMergeAreaHalfSize;
+
+		//融合区相对尺寸
+		//m_vecMergeAreasRelative[i] = relArea;
+		m_screenLayout.vecMergeAreas[i] = relArea;
+
+		//融合区绝对尺寸
+		RECT absArea;
+		absArea.top = 0;
+		absArea.bottom = m_DisplaySize.cy;
+		absArea.left = (LONG)(relArea.left  * m_DisplaySize.cx);
+		absArea.right = (LONG)(relArea.right * m_DisplaySize.cx);
+
+		m_vecMergeAreasAbs[i] = absArea;
+
+	}//for
+
+
+}
+
+
+void CScreenLayoutDesigner::SliceScreenAreaHorz(int nScreenCount)
+{
+	m_vceScreenAbsLayouts.resize(nScreenCount);
+
+	int nMergeAreaCount = nScreenCount - 1;
+	m_screenLayout.vecScreens.resize(nScreenCount);
+	m_screenLayout.vecMergeAreas.resize(nMergeAreaCount);
+
+	//垂直均分时，每个屏幕的高度
+	int nHeightEachArea = m_DisplaySize.cy / nScreenCount;
+	int nRemainder = m_DisplaySize.cy % nScreenCount;
+
+	//余数计数
+	int nRemainderCount = 0;
+
+	RECT  absArea = { 0   ,    0,    m_DisplaySize.cx, 0 };
+	RectF relArea = { 0.0f, 0.0f,                1.0f, 0.0f };
+
+	//计算每个屏幕区域的相对尺寸和绝对尺寸
+	for (int i = 0; i < nScreenCount; i++)
+	{
+
+		//absArea.right = absArea.left + nWidthEachArea;
+		absArea.bottom = absArea.top + nHeightEachArea;
+
+		nRemainderCount += nRemainder;
+
+		if (nRemainderCount >= nScreenCount)
+		{
+			nRemainderCount -= nScreenCount;
+			absArea.bottom++;
+		}
+
+		m_vceScreenAbsLayouts[i] = absArea;
+
+		relArea.bottom = (float)absArea.bottom / (float)m_DisplaySize.cy;
+
+		m_screenLayout.vecScreens[i] = relArea;	
+		
+		absArea.top = absArea.bottom;		
+		relArea.top = relArea.bottom;
+
+	}//for
+
+
+	 //计算每个融合区的尺寸
+	m_vecMergeAreasAbs.resize(nMergeAreaCount);
+
+	float fMergeAreaHalfSize = 0.025;//融合区占屏幕宽度5%左右。
+
+	for (int i = 0; i < nMergeAreaCount; i++)
+	{
+		//RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
+		RectF& relScreenArea = m_screenLayout.vecScreens[i];
+
+
+		RectF relArea;
+		//relArea.top = 0.0f;
+		//relArea.bottom = 1.0f;
+		//relArea.left = relScreenArea.right - fMergeAreaHalfSize;
+		//relArea.right = relScreenArea.right + fMergeAreaHalfSize;
+
+		relArea.left   = 0.0;
+		relArea.right  = 1.0;
+		relArea.top    = relScreenArea.bottom - fMergeAreaHalfSize;
+		relArea.bottom = relScreenArea.bottom + fMergeAreaHalfSize;
+
+
+		//融合区相对尺寸
+		//m_vecMergeAreasRelative[i] = relArea;
+		m_screenLayout.vecMergeAreas[i] = relArea;
+
+		//融合区绝对尺寸
+		RECT absArea;
+		//absArea.top = 0;
+		//absArea.bottom = m_DisplaySize.cy;
+		//absArea.left = (LONG)(relArea.left  * m_DisplaySize.cx);
+		//absArea.right = (LONG)(relArea.right * m_DisplaySize.cx);
+		absArea.left = 0;
+		absArea.right = m_DisplaySize.cx;
+		absArea.top    = (LONG)(relArea.top    * m_DisplaySize.cy);
+		absArea.bottom = (LONG)(relArea.bottom * m_DisplaySize.cy);
+
+		m_vecMergeAreasAbs[i] = absArea;
+
+	}//for
+
+}
+
 
 
 BOOL CScreenLayoutDesigner::InitWindow()
@@ -226,9 +338,9 @@ void CScreenLayoutDesigner::Uninit()
 
     UninitGDI();
 
-    m_vecScreenRelativeLayouts.clear();
+    //m_vecScreenRelativeLayouts.clear();
     m_vceScreenAbsLayouts.clear();
-    m_vecMergeAreasRelative.clear();
+    //m_vecMergeAreasRelative.clear();
     m_vecMergeAreasAbs.clear();
     m_vecActiveAreas.clear();
 }
@@ -317,10 +429,24 @@ void CScreenLayoutDesigner::InitActiveAreas()
         const RECT& rcScreen = m_vceScreenAbsLayouts[i];
         TActiveArea activeArea;
         activeArea.uID = DEFAULT_ID;
-        activeArea.rcBound.left   = rcScreen.right - (SPLITTER_WIDTH >> 1);
-        activeArea.rcBound.right  = rcScreen.right + (SPLITTER_WIDTH >> 1);
-        activeArea.rcBound.top    = rcScreen.top;
-        activeArea.rcBound.bottom = rcScreen.bottom;
+
+		switch (m_eSplitScreenModel)
+		{
+			case E_SPLIT_SCREEN_VERT:
+				activeArea.rcBound.left   = rcScreen.right - (SPLITTER_WIDTH >> 1);
+				activeArea.rcBound.right  = rcScreen.right + (SPLITTER_WIDTH >> 1);
+				activeArea.rcBound.top    = rcScreen.top;
+				activeArea.rcBound.bottom = rcScreen.bottom;
+				break;
+
+			case E_SPLIT_SCREEN_HORZ:
+				activeArea.rcBound.left   = rcScreen.left;
+				activeArea.rcBound.right  = rcScreen.right;
+				activeArea.rcBound.top    = rcScreen.bottom - (SPLITTER_WIDTH >> 1);
+				activeArea.rcBound.bottom = rcScreen.bottom + (SPLITTER_WIDTH >> 1);
+				break;
+		}
+
 
         activeArea.eAreaType = E_AREA_TYPE_SPLITTER;
         activeArea.ulData = i;//分割条的索引号
@@ -341,18 +467,43 @@ void CScreenLayoutDesigner::InitActiveAreas()
         activeArea.eAreaType      = E_AREA_TYPE_MERGE_BORDER;
         activeArea.ulData = 2 * i;//融合区边界编号
 
-        activeArea.rcBound.left   = mergeArea.left - (BORDER_DRAG_WIDTH >> 1);
-        activeArea.rcBound.right  = mergeArea.left + (BORDER_DRAG_WIDTH >> 1);
-        activeArea.rcBound.top    = mergeArea.top;
-        activeArea.rcBound.bottom = mergeArea.bottom;
+		switch (m_eSplitScreenModel)
+		{
+			case E_SPLIT_SCREEN_VERT:
+				activeArea.rcBound.left   = mergeArea.left - (BORDER_DRAG_WIDTH >> 1);
+				activeArea.rcBound.right  = mergeArea.left + (BORDER_DRAG_WIDTH >> 1);
+				activeArea.rcBound.top    = mergeArea.top;
+				activeArea.rcBound.bottom = mergeArea.bottom;
+				break;
+
+			case E_SPLIT_SCREEN_HORZ:
+				activeArea.rcBound.left  = mergeArea.left ;
+				activeArea.rcBound.right = mergeArea.right;
+				activeArea.rcBound.top    = mergeArea.top - (BORDER_DRAG_WIDTH >> 1);
+				activeArea.rcBound.bottom = mergeArea.top + (BORDER_DRAG_WIDTH >> 1);
+				break;
+		};
 
         m_vecActiveAreas.push_back(activeArea);
 
 
         //右边界
         activeArea.ulData = 2 * i + 1;//融合区边界编号
-        activeArea.rcBound.left = mergeArea.right  - (BORDER_DRAG_WIDTH >> 1);
-        activeArea.rcBound.right = mergeArea.right + (BORDER_DRAG_WIDTH >> 1);
+
+
+		switch (m_eSplitScreenModel)
+		{
+		case E_SPLIT_SCREEN_VERT:
+			activeArea.rcBound.left = mergeArea.right - (BORDER_DRAG_WIDTH >> 1);
+			activeArea.rcBound.right = mergeArea.right + (BORDER_DRAG_WIDTH >> 1);
+			break;
+
+		case E_SPLIT_SCREEN_HORZ:
+			activeArea.rcBound.top    = mergeArea.bottom - (BORDER_DRAG_WIDTH >> 1);
+			activeArea.rcBound.bottom = mergeArea.bottom + (BORDER_DRAG_WIDTH >> 1);
+			
+			break;
+		}
 
         m_vecActiveAreas.push_back(activeArea);
 
@@ -361,9 +512,11 @@ void CScreenLayoutDesigner::InitActiveAreas()
 
     TActiveArea btns[] = 
     {
+		{ BUTTON_ID_ROTATE_90, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("Rotate 90°"), 0 },
         { BUTTON_ID_RESET, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("RESET"), 0 },
         { BUTTON_ID_OK, RECT{0,0,0,0}, E_AREA_TYPE_BUTTON, _T("OK"), 0},
         { BUTTON_ID_CANCEL, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("CANCEL"), 0 },
+		
        
     };
 
@@ -411,27 +564,94 @@ void CScreenLayoutDesigner::InitActiveAreas()
 
         m_vecActiveAreas.push_back(btn);
     }
+	
+}
 
 
+
+void CScreenLayoutDesigner::SetScreenLayout(ESplitScreeMode eSplitMode, const TScreenLayout* pScreenLayout)
+{
+	m_eSplitScreenModel = eSplitMode;
+	UINT uScreenCount = m_screenLayout.vecScreens.size();
+	if (pScreenLayout)
+	{
+		m_screenLayout = *pScreenLayout;
+
+		uScreenCount = m_screenLayout.vecScreens.size();
+
+		//更新绝对像素尺寸的屏幕区域数组
+		m_vceScreenAbsLayouts.resize(uScreenCount);
+
+		for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
+		{
+			const RectF& rectRel = m_screenLayout.vecScreens[screenIndex];
+			RECT& rectAbs = m_vceScreenAbsLayouts[screenIndex];
+
+			rectAbs.left = LONG(rectRel.left  * m_DisplaySize.cx);
+			rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
+
+			rectAbs.top = LONG(rectRel.top    * m_DisplaySize.cy);
+			rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+		}
+
+
+		//更新绝对像素尺寸的融合区数组
+		UINT uAreaCount = m_screenLayout.vecMergeAreas.size();
+		m_vecMergeAreasAbs.resize(uAreaCount);
+
+		for (UINT areaIndex = 0; areaIndex < uAreaCount; areaIndex++)
+		{
+			const RectF& rectRel = m_screenLayout.vecMergeAreas[areaIndex];
+			RECT&  rectAbs = m_vecMergeAreasAbs[areaIndex];
+
+			rectAbs.left = LONG(rectRel.left   * m_DisplaySize.cx);
+			rectAbs.right = LONG(rectRel.right  * m_DisplaySize.cx);
+			rectAbs.top = LONG(rectRel.top    * m_DisplaySize.cy);
+			rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+
+		}//for
+
+
+	}
+	else
+	{
+		//重新新按照指定的分割模式分割
+		InitScreenArea(uScreenCount);
+
+	}
+
+
+	InitActiveAreas();
+
+
+
+	//绘制界面
+	Draw(m_hMemDC);
+
+	//作废窗体区域，以便在UpdateWindows时触发WM_PAINT消息。
+	RECT rcWnd = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
+	::InvalidateRect(m_hWnd, &rcWnd, TRUE);
+	UpdateWindow(this->m_hWnd);
 
 }
+
 
 //@功  能:返回按照相对尺寸划分的屏幕区域数组。
 //@参  数:pCount, 存放区域个数的内存指针
 //@返回值:屏幕相对划分矩形区域数组的首地址。
-const RectF* CScreenLayoutDesigner::GetScreenRelativeLayouts(UINT* pScreenCount) const
-{ 
-    const RectF* pRelativeScreens = NULL;
-
-    if (pScreenCount) *pScreenCount = m_vecScreenRelativeLayouts.size();
-
-    if (m_vecScreenRelativeLayouts.size() > 0)
-    {
-        pRelativeScreens = &m_vecScreenRelativeLayouts[0];
-    }
-
-    return pRelativeScreens;
-}
+//const RectF* CScreenLayoutDesigner::GetScreenRelativeLayouts(UINT* pScreenCount) const
+//{ 
+//    const RectF* pRelativeScreens = NULL;
+//
+//    if (pScreenCount) *pScreenCount = m_vecScreenRelativeLayouts.size();
+//
+//    if (m_vecScreenRelativeLayouts.size() > 0)
+//    {
+//        pRelativeScreens = &m_vecScreenRelativeLayouts[0];
+//    }
+//
+//    return pRelativeScreens;
+//}
 
 //@功  能:返回按照像素尺寸划分的屏幕区域数组。
 //@参  数:pCount, 存放区域个数的内存指针
@@ -456,32 +676,32 @@ const RECT* CScreenLayoutDesigner::GetScreenAbsoluteLayouts(UINT* pScreenCount)c
 //@功 能:设置屏幕的相对划分区域
 //@参 数:pRelativeLayouts, 屏幕划分矩形区域数组的首地址
 //       nAreaCount，屏幕划分矩形区域数组元素的个数
-void CScreenLayoutDesigner::SetScreenRelativeLayouts(const RectF* pRelativeLayouts, UINT uScreenCount)
-{
-    m_vecScreenRelativeLayouts.resize(uScreenCount);
-
-    for(UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
-    {
-        m_vecScreenRelativeLayouts[screenIndex] = pRelativeLayouts[screenIndex];
-    }
-
-    //更新绝对像素尺寸的屏幕区域数组
-    m_vceScreenAbsLayouts.resize(uScreenCount);
-
-    for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
-    {
-        const RectF& rectRel = m_vecScreenRelativeLayouts[screenIndex];
-        RECT& rectAbs        = m_vceScreenAbsLayouts[screenIndex];
-
-        rectAbs.left  = LONG(rectRel.left  * m_DisplaySize.cx);
-        rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
-
-        rectAbs.top    = LONG(rectRel.top    * m_DisplaySize.cy);
-        rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
-    }
-
-    InitActiveAreas();
-}
+//void CScreenLayoutDesigner::SetScreenRelativeLayouts(const RectF* pRelativeLayouts, UINT uScreenCount)
+//{
+//    m_vecScreenRelativeLayouts.resize(uScreenCount);
+//
+//    for(UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
+//    {
+//        m_vecScreenRelativeLayouts[screenIndex] = pRelativeLayouts[screenIndex];
+//    }
+//
+//    //更新绝对像素尺寸的屏幕区域数组
+//    m_vceScreenAbsLayouts.resize(uScreenCount);
+//
+//    for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
+//    {
+//        const RectF& rectRel = m_vecScreenRelativeLayouts[screenIndex];
+//        RECT& rectAbs        = m_vceScreenAbsLayouts[screenIndex];
+//
+//        rectAbs.left  = LONG(rectRel.left  * m_DisplaySize.cx);
+//        rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
+//
+//        rectAbs.top    = LONG(rectRel.top    * m_DisplaySize.cy);
+//        rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+//    }
+//
+//    InitActiveAreas();
+//}
 
 
 
@@ -489,6 +709,7 @@ void CScreenLayoutDesigner::SetScreenRelativeLayouts(const RectF* pRelativeLayou
 //@参  数:pRelativeMergeArea, 触控融合区数组
 //        nAreaCount， 触控融合区数目
 //@返回值:空
+/*
 void  CScreenLayoutDesigner::SetRelativeMergeAreas(const RectF* pRelativeMergeArea, UINT nAreaCount)
 {
     m_vecMergeAreasRelative.resize(nAreaCount);
@@ -517,10 +738,12 @@ void  CScreenLayoutDesigner::SetRelativeMergeAreas(const RectF* pRelativeMergeAr
     InitActiveAreas();
 
 }
+*/
 
 //@功  能:返回按照相对尺寸设置的触控融合区。
 //@参  数:pCount, 存放区域个数的内存指针
 //@返回值:触控融合区域数组首地址。
+/*
 const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
 {
     const RectF* pRelMergeArea = NULL;
@@ -534,7 +757,7 @@ const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
     
     return pRelMergeArea;
 }
-
+*/
 
 //@功 能:响应屏幕分辨率发生变化的事件
 //@参 数:
@@ -544,12 +767,14 @@ const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
 //@说明:屏幕区域和融合区的相对尺寸保持不变, 绝对尺寸按照原先的相对尺寸进行调整。
 void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
 {
-    int nScreenAreaCount = m_vecScreenRelativeLayouts.size();
+    //int nScreenAreaCount = m_vecScreenRelativeLayouts.size();
+	int nScreenAreaCount = m_screenLayout.vecScreens.size();
 
     for (int i = 0; i < nScreenAreaCount; i++)
     {
         //屏幕区域
-        RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
+        //RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
+		RectF& relScreenArea = m_screenLayout.vecScreens[i];
         RECT& absScreenArea = m_vceScreenAbsLayouts[i];
 
         absScreenArea.left   = relScreenArea.left      * nScreenWidth;
@@ -558,11 +783,14 @@ void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
         absScreenArea.bottom = relScreenArea.bottom    * nScreenHeight;
     }
 
-    int nMergeAreaCount = m_vecMergeAreasRelative.size();
+    //int nMergeAreaCount = m_vecMergeAreasRelative.size();
+	int nMergeAreaCount = m_screenLayout.vecMergeAreas.size();
     for (int i = 0; i < nMergeAreaCount; i++)
     {
         //触控合并区域
-        RectF& relMergeArea = m_vecMergeAreasRelative[i];
+        //RectF& relMergeArea = m_vecMergeAreasRelative[i];
+        RectF& relMergeArea = m_screenLayout.vecMergeAreas[i];
+
         RECT& absMergeArea  = m_vecMergeAreasAbs[i];
 
         absMergeArea.left   = relMergeArea.left   * nScreenWidth;
@@ -980,32 +1208,28 @@ void CScreenLayoutDesigner::DrawButton(HDC hDC, const TActiveArea& btn)
 
 void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
 {
-    POINT pt0, pt1;
-
-    pt0.x = (rcSplitter.left + rcSplitter.right) >> 1;
-    pt0.y = rcSplitter.top;
-    pt1.x = pt0.x;
-    pt1.y = rcSplitter.bottom;
-
-
     LOGPEN logPen;
-    logPen.lopnStyle = PS_DASHDOTDOT;
-    logPen.lopnWidth = { 1, 0 };
+    //logPen.lopnStyle = PS_DASHDOTDOT;
+	logPen.lopnStyle = PS_DASH;
+    logPen.lopnWidth = { 2, 0 };
     logPen.lopnColor = RGB(255, 0, 0);
     HPEN hRedPen = ::CreatePenIndirect(&logPen);
 
 
     logPen.lopnStyle = PS_SOLID;
-    logPen.lopnWidth = { 1, 0 };
+    logPen.lopnWidth = { 2, 0 };
     logPen.lopnColor = GetSysColor(COLOR_BTNFACE);
     HPEN hGraypen = ::CreatePenIndirect(&logPen); 
     
-    //HBRUSH hGreenBrush = ::CreateSolidBrush(RGB(0, 255, 0));
     HBRUSH hLightGrayBrush = (HBRUSH)::GetStockObject(LTGRAY_BRUSH);
     HBRUSH hBrushOld = (HBRUSH)::SelectObject(hDC, hLightGrayBrush);
 
     HPEN hPenOld = (HPEN)::SelectObject(hDC, hGraypen);
     
+
+
+
+
     Rectangle(
         hDC,
         rcSplitter.left,
@@ -1016,6 +1240,35 @@ void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
 
     //选择红色笔
     ::SelectObject(hDC, hRedPen);
+
+
+
+	POINT pt0, pt1;
+
+
+	switch (m_eSplitScreenModel)
+	{
+	case E_SPLIT_SCREEN_VERT:
+		pt0.x = (rcSplitter.left + rcSplitter.right) >> 1;
+		pt0.y = rcSplitter.top;
+
+		pt1.x = pt0.x;
+		 pt1.y = rcSplitter.bottom;
+		break;
+
+	case E_SPLIT_SCREEN_HORZ:
+		pt0.x = rcSplitter.left;
+		pt0.y = (rcSplitter.top + rcSplitter.bottom) >> 1;
+
+		pt1.x = rcSplitter.right;
+		pt1.y = pt0.y;
+		break;
+
+	}
+
+
+
+
 
     //绘制中分线
     MoveToEx(hDC, pt0.x, pt0.y, NULL);
@@ -1047,9 +1300,10 @@ void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
 
         HRGN rgn       = ::CreateRectRgnIndirect(&rcMergeArea);
         HRGN rgnShrink = ::CreateRectRgnIndirect(&rcShrink);
-
+		//rgn = rgn XOR rgnShrink
         ::CombineRgn(rgn, rgnShrink, rgn, RGN_XOR);
         
+		//allRgn = allRgn Or rgn
         ::CombineRgn(allRgn, rgn, allRgn, RGN_OR);
 
 
@@ -1090,7 +1344,7 @@ void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
 }
 
 
-//@功能:限制分割条的来限制鼠标移动范围
+//@功能:用分割条的活动区域来限制鼠标移动范围。
 //@参数:splitterArea, 分割条活动区域
 void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
 {
@@ -1102,53 +1356,160 @@ void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
     RECT rcClipCursorNew;
 
     const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
-    //LONG nSplitterPos = ((activeArea.rcBound.right + activeArea.rcBound.left) >> 1);
-    LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].right;
 
-    LONG nLeftMargin = nSplitterPos - currentMergeArea.left;
-    LONG nRightMargin = currentMergeArea.right - nSplitterPos;
+	switch (this->m_eSplitScreenModel)
+	{
+	case E_SPLIT_SCREEN_VERT:
+			{
+				LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].right;
 
-    if (m_vecMergeAreasAbs.size() > 1)
-    {
-        if (0 == uSplitterIndex)
-        {
-            const RECT& rightSideMergeArea = m_vecMergeAreasAbs[1];
+				LONG nLeftMargin = nSplitterPos - currentMergeArea.left;
+				LONG nRightMargin = currentMergeArea.right - nSplitterPos;
 
-            rcClipCursorNew.left = 0 + nLeftMargin + 1;
-            rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
-            rcClipCursorNew.top = activeArea.rcBound.top;
-            rcClipCursorNew.bottom = activeArea.rcBound.bottom;
-        }
-        else if (m_vecMergeAreasAbs.size() - 1 == uSplitterIndex)
-        {
-            const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+				if (m_vecMergeAreasAbs.size() > 1)//存在2个及以上的融合区
+				{
+					if (0 == uSplitterIndex)
+					{//左边第一个融合区
+						const RECT& rightSideMergeArea = m_vecMergeAreasAbs[1];
+						
+						//屏幕最左端鼠标可达位置
+						rcClipCursorNew.left = 0 + nLeftMargin + 1;
 
-            rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
-            rcClipCursorNew.right = m_DisplaySize.cx - nRightMargin;
-            rcClipCursorNew.top = activeArea.rcBound.top;
-            rcClipCursorNew.bottom = activeArea.rcBound.bottom;
-        }
-        else
-        {
-            const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
-            const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
+						//右端可达位置, 以右边兄弟融合区的左边界为界。
+						rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
 
-            rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
-            rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
-            rcClipCursorNew.top = activeArea.rcBound.top;
-            rcClipCursorNew.bottom = activeArea.rcBound.bottom;
-        }
-      
-    }
-    else
-    {//只有一个屏，没有融合区
-        rcClipCursorNew.left   = nLeftMargin + 1;
-        rcClipCursorNew.right  = m_DisplaySize.cx - nRightMargin;
-        rcClipCursorNew.top    = 0;
-        rcClipCursorNew.bottom = m_DisplaySize.cy;
-    }
+						//屏幕上端鼠标可达位置
+						rcClipCursorNew.top = activeArea.rcBound.top;
 
-    ClipCursor(&rcClipCursorNew);
+						//屏幕下端鼠标可达位置
+						rcClipCursorNew.bottom = activeArea.rcBound.bottom;
+					}
+					else if (m_vecMergeAreasAbs.size() - 1 == uSplitterIndex)//右边最后一个融合区
+					{
+						//左边兄弟融合区
+						const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+						//鼠标左端可达位置, 以左边兄弟融合区的左边界为界。
+						rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
+
+						//鼠标右端可达位置
+						rcClipCursorNew.right = m_DisplaySize.cx - nRightMargin;
+						
+						//屏幕上端鼠标可达位置
+						rcClipCursorNew.top = activeArea.rcBound.top;
+
+						//屏幕下端鼠标可达位置
+						rcClipCursorNew.bottom = activeArea.rcBound.bottom;
+					}
+					else
+					{//处于中间位置的融合区（3个融合区及以上)
+						//当前融合区的左边的兄弟融合区
+						const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+						//当前融合区的右边的兄弟融合区
+						const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
+
+						//鼠标左端可达位置，以左边兄弟融合区的右边界为界。
+						rcClipCursorNew.left = leftSideMergeArea.right + nLeftMargin + 1;
+
+						//鼠标右端可达位置，以右边兄弟融合区的左边界为界。
+						rcClipCursorNew.right = rightSideMergeArea.left - nRightMargin;
+						
+						//屏幕上端鼠标可达位置
+						rcClipCursorNew.top = activeArea.rcBound.top;
+						
+						//屏幕下端鼠标可达位置
+						rcClipCursorNew.bottom = activeArea.rcBound.bottom;
+					}
+
+				}
+				else
+				{//只有一个融合区,以屏幕区域为限
+					rcClipCursorNew.left = nLeftMargin + 1;
+					rcClipCursorNew.right = m_DisplaySize.cx - nRightMargin;
+					rcClipCursorNew.top = 0;
+					rcClipCursorNew.bottom = m_DisplaySize.cy;
+				}
+
+			}
+		break;
+
+
+	case E_SPLIT_SCREEN_HORZ:
+		{
+			LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].bottom;
+
+			LONG nUpMargin = nSplitterPos - currentMergeArea.top;
+			LONG nDownMargin = currentMergeArea.bottom - nSplitterPos;
+
+			if (m_vecMergeAreasAbs.size() > 1)//存在两个及以上的融合区
+			{
+				if (0 == uSplitterIndex)
+				{//上边第一个融合区
+
+				 //下边第一个兄弟融合区
+					const RECT& downSideMergeArea = m_vecMergeAreasAbs[1];
+
+					//鼠标最左端可达位置
+					rcClipCursorNew.left = activeArea.rcBound.left;
+
+					//鼠标最右端可达位置
+					rcClipCursorNew.right = activeArea.rcBound.right;
+
+					//鼠标最上端可达位置,以屏幕上边界+必要空白区域为限
+					rcClipCursorNew.top = 0 + nUpMargin + 1;
+
+					//鼠标最下端可达位置,以下兄弟融合区的上边界-必要空白区域为限
+					rcClipCursorNew.bottom = downSideMergeArea.top - nDownMargin;
+				}
+				else if (m_vecMergeAreasAbs.size() - 1 == uSplitterIndex)
+				{//下边最后一个融合区
+
+				 //当前融合区的上边兄弟融合区
+					const RECT& downSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+					rcClipCursorNew.left = activeArea.rcBound.left;
+
+					//
+					rcClipCursorNew.right = activeArea.rcBound.right;
+
+					//鼠标最上端可达位置,以上边兄弟融合区的下边界+必要空白区域为限。
+					rcClipCursorNew.top = downSideMergeArea.bottom + nUpMargin + 1;;
+
+					//鼠标最上端可达位置，以屏幕底边-必要空白区域为限。
+					rcClipCursorNew.bottom = m_DisplaySize.cy - nDownMargin;
+				}
+				else
+				{
+					//当前融合区的上边兄弟融合区
+					const RECT& upsideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+					//当前融合区的下边兄弟融合区
+					const RECT& downsideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
+
+					//
+					rcClipCursorNew.left = activeArea.rcBound.left;
+					rcClipCursorNew.right = activeArea.rcBound.right; 
+					rcClipCursorNew.top = upsideMergeArea.bottom + nUpMargin + 1;
+					rcClipCursorNew.bottom = downsideMergeArea.top - nDownMargin;
+				}
+
+			}
+			else
+			{//只有一个融合区，以屏幕区域为限
+				rcClipCursorNew.left  = 0; 
+				rcClipCursorNew.right = m_DisplaySize.cx; 
+				rcClipCursorNew.top   = nUpMargin + 1;
+				rcClipCursorNew.bottom = m_DisplaySize.cy - nDownMargin;
+			}
+
+		}
+
+		break;
+
+	}//switch
+
+	ClipCursor(&rcClipCursorNew);
 }
 
 
@@ -1156,81 +1517,156 @@ void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
 void CScreenLayoutDesigner::ConfineMergeBorderCursor(const TActiveArea& activeArea)
 {
     if (activeArea.eAreaType != E_AREA_TYPE_MERGE_BORDER) return;
-    UINT uSplitterIndex = activeArea.ulData >> 1;
+    UINT uSplitterIndex    = activeArea.ulData >> 1;
     UINT uMegreBorderIndex = activeArea.ulData;
 
-    const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
-    
-    //屏幕分割边界
-    LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].right;
+	const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
 
-    GetClipCursor(&m_rcClipCursorOld);
-    RECT rcClipCursorNew;
-    
-    rcClipCursorNew = activeArea.rcBound;
+	GetClipCursor(&m_rcClipCursorOld);
+	RECT rcClipCursorNew;
+	
+	rcClipCursorNew = activeArea.rcBound;
 
-    LONG ScreenWidth = m_DisplaySize.cx;
+	switch (this->m_eSplitScreenModel)
+	{
+		case E_SPLIT_SCREEN_VERT://沿垂直方向分割
+		{
+			//屏幕分割边界
+			LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].right;
+			LONG ScreenWidth = m_DisplaySize.cx;
 
-    //最大融合区宽度为屏幕宽度的1/10
-    LONG MAX_MERGE_AREA_WIDTH = ScreenWidth * 10 / 100;
+			//最大融合区宽度为屏幕宽度的1/10
+			LONG MAX_MERGE_AREA_WIDTH = ScreenWidth * 10 / 100;
+
+			if (m_vecMergeAreasAbs.size() >= 1)
+			{
+				LONG left = 0;
+				LONG right = 0;
+
+				if (0 == uMegreBorderIndex)
+				{//第一个融合区的左边界
+
+					left = nSplitterPos - (MAX_MERGE_AREA_WIDTH >> 1);
+					right = nSplitterPos - (BORDER_DRAG_WIDTH >> 1);
+					if (left < 0) left = 0;
+				}
+				else if (((m_vecMergeAreasAbs.size() - 1) << 1) + 1 == uMegreBorderIndex)
+				{//最后一个融合区的右边界
+					left = nSplitterPos + (BORDER_DRAG_WIDTH >> 1);
+					right = nSplitterPos + (MAX_MERGE_AREA_WIDTH >> 1) - (BORDER_DRAG_WIDTH >> 1);
+					if (right > ScreenWidth)
+					{
+						right = ScreenWidth;
+					}
+				}
+				else
+				{//中间的融合区边界
+					if (uMegreBorderIndex % 2 == 0)//融合区左边界
+					{
+						//邻接的左融合区
+						const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+
+						left = nSplitterPos - (MAX_MERGE_AREA_WIDTH >> 1);
+
+						if (left < leftSideMergeArea.right + (BORDER_DRAG_WIDTH >> 1))
+						{
+							left = leftSideMergeArea.right + (BORDER_DRAG_WIDTH >> 1);
+						}
+
+						right = nSplitterPos - ((BORDER_DRAG_WIDTH >> 1));
+					}
+					else//融合区右边界
+					{
+						//邻接的右融合区
+						const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
+						left = nSplitterPos + (BORDER_DRAG_WIDTH >> 1);
+						right = nSplitterPos + (MAX_MERGE_AREA_WIDTH >> 1);
+
+						if (right > rightSideMergeArea.left - (BORDER_DRAG_WIDTH >> 1))
+						{
+							right = rightSideMergeArea.left - (BORDER_DRAG_WIDTH >> 1);
+						}
+
+					}
+				}
+
+				rcClipCursorNew.left = left;
+				rcClipCursorNew.right = right;
+			}
+		}
+
+		break;
 
 
-    if (m_vecMergeAreasAbs.size() >= 1)
-    {
-        LONG left = 0;
-        LONG right = 0;
+		case E_SPLIT_SCREEN_HORZ://沿水平方向分割
+		{
+			//屏幕分割边界
+			LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].bottom;
+			LONG ScreenHeight = m_DisplaySize.cy;
 
-        if (0 == uMegreBorderIndex)
-        {//第一个融合区的左边界
+			//最大融合区宽度为屏幕宽度的1/10
+			LONG MAX_MERGE_AREA_HEIGHT = ScreenHeight * 10 / 100;
 
-            left  = nSplitterPos - (MAX_MERGE_AREA_WIDTH >> 1) ;
-            right = nSplitterPos - (BORDER_DRAG_WIDTH >> 1);
-            if (left < 0) left = 0;
-        }
-        else if (((m_vecMergeAreasAbs.size() - 1) << 1) + 1 == uMegreBorderIndex)
-        {//最后一个融合区的右边界
-            left  = nSplitterPos + (BORDER_DRAG_WIDTH >> 1);
-            right = nSplitterPos + (MAX_MERGE_AREA_WIDTH >> 1) - (BORDER_DRAG_WIDTH >> 1);
-            if (right > ScreenWidth)
-            {
-                right = ScreenWidth;
-            }
-        }
-        else
-        {
-            if (uMegreBorderIndex % 2 == 0)//融合区左边界
-            {
-                //邻接的左融合区
-                const RECT& leftSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
+			if (m_vecMergeAreasAbs.size() >= 1)//存在两个及以上的融合区
+			{
+				LONG top = 0;
+				LONG bottom = 0;
 
-                left = nSplitterPos - (MAX_MERGE_AREA_WIDTH >> 1);
+				if (0 == uMegreBorderIndex)
+				{//第一个融合区的上边界
 
-                if (left < leftSideMergeArea.right + (BORDER_DRAG_WIDTH >> 1))
-                {
-                    left = leftSideMergeArea.right + (BORDER_DRAG_WIDTH >> 1);
-                }
+					top = nSplitterPos - (MAX_MERGE_AREA_HEIGHT >> 1);
+					bottom = nSplitterPos + (MAX_MERGE_AREA_HEIGHT >> 1);
+					if (top < 0) top = 0;
+				}
+				else if (((m_vecMergeAreasAbs.size() - 1) << 1) + 1 == uMegreBorderIndex)
+				{//最后一个融合区的右边界
+					top = nSplitterPos + (BORDER_DRAG_HEIGHT >> 1);
+					bottom = nSplitterPos + (MAX_MERGE_AREA_HEIGHT >> 1) - (BORDER_DRAG_HEIGHT >> 1);
+					if (bottom > ScreenHeight)
+					{
+						bottom = ScreenHeight;
+					}
+				}
+				else
+				{//中间的融合区边界
+					if (uMegreBorderIndex % 2 == 0)//融合区左边界
+					{
+						//邻接的上融合区
+						const RECT& upsideMergeArea = m_vecMergeAreasAbs[uSplitterIndex - 1];
 
-                right = nSplitterPos - ((BORDER_DRAG_WIDTH >> 1));
-            }
-            else//融合区右边界
-            {
-                //邻接的右融合区
-                const RECT& rightSideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
-                left  = nSplitterPos + (BORDER_DRAG_WIDTH >> 1);
-                right = nSplitterPos + (MAX_MERGE_AREA_WIDTH >> 1);
+						top = nSplitterPos - (MAX_MERGE_AREA_HEIGHT >> 1);
 
-                if (right > rightSideMergeArea.left - (BORDER_DRAG_WIDTH >> 1))
-                {
-                    right = rightSideMergeArea.left - (BORDER_DRAG_WIDTH >> 1);
-                }
+						if (top < upsideMergeArea.bottom + (BORDER_DRAG_HEIGHT >> 1))
+						{
+							top = upsideMergeArea.bottom + (BORDER_DRAG_HEIGHT >> 1);
+						}
 
-            }
-        }
+						bottom = nSplitterPos - ((BORDER_DRAG_HEIGHT >> 1));
+					}
+					else//融合区右边界
+					{
+						//邻接的右融合区
+						const RECT& downsideMergeArea = m_vecMergeAreasAbs[uSplitterIndex + 1];
 
-        rcClipCursorNew.left = left;
-        rcClipCursorNew.right = right;
-    }
-    
+						top = nSplitterPos + (BORDER_DRAG_HEIGHT >> 1);
+						bottom = nSplitterPos + (MAX_MERGE_AREA_HEIGHT >> 1);
+
+						if (bottom > downsideMergeArea.top - (BORDER_DRAG_HEIGHT >> 1))
+						{
+							bottom = downsideMergeArea.top - (BORDER_DRAG_HEIGHT >> 1);
+						}
+					}
+				}
+
+				rcClipCursorNew.top = top;
+				rcClipCursorNew.bottom = bottom;
+			}
+		}
+		break;
+	}//switch
+
+
 
     ClipCursor(&rcClipCursorNew);
 }
@@ -1282,13 +1718,27 @@ void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
     {
         //拖拽矩形的绘制区域
         RECT dragRect;
-        dragRect.top    = m_pDragArea->rcBound.top;
-        dragRect.bottom = m_pDragArea->rcBound.bottom;
+		int splitterWidth = 0;
+		switch (this->m_eSplitScreenModel)
+		{
+			case E_SPLIT_SCREEN_VERT://垂直切分
+				dragRect.top = m_pDragArea->rcBound.top;
+				dragRect.bottom = m_pDragArea->rcBound.bottom;
+				splitterWidth = m_pDragArea->rcBound.right - m_pDragArea->rcBound.left;
+				dragRect.left  = ptCursor.x - (splitterWidth >> 1);
+				dragRect.right = ptCursor.x + (splitterWidth >> 1);
+				break;
 
-        int splitterWidth = m_pDragArea->rcBound.right - m_pDragArea->rcBound.left;
+			case E_SPLIT_SCREEN_HORZ://水平切分
+				dragRect.left  = m_pDragArea->rcBound.left;
+				dragRect.right = m_pDragArea->rcBound.right;
+				splitterWidth = m_pDragArea->rcBound.bottom - m_pDragArea->rcBound.top;
+				dragRect.top    = ptCursor.y - (splitterWidth >> 1);
+				dragRect.bottom = ptCursor.y + (splitterWidth >> 1);
+				break;
 
-        dragRect.left  = ptCursor.x - (splitterWidth >> 1);
-        dragRect.right = ptCursor.x + (splitterWidth >> 1);
+		}
+
 
 
         CWindowDC dc(CWnd::GetDesktopWindow());
@@ -1338,7 +1788,7 @@ void CScreenLayoutDesigner::OnLButtonUp(UINT uFlags, const POINT& ptCursor)
 
         if (pActiveArea && pActiveArea->eAreaType == E_AREA_TYPE_BUTTON)
         {
-            ::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_END_SCREEN_LAYOUT_DESIGN, (WPARAM)0, (LPARAM)pActiveArea->uID);
+            ::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CREEN_LAYOUT_DESIGN_BUTTON_CLICK, (WPARAM)0, (LPARAM)pActiveArea->uID);
         }
 
     }
@@ -1360,65 +1810,136 @@ void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea
     //分割条对应的融合区
     const RECT& mergeArea = m_vecMergeAreasAbs[uSplitterIndex];
 
-    //分割条的旧位置
-    LONG nOldSplitterPos = (splitterArea.rcBound.left + splitterArea.rcBound.right) >> 1;
+	switch (this->m_eSplitScreenModel)
+	{
+		case E_SPLIT_SCREEN_VERT:
+		{
+			//分割条的旧位置
+			LONG nOldSplitterPos = (splitterArea.rcBound.left + splitterArea.rcBound.right) >> 1;
 
-    //融合区左右边检相对于分割线的偏移量。
-    LONG lMergeAreaLeftSideOffset  = nOldSplitterPos - mergeArea.left;
-    LONG lMergeAreaRightSideOffset = mergeArea.right - nOldSplitterPos;
+			//融合区左右边界相对于分割线的偏移量。
+			LONG lMergeAreaLeftSideOffset = nOldSplitterPos - mergeArea.left;
+			LONG lMergeAreaRightSideOffset = mergeArea.right - nOldSplitterPos;
 
-    //分割条的新位置
-    LONG nNewSplitterPos = (dragRect.left + dragRect.right) >> 1;
+			//分割条的新位置
+			LONG nNewSplitterPos = (dragRect.left + dragRect.right) >> 1;
+			
+			UINT uLeftAreaIndex  = uSplitterIndex;
+			UINT uRightAreaIndex = uSplitterIndex + 1;
 
+			//屏幕绝对布局
+			m_vceScreenAbsLayouts[uLeftAreaIndex ].right = nNewSplitterPos;
+			m_vceScreenAbsLayouts[uRightAreaIndex].left   = nNewSplitterPos;
 
-    UINT uRightAreaIndex = uSplitterIndex;
-    UINT uLeftAreaIndex  = uSplitterIndex + 1;
-
-    //屏幕绝对布局
-    m_vceScreenAbsLayouts[uRightAreaIndex].right = nNewSplitterPos;
-    m_vceScreenAbsLayouts[uLeftAreaIndex ].left  = nNewSplitterPos;
-
-    //屏幕相对布局
-    m_vecScreenRelativeLayouts[uRightAreaIndex].right = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
-    m_vecScreenRelativeLayouts[uLeftAreaIndex ].left  = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
-
-    //触控融合区所在的矩形区域(像素绝对值)
-    m_vecMergeAreasAbs[uSplitterIndex].left  = nNewSplitterPos - lMergeAreaLeftSideOffset;
-    m_vecMergeAreasAbs[uSplitterIndex].right = nNewSplitterPos + lMergeAreaRightSideOffset;
-
-
-    //触控融合区所在的矩形区域(归一化相对值)
-    m_vecMergeAreasRelative[uSplitterIndex].left  = (float)m_vecMergeAreasAbs[uSplitterIndex].left / (float)m_DisplaySize.cx;
-    m_vecMergeAreasRelative[uSplitterIndex].right = (float)m_vecMergeAreasAbs[uSplitterIndex].right / (float)m_DisplaySize.cx;
+			//屏幕相对布局
+			m_screenLayout.vecScreens[uLeftAreaIndex].right = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
+			m_screenLayout.vecScreens[uRightAreaIndex].left = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
 
 
-    splitterArea.rcBound = dragRect;
+			//触控融合区所在的矩形区域(像素绝对值)
+			m_vecMergeAreasAbs[uSplitterIndex].left  = nNewSplitterPos - lMergeAreaLeftSideOffset;
+			m_vecMergeAreasAbs[uSplitterIndex].right = nNewSplitterPos + lMergeAreaRightSideOffset;
 
 
-    //更新融合区边界左右两边的可拖拽区域
-    int nActiveAreaCount = m_vecActiveAreas.size();
-
-    for (int i = 0; i < nActiveAreaCount; i++)
-    {
-        TActiveArea& activeArea = m_vecActiveAreas[i];
-
-        if (activeArea.eAreaType == E_AREA_TYPE_MERGE_BORDER )
-        {
-            if (activeArea.ulData == uSplitterIndex * 2)
-            {
-                activeArea.rcBound.left  = m_vecMergeAreasAbs[uSplitterIndex].left - (BORDER_DRAG_WIDTH >> 1);
-                activeArea.rcBound.right = m_vecMergeAreasAbs[uSplitterIndex].left + (BORDER_DRAG_WIDTH >> 1);
-            }
-            else if (activeArea.ulData == uSplitterIndex * 2 + 1)
-            {
-                activeArea.rcBound.left  = m_vecMergeAreasAbs[uSplitterIndex].right - (BORDER_DRAG_WIDTH >> 1);
-                activeArea.rcBound.right = m_vecMergeAreasAbs[uSplitterIndex].right + (BORDER_DRAG_WIDTH >> 1);
-            }
-        }
-        
-    }//for
+			//触控融合区所在的矩形区域(归一化相对值)
+			m_screenLayout.vecMergeAreas[uSplitterIndex].left = (float)m_vecMergeAreasAbs[uSplitterIndex].left / (float)m_DisplaySize.cx;
+			m_screenLayout.vecMergeAreas[uSplitterIndex].right = (float)m_vecMergeAreasAbs[uSplitterIndex].right / (float)m_DisplaySize.cx;
 
 
+			splitterArea.rcBound = dragRect;
+
+
+			//更新融合区边界左右两边的可拖拽区域
+			int nActiveAreaCount = m_vecActiveAreas.size();
+
+			for (int i = 0; i < nActiveAreaCount; i++)
+			{
+				TActiveArea& activeArea = m_vecActiveAreas[i];
+
+				if (activeArea.eAreaType == E_AREA_TYPE_MERGE_BORDER)
+				{
+					if (activeArea.ulData == uSplitterIndex * 2)
+					{
+						activeArea.rcBound.left = m_vecMergeAreasAbs[uSplitterIndex].left - (BORDER_DRAG_WIDTH >> 1);
+						activeArea.rcBound.right = m_vecMergeAreasAbs[uSplitterIndex].left + (BORDER_DRAG_WIDTH >> 1);
+					}
+					else if (activeArea.ulData == uSplitterIndex * 2 + 1)
+					{
+						activeArea.rcBound.left = m_vecMergeAreasAbs[uSplitterIndex].right - (BORDER_DRAG_WIDTH >> 1);
+						activeArea.rcBound.right = m_vecMergeAreasAbs[uSplitterIndex].right + (BORDER_DRAG_WIDTH >> 1);
+					}
+				}
+
+			}//for
+		}
+
+		break;
+
+
+		case E_SPLIT_SCREEN_HORZ:
+		{
+			//分割条的旧位置
+			LONG nOldSplitterPos = (splitterArea.rcBound.top + splitterArea.rcBound.bottom) >> 1;
+
+			//融合区上下边界相对于分割线的偏移量。
+			LONG lMergeAreaTopSideOffset = nOldSplitterPos - mergeArea.top;
+			LONG lMergeAreaBottomSideOffset = mergeArea.bottom - nOldSplitterPos;
+
+			//分割条的新位置
+			LONG nNewSplitterPos = (dragRect.top + dragRect.bottom) >> 1;
+
+
+			UINT uTopAreaIndex = uSplitterIndex;
+			UINT uBottomAreaIndex = uSplitterIndex + 1;
+
+			//屏幕绝对布局
+			m_vceScreenAbsLayouts[uTopAreaIndex].bottom = nNewSplitterPos;
+			m_vceScreenAbsLayouts[uBottomAreaIndex].top = nNewSplitterPos;
+
+			//屏幕相对布局
+			m_screenLayout.vecScreens[uTopAreaIndex].bottom = (float)nNewSplitterPos / (float)m_DisplaySize.cy;
+			m_screenLayout.vecScreens[uBottomAreaIndex].top = (float)nNewSplitterPos / (float)m_DisplaySize.cy;
+
+
+			//触控融合区所在的矩形区域(像素绝对值)
+			m_vecMergeAreasAbs[uSplitterIndex].top = nNewSplitterPos - lMergeAreaTopSideOffset;
+			m_vecMergeAreasAbs[uSplitterIndex].bottom = nNewSplitterPos + lMergeAreaBottomSideOffset;
+
+
+			//触控融合区所在的矩形区域(归一化相对值)
+			m_screenLayout.vecMergeAreas[uSplitterIndex].top = (float)m_vecMergeAreasAbs[uSplitterIndex].top / (float)m_DisplaySize.cy;
+			m_screenLayout.vecMergeAreas[uSplitterIndex].bottom = (float)m_vecMergeAreasAbs[uSplitterIndex].bottom / (float)m_DisplaySize.cy;
+
+
+			splitterArea.rcBound = dragRect;
+
+
+			//更新融合区边界左右两边的可拖拽区域
+			int nActiveAreaCount = m_vecActiveAreas.size();
+
+			for (int i = 0; i < nActiveAreaCount; i++)
+			{
+				TActiveArea& activeArea = m_vecActiveAreas[i];
+
+				if (activeArea.eAreaType == E_AREA_TYPE_MERGE_BORDER)
+				{
+					if (activeArea.ulData == uSplitterIndex * 2)
+					{
+						activeArea.rcBound.top = m_vecMergeAreasAbs[uSplitterIndex].top - (BORDER_DRAG_WIDTH >> 1);
+						activeArea.rcBound.bottom = m_vecMergeAreasAbs[uSplitterIndex].top + (BORDER_DRAG_WIDTH >> 1);
+					}
+					else if (activeArea.ulData == uSplitterIndex * 2 + 1)
+					{
+						activeArea.rcBound.top = m_vecMergeAreasAbs[uSplitterIndex].bottom - (BORDER_DRAG_WIDTH >> 1);
+						activeArea.rcBound.bottom = m_vecMergeAreasAbs[uSplitterIndex].bottom + (BORDER_DRAG_WIDTH >> 1);
+					}
+				}
+
+			}//for
+		}//case
+
+		break;
+	}//switch
     //重新绘制
     Draw(m_hMemDC);
 
@@ -1439,30 +1960,69 @@ void CScreenLayoutDesigner::OnDragMergeAreaBorderDone(const RECT& dragRect, TAct
     UINT uBorderIndex = activeArea.ulData;
     UINT uSplitterIndex = (uBorderIndex >> 1);
     if (uSplitterIndex >= m_vecMergeAreasAbs.size()) return;
+	switch (this->m_eSplitScreenModel)
+	{
+		case E_SPLIT_SCREEN_VERT:
+		{
+			LONG nNewBorderPos = (dragRect.left + dragRect.right) >> 1;
+			if (uBorderIndex % 2 == 0)
+			{//左边界
 
-    LONG nNewBorderPos = (dragRect.left + dragRect.right) >> 1;
-    if (uBorderIndex % 2 == 0)
-    {//左边界
+				//触控融合区所在的矩形区域(像素绝对值)
+				m_vecMergeAreasAbs[uSplitterIndex].left = nNewBorderPos;
 
-        //触控融合区所在的矩形区域(像素绝对值)
-        m_vecMergeAreasAbs[uSplitterIndex].left = nNewBorderPos;
+				//触控融合区所在的矩形区域(归一化相对值)
+				//m_vecMergeAreasRelative[uSplitterIndex].left = (float)nNewBorderPos / (float)m_DisplaySize.cx;
+				m_screenLayout.vecMergeAreas[uSplitterIndex].left = (float)nNewBorderPos / (float)m_DisplaySize.cx;
+			}
+			else
+			{//右边界
 
-        //触控融合区所在的矩形区域(归一化相对值)
-        m_vecMergeAreasRelative[uSplitterIndex].left = (float)nNewBorderPos / (float)m_DisplaySize.cx;
-    }
-    else
-    {//右边界
+				//触控融合区所在的矩形区域(像素绝对值)
+				m_vecMergeAreasAbs[uSplitterIndex].right = nNewBorderPos;
 
-        //触控融合区所在的矩形区域(像素绝对值)
-        m_vecMergeAreasAbs[uSplitterIndex].right = nNewBorderPos;
+				//触控融合区所在的矩形区域(归一化相对值)
+				//m_vecMergeAreasRelative[uSplitterIndex].right = (float)nNewBorderPos / (float)m_DisplaySize.cx;
+				m_screenLayout.vecMergeAreas[uSplitterIndex].right = (float)nNewBorderPos / (float)m_DisplaySize.cx;
+			}
 
-        //触控融合区所在的矩形区域(归一化相对值)
-        m_vecMergeAreasRelative[uSplitterIndex].right = (float)nNewBorderPos / (float)m_DisplaySize.cx;
-    }
-    
-    //更新活动区域坐标到新位置
-    activeArea.rcBound.left  = nNewBorderPos - (BORDER_DRAG_WIDTH >> 1);
-    activeArea.rcBound.right = nNewBorderPos + (BORDER_DRAG_WIDTH >> 1);
+			//更新活动区域坐标到新位置
+			activeArea.rcBound.left = nNewBorderPos - (BORDER_DRAG_WIDTH >> 1);
+			activeArea.rcBound.right = nNewBorderPos + (BORDER_DRAG_WIDTH >> 1);
+		}
+		break;
+
+		case E_SPLIT_SCREEN_HORZ:
+		{
+				LONG nNewBorderPos = (dragRect.top + dragRect.bottom) >> 1;
+				if (uBorderIndex % 2 == 0)
+				{//上边界
+
+					//触控融合区所在的矩形区域(像素绝对值)
+					m_vecMergeAreasAbs[uSplitterIndex].top = nNewBorderPos;
+
+					//触控融合区所在的矩形区域(归一化相对值)
+					m_screenLayout.vecMergeAreas[uSplitterIndex].top = (float)nNewBorderPos / (float)m_DisplaySize.cy;
+				}
+				else
+				{//下边界
+
+				 //触控融合区所在的矩形区域(像素绝对值)
+					m_vecMergeAreasAbs[uSplitterIndex].bottom = nNewBorderPos;
+
+					//触控融合区所在的矩形区域(归一化相对值)				
+					m_screenLayout.vecMergeAreas[uSplitterIndex].bottom = (float)nNewBorderPos / (float)m_DisplaySize.cy;
+				}
+
+				//更新活动区域坐标到新位置
+				activeArea.rcBound.top = nNewBorderPos - (BORDER_DRAG_WIDTH >> 1);
+				activeArea.rcBound.bottom = nNewBorderPos + (BORDER_DRAG_WIDTH >> 1);
+
+		}
+		break;
+
+
+	}
 
 
     //重新绘制
@@ -1490,14 +2050,34 @@ BOOL CScreenLayoutDesigner::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
             SetCursor(m_hCursorhHand);
             return TRUE;
         }
-        else if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER)
+        else if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER )
         {
-            SetCursor(m_hCursorSplit_Horz);
+			switch (this->m_eSplitScreenModel)
+			{
+			case E_SPLIT_SCREEN_VERT:
+				SetCursor(m_hCursorSplit_Vert);
+				break;
+
+			case E_SPLIT_SCREEN_HORZ:
+				SetCursor(m_hCursorSplit_Horz);
+				break;
+			}
+            
+
             return TRUE;
         }
         else if (pActiveArea->eAreaType == E_AREA_TYPE_MERGE_BORDER)
         {
-            SetCursor(m_hCursorSplit_Horz);
+			switch (this->m_eSplitScreenModel)
+			{
+				case E_SPLIT_SCREEN_VERT:
+					SetCursor(m_hCursorSplit_Vert);
+					break;
+
+				case E_SPLIT_SCREEN_HORZ:
+					SetCursor(m_hCursorSplit_Horz);
+					break;
+			}
             return TRUE;
         }
     }
@@ -1542,6 +2122,16 @@ BOOL CScreenLayoutDesigner::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
      //作废窗体区域，以便在UpdateWindows时触发WM_PAINT消息。
      RECT rcWnd = RECT{ 0, 0, m_DisplaySize.cx, m_DisplaySize.cy };
      ::InvalidateRect(m_hWnd, &rcWnd, TRUE);
-
      UpdateWindow(this->m_hWnd);
+ }
+
+ ESplitScreeMode CScreenLayoutDesigner::GetSplitScreenMode()const
+ {
+	 return m_eSplitScreenModel;
+ }
+
+ const TScreenLayout& CScreenLayoutDesigner::GetScreenLayout()const
+ {
+
+	 return m_screenLayout;
  }

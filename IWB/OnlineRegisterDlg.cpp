@@ -157,8 +157,38 @@ BOOL COnlineRegisterDlg::OnInitDialog()
 		    break;
 	   }
 
+	   std::vector<TAutoCalibrateCompensateData> allCompensateData;
+	   theApp.GetAllCompensateData(allCompensateData);
+	   CString strFirmwareLensInfo;
+	   if (allCompensateData.size() == 0)
+	   {
+		   strFirmwareLensInfo.Format(_T("%s:none"), g_oResStr[IDS_STRING498]);
+	   }
+	   else
+	   {
+		   strFirmwareLensInfo.Format(_T("%s("), g_oResStr[IDS_STRING498]);
+		   for (uint32_t i = 0; i < allCompensateData.size(); i++)
+		   {
+			   CString strThrowRatio;
+
+			   if (i == allCompensateData.size() - 1)
+			   {
+				   strThrowRatio.Format(_T("%.2f"), allCompensateData[i].throwRatioOfLens);
+			   }
+			   else
+			   {
+				   strThrowRatio.Format(_T("%.2f,"), allCompensateData[i].throwRatioOfLens);
+			   }
+
+			   strFirmwareLensInfo.Append(strThrowRatio);
+		   }//for
+		   
+		   strFirmwareLensInfo.Append(_T(")"));
+	   }
+
        m_strText.Format(
-           _T("%s\r\n%s:%s(%s)\r\n%s:%s\r\n\r\n"), 
+           _T("%s\r\n%s\r\n%s:%s(%s)\r\n%s:%s\r\n\r\n"), 
+		   (LPCTSTR)strFirmwareLensInfo,
            g_oResStr[IDS_STRING458],//"使用硬件加密狗"信息
            g_oResStr[IDS_STRING459],
 		   strUSBKey,

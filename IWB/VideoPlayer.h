@@ -211,7 +211,8 @@ enum EOSDTextType
     E_OSDTEXT_TYPE_GUIDE_BOX   = 1,//引导框
     E_OSDTEXT_TYPE_FORMAT_INFO = 2,//视频格式信息
 	E_OSDTEXT_TYPE_SHOW_INFO   = 3,
-    E_OSDTEXT_TYPE_COUNT       = 4
+	E_OSDTEXT_TYPE_LENS_INFO   = 4,//固件中的镜头
+    E_OSDTEXT_TYPE_COUNT       = 5
 };
 
 class CVideoPlayer

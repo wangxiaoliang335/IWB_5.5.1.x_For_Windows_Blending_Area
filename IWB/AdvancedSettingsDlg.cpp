@@ -78,7 +78,7 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_INSTALLGAMMA, lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma);
 
 	//滑动系数
-	DDX_Text(pDX, IDC_EDIT_SMOOTH, TSensorModeConfig->advanceSettings.nSmoothCoefficient);
+	DDX_Text(pDX, IDC_EDIT_SMOOTH_COEF, TSensorModeConfig->advanceSettings.nSmoothCoefficient);
 
 	//>>>end
 	//delete by vera_zhao
@@ -102,8 +102,9 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_INSTALLBRIGHTNESS, m_ctlInstallBrightness);
 	DDX_Control(pDX, IDC_SPIN_INSTALLGAMMA, m_ctlInstallGramma);
 
-	DDX_Control(pDX, IDC_SLIDER_SMOOTH, m_ctrlSliderSmooth);
-	DDX_Control(pDX, IDC_EDIT_SMOOTH, m_ctrlEditSmooth);
+	//DDX_Control(pDX, IDC_SLIDER_SMOOTH, m_ctrlSliderSmooth);
+	DDX_Control(pDX, IDC_EDIT_SMOOTH_COEF, m_ctrlEditSmoothCoef);
+	DDX_Control(pDX, IDC_SPIN_SMOOTH_COEF, m_ctrlSpinSmoothCoef);
 }
 
 
@@ -178,8 +179,8 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 
 	m_ctlInstallGramma.SetRange(0,1000);
 
-	m_ctrlSliderSmooth.SetRange(0,10);
-	m_ctrlSliderSmooth.SetTicFreq(1);
+	//m_ctrlSliderSmooth.SetRange(0,10);
+	//m_ctrlSliderSmooth.SetTicFreq(1);
 
 	if (m_pSensor->GetDeviceInfo().m_nPID == 0x9230 && m_pSensor->GetDeviceInfo().m_nVID == 0x05a3)
 	{
@@ -245,9 +246,9 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	//勾选实际选择的镜头类型
 	CheckDlgButton(IDC_RADIO_THROW_RATIO_015 + int(this->m_tSensorConfig.eSelectedLensType), BST_CHECKED);
 	
-	CString strText;
-	GetDlgItem(IDC_EDIT_SMOOTH)->GetWindowTextW(strText);
-	m_ctrlSliderSmooth.SetPos(atoi(CT2A(strText)));
+	//CString strText;
+	//GetDlgItem(IDC_EDIT_SMOOTH)->GetWindowTextW(strText);
+	//m_ctrlSliderSmooth.SetPos(atoi(CT2A(strText)));
 
 	 //delete by vera_zhao 2020.2.24
      //只读信息, 双屏拼接
@@ -269,6 +270,8 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 //        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_HIDE);
 //     }
 	
+
+	m_ctrlSpinSmoothCoef.SetRange(0, 10);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -1334,11 +1337,11 @@ void CAdvancedSettingsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 	{
 		return;
 	}
-	int npos =  m_ctrlSliderSmooth.GetPos();
+	/*int npos =  m_ctrlSliderSmooth.GetPos();
 	CString strText;
 	strText.Format(_T("%d"), npos);
 	GetDlgItem(IDC_EDIT_SMOOTH)->SetWindowTextW(strText);
-	SetModified(TRUE);
+	SetModified(TRUE);*/
 
 	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }

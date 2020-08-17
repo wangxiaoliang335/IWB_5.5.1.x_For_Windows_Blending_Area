@@ -55,6 +55,6 @@ protected:
 	int         m_nPort;
  
 	std::list<VecTuioCursor> ActiveCursorList;
-
+	CComAutoCriticalSection m_csForTUIO;
 };
 

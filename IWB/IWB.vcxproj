@@ -1101,6 +1101,7 @@
     <None Include="ClassDiagram1.cd" />
     <None Include="res\cursor_DrawScreenArea.cur" />
     <None Include="res\Cursor_SplitHorz.cur" />
+    <None Include="res\Cursor_SplitVert.cur" />
     <None Include="res\hand.cur" />
     <None Include="res\IWB.rc2" />
   </ItemGroup>

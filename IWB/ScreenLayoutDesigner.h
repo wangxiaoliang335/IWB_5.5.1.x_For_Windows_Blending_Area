@@ -2,9 +2,10 @@
 
 
 
-#define BUTTON_ID_OK     0
-#define BUTTON_ID_CANCEL 1
-#define BUTTON_ID_RESET  2
+#define BUTTON_ID_OK        0
+#define BUTTON_ID_CANCEL    1
+#define BUTTON_ID_RESET     2
+#define BUTTON_ID_ROTATE_90 3
 
 //多屏拼接模式下的幕布局设计工具
 class CScreenLayoutDesigner
@@ -22,7 +23,7 @@ public:
     //@功  能:返回按照相对尺寸划分的屏幕区域数组。
     //@参  数:pCount, 存放区域个数的内存指针
     //@返回值:屏幕相对划分矩形区域数组的首地址。
-    const RectF* GetScreenRelativeLayouts(UINT* pScreenCount) const;
+    //const RectF* GetScreenRelativeLayouts(UINT* pScreenCount) const;
 
     //@功  能:返回按照像素尺寸划分的屏幕区域数组。
     //@参  数:pCount, 存放区域个数的内存指针
@@ -33,7 +34,8 @@ public:
     //@功 能:设置屏幕的相对划分区域
     //@参 数:pRelativeLayouts, 屏幕划分矩形区域数组的首地址
     //       nAreaCount，屏幕划分矩形区域数组元素的个数
-    void SetScreenRelativeLayouts(const RectF* pRelativeLayouts, UINT uScreenCount);
+    //void SetScreenRelativeLayouts(const RectF* pRelativeLayouts, UINT uScreenCount);
+
 
 
     
@@ -47,14 +49,14 @@ public:
     //@功  能:返回按照相对尺寸设置的触控融合区。
     //@参  数:pCount, 存放区域个数的内存指针
     //@返回值:触控融合区域数组首地址。
-    const RectF* GetRelativeMergeAreas(UINT* pAreaCount)const;
+    //const RectF* GetRelativeMergeAreas(UINT* pAreaCount)const;
 
 
     //@功  能:相对尺寸设置的触控融合区。
     //@参  数:pRelativeMergeArea, 触控融合区数组
     //        nAreaCount， 触控融合区数目
     //@返回值:空
-    void  SetRelativeMergeAreas(const RectF* pRelativeMergeArea, UINT nAreaCount);
+    //void  SetRelativeMergeAreas(const RectF* pRelativeMergeArea, UINT nAreaCount);
 
 
     //@功 能:响应屏幕分辨率发生变化的事件
@@ -72,6 +74,14 @@ public:
     BOOL IsVisible()const;
 
     void Reset();
+
+	ESplitScreeMode GetSplitScreenMode()const;
+
+	//@功能:设置屏幕划分布局
+	void SetScreenLayout(ESplitScreeMode eSplitMode,  const TScreenLayout* pScreenLayout);
+
+	//@功能:返回屏幕划分布局
+	const TScreenLayout& GetScreenLayout()const;
 protected:
     BOOL InitWindow();
     BOOL InitGDI();
@@ -81,6 +91,13 @@ protected:
     static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void InitScreenArea(int nScreenCount);
+
+	//@功能:沿垂直方向分割屏幕
+	void SliceScreenAreaVert(int nScreenCount);
+
+	//@功能:沿水平方向分割屏幕
+	void SliceScreenAreaHorz(int nScreenCount);
+
     void InitActiveAreas();
     void Draw(HDC hDC);
     
@@ -98,24 +115,30 @@ protected:
 
     HCURSOR m_hCursorhHand;//手形光标
     HCURSOR m_hCursorSplit_Horz;//水平切分光标
+	HCURSOR m_hCursorSplit_Vert;//垂直切分光标
     HCURSOR m_hCursorArrow;
      
     //
     //屏幕相对布局, 整个屏幕坐标归一化到(0,0)到(1,1)范围。
-    std::vector<RectF> m_vecScreenRelativeLayouts;
+   // std::vector<RectF> m_vecScreenRelativeLayouts;
 
     //屏幕绝对布局
     std::vector<RECT>  m_vceScreenAbsLayouts;
 
 
     //触控融合区所在的矩形区域的数组,归一化到(0,0)到(1,1)范围
-    std::vector<RectF> m_vecMergeAreasRelative;//
+    //std::vector<RectF> m_vecMergeAreasRelative;//
 
     //触控融合区所在的矩形区域的数组,屏幕像素尺寸
     std::vector<RECT> m_vecMergeAreasAbs;//
 
+	//屏幕分割模式
+	ESplitScreeMode m_eSplitScreenModel;
 
-    //屏幕尺寸
+	//屏幕布局数据结构, 存储的坐标都是归一化到[0,1]的屏幕坐标
+	TScreenLayout m_screenLayout;
+
+	//屏幕尺寸
     SIZE m_DisplaySize;
 
     enum EAreaType
@@ -149,6 +172,10 @@ protected:
     
     //融合区拖拽宽度
     static const int BORDER_DRAG_WIDTH = 4;
+
+
+	//融合区拖拽高度
+	static const int BORDER_DRAG_HEIGHT = 4;
 
     std::vector < TActiveArea> m_vecActiveAreas;//活动区域
 

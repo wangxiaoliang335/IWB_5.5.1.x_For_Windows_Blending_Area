@@ -75,6 +75,9 @@
     <None Include="res\hand.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\Cursor_SplitVert.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

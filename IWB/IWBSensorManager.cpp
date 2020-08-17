@@ -561,24 +561,39 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
     {
         //如果保存的屏幕划分信息和多屏屏接的数目一致，则载入屏幕划分信息
         //选择配置文件中屏幕数等于当前实际屏幕数的布局,
-        UINT uLayoutCount = sysCfgData.vecScreenLayouts.size();
-        for (UINT uLayoutIndex = 0; uLayoutIndex < uLayoutCount; uLayoutIndex++)
-        {
-            const TScreenLayout& screenLayout = sysCfgData.vecScreenLayouts[uLayoutIndex];
 
-            if (screenLayout.vecScreens.size() != m_vecSensors.size())
-                continue;
+		const ESplitScreeMode& eSelectedSplitScreenMode = sysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
+		
+		const TScreenLayout* pScreenLayout = sysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, m_vecSensors.size());
 
-            if (screenLayout.vecScreens.size() != screenLayout.vecMergeAreas.size() + 1)
-                continue;
+		if (pScreenLayout)
+		{
+			//this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&pScreenLayout->vecScreens[0], pScreenLayout->vecScreens.size());
+			//this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&pScreenLayout->vecMergeAreas[0], pScreenLayout->vecMergeAreas.size());
+			this->m_oScreenLayoutDesigner.SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+			this->ApplyScreenLayout();
+		}
+
+        //UINT uLayoutCount = pScreenLayoutsize();
+        //for (UINT uLayoutIndex = 0; uLayoutIndex < uLayoutCount; uLayoutIndex++)
+        //{
+        //    const TScreenLayout& screenLayout = sysCfgData.vecScreenLayouts[uLayoutIndex];
+
+        //    if (screenLayout.vecScreens.size() != m_vecSensors.size())
+        //        continue;
+
+        //    if (screenLayout.vecScreens.size() != screenLayout.vecMergeAreas.size() + 1)
+        //        continue;
 
 
-            this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&screenLayout.vecScreens[0], screenLayout.vecScreens.size());
-            this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&screenLayout.vecMergeAreas[0], screenLayout.vecMergeAreas.size());
-            this->ApplyScreenLayout();
-            break;
+        //    this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&screenLayout.vecScreens[0], screenLayout.vecScreens.size());
+        //    this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&screenLayout.vecMergeAreas[0], screenLayout.vecMergeAreas.size());
 
-        }//for
+
+        //    this->ApplyScreenLayout();
+        //    break;
+
+        //}//for
     }
 }
 
@@ -612,58 +627,65 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
     
     if (theApp.GetScreenMode() >= EScreenModeDouble)
     {
-        UINT uScreenCount = 0;
-        const RectF* pRelScreens = this->m_oScreenLayoutDesigner.GetScreenRelativeLayouts(&uScreenCount);
 
-        UINT uMergeAreaCount = 0;
-        const RectF* pRelMergeAreas = this->m_oScreenLayoutDesigner.GetRelativeMergeAreas(&uMergeAreaCount);
-
-        //选择配置文件中屏幕数等于当前实际屏幕数的布局,进行更新
-        UINT uLayoutCount = sysCfgData.vecScreenLayouts.size();
-
-        BOOL bUpdateScreenLayout = FALSE;
-        for (UINT uLayoutIndex = 0; uLayoutIndex < uLayoutCount; uLayoutIndex++)
-        {
-            TScreenLayout& screenLayout = sysCfgData.vecScreenLayouts[uLayoutIndex];
-
-            if (screenLayout.vecScreens.size() == uScreenCount)
-            {
-                for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
-                {
-                    screenLayout.vecScreens[uScreenIndex] = pRelScreens[uScreenIndex];
-                }
-
-                for (UINT uAreaIndex = 0; uAreaIndex < uMergeAreaCount; uAreaIndex++)
-                {
-                    screenLayout.vecMergeAreas[uAreaIndex] = pRelMergeAreas[uAreaIndex];
-                }
-
-                bUpdateScreenLayout = TRUE;
-                break;
-            }
-
-        }//for
-
-        if (!bUpdateScreenLayout)
-        {
-            TScreenLayout screenLayout;
-
-            screenLayout.vecScreens.resize(uScreenCount);
-
-            for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
-            {
-                screenLayout.vecScreens[uScreenIndex] = pRelScreens[uScreenIndex];
-            }
+		const TScreenLayout& screenLayout    = m_oScreenLayoutDesigner.GetScreenLayout();
+		ESplitScreeMode     eSplitScreenMode = m_oScreenLayoutDesigner.GetSplitScreenMode();
 
 
-            screenLayout.vecMergeAreas.resize(uMergeAreaCount);
-            for (UINT uAreaIndex = 0; uAreaIndex < uMergeAreaCount; uAreaIndex++)
-            {
-                screenLayout.vecMergeAreas[uAreaIndex] = pRelMergeAreas[uAreaIndex];
-            }
+		sysCfgData.screenLayoutManger.SetScreenLayout(eSplitScreenMode, screenLayout);
+        //UINT uScreenCount = 0;
+        //const RectF* pRelScreens = this->m_oScreenLayoutDesigner.GetScreenRelativeLayouts(&uScreenCount);
 
-            sysCfgData.vecScreenLayouts.push_back(screenLayout);
-        }
+        //UINT uMergeAreaCount = 0;
+        //const RectF* pRelMergeAreas = this->m_oScreenLayoutDesigner.GetRelativeMergeAreas(&uMergeAreaCount);
+
+        ////选择配置文件中屏幕数等于当前实际屏幕数的布局,进行更新
+        //UINT uLayoutCount = sysCfgData.vecScreenLayouts.size();
+
+        //BOOL bUpdateScreenLayout = FALSE;//已更新标志
+
+        //for (UINT uLayoutIndex = 0; uLayoutIndex < uLayoutCount; uLayoutIndex++)
+        //{
+        //    TScreenLayout& screenLayout = sysCfgData.vecScreenLayouts[uLayoutIndex];
+
+        //    if (screenLayout.vecScreens.size() == uScreenCount)
+        //    {//配置数据中的screenCount和编辑界面中的SceenCount一致, 则更新配置中的ScreenLayout.
+        //        for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
+        //        {
+        //            screenLayout.vecScreens[uScreenIndex] = pRelScreens[uScreenIndex];
+        //        }
+
+        //        for (UINT uAreaIndex = 0; uAreaIndex < uMergeAreaCount; uAreaIndex++)
+        //        {
+        //            screenLayout.vecMergeAreas[uAreaIndex] = pRelMergeAreas[uAreaIndex];
+        //        }
+
+        //        bUpdateScreenLayout = TRUE;
+        //        break;
+        //    }
+
+        //}//for
+
+        //if (!bUpdateScreenLayout)
+        //{
+        //    TScreenLayout screenLayout;
+
+        //    screenLayout.vecScreens.resize(uScreenCount);
+
+        //    for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
+        //    {
+        //        screenLayout.vecScreens[uScreenIndex] = pRelScreens[uScreenIndex];
+        //    }
+
+
+        //    screenLayout.vecMergeAreas.resize(uMergeAreaCount);
+        //    for (UINT uAreaIndex = 0; uAreaIndex < uMergeAreaCount; uAreaIndex++)
+        //    {
+        //        screenLayout.vecMergeAreas[uAreaIndex] = pRelMergeAreas[uAreaIndex];
+        //    }
+
+        //    sysCfgData.vecScreenLayouts.push_back(screenLayout);
+        //}
     }
 
     return TRUE;
@@ -684,7 +706,7 @@ void CIWBSensorManager::OnCameraPlugIn(const TCaptureDeviceInstance& devInst)
 
         if(sensor.IsDetecting()) continue;
 		//如果是从新插入摄像头，并且加密狗有变化
-		sensor.UpdateUsbKey();
+		sensor.UpdateTouchTypeFromUSBKey();
 
         const TCaptureDeviceInstance& devInfo = sensor.GetDeviceInfo();
         ////如果是路径相等的话还要比较是不是PID和VID相等//modify by zhaown 

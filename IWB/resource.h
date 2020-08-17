@@ -36,7 +36,8 @@
 #define IDD_DIALOG_ATTACH_SCREEN        156
 #define IDD_DIALOG_UPDATE_FIRMWARE      159
 #define IDD_DIALOG_ADANCEDSETTINGS      161
-#define IDC_CURSOR_SPLIT_HORZ           164
+#define IDC_CURSOR_SPLIT_HORZ           162
+#define IDC_CURSOR_SPLIT_VERT           163
 #define IDC_CURSOR_HAND                 165
 #define IDD_DIALOG_SEPARATE_OPERATION   166
 #define IDS_ABOUTBOX                    400
@@ -137,6 +138,7 @@
 #define IDS_STRING495                   495
 #define IDS_STRING496                   496
 #define IDS_STRING497                   497
+#define IDS_STRING498                   498
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000
@@ -244,8 +246,8 @@
 #define IDC_CHECK_AIROPERATION          1148
 #define IDC_RADIO_CLICK                 1149
 #define IDC_RADIO_DOUBLECLICK           1150
-#define IDC_SLIDER_SMOOTH               1155
-#define IDC_EDIT_SMOOTH                 1156
+#define IDC_EDIT_SMOOTH_COEF            1155
+#define IDC_SPIN_SMOOTH_COEF            1156
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
