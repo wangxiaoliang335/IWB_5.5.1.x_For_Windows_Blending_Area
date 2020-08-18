@@ -20,6 +20,7 @@ m_bLastHIDOwnnerAfterGR(true),
 //m_bIsSmartPenReset(true),
 m_bSimulateMode(FALSE),
 m_bIsTriggeringGuesture(FALSE),
+m_nSmoothCoefficient(0),
 m_eCalibrateModel(E_CALIBRATE_MODEL_GENERICAL_CAMERA)
 {
     Reset();
@@ -85,7 +86,6 @@ void CSpotListProcessor::StartProcess()
 
         //fopen_s(&g_hDebugSampleFile1, szFileName, "w");
         g_hDebugSampleFile1 = _fsopen(szFileName, "w", _SH_DENYWR);
-
 
         sprintf_s(
             szFileName,
@@ -266,7 +266,12 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
     for (int i = 0; i < _countof(mergeAreas); i++)
     {
         const RECT& area = mergeAreas[i];
-        if (area.left < lightSpot.ptPosInScreen.x && lightSpot.ptPosInScreen.x < area.right)
+		const POINT& ptPosInScreen = lightSpot.ptPosInScreen;
+	
+        if (area.left < ptPosInScreen.x && ptPosInScreen.x < area.right
+			 &&
+			area.top < ptPosInScreen.y && ptPosInScreen.y < area.bottom
+			)
         {//光斑在融合区范围以内
             if (pMergeAreaIndex)
             {
@@ -276,7 +281,6 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
         }//if
         
     }//for
-
 
     return FALSE;
 }
@@ -758,8 +762,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		     int  nScreenY = GetSystemMetrics(SM_CYSCREEN);
 
 		     POINT pts[MAX_CAMERA_NUMBER*MAX_OBJ_NUMBER];
-		     ////////////在默认值80英寸的时候，偏差的值PixelNumber =12 ；
-		     ///////////在200英寸的时候，偏差的值PixelNumber =6。这样列出一个线性方程式
+		     //在默认值80英寸的时候，偏差的值PixelNumber =12 ；
+		     //在200英寸的时候，偏差的值PixelNumber =6。这样列出一个线性方程式
 		     double  screenDigonalInMM = g_tSysCfgData.globalSettings.fScreenDiagonalPhysicalLength;
 //		     double  PixelNumber = (10936 - screenDigonalInMM) / 296;
 			 double  PixelNumber = 12 - (screenDigonalInMM / 720);
@@ -781,8 +785,8 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		      int nElementCount = 0;
 		      const TMatchInfo* pMatchInfo = m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
 		      penCount = nElementCount;
-
-		      m_oStrokFilter.DoFilter(penInfo, penCount);
+			  //平滑笔迹
+		      m_oStrokFilter.DoFilter(penInfo, penCount, m_nSmoothCoefficient);
 
 		     for (int i = 0 ; i < penCount; i++ )
 		     {
@@ -812,7 +816,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         if (!DoWindowsGestureRecognition(pLightSpots, nLightSpotCount, penInfo, penCount))
         {
            //平滑笔迹
-           m_oStrokFilter.DoFilter(penInfo, penCount);
+           m_oStrokFilter.DoFilter(penInfo, penCount, m_nSmoothCoefficient);
    
 #ifdef _DEBUG
 
@@ -1306,4 +1310,9 @@ RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& mon
 CToleranceDistribute& CSpotListProcessor::GetToleranceDistribute()
 {
     return this->m_oStrokFilter.GetToleranceDistribute();
+}
+
+void CSpotListProcessor::SetSmoothCoefficient(int nSmoothCoff)
+{
+	m_nSmoothCoefficient = (double)nSmoothCoff / 10;
 }

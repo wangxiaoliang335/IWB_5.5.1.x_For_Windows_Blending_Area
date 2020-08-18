@@ -53,6 +53,7 @@ CInterceptInputPin::NotifyAllocator(
 
 
 	Props.cBuffers = 3;
+	Props.cbAlign = 64;
 
 	hr = m_pAllocator->SetProperties(&Props, &Actual);
 

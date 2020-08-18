@@ -798,7 +798,6 @@ BOOL CVirtualHID::InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int
 		case E_TOUCH_SCREEN_ASPECT_RATIO_AUTO:
 			aspectRatioNominator = m_aspectRatioNominator;
 			aspectRatioDenominator = m_aspectRatioDenominator;
-
 			break;
 
 		case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
@@ -973,7 +972,6 @@ BOOL CVirtualHID::InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int
 
 		if (!bDone)
 		{
-
 			m_TouchPoints[i].wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
 			m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
 		}

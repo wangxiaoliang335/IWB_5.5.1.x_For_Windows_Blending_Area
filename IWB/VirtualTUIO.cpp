@@ -22,6 +22,8 @@ CVirtualTUIO::~CVirtualTUIO()
 
 void CVirtualTUIO::OpenTUIOServer(bool bStart)
 {
+	CComCritSecLock<CComAutoCriticalSection> lock(m_csForTUIO);
+
 	if(bStart)
 	{
 	   LoadTUIOConfig();
@@ -63,6 +65,8 @@ void CVirtualTUIO::InitTuio()
 }
 void CVirtualTUIO::CloseTUIOServer()
 {
+	CComCritSecLock<CComAutoCriticalSection> lock(m_csForTUIO);
+
 	Reset();
 	if (tcp_sender !=NULL)
 	{
@@ -78,6 +82,9 @@ void CVirtualTUIO::CloseTUIOServer()
 
 BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 {
+	CComCritSecLock<CComAutoCriticalSection> lock(m_csForTUIO);
+
+	if (NULL == tuioServer) return FALSE;
 
 	frameTime = TuioTime::getSessionTime();
 	tuioServer->initFrame(frameTime);
@@ -125,15 +132,11 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 	}
 
 	std::list<VecTuioCursor>::iterator iter;
-	//std::list<VecTuioCursor>::iterator it;
 	for (iter = ActiveCursorList.begin(); iter != ActiveCursorList.end();)
 	{
 		if ((*iter).bInvalid)
 		{
-			//it = iter;
-			//it++;			
 			iter  = ActiveCursorList.erase(iter);
-			//iter = it;
 		}
 		else
 		{
@@ -143,6 +146,24 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 //	tuioServer->stopUntouchedMovingCursors();
 	tuioServer->commitFrame(); //Ê±¼ä
 
+
+	//<<debug	
+	/*
+	if (nPenCount == 0 && ActiveCursorList.size() != 0)
+	{
+		int nDebug = 0;
+		nDebug = 1;
+	}
+
+	static std::vector<TContactInfo> vevLastContactInfo;
+	static int lastPencCount = nPenCount;
+
+	if (nPenCount)
+	{
+		vevLastContactInfo.assign(pPenInfos, pPenInfos + nPenCount);
+	}
+	*/
+	//debug>>
 	return TRUE;
 }
 

@@ -270,10 +270,12 @@ void CVirtualMouse::GenEvent(const POINT& ptMouse, EVirtualMouseEvent eEvent, in
         EASI_MouseInput mouseInput;
         ZeroMemory(&mouseInput, sizeof(mouseInput));
 
-        mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * ptMouse.x / nCxScreen);
-        mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * ptMouse.y / nCyScreen);
-        //mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * (ptMouse.x - nVSLeft) / nCxVirtualScreen);
-        //mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * (ptMouse.y - nVSTop ) / nCyVirtualScreen);
+        //mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * ptMouse.x / nCxScreen);
+        //mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * ptMouse.y / nCyScreen);
+
+        //win10 1709 (OSÄÚ²¿°æ±¾ 16299.125)
+        mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * (ptMouse.x - nVSLeft) / nCxVirtualScreen);
+        mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * (ptMouse.y - nVSTop ) / nCyVirtualScreen);
         switch(eEvent)
         {
 

@@ -20,10 +20,147 @@ enum EScreenMode
 
 struct TScreenLayout
 {
-    std::vector<RectF> vecScreens  ;//屏幕区域数组
+    std::vector<RectF> vecScreens   ;//屏幕区域数组
     std::vector<RectF> vecMergeAreas;//光斑融合区数组
 };
 
+
+//屏幕分割模式
+enum ESplitScreeMode
+{
+	E_SPLIT_SCREEN_VERT = 0,//沿垂直方向切割屏幕
+	E_SPLIT_SCREEN_HORZ = 1,//沿水平方向切割屏幕
+	E_SPLIT_SCREEN_MODE_COUNT = 2
+};
+
+
+struct LayoutCollection
+{
+	ESplitScreeMode eSplitScreenModel;         //选择的屏幕切割方式
+	std::vector<TScreenLayout> allScreenLayout;//所有的屏幕布局
+	
+	LayoutCollection()
+	{
+		eSplitScreenModel = E_SPLIT_SCREEN_VERT;
+	}
+};
+//屏幕布局管理器
+struct ScreenLayoutManager
+{
+	std::map<ESplitScreeMode, LayoutCollection*> allLayoutCollection;
+	
+	ESplitScreeMode eSelectedSplitScreenMode;//当前选择的屏幕分割模式
+
+	ScreenLayoutManager()
+	{
+		eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+	}
+
+	~ScreenLayoutManager()
+	{
+		for (auto it = allLayoutCollection.begin(); it != allLayoutCollection.end(); it++)
+		{
+			delete it->second;
+		}
+	}
+
+	void Reset()
+	{
+		eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+		allLayoutCollection.clear();
+	}
+
+	ESplitScreeMode GetSelectedSplitScreenMode()const
+	{
+		return eSelectedSplitScreenMode;
+	}
+
+	//@功能:返回指定屏幕分割模式下的指定屏幕个数的屏幕布局数据
+	TScreenLayout* GetScreenLayout(ESplitScreeMode eScreenSplitMode, UINT nScreenCount)
+	{
+		TScreenLayout* pScreenLayout = NULL;
+
+		LayoutCollection* pLayoutCollection = NULL;
+
+		auto it = allLayoutCollection.find(eScreenSplitMode);
+
+		if (it != allLayoutCollection.end())
+		{
+			pLayoutCollection = it->second;
+		}
+		else 
+		{
+			pLayoutCollection = new LayoutCollection();
+
+			pLayoutCollection->eSplitScreenModel = eScreenSplitMode;
+			allLayoutCollection[eScreenSplitMode] = pLayoutCollection;
+		}
+				
+
+		auto& allScreenLayout = pLayoutCollection->allScreenLayout;
+
+		for (UINT i = 0; i < allScreenLayout.size(); i++)
+		{
+			TScreenLayout& screenLayout = allScreenLayout[i];
+			if (screenLayout.vecScreens.size() == nScreenCount)
+			{
+				pScreenLayout = &screenLayout;
+				break;
+			}
+		}
+
+		return pScreenLayout;
+	}
+
+
+
+	//功能:更新布局数据
+	void SetScreenLayout(ESplitScreeMode eNewSelectedScreenSplitMode, const TScreenLayout& newScreenLayout)
+	{
+
+		LayoutCollection* pLayoutCollection = NULL;
+
+		auto it = allLayoutCollection.find(eNewSelectedScreenSplitMode);
+
+		if (it != allLayoutCollection.end())
+		{
+			pLayoutCollection = it->second;
+		}
+		else
+		{
+			pLayoutCollection = new LayoutCollection();
+
+			pLayoutCollection->eSplitScreenModel = eNewSelectedScreenSplitMode;
+			allLayoutCollection[eNewSelectedScreenSplitMode] = pLayoutCollection;
+		}
+
+
+		auto& allScreenLayout = pLayoutCollection->allScreenLayout;
+
+		BOOL bUpdateDone = FALSE;
+		for (UINT i = 0; i < allScreenLayout.size(); i++)
+		{
+			TScreenLayout& screenLayoutExists = allScreenLayout[i];
+			if (screenLayoutExists.vecScreens.size() == newScreenLayout.vecScreens.size())
+			{
+				screenLayoutExists = newScreenLayout;
+				bUpdateDone = TRUE;
+				break;
+			}
+		}
+
+		if (!bUpdateDone)
+		{//未发现既有布局，则作为新的布局插入
+			allScreenLayout.push_back(newScreenLayout);
+		}
+
+
+		this->eSelectedSplitScreenMode = eNewSelectedScreenSplitMode;
+	}
+
+	
+
+};
 
 //传感器镜头模式
 enum ESensorLensMode
@@ -521,7 +658,7 @@ struct TAdvancedSettings
 	BOOL bIsAntiJamming;           //是否开启抗干扰功能
 	BOOL bIsOnLineScreenArea;      //是否开启手动绘制的静态屏蔽图
 	BOOL bDisableReflectionSpot;   //反射点是否响应
-
+	int  nSmoothCoefficient;       //设置平滑系数
 
     TAdvancedSettings()
     {
@@ -538,6 +675,7 @@ struct TAdvancedSettings
 		bIsAntiJamming = FALSE;
 		bIsOnLineScreenArea = FALSE;
 		bDisableReflectionSpot = FALSE;
+		nSmoothCoefficient = 0;
     }
 };
 
@@ -2135,7 +2273,10 @@ struct TSysConfigData
 {
 	GlobalSettings               globalSettings;//全局配置信息
     std::vector<TSensorConfig>  vecSensorConfig;//投影模式配置
-    std::vector<TScreenLayout>  vecScreenLayouts;//多屏屏接屏幕布局
+    
+	//std::vector<TScreenLayout>  vecScreenLayouts;//多屏屏接屏幕布局
+	ScreenLayoutManager          screenLayoutManger;//屏幕布局管理器
+
 
 	TSysConfigData()
 	{

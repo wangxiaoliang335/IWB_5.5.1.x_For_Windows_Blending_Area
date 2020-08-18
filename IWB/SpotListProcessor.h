@@ -30,6 +30,8 @@ public:
     //@参数:uSensorID, id of camera sensor
     //     monitorArea, 相机有效管辖的屏区域
     virtual RECT GetVisibleScreenArea(UINT uSensorID, const RECT& monitorArea) const = 0;
+
+	virtual void SetSmoothCoefficient(int nSmoothCoff) = 0;
 };
 
 
@@ -89,6 +91,9 @@ public:
     RECT GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const;
 
     CToleranceDistribute& GetToleranceDistribute();
+
+	virtual void SetSmoothCoefficient(int nSmoothCoff);
+
 protected:
     //@功能:启动处理线程
     BOOL StartProcessThread();
@@ -232,6 +237,8 @@ protected:
     //正在触发手势标志
     BOOL m_bIsTriggeringGuesture;
 	BOOL m_bEnableStrokeInterpolateTemp;
+
+	double  m_nSmoothCoefficient;
 
 };
 

@@ -119,7 +119,7 @@ public:
 	afx_msg void OnEnChangeEditVideodisplaydelay();
 	afx_msg void OnChangeEditInstallbrightness();
 	afx_msg void OnChangeEditInstallgamma();
-
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 
     TSensorConfig m_tSensorConfig;
 	GlobalSettings m_tGlobalSettings;	  
@@ -137,6 +137,7 @@ public:
     CScreenRecognition m_oScreenRecognition;//屏幕识别类。
     CIWBSensor*        m_pSensor           ;//指向传感器的指针
     
-
-
+	//CSliderCtrl m_ctrlSliderSmooth;
+	CEdit m_ctrlEditSmoothCoef;
+	CSpinButtonCtrl m_ctrlSpinSmoothCoef;
 };

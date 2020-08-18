@@ -229,7 +229,17 @@ public:
 	  BOOL GenerateMaskFrameWithCalibrateData(CImageFrame& maskFrame, const RECT& rect, int nMonitorId = 0);
 	  void GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfElements);
 
-	  void UpdateUsbKey();
+	  void UpdateTouchTypeFromUSBKey();
+
+
+	  void UpdateThrowRatioDisplayInfo();
+
+protected:
+	  
+	  ELensType MapThrowRatioToLensType(const double& throwRatio);
+
+	  void UpdateAutoCalibrateCompensateCoefs(const TLensConfig& lensConfig);
+
 protected:
   //视频播放对象。
   CVideoPlayer     m_oVideoPlayer;
@@ -305,5 +315,19 @@ protected:
 
   static const int SONIX_PID = 0x9230;
   static const int SONIX_VID = 0x05a3;
+
+  class ThrowRatioInfo
+  {
+  public:
+	  ThrowRatioInfo()
+	  {
+		  m_dbThrowRatioInFirmware = 0.0;
+		  m_dbThrowRatioSelected   = 0.0;
+	  }
+
+	  double m_dbThrowRatioInFirmware;
+	  double m_dbThrowRatioSelected;
+
+  }m_ThrowRatioInfo;
 
 };

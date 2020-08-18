@@ -77,6 +77,9 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_INSTALLBRIGHTNESS, lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Brightness);
 	DDX_Text(pDX, IDC_EDIT_INSTALLGAMMA, lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma);
 
+	//滑动系数
+	DDX_Text(pDX, IDC_EDIT_SMOOTH_COEF, TSensorModeConfig->advanceSettings.nSmoothCoefficient);
+
 	//>>>end
 	//delete by vera_zhao
 	//     DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT,
@@ -98,6 +101,10 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Control(pDX, IDC_SPIN_INSTALLBRIGHTNESS, m_ctlInstallBrightness);
 	DDX_Control(pDX, IDC_SPIN_INSTALLGAMMA, m_ctlInstallGramma);
+
+	//DDX_Control(pDX, IDC_SLIDER_SMOOTH, m_ctrlSliderSmooth);
+	DDX_Control(pDX, IDC_EDIT_SMOOTH_COEF, m_ctrlEditSmoothCoef);
+	DDX_Control(pDX, IDC_SPIN_SMOOTH_COEF, m_ctrlSpinSmoothCoef);
 }
 
 
@@ -139,6 +146,7 @@ BEGIN_MESSAGE_MAP(CAdvancedSettingsDlg, CScrollablePropertyPage)
 
 	ON_EN_CHANGE(IDC_EDIT_INSTALLBRIGHTNESS, &CAdvancedSettingsDlg::OnChangeEditInstallbrightness)
 	ON_EN_CHANGE(IDC_EDIT_INSTALLGAMMA, &CAdvancedSettingsDlg::OnChangeEditInstallgamma)
+	ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 
 
@@ -170,6 +178,9 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	m_ctlVideoIsplayDelay.SetRange(0,200);
 
 	m_ctlInstallGramma.SetRange(0,1000);
+
+	//m_ctrlSliderSmooth.SetRange(0,10);
+	//m_ctrlSliderSmooth.SetTicFreq(1);
 
 	if (m_pSensor->GetDeviceInfo().m_nPID == 0x9230 && m_pSensor->GetDeviceInfo().m_nVID == 0x05a3)
 	{
@@ -234,8 +245,10 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 
 	//勾选实际选择的镜头类型
 	CheckDlgButton(IDC_RADIO_THROW_RATIO_015 + int(this->m_tSensorConfig.eSelectedLensType), BST_CHECKED);
-
-
+	
+	//CString strText;
+	//GetDlgItem(IDC_EDIT_SMOOTH)->GetWindowTextW(strText);
+	//m_ctrlSliderSmooth.SetPos(atoi(CT2A(strText)));
 
 	 //delete by vera_zhao 2020.2.24
      //只读信息, 双屏拼接
@@ -257,6 +270,8 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 //        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_HIDE);
 //     }
 	
+
+	m_ctrlSpinSmoothCoef.SetRange(0, 10);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -1095,172 +1110,6 @@ const GlobalSettings& CAdvancedSettingsDlg::GetGlobalSettings()const
 }
 
 
-//void CAdvancedSettingsDlg::OnBnClickedScreenSelect()
-//{
-//    // TODO: Add your control notification handler code here
-//    const int WAIT_TIME = 1000;//单位:毫秒
-//    
-//    //在各个屏幕上分别显示编号
-//    this->m_oScreenRecognition.DoRecoginition();
-//
-//    ESensorLensMode OldMode = m_pSensor->GetLensMode();
-//
-//    //进入图像调试模式
-//    m_pSensor->SwitchLensMode(E_VIDEO_TUNING_MODE);
-//    
-//    m_pSensor->GetPenPosDetector()->StartImageCapture(WAIT_TIME);
-//
-//    
-//    DWORD dwStart = GetTickCount();
-//    BOOL bCaptureSuccess = FALSE;
-//    do
-//    {
-//        Sleep(WAIT_TIME);
-//
-//        BOOL bCaptureStatus = m_pSensor->GetPenPosDetector()->IsImageCaputredDone();
-//
-//        if(!bCaptureStatus)
-//        {
-//            DWORD dwNow = GetTickCount();
-//            DWORD dwDelta = dwNow - dwStart;
-//
-//            if(dwDelta > 3*WAIT_TIME)
-//            {
-//                break;
-//            }
-//
-//        }
-//        else
-//        {
-//            bCaptureSuccess = TRUE;
-//            break;
-//        }
-//
-//        //MSG msg;
-//        //GetMessage(&msg, NULL, 0, 0);
-//        //TranslateMessage(&msg);
-//        //DispatchMessage(&msg);
-//
-//    }while(1);
-//
-//
-//     //进入原来的镜头模式
-//     m_pSensor->SwitchLensMode(OldMode);
-//
-//    if(bCaptureSuccess)
-//    {
-//        //CMonitorSelectDlg monitorSelectDlg(m_pSensor->GetPenPosDetector()->GetCapturedFrame(), this);
-//
-//        //if(monitorSelectDlg.DoModal() == IDOK)
-//        //{
-//        //    
-//
-//        //}
-//
-//    }
-//    
-//    
-//
-//    //结束各个屏幕上的编号显示
-//    this->m_oScreenRecognition.StopRecognition();
-//
-//}
-
-//void CAdvancedSettingsDlg::OnBnClickedRadioFar()
-//{
-//    // TODO: Add your control notification handler code here
-//    if (IsDlgButtonChecked(IDC_RADIO_FAR) == BST_CHECKED)
-//    {        
-//
-//        //将界面输入数据保存到变量中
-//        UpdateData(TRUE);
-//
-//
-//        if( E_LENS_TR_1_DOT_34 != m_tSensorConfig.eSelectedLensType )
-//        {
-//
-//            //变更镜头类型
-//            m_tSensorConfig.eSelectedLensType  = E_LENS_TR_1_DOT_34;
-//            
-//            //更新控件显示数据
-//            UpdateData(FALSE);
-//
-//
-//            //使能应用按钮
-//            SetModified(TRUE);
-//        }
-//
-//    }
-//}
-//
-//void CAdvancedSettingsDlg::OnBnClickedRadioNear()
-//{
-//    // TODO: Add your control notification handler code here
-//    if (IsDlgButtonChecked(IDC_RADIO_NEAR) == BST_CHECKED)
-//    {        
-//
-//        //将界面输入数据保存到变量中
-//        UpdateData(TRUE);
-//
-//        if(E_LENS_TR_0_DOT_34 != m_tSensorConfig.eSelectedLensType)
-//        {
-//            //变更镜头类型
-//            m_tSensorConfig.eSelectedLensType  = E_LENS_TR_0_DOT_34;
-//
-//           //更新控件显示数据
-//            UpdateData(FALSE);
-//           
-//            //使能应用按钮
-//            SetModified(TRUE);
-//        }
-//    }
-//}
-//
-//void CAdvancedSettingsDlg::OnBnClickedRadioSupernear()
-//{
-//    // TODO: Add your control notification handler code here
-//    if (IsDlgButtonChecked(IDC_RADIO_SUPERNEAR) == BST_CHECKED)
-//    {
-//        //将界面输入数据保存到变量中
-//        UpdateData(TRUE);
-//
-//        if(E_LENS_TR_0_DOT_21 != m_tSensorConfig.eSelectedLensType)
-//        {
-//            //变更镜头类型
-//            m_tSensorConfig.eSelectedLensType  = E_LENS_TR_0_DOT_21;
-//
-//            //更新控件显示数据
-//            UpdateData(FALSE);
-//
-//            //使能应用按钮
-//            SetModified(TRUE);
-//        }
-//    }
-//}
-//
-//
-//void CAdvancedSettingsDlg::OnBnClickedRadioSupernear019()
-//{
-//    if (IsDlgButtonChecked(IDC_RADIO_SUPERNEAR_0_19) == BST_CHECKED)
-//    {
-//        //将界面输入数据保存到变量中
-//        UpdateData(TRUE);
-//
-//        if(E_LENS_TR_0_DOT_15 != m_tSensorConfig.eSelectedLensType)
-//        {
-//            //变更镜头类型
-//            m_tSensorConfig.eSelectedLensType  = E_LENS_TR_0_DOT_15;
-//
-//            //更新控件显示数据
-//            UpdateData(FALSE);
-//
-//            //使能应用按钮
-//            SetModified(TRUE);
-//        }
-//    }
-//
-//}
-
 void CAdvancedSettingsDlg::OnBnClickRadioLensType(UINT uID)
 {
     if (IsDlgButtonChecked(uID) == BST_CHECKED)
@@ -1477,4 +1326,22 @@ void CAdvancedSettingsDlg::OnChangeEditInstallgamma()
 		::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_INSTALL_GRAMMA, (WPARAM)0, (LPARAM)npos);
 	}
 	SetModified(TRUE);
+}
+
+void CAdvancedSettingsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CScrollablePropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
+	if (!m_bInitDone)
+	{
+		return;
+	}
+	/*int npos =  m_ctrlSliderSmooth.GetPos();
+	CString strText;
+	strText.Format(_T("%d"), npos);
+	GetDlgItem(IDC_EDIT_SMOOTH)->SetWindowTextW(strText);
+	SetModified(TRUE);*/
+
+	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }

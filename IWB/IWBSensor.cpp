@@ -3,7 +3,7 @@
 #include "../inc/Log.h"
 #include "..\MorphologyAlgo\inc\MorphologyAlgo.h"
 #include "../inc/FillPolygon.h"
-
+#include <locale>
 //#pragma comment(lib, "..\lib\MorphologyAlgo.lib")
 //#include "headers.h"
 
@@ -170,7 +170,6 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
         cameraParams.Prop_VideoProcAmp_Brightness = lBrightness;
         cameraParams.Prop_VideoProcMap_Gain       = IRCUT_OFF  ;//保持滤光片打开
         */
-
 
         return lpThis->m_oVideoPlayer.SetCameraParams(lBrightness, VideoProcAmp_Brightness);
     }
@@ -443,7 +442,6 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
           {
                AtlTrace(_T("Set CameraParam Failed!\n"));
           }
-
           {
               SIZE videoSize;
               bRet = m_oVideoPlayer.GetVideoSize(videoSize);
@@ -653,6 +651,12 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
 
     m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
+
+	//每次更新设备路径, 就需要更新来自固件的"自动校准补偿系数"
+	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+	TSensorModeConfig* pSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
+	const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
+	UpdateAutoCalibrateCompensateCoefs(lensCfg);
 }
 
 //@功能:返回视频捕获设备信息
@@ -667,6 +671,10 @@ const TCaptureDeviceInstance& CIWBSensor::GetDeviceInfo()const
 void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* pGlobalSettings)
 {
     m_tCfgData = cfgData;
+
+	m_ThrowRatioInfo.m_dbThrowRatioSelected = TRHOW_RATIO_LIST[m_tCfgData.eSelectedLensType];
+	UpdateThrowRatioDisplayInfo();
+
 
     m_tDeviceInfo.m_strDevPath = cfgData.strFavoriteDevicePath;
 
@@ -691,6 +699,8 @@ void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* 
             break;
         }
     }
+
+
     SetGlobalCfgData( pGlobalSettings);
 
 }
@@ -709,8 +719,6 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
     const NormalUsageSettings* pNormalUsageSettings = NULL;
 
     //全局配置信息
-    if (pGlobalSettings)
-    {
         switch (theApp.GetUSBKeyTouchType())
         {
            case E_DEVICE_PEN_TOUCH_WHITEBOARD:
@@ -784,19 +792,34 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
         m_oPenPosDetector.ShowGuideRectangle(lensCfg.bRectangleVisible);
 
         //设置镜头焦距类型
-        //m_oPenPosDetector.SetLensFocalType(pGlobalSettings->eLensFocalType);
         m_oPenPosDetector.SetLensFocalType(m_tCfgData.eSelectedLensType);
 
         //设置是否是背投模式
         m_oPenPosDetector.GetVideoToScreenMap().SetRearProjectMode(pSensorModeConfig->advanceSettings.bIsRearProjection);
-
-        //设置"自动校正补偿系数"
-        m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+		
+		//设置自动校正补偿系数
+		//此处不需要，因为在SetDeviceInfo函数内部会调用UpdateAutoCalibrateCompensateCoefs
+		//UpdateAutoCalibrateCompensateCoefs(lensCfg);
 
         //设置CMOS芯片规格数据
         if (pGlobalSettings)
         {
+			m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+			if (m_eCameraType == E_CAMERA_MODEL_2)
+			{
+				TCMOSChipSpecification CMOSChipSpecification;
+				CMOSChipSpecification.pixel_size = 0.003;
+				CMOSChipSpecification.height_in_mm = pGlobalSettings->CMOSChipSpecification.height_in_mm;
+				CMOSChipSpecification.height_in_pixel = pGlobalSettings->CMOSChipSpecification.height_in_pixel;
+				CMOSChipSpecification.width_in_mm = pGlobalSettings->CMOSChipSpecification.width_in_mm;
+				CMOSChipSpecification.width_in_pixel = pGlobalSettings->CMOSChipSpecification.width_in_pixel;
+				m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetCMOSChipSpecification(CMOSChipSpecification);
+			}
+			else
+			{
             m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog().SetCMOSChipSpecification(pGlobalSettings->CMOSChipSpecification);
+        }
+
         }
 
         //设置镜头规格数据
@@ -811,7 +834,6 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
         //设置校正参数
         m_oPenPosDetector.GetVideoToScreenMap().SetCalibParams(pSensorModeConfig->calibParam);
 
-    }
 
     //设置Sensor实际关联的屏幕区域
     RECT rcArea;
@@ -1893,9 +1915,7 @@ void CIWBSensor::On4BasePointMarkingDone(BOOL bSuccess)
 
             //保存静态屏蔽图
             m_oPenPosDetector.SaveStaticMaskFrame();
-
         }
-
     }
 
     //无论成功失败都进入正常使用模式
@@ -1921,16 +1941,29 @@ void CIWBSensor::ReinitCalibrateInst(E_CALIBRATE_MODEL eCalibrateModel)
 
         const TSensorModeConfig&  sensorModeConfig = m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-
         const TLensConfig& lensCfg = sensorModeConfig.lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
 
-
         //设置"自动校正补偿系数"
-        calibAlgo.SetAutoCalibCompCoefs(lensCfg.autoCalibCompCoefs);
+		UpdateAutoCalibrateCompensateCoefs(lensCfg);
 
-        //设置CMOS芯片规格数据
 
+        //设置CMOS芯片规格数据 
+		m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
+		if (m_eCameraType == E_CAMERA_MODEL_2)
+		{
+			TCMOSChipSpecification CMOSChipSpecification;
+			CMOSChipSpecification.pixel_size = 0.003;
+			CMOSChipSpecification.height_in_mm = globalSettings.CMOSChipSpecification.height_in_mm;
+			CMOSChipSpecification.height_in_pixel = globalSettings.CMOSChipSpecification.height_in_pixel;
+			CMOSChipSpecification.width_in_mm = globalSettings.CMOSChipSpecification.width_in_mm;
+			CMOSChipSpecification.width_in_pixel = globalSettings.CMOSChipSpecification.width_in_pixel;
+			calibAlgo.SetCMOSChipSpecification(CMOSChipSpecification);
+		}
+		else
+		{
         calibAlgo.SetCMOSChipSpecification(globalSettings.CMOSChipSpecification);
+		}
+
 
 
         //设置镜头规格数据
@@ -2088,8 +2121,117 @@ void CIWBSensor::GetCollectSpotShowPath(TCHAR *lpszbuf, unsigned int numberOfEle
 	}
 }
 
-void CIWBSensor::UpdateUsbKey()
+void CIWBSensor::UpdateTouchTypeFromUSBKey()
 {
 	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 	m_tCfgData.vecSensorModeConfig[eProjectionMode].advanceSettings.m_eTouchType = theApp.GetUSBKeyTouchType();
+}
+
+
+
+ELensType CIWBSensor::MapThrowRatioToLensType(const double& throwRatio)
+{
+	ELensType eLensType;
+	char szThrowRatio[128];
+	sprintf_s(szThrowRatio,_countof(szThrowRatio),"%.2f", throwRatio);
+	if(_stricmp(szThrowRatio,"0.15") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_15;
+	}
+	else if(_stricmp(szThrowRatio, "0.19") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_19;
+	}
+	else if (_stricmp(szThrowRatio, "0.21") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_21;
+	}
+	else if (_stricmp(szThrowRatio, "0.25") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_25;
+	}
+	else if (_stricmp(szThrowRatio, "0.28") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_28;
+	}
+	else if (_stricmp(szThrowRatio, "0.34") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_34;
+	}
+	else if (_stricmp(szThrowRatio, "0.55") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_55;
+	}
+	else if (_stricmp(szThrowRatio, "0.70") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_70;
+	}
+	else if (_stricmp(szThrowRatio, "0.86") == 0)
+	{
+		eLensType = E_LENS_TR_0_DOT_86;
+	}
+	else
+	{
+		eLensType = E_LENS_TR_1_DOT_34;
+	}
+
+	return eLensType;
+}
+
+void CIWBSensor::UpdateAutoCalibrateCompensateCoefs(const TLensConfig& lensConfig)
+{
+	CalibrateAlgo& calibAlgo = this->m_oPenPosDetector.GetVideoToScreenMap().GetCalibAlog();
+
+	//首先设置为配置文件中保存的“自动校准补偿系数"
+	calibAlgo.SetAutoCalibCompCoefs(lensConfig.autoCalibCompCoefs);
+
+
+	std::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>> converter;
+	std::string strDevPath = converter.to_bytes(m_tDeviceInfo.m_strDevPath);
+	const TAutoCalibrateCompensateData* pCompensateData = theApp.GetCompensateData(strDevPath.c_str());
+
+	//如果在固件中找到"自动校准补偿系数"，并且和当前选择的投射比一致则使用固件中的"自动校准补偿系数"
+	if (pCompensateData)
+	{
+
+		m_ThrowRatioInfo.m_dbThrowRatioInFirmware = pCompensateData->throwRatioOfLens;
+
+		
+
+		if (MapThrowRatioToLensType(pCompensateData->throwRatioOfLens) == m_tCfgData.eSelectedLensType)
+		{
+			calibAlgo.SetAutoCalibCompCoefs(pCompensateData->coefs);
+		}
+
+	}
+	else
+	{//没有找到自校准动补偿系数, 固件中的投射比设为零
+		m_ThrowRatioInfo.m_dbThrowRatioInFirmware = 0.0;
+	}
+	
+	UpdateThrowRatioDisplayInfo();
+
+
+}
+
+
+
+
+void CIWBSensor::UpdateThrowRatioDisplayInfo()
+{
+	//"固件中的镜头的投射比"信息显示区域
+	RectF rcThrowRatioInfo = { 0.5, 0.0, 1.0, 0.5 };
+
+	TCHAR szThrowRatio[128];
+	_stprintf_s(szThrowRatio, _countof(szThrowRatio), _T("%.2f--%.2f"), m_ThrowRatioInfo.m_dbThrowRatioInFirmware, m_ThrowRatioInfo.m_dbThrowRatioSelected);
+
+	m_oVideoPlayer.AddOSDText(
+		E_OSDTEXT_TYPE_LENS_INFO,
+		szThrowRatio,
+		rcThrowRatioInfo,
+		DT_TOP | DT_RIGHT | DT_SINGLELINE,
+		8,
+		_T("Times New Roman"),
+		-1);
+
 }

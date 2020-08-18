@@ -129,13 +129,13 @@ next_16_pixel:
         add esi, 16;
 
         pand xmm0, xmm2 //pand yuy2 with mask
-            pand xmm1, xmm2 //pand yuy2 with mask
+        pand xmm1, xmm2 //pand yuy2 with mask
 
-            //xmm0=Y15 Y14...Y7 Y6...Y1 Y0
-            packuswb xmm0, xmm1
+        //xmm0=Y15 Y14...Y7 Y6...Y1 Y0
+        packuswb xmm0, xmm1
 
-            movapd [edi], xmm0
-            add edi,16;//eight pixels;
+        movapd [edi], xmm0
+        add edi,16;//eight pixels;
 
         sub ecx,16;//sixteen pixels are ok
 
@@ -144,8 +144,9 @@ next_16_pixel:
         //Empty the multimedia state.
         emms
 
-            popad
-            ret
+        popad
+
+        ret
 
     }//asm
 
@@ -378,7 +379,8 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
         return hr;
     }
 
-    hr = pIn->GetPointer(&pSrcBuf);
+
+	hr = pIn->GetPointer(&pSrcBuf);
     if (FAILED(hr))
     {
         return hr;

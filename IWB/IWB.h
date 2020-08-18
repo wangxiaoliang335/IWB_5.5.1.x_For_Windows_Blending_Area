@@ -13,9 +13,9 @@
 // CIWBApp:
 // See OpticalPen.cpp for the implementation of this class
 
+#include "../inc/EasiSDKReg_Interface.h"
 
-
-
+#include <unordered_map>
 //@功能:返回实际的触控类型
 EDeviceTouchType GetActualTouchType();
 
@@ -36,6 +36,13 @@ struct AllUSBKeyTouchType
 		ePalmTouchControlType = E_PLAM_TOUCHCONTROL_UnKnow;
 		eScreenModeFromUsbKey = EScreenModeSingle;
 	}
+};
+
+
+struct TAutoCalibrateCompensateData
+{
+	TAutoCalibCompCoefs coefs;//自动补偿系数
+	double throwRatioOfLens  ;//采样镜头的投射比	
 };
 
 class CIWBApp : public CWinApp
@@ -105,7 +112,6 @@ public:
     //      包括配置文件的目录路径和调试输出文件保存的目录路径。
     void  InitDirectoryInformation();
 
-
     CDispDevFinder& GetMonitorFinder(){return m_oDispMonitorFinder;}
 
     CString m_strSettingsDir         ;//配置文件存放目录
@@ -117,10 +123,17 @@ public:
     //@参数:bFirstTime, 第一次检测UsbKey的存在
     //@说明:第一次检测UsbKey时允许弹出对话框, 并记录日志信息。
     //      第二次及以后则不再弹出兑换框。
-    void ReadUSBKey(BOOL bFirstTime = FALSE, int nSersorcount=0);
+    void ReadUSBKey(BOOL bFirstTime = FALSE);
 
+	
+	//@功能:根据设备路径查找自动校准补偿系数
+	const TAutoCalibrateCompensateData* GetCompensateData(const char* strDevPath)const;
+	
+	//@功能:重置自动校准补偿系数
+	void  ResetCompensateData();
 
-
+	//@功能:获取所有自动补偿校正系数
+	void GetAllCompensateData(std::vector<TAutoCalibrateCompensateData>& compensateData);
 protected:
     DECLARE_MESSAGE_MAP()
 
@@ -139,18 +152,26 @@ protected:
     
     //EScreenType    m_eScreenType; //0:为单屏，1：为双屏
 
-
     EScreenMode    m_eScreenModeFromUsbKey;//从机密狗注册信息中得到的屏幕模式
-    
-    
+   
+
     BOOL           m_bFoundHardwareUSBKey;//发现硬件USB Key标志
     BOOL           m_bIsOnlineRegistered;//是否在线注册了。
-    CString m_strLanguageCode;//语言编码
+    CString        m_strLanguageCode;//语言编码
 
     CDispDevFinder m_oDispMonitorFinder;
 
-	CUsbCameraDeviceList   m_oUSBCameraList;//视频设备列表
+	
 
+
+
+	std::unordered_map<std::string, TAutoCalibrateCompensateData> m_allCompensateCoefs;
+	
+	
+	
+	//const static   int     COMPENSATE_NUM = 6;
+	//double    m_pParams[COMPENSATE_NUM];
+	//double    m_nCollectType;
     //static const int m_nStartDelayTime = 5000;//10000ms,最大启动延迟时间
 
 };

@@ -5,10 +5,11 @@
 TSysConfigData g_tSysCfgData;
 
 //@功能:保存屏幕布局数据
-BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& allScreenLayouts);
+BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLayoutManager);
 
 //@功能:载入所有的视频布局
-BOOL LoadConfig(LPCTSTR lpszConfigFilePath, std::vector<TScreenLayout>& allScreenLayouts);
+BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutManager);
+
 
 //@功能:载入相机参数
 //@参数:pNode, 指向配置文件中<CameraParams>节点的指针
@@ -1720,6 +1721,14 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 					advanceSettings.bDisableReflectionSpot = FALSE;
 				}
 			}
+			else if(_stricmp(paramName, "SetSmoothCoefficient") == 0)
+			{
+				advanceSettings.nSmoothCoefficient = atoi(paramValue);
+			}
+			else
+			{
+
+			}
         }
 
     }while(pChild);
@@ -1848,6 +1857,14 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 	pElement = new TiXmlElement("Param");
 	pElement->SetAttribute("name", "DisableReflectionSpot");
 	pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
+	pNode->LinkEndChild(pElement);
+
+	pXmlComment = new TiXmlComment("设置平滑系数");
+	pNode->LinkEndChild(pXmlComment);
+
+	pElement = new TiXmlElement("Param");
+	pElement->SetAttribute("name", "SetSmoothCoefficient");
+	pElement->SetAttribute("value", advanceSettings.nSmoothCoefficient);
 	pNode->LinkEndChild(pElement);
 
     return TRUE;
@@ -3365,7 +3382,7 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData)
     //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
     TCHAR szPath[MAX_PATH];
     _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, (LPCTSTR)PROFILE::SCREEN_LAYOUT_FILE_NAME);
-    LoadConfig(szPath, sysCfgData.vecScreenLayouts);
+    LoadConfig(szPath, sysCfgData.screenLayoutManger);
 
     return TRUE;
 }
@@ -3409,7 +3426,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
     //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
     TCHAR szPath[MAX_PATH];
     _stprintf_s(szPath, _countof(szPath), _T("%s\\%s"), (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY, (LPCTSTR)PROFILE::SCREEN_LAYOUT_FILE_NAME);
-    SaveConfig(szPath, sysCfgData.vecScreenLayouts);
+    SaveConfig(szPath, sysCfgData.screenLayoutManger);
 
 
     //以UTF-8编码格式保存
@@ -3472,8 +3489,43 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
 
 
 
+const char* GetSplitModeDesc(ESplitScreeMode eSplitMode)
+{
+	const char* desc = "";
+
+	switch (eSplitMode)
+	{
+	case E_SPLIT_SCREEN_VERT:
+		desc = "vert";
+		break;
+
+	case E_SPLIT_SCREEN_HORZ:
+		desc = "horz";
+		break;
+
+	}
+
+	return desc;
+}
+
+ESplitScreeMode GetSplitMode(const char* szSplitMode)
+{
+	ESplitScreeMode  eSplitMode = E_SPLIT_SCREEN_VERT;
+
+	if (stricmp(szSplitMode, "vert") == 0)
+	{
+		eSplitMode =  E_SPLIT_SCREEN_VERT;
+	}
+	else if (stricmp(szSplitMode, "horz") == 0)
+	{
+		eSplitMode = E_SPLIT_SCREEN_HORZ;
+	}
+
+	return eSplitMode;
+}
+
 //@功能:保存屏幕布局数据
-BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& allScreenLayouts)
+BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLayoutManager)
 {
     TiXmlDocument oXMLDoc;
     TiXmlDeclaration Declaration("1.0", "UTF-8", "no");
@@ -3483,53 +3535,72 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& al
     oXMLDoc.LinkEndChild(pXmlComment);
 
     TiXmlElement * pAllLayouts = new TiXmlElement("AllScreenLayouts");
+	
+	pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.eSelectedSplitScreenMode));
+
     oXMLDoc.LinkEndChild(pAllLayouts);
 
 
-    for (UINT uLayoutIndex = 0; uLayoutIndex < allScreenLayouts.size(); uLayoutIndex++)
-    {
-        TiXmlElement * pScreenLayout = new TiXmlElement("ScreenLayout");
+	const auto& layoutCollection = screenLayoutManager.allLayoutCollection;
 
-        const TScreenLayout& layout = allScreenLayouts[uLayoutIndex];
+	for (auto it = layoutCollection.begin(); it != layoutCollection.end(); it++)
+	{
+		LayoutCollection* pLayoutCollection = it->second;
 
-        const std::vector<RectF>& screens    = layout.vecScreens;
-        const std::vector<RectF>& mergeAreas = layout.vecMergeAreas;
+		TiXmlElement * pLayoutCollectionElem = new TiXmlElement("LayoutCollection");
+		pLayoutCollectionElem->SetAttribute("SplitMode", GetSplitModeDesc(pLayoutCollection->eSplitScreenModel));
 
-        //设置屏幕尺寸
-        pScreenLayout->SetAttribute("ScreenCount", screens.size());
+		const auto& allScreenLayout = pLayoutCollection->allScreenLayout;
 
-        for (UINT uScreenIndex = 0; uScreenIndex < screens.size(); uScreenIndex++)
-        {
-            char szText[32];
+		for (UINT uLayoutIndex = 0; uLayoutIndex < allScreenLayout.size(); uLayoutIndex++)
+		{
+			TiXmlElement * pScreenLayoutElem = new TiXmlElement("ScreenLayout");
 
-            sprintf_s(szText, _countof(szText), "%d#屏幕", uScreenIndex + 1);
-            TiXmlComment*  pXmlComment = new TiXmlComment(szText);
-            pScreenLayout->LinkEndChild(pXmlComment);
+			const TScreenLayout& layout = allScreenLayout[uLayoutIndex];
 
-            TiXmlElement * pScreen = new TiXmlElement("Screen");
-            pScreen->SetDoubleAttribute("left", (double)screens[uScreenIndex].left);
-            pScreen->SetDoubleAttribute("top", (double)screens[uScreenIndex].top );
-            pScreen->SetDoubleAttribute("right", (double)screens[uScreenIndex].right);
-            pScreen->SetDoubleAttribute("bottom", (double)screens[uScreenIndex].bottom);
-            pScreenLayout->LinkEndChild(pScreen);
+			const std::vector<RectF>& screens = layout.vecScreens;
+			const std::vector<RectF>& mergeAreas = layout.vecMergeAreas;
 
-            if (uScreenIndex < mergeAreas.size())
-            {
-                TiXmlComment*  pXmlComment = new TiXmlComment("融合区");
-                pScreenLayout->LinkEndChild(pXmlComment);
+			//设置屏幕尺寸
+			pScreenLayoutElem->SetAttribute("ScreenCount", screens.size());
 
-                TiXmlElement * pMergeArea = new TiXmlElement("MergeArea");
+			for (UINT uScreenIndex = 0; uScreenIndex < screens.size(); uScreenIndex++)
+			{
+				char szText[32];
 
-                pMergeArea->SetDoubleAttribute("left" , (double)mergeAreas[uScreenIndex].left);
-                pMergeArea->SetDoubleAttribute("top"  , (double)mergeAreas[uScreenIndex].top);
-                pMergeArea->SetDoubleAttribute("right", (double)mergeAreas[uScreenIndex].right);
-                pMergeArea->SetDoubleAttribute("bottom", (double)mergeAreas[uScreenIndex].bottom);
+				sprintf_s(szText, _countof(szText), "%d#屏幕", uScreenIndex + 1);
+				TiXmlComment*  pXmlComment = new TiXmlComment(szText);
+				pScreenLayoutElem->LinkEndChild(pXmlComment);
 
-                pScreenLayout->LinkEndChild(pMergeArea);
-            }
-        }
+				TiXmlElement * pScreen = new TiXmlElement("Screen");
+				pScreen->SetDoubleAttribute("left", (double)screens[uScreenIndex].left);
+				pScreen->SetDoubleAttribute("top", (double)screens[uScreenIndex].top);
+				pScreen->SetDoubleAttribute("right", (double)screens[uScreenIndex].right);
+				pScreen->SetDoubleAttribute("bottom", (double)screens[uScreenIndex].bottom);
+				pScreenLayoutElem->LinkEndChild(pScreen);
 
-        pAllLayouts->LinkEndChild(pScreenLayout);
+				if (uScreenIndex < mergeAreas.size())
+				{
+					TiXmlComment*  pXmlComment = new TiXmlComment("融合区");
+					pScreenLayoutElem->LinkEndChild(pXmlComment);
+
+					TiXmlElement * pMergeAreaElem = new TiXmlElement("MergeArea");
+
+					pMergeAreaElem->SetDoubleAttribute("left", (double)mergeAreas[uScreenIndex].left);
+					pMergeAreaElem->SetDoubleAttribute("top", (double)mergeAreas[uScreenIndex].top);
+					pMergeAreaElem->SetDoubleAttribute("right", (double)mergeAreas[uScreenIndex].right);
+					pMergeAreaElem->SetDoubleAttribute("bottom", (double)mergeAreas[uScreenIndex].bottom);
+
+					pScreenLayoutElem->LinkEndChild(pMergeAreaElem);
+				}
+
+			}//for(uScreenIndex)
+
+			pLayoutCollectionElem->LinkEndChild(pScreenLayoutElem);
+
+		}//for(uSplitMode)
+
+        pAllLayouts->LinkEndChild(pLayoutCollectionElem);
 
     }//for
 
@@ -3587,116 +3658,172 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const std::vector<TScreenLayout>& al
         theFile.write(utf_8_buf, strlen(utf_8_buf));
 
         theFile.close();
-        free(utf_8_buf);
+
+        free((void*)utf_8_buf);
     }
     return TRUE;
 
 }
 
 //@功能:载入所有的视频布局
-BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScreenLayouts)
+//BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScreenLayouts)
+BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutManager)
 {
 
-    TiXmlDocument oXMLDoc;
-    if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
-    {
-        return FALSE;
-    }
-    TiXmlElement *pRootElement = oXMLDoc.RootElement();
-    if (pRootElement == NULL)
-    {
-        return FALSE;
-    }
+	TiXmlDocument oXMLDoc;
+	if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
+	{
+		return FALSE;
+	}
+	TiXmlElement *pRootElement = oXMLDoc.RootElement();
+	if (pRootElement == NULL)
+	{
+		return FALSE;
+	}
 
-    allScreenLayouts.clear();
+	//screenLayoutManager.allLayoutCollection.clear();
+	screenLayoutManager.Reset();
 
-    TiXmlNode* pChild_L1 = NULL;
-    do
-    {
-        pChild_L1 = pRootElement->IterateChildren(pChild_L1);
-        if (NULL == pChild_L1) break;
+	
+	const char*	szSelectedScreenSplitMode = ((TiXmlElement*)pRootElement)->Attribute("SelectedScreenSplitMode");
 
-        const char* lpszElementName = pChild_L1->Value();
-        if (_stricmp(lpszElementName, "ScreenLayout") == 0)
-        {
-            TScreenLayout layout;
+	if (szSelectedScreenSplitMode)
+	{
+		screenLayoutManager.eSelectedSplitScreenMode = GetSplitMode(szSelectedScreenSplitMode);
+	}
 
-            TiXmlNode* pChild_L2 = NULL;
-            do
-            {
-                pChild_L2 = pChild_L1->IterateChildren(pChild_L2);
+	TiXmlNode* pChild_L1 = NULL;
+	do
+	{
+		pChild_L1 = pRootElement->IterateChildren(pChild_L1);
+		if (NULL == pChild_L1) break;
 
-                if (NULL == pChild_L2) break;
+		const char* lpszElementName = pChild_L1->Value();
 
-                const char* lpszElementName = pChild_L2->Value();
+		if (lpszElementName && _strcmpi(lpszElementName, "LayoutCollection") == 0)
+		{
+			const char* attrValue = ((TiXmlElement*)pChild_L1)->Attribute("SplitMode");
 
-                if (_stricmp(lpszElementName, "Screen") == 0)
-                {
-                    RectF screenArea;
-                    memset(&screenArea, 0, sizeof(screenArea));
+			ESplitScreeMode eSplitScreenMode = E_SPLIT_SCREEN_VERT;
+			
+			if (attrValue)
+			{
+				eSplitScreenMode = GetSplitMode(attrValue);
+			}
 
-                    const char* paramValue = ((TiXmlElement*)pChild_L2)->Attribute("left");
-                    if (paramValue)
-                    {
-                        screenArea.left = atof(paramValue);
-                    }
+			LayoutCollection* pNewLayoutCollection = NULL;
+			
+			auto it = screenLayoutManager.allLayoutCollection.find(eSplitScreenMode);
+			if (it != screenLayoutManager.allLayoutCollection.end())
+			{
+				pNewLayoutCollection = it->second;
+			}
+			else
+			{
+				pNewLayoutCollection = new LayoutCollection;				
+			}
 
-                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("top");
-                    if (paramValue)
-                    {
-                        screenArea.top = atof(paramValue);
-                    }
+			pNewLayoutCollection->eSplitScreenModel = eSplitScreenMode;
+			
 
-                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("right");
-                    if (paramValue)
-                    {
-                        screenArea.right = atof(paramValue);
-                    }
+			TiXmlNode* pChild_L2 = NULL;
+			do
+			{
+				pChild_L2 = pChild_L1->IterateChildren(pChild_L2);
+				if (NULL == pChild_L2) break;
 
-                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("bottom");
-                    if (paramValue)
-                    {
-                        screenArea.bottom = atof(paramValue);
-                    }
-                    layout.vecScreens.push_back(screenArea);
+				lpszElementName = pChild_L2->Value();
+				if (lpszElementName && _stricmp(lpszElementName, "ScreenLayout") == 0)
+				{
+					TScreenLayout layout;
 
-                }
-                else if (_stricmp(lpszElementName, "MergeArea") == 0)
-                {
+					TiXmlNode* pChild_L3 = NULL;
+					do
+					{
+						pChild_L3 = pChild_L2->IterateChildren(pChild_L3);
 
-                    RectF mergeArea;
-                    memset(&mergeArea, 0, sizeof(mergeArea));
+						if (NULL == pChild_L3) break;
 
-                    const char* paramValue = ((TiXmlElement*)pChild_L2)->Attribute("left");
-                    if (paramValue)
-                    {
-                        mergeArea.left = atof(paramValue);
-                    }
+						 lpszElementName = pChild_L3->Value();
 
-                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("top");
-                    if (paramValue)
-                    {
-                        mergeArea.top = atof(paramValue);
-                    }
+						if (lpszElementName && _stricmp(lpszElementName, "Screen") == 0)
+						{
+							RectF screenArea;
+							memset(&screenArea, 0, sizeof(screenArea));
 
-                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("right");
-                    if (paramValue)
-                    {
-                        mergeArea.right = atof(paramValue);
-                    }
+							const char* paramValue = ((TiXmlElement*)pChild_L3)->Attribute("left");
+							if (paramValue)
+							{
+								screenArea.left = atof(paramValue);
+							}
 
-                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("bottom");
-                    if (paramValue)
-                    {
-                        mergeArea.bottom = atof(paramValue);
-                    }
-                    layout.vecMergeAreas.push_back(mergeArea);                   
-                }
-            } while (pChild_L2);
-            allScreenLayouts.push_back(layout);
-        }//if
+							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("top");
+							if (paramValue)
+							{
+								screenArea.top = atof(paramValue);
+							}
 
-    } while (pChild_L1);
+							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("right");
+							if (paramValue)
+							{
+								screenArea.right = atof(paramValue);
+							}
 
-    return TRUE;
+							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("bottom");
+							if (paramValue)
+							{
+								screenArea.bottom = atof(paramValue);
+							}
+							layout.vecScreens.push_back(screenArea);
+
+						}
+						else if (lpszElementName && _stricmp(lpszElementName, "MergeArea") == 0)
+						{
+
+							RectF mergeArea;
+							memset(&mergeArea, 0, sizeof(mergeArea));
+
+							const char* paramValue = ((TiXmlElement*)pChild_L3)->Attribute("left");
+							if (paramValue)
+							{
+								mergeArea.left = atof(paramValue);
+							}
+
+							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("top");
+							if (paramValue)
+							{
+								mergeArea.top = atof(paramValue);
+							}
+
+							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("right");
+							if (paramValue)
+							{
+								mergeArea.right = atof(paramValue);
+							}
+
+							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("bottom");
+							if (paramValue)
+							{
+								mergeArea.bottom = atof(paramValue);
+							}
+							layout.vecMergeAreas.push_back(mergeArea);
+						}//else if
+					} while (pChild_L3);
+
+					pNewLayoutCollection->allScreenLayout.push_back(layout);
+				}//if(ScreenLayout)
+
+				
+
+			} while (pChild_L2);
+
+
+			screenLayoutManager.allLayoutCollection[eSplitScreenMode] = pNewLayoutCollection;
+
+			
+		}//if(LayoutCollection)
+
+	} while (pChild_L1);
+
+	return TRUE;
 }

@@ -3692,7 +3692,6 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
                     //argbFrame
                     argbaFrame.SetSize(m_oRawPatternFrame.Width(), m_oRawPatternFrame.Height());
                     GrayToARGB_SSE2(m_oRawPatternFrame.GetData(), argbaFrame.GetData(), m_oRawPatternFrame.GetPixelCount());
-
                     for (size_t i = 0; i < m_vecInteriorCalibMap.size(); i++)
                     {
                         POINT pt;
@@ -4769,7 +4768,7 @@ BOOL CAutoCalibratorImpl2::DoCornerMatch(const std::vector<TImageCalibPoint>& co
         }//if is circle layer
 
 
-        else  if (LayerMarkerHorzNumber == 1)//整个层为一列
+        else  if(LayerMarkerHorzNumber == 1)//整个层为一列
         {
             if (vecVertex.size() != nExpectedPtNumber)
             {
