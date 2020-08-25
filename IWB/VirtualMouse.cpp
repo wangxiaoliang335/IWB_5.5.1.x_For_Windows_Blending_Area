@@ -274,8 +274,17 @@ void CVirtualMouse::GenEvent(const POINT& ptMouse, EVirtualMouseEvent eEvent, in
         //mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * ptMouse.y / nCyScreen);
 
         //win10 1709 (OS内部版本 16299.125)
-        mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * (ptMouse.x - nVSLeft) / nCxVirtualScreen);
-        mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * (ptMouse.y - nVSTop ) / nCyVirtualScreen);
+        if(IsWin10OrGreater())
+        {//win10下的鼠标输入坐标的归一化
+            mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * (ptMouse.x - nVSLeft) / nCxVirtualScreen);
+            mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * (ptMouse.y - nVSTop) / nCyVirtualScreen);
+        }
+        else 
+        {//win7下的鼠标输入坐标的归一化
+            mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * (ptMouse.x - 0) / nCxScreen);
+            mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * (ptMouse.y - 0) / nCyScreen);
+        }
+
         switch(eEvent)
         {
 
