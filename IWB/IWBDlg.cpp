@@ -14,6 +14,9 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+
+
 void DbgCursor(HCURSOR hCursor)
 {//debug
     ICONINFO iconInfo;
@@ -45,20 +48,20 @@ void DbgCursor(HCURSOR hCursor)
 
 const TCHAR* GetAppName()
 {
-	static TCHAR szModuleFileName[MAX_PATH];
-	DWORD dwRet = GetModuleFileName(theApp.m_hInstance, szModuleFileName, _countof(szModuleFileName));
+    static TCHAR szModuleFileName[MAX_PATH];
+    DWORD dwRet = GetModuleFileName(theApp.m_hInstance, szModuleFileName, _countof(szModuleFileName));
 
-	if (dwRet == 0)
-	{
-		LOG_ERR("GetModuleFileName failed 0x%x", dwRet);
-		return _T("IWB");
-	}
+    if (dwRet == 0)
+    {
+        LOG_ERR("GetModuleFileName failed 0x%x", dwRet);
+        return _T("IWB");
+    }
 
 
-	PathRemoveExtension(szModuleFileName);
-	const TCHAR* lpszAppName = PathFindFileName(szModuleFileName);
+    PathRemoveExtension(szModuleFileName);
+    const TCHAR* lpszAppName = PathFindFileName(szModuleFileName);
 
-	return lpszAppName;
+    return lpszAppName;
 }
 
 //#include "../inc/HotkeyAPI.h"
@@ -88,7 +91,7 @@ CString GetStarupDirPath(BOOL bAllUser = FALSE)
         return _T("");
     }
     //strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, g_oResStr[IDS_STRING127]);
-	strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
+    strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
     return strShortcutPath;
 }
 
@@ -126,7 +129,7 @@ CString GetAutoStarupLnkPathCommon()
     }
 
     //strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder,g_oResStr[IDS_STRING127]);	
-	strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
+    strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
     return strShortcutPath;
 }
 
@@ -171,8 +174,8 @@ CString GetStartupLnkPath(LCID lcid)
             {
                 resStr.SetResInst(hRes);
                 //strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, resStr[IDS_STRING127]);
-				strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
-				
+                strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
+                
                 FreeLibrary(hRes);
             }
         }
@@ -272,8 +275,8 @@ CString GetAutoStarupLnkPathEN()
     CResStr resStr;
     resStr.SetResInst(theApp.m_hInstance);
     //strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder,resStr[IDS_STRING127]);
-	strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
-	
+    strShortcutPath.Format(_T("%s\\%s.lnk"), szStartUpFolder, GetAppName());
+    
     return strShortcutPath;
 }
 
@@ -333,7 +336,7 @@ BOOL CAboutDlg::OnInitDialog()
 
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	ON_WM_MOUSEMOVE()
+    ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 const int StatusPaneCountEachSensor = 3;
@@ -350,11 +353,11 @@ static UINT indicators[] ={
     IDS_STRING438,
     IDS_STRING439,
     IDS_STRING440,
-	IDS_STRING439,
-	IDS_STRING439,
-	IDS_STRING439,
-	IDS_STRING439,
-	IDS_STRING439,
+    IDS_STRING439,
+    IDS_STRING439,
+    IDS_STRING439,
+    IDS_STRING439,
+    IDS_STRING439,
 };
 
 
@@ -423,9 +426,9 @@ m_nActiveDetectCameraId(0)
      }
 
     //m_nAutoMaskDetectThreshold = PROFILE::GetAutoMaskingTheshold();
-	
-	//客户app通信消息
-	m_uAppCommMsg = RegisterWindowMessage(_T("EASI_8701715C-217D-440d-9404-F63C9CBC671B"));
+    
+    //客户app通信消息
+    m_uAppCommMsg = RegisterWindowMessage(_T("EASI_8701715C-217D-440d-9404-F63C9CBC671B"));
 
 }
 
@@ -549,7 +552,7 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_AVERAGE_BRIGHTNESS, OnChangeAutoCalibrateAveBrightness)
     ON_MESSAGE(WM_CHANGE_AUTOCALIBRIATION_LIGHTGRAY, OnChangeAutoCalibrateLightGray)
     ON_MESSAGE(WM_REAR_PROJECTION, OnRearProjection)
-	ON_MESSAGE(WM_CHANGE_VIDEODISPLAYDELAY,OnChangeVideoDisplayDelay)
+    ON_MESSAGE(WM_CHANGE_VIDEODISPLAYDELAY,OnChangeVideoDisplayDelay)
 
 
 //ON_COMMAND(ID_MENU_MANUAL_CORRECT_AFTER_AUTO_CALIRATION, &CIWBDlg::OnMenuAutoCalibrationWithHumanIntervention)
@@ -581,7 +584,7 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_WM_LBUTTONDBLCLK()
   //  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_INSTALL_TIP, OnSensorCtxMenu)
   //  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN,ID_SENSORCTXMENU_FOURPOINTCALIBRATION, OnSensorCtxMenu)
-	  ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR, OnSensorCtxMenu)
+      ON_COMMAND_RANGE(ID_SENSORCTXMENU_RUN, ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR, OnSensorCtxMenu)
 
     //ON_COMMAND_RANGE(ID_GUESTURESETTINGS_GLBOARDGESTURESETTINGS, ID_GUESTURESETTINGS_WINDOWSGESTURESETTINGS, OnGestureSettingMenu)
 
@@ -614,7 +617,9 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_WM_RBUTTONUP()
     ON_COMMAND(ID_MENU_FOURPOINTCALIBRATION, &CIWBDlg::OnOperationFourpointcalibration)
 
-	ON_MESSAGE(WM_POWERBROADCAST, &CIWBDlg::OnPowerBroadcast)
+    ON_MESSAGE(WM_POWERBROADCAST, &CIWBDlg::OnPowerBroadcast)
+
+    ON_REGISTERED_MESSAGE(theApp.GetBetweenInstanceMsg(), &CIWBDlg::OnBetweenInstanceMsg)
 END_MESSAGE_MAP()
 
 
@@ -630,48 +635,7 @@ void CIWBDlg::InitMenu()
 
     if (theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble)
     {
-        CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
-
-        if (pInstallMenu == NULL) return;
-
-        MENUITEMINFO mnuiteminfo;
-        memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
-        mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
-        mnuiteminfo.fMask = MIIM_FTYPE;
-        mnuiteminfo.fType = MFT_SEPARATOR;
-
-        //添加菜单分割条
-        pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
-
-        //添加结束屏幕编辑菜单项
-        mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
-        mnuiteminfo.fType = MFT_STRING;
-        mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING482]);
-        mnuiteminfo.wID = ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER;
-        pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
-
-        //添加屏幕融合模式子菜单
-        m_oSubMenuMergMode.DestroyMenu();
-        m_oSubMenuMergMode.CreatePopupMenu();
-
-
-        mnuiteminfo.fMask = MIIM_SUBMENU | MIIM_ID | MIIM_STRING;
-        mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING483]);
-        mnuiteminfo.hSubMenu = m_oSubMenuMergMode.GetSafeHmenu();
-        mnuiteminfo.wID = ID_SWTICH_SCREENMODE;
-        pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
-
-        for (EScreenMode eScreenMode = EScreenModeSingle; eScreenMode <= theApp.GetScreenModeFromUSBKey(); eScreenMode = EScreenMode(eScreenMode + 1))
-        {
-            CString strText = const_cast<LPTSTR>(g_oResStr[IDS_STRING484 + eScreenMode]);
-
-            mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
-            mnuiteminfo.fType = MFT_STRING;
-            mnuiteminfo.dwTypeData = const_cast<LPTSTR>(strText.GetString());
-            mnuiteminfo.wID = ID_SWTICH_SCREENMODE_ONE + (int)eScreenMode;
-            m_oSubMenuMergMode.InsertMenuItem(m_oSubMenuMergMode.GetMenuItemCount(), &mnuiteminfo, TRUE);
-        }//for
-
+        AppendScreenModeSubmenu();
     }
 
     this->SetMenu(&m_oMenu);
@@ -687,6 +651,51 @@ void CIWBDlg::InitMenu()
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_2X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_2X], RGB(1, 0, 0));
     m_oOwnerDrawMenu.SetMenuOwnerDrawBitmap(ID_ERASE_MASK_RECTANGLE_3X, (HBITMAP)m_aryMenuBmp[e_BMP_ERASE_3X], RGB(1, 0, 0));
 
+}
+
+void CIWBDlg::AppendScreenModeSubmenu()
+{
+    CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
+
+    if (pInstallMenu == NULL) return;
+
+    MENUITEMINFO mnuiteminfo;
+    memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
+    mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
+    mnuiteminfo.fMask = MIIM_FTYPE;
+    mnuiteminfo.fType = MFT_SEPARATOR;
+
+    //添加菜单分割条
+    pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+    //添加结束屏幕编辑菜单项
+    mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
+    mnuiteminfo.fType = MFT_STRING;
+    mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING482]);
+    mnuiteminfo.wID = ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER;
+    pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+    //添加屏幕融合模式子菜单
+    m_oSubMenuMergMode.DestroyMenu();
+    m_oSubMenuMergMode.CreatePopupMenu();
+
+
+    mnuiteminfo.fMask = MIIM_SUBMENU | MIIM_ID | MIIM_STRING;
+    mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING483]);
+    mnuiteminfo.hSubMenu = m_oSubMenuMergMode.GetSafeHmenu();
+    mnuiteminfo.wID = ID_SWTICH_SCREENMODE;
+    pInstallMenu->InsertMenuItem(pInstallMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+    for (EScreenMode eScreenMode = EScreenModeSingle; eScreenMode <= theApp.GetScreenModeFromUSBKey(); eScreenMode = EScreenMode(eScreenMode + 1))
+    {
+        CString strText = const_cast<LPTSTR>(g_oResStr[IDS_STRING484 + eScreenMode]);
+
+        mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID;
+        mnuiteminfo.fType = MFT_STRING;
+        mnuiteminfo.dwTypeData = const_cast<LPTSTR>(strText.GetString());
+        mnuiteminfo.wID = ID_SWTICH_SCREENMODE_ONE + (int)eScreenMode;
+        m_oSubMenuMergMode.InsertMenuItem(m_oSubMenuMergMode.GetMenuItemCount(), &mnuiteminfo, TRUE);
+    }//for
 }
 
 // CIWBDlg message handlers
@@ -720,9 +729,9 @@ BOOL CIWBDlg::OnInitDialog()
             pSysMenu->AppendMenu(MF_SEPARATOR);
             pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
         }
-		BOOL bDebugModeTemp;
-		bDebugModeTemp = g_tSysCfgData.globalSettings.bDebugMode;
-		
+        BOOL bDebugModeTemp;
+        bDebugModeTemp = g_tSysCfgData.globalSettings.bDebugMode;
+        
 
         if(bDebugModeTemp)
         {//调试模式下，在系统菜单添加调试菜单项
@@ -751,14 +760,14 @@ BOOL CIWBDlg::OnInitDialog()
             pSysMenu->AppendMenu(MF_SEPARATOR);
             pSysMenu->AppendMenu(MF_STRING, IDM_CAPTURE_PICTURE, _T("Capture Picture"));
 
-			//GPIO功能
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_ON, _T("GPIO On"));
-			pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_OFF, _T("GPIO Off"));
+            //GPIO功能
+            pSysMenu->AppendMenu(MF_SEPARATOR);
+            pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_ON, _T("GPIO On"));
+            pSysMenu->AppendMenu(MF_STRING, IDM_GPIO_OFF, _T("GPIO Off"));
 
-			//测试30个触控点
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_DEBUG_MODE_TEST30POINT, _T("Start Test 30 TouchPoint"));
+            //测试30个触控点
+            pSysMenu->AppendMenu(MF_SEPARATOR);
+            pSysMenu->AppendMenu(MF_STRING, IDM_DEBUG_MODE_TEST30POINT, _T("Start Test 30 TouchPoint"));
 
         }
     }
@@ -819,18 +828,18 @@ BOOL CIWBDlg::OnInitDialog()
     LoadConfig();
 
     m_oUSBCameraDeviceList.UpdateDeviceList();
-	
-	this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
+    
+    this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
 
-	//CIWBSensor对象分配摄像头设备路径
-	m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
+    //CIWBSensor对象分配摄像头设备路径
+    m_oIWBSensorManager.AssignCamera(m_oUSBCameraDeviceList);
 
-	this->m_oIWBSensorManager.SetGlobalCfgData(g_tSysCfgData);
+    this->m_oIWBSensorManager.SetGlobalCfgData(g_tSysCfgData);
 
     //通知各个模块更改屏幕物理尺寸和屏幕分辨率
     OnDisplayChangeHelper(::GetActualScreenControlSize());
 
-	LoadResolutionConfig();
+    LoadResolutionConfig();
     
 
     //KSCATEGORY_VIDEO     :{6994AD05-93EF-11D0-A3CC-00A0C9223196}
@@ -838,9 +847,9 @@ BOOL CIWBDlg::OnInitDialog()
     //AM_KSCATEGORY_CAPTURE:{65E8773D-8F56-11D0-A3B9-00A0C9223196}
     m_pUSBDevDetector = new CUSBDevDetector(KSCATEGORY_CAPTURE, this->GetSafeHwnd());
 
-	GUID hidguid;
-	HidD_GetHidGuid(&hidguid);
-	m_pUSBDevDetector_HID = new CUSBDevDetector(hidguid, this->GetSafeHwnd());
+    GUID hidguid;
+    HidD_GetHidGuid(&hidguid);
+    m_pUSBDevDetector_HID = new CUSBDevDetector(hidguid, this->GetSafeHwnd());
 
     //Register RAW INPUT Device, added by toxuke@gmail.com, 2012/05/23
     RAWINPUTDEVICE rid;
@@ -872,7 +881,8 @@ BOOL CIWBDlg::OnInitDialog()
     m_hDispWnd = this->GetSafeHwnd();//默认视频画在本窗体上
     if (StartRunning())
     {
-        if(this->m_oIWBSensorManager.IsCalibrated() && this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE )
+        //if(this->m_oIWBSensorManager.HasCalibratedCamera() && this->m_oIWBSensorManager.HasNormalUsageCamera())
+        if (this->m_oIWBSensorManager.HasCalibratedCamera() && this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE)
         {
             MinimizeToTray();
             m_bVisible = FALSE;
@@ -893,7 +903,7 @@ BOOL CIWBDlg::OnInitDialog()
     }
 
 
-	ShowTaskBar(TRUE);
+    ShowTaskBar(TRUE);
 
 
     //是自动运行的模式,自动最小化到托盘中
@@ -903,10 +913,10 @@ BOOL CIWBDlg::OnInitDialog()
         m_bVisible = FALSE;
     }
 
-	SetTimer(TIMER_FOR_SENSOR_MANAGER, TIMER__FOR_SENSOR_MANAGER_TIMEOUT, NULL);
+    SetTimer(TIMER_FOR_SENSOR_MANAGER, TIMER__FOR_SENSOR_MANAGER_TIMEOUT, NULL);
 
-	//更新状态栏的软件狗注册信息
-	UpdateInfoAboutDongle();
+    //更新状态栏的软件狗注册信息
+    UpdateInfoAboutDongle();
     return TRUE; // return TRUE unless you set the focus to a control
 }
 
@@ -1048,62 +1058,62 @@ void CIWBDlg::OnSysCommand(UINT nID, LPARAM lParam)
         }
         
     }
-	else if (nID == IDM_GPIO_ON)
-	{
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor)
-		{
-			GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE);
+    else if (nID == IDM_GPIO_ON)
+    {
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor)
+        {
+            GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE);
 
-		}
-		
-	}
-	else if (nID == IDM_GPIO_OFF)
-	{
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor)
-		{
-			GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), FALSE);
-		}
-	}
-	else if (nID == IDM_DEBUG_MODE_TEST30POINT)
-	{
-		if (!m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTest30Point())
-		{
-		    m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTest30Point(TRUE);
+        }
+        
+    }
+    else if (nID == IDM_GPIO_OFF)
+    {
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor)
+        {
+            GPIOControl(pSensor->GetVideoPlayer()->GetCaptureFilter(), FALSE);
+        }
+    }
+    else if (nID == IDM_DEBUG_MODE_TEST30POINT)
+    {
+        if (!m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTest30Point())
+        {
+            m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTest30Point(TRUE);
 
-			CMenu* pSysMenu = GetSystemMenu(FALSE);
-			if (pSysMenu != NULL)
-			{
-				MENUITEMINFO mii;
-				memset(&mii, 0, sizeof(mii));
-				mii.cbSize = sizeof(MENUITEMINFO);
+            CMenu* pSysMenu = GetSystemMenu(FALSE);
+            if (pSysMenu != NULL)
+            {
+                MENUITEMINFO mii;
+                memset(&mii, 0, sizeof(mii));
+                mii.cbSize = sizeof(MENUITEMINFO);
 
-				mii.fMask = MIIM_STRING | MIIM_STATE;
-				mii.fState = MFS_ENABLED;
-				mii.dwTypeData = _T("Stop Test 30 TouchPoint");
-				pSysMenu->SetMenuItemInfo(IDM_DEBUG_MODE_TEST30POINT, &mii, FALSE);
-			}
-		}
-		else
-		{
-			m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTest30Point(FALSE);
+                mii.fMask = MIIM_STRING | MIIM_STATE;
+                mii.fState = MFS_ENABLED;
+                mii.dwTypeData = _T("Stop Test 30 TouchPoint");
+                pSysMenu->SetMenuItemInfo(IDM_DEBUG_MODE_TEST30POINT, &mii, FALSE);
+            }
+        }
+        else
+        {
+            m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTest30Point(FALSE);
 
-			CMenu* pSysMenu = GetSystemMenu(FALSE);
-			if (pSysMenu != NULL)
-			{
-				MENUITEMINFO mii;
-				memset(&mii, 0, sizeof(mii));
-				mii.cbSize = sizeof(MENUITEMINFO);
+            CMenu* pSysMenu = GetSystemMenu(FALSE);
+            if (pSysMenu != NULL)
+            {
+                MENUITEMINFO mii;
+                memset(&mii, 0, sizeof(mii));
+                mii.cbSize = sizeof(MENUITEMINFO);
 
-				mii.fMask = MIIM_STRING | MIIM_STATE;
-				mii.fState = MFS_ENABLED;
-				mii.dwTypeData = _T("Start Test 30 TouchPoint");
-				pSysMenu->SetMenuItemInfo(IDM_DEBUG_MODE_TEST30POINT, &mii, FALSE);
-			}
-		}
+                mii.fMask = MIIM_STRING | MIIM_STATE;
+                mii.fState = MFS_ENABLED;
+                mii.dwTypeData = _T("Start Test 30 TouchPoint");
+                pSysMenu->SetMenuItemInfo(IDM_DEBUG_MODE_TEST30POINT, &mii, FALSE);
+            }
+        }
 
-	}
+    }
     else if(nID == SC_CLOSE)
     {
         MinimizeToTray();
@@ -1183,9 +1193,9 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
     CRect rcClient;
     GetClientRect(&rcClient);
     ///add by vera_zhao 2109.12.18
-	AdjustStatusBar(cx, cy);
+    AdjustStatusBar(cx, cy);
 
-	//调整状态栏的位置
+    //调整状态栏的位置
 //	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0, reposDefault, NULL, NULL, TRUE);
 //
 //
@@ -1242,75 +1252,75 @@ void CIWBDlg::OnSize(UINT nType, int cx, int cy)
 
     if (m_hDispWnd == this->GetSafeHwnd())
     {    
-		//在当前窗口上显示视频时
+        //在当前窗口上显示视频时
         this->m_oIWBSensorManager.SetVideoDisplayArea(rcClient);
     }    
 }
 
 void CIWBDlg::AdjustStatusBar(int cx, int cy)
 {
-	//调整状态栏的位置
-	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0, reposDefault, NULL, NULL, TRUE);
+    //调整状态栏的位置
+    RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0, reposDefault, NULL, NULL, TRUE);
 
 
-	int borders[3];
-	//The first element receives the width of the horizontal border, 
-	//the second receives the width of the vertical border, 
-	//and the third receives the width of the border between rectangles.
-	::SendMessage(m_ctlStatusBar.GetSafeHwnd(), SB_GETBORDERS, 0, (LPARAM)borders);
+    int borders[3];
+    //The first element receives the width of the horizontal border, 
+    //the second receives the width of the vertical border, 
+    //and the third receives the width of the border between rectangles.
+    ::SendMessage(m_ctlStatusBar.GetSafeHwnd(), SB_GETBORDERS, 0, (LPARAM)borders);
 
-	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
+    int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
 
-	int nSensorStatusWidth = cx;
-	if (nSensorCount != 0)
-	{
-		nSensorStatusWidth = cx / nSensorCount;
-	}
+    int nSensorStatusWidth = cx;
+    if (nSensorCount != 0)
+    {
+        nSensorStatusWidth = cx / nSensorCount;
+    }
 
-	//reference D:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\src\mfc\barstat.cpp
-	const int  CX_PANE_BORDER = 8;//4    //3 pixels on each side of each pane
+    //reference D:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\src\mfc\barstat.cpp
+    const int  CX_PANE_BORDER = 8;//4    //3 pixels on each side of each pane
 
-	const int PANE1_MIN_WIDTH = 48 * 4;
-	int nPaneWidth_1 = 0;
-	if (nSensorCount < 2)
-	{
-		nPaneWidth_1 = nSensorStatusWidth / 10 - CX_PANE_BORDER - borders[2];
-		//当窗体很小时, 可能为负值。
-		if (nPaneWidth_1 < 0) nPaneWidth_1 = 0;
-	}
+    const int PANE1_MIN_WIDTH = 48 * 4;
+    int nPaneWidth_1 = 0;
+    if (nSensorCount < 2)
+    {
+        nPaneWidth_1 = nSensorStatusWidth / 10 - CX_PANE_BORDER - borders[2];
+        //当窗体很小时, 可能为负值。
+        if (nPaneWidth_1 < 0) nPaneWidth_1 = 0;
+    }
 
-	const int PANE2_MIN_WIDTH = 48 * 4;
-	int nPaneWidth_2 = nSensorStatusWidth / 3 - CX_PANE_BORDER - borders[2];
-	//当窗体很小时,可能为负值。
-	if (nPaneWidth_2 < 0) nPaneWidth_2 = 0;
+    const int PANE2_MIN_WIDTH = 48 * 4;
+    int nPaneWidth_2 = nSensorStatusWidth / 3 - CX_PANE_BORDER - borders[2];
+    //当窗体很小时,可能为负值。
+    if (nPaneWidth_2 < 0) nPaneWidth_2 = 0;
 
 
-	int nPaneWidth_3 = nSensorStatusWidth - nPaneWidth_1 - nPaneWidth_2 - CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
-	//当窗体很小时,可能为负值。
-	if (nPaneWidth_3 < 0) nPaneWidth_3 = 0;
+    int nPaneWidth_3 = nSensorStatusWidth - nPaneWidth_1 - nPaneWidth_2 - CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+    //当窗体很小时,可能为负值。
+    if (nPaneWidth_3 < 0) nPaneWidth_3 = 0;
 
-	int nPaneWidth_4 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
-	if (nPaneWidth_4 < 0)  nPaneWidth_4 = 0;
-	int nPaneWidth_5 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
-	if (nPaneWidth_5 < 0)  nPaneWidth_5 = 0;
-	int nPaneWidth_6 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
-	if (nPaneWidth_6 < 0)  nPaneWidth_6 = 0;
-	int nPaneWidth_7 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
-	if (nPaneWidth_7 < 0)  nPaneWidth_7 = 0;
-	int nPaneWidth_8 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
-	if (nPaneWidth_8 < 0)  nPaneWidth_8 = 0;
-	//for(int i=0; i < nSensorCount; i++)
-		
-	this->m_ctlStatusBar.SetPaneInfo(0, indicators[0], SBPS_NORMAL, nPaneWidth_1);
-	this->m_ctlStatusBar.SetPaneInfo(1, indicators[1], SBPS_NORMAL, nPaneWidth_2);
-	this->m_ctlStatusBar.SetPaneInfo(2, indicators[2], SBPS_OWNERDRAW, nPaneWidth_3);
+    int nPaneWidth_4 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+    if (nPaneWidth_4 < 0)  nPaneWidth_4 = 0;
+    int nPaneWidth_5 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+    if (nPaneWidth_5 < 0)  nPaneWidth_5 = 0;
+    int nPaneWidth_6 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+    if (nPaneWidth_6 < 0)  nPaneWidth_6 = 0;
+    int nPaneWidth_7 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+    if (nPaneWidth_7 < 0)  nPaneWidth_7 = 0;
+    int nPaneWidth_8 = nSensorStatusWidth- CX_PANE_BORDER - borders[2] * StatusPaneCountEachSensor;
+    if (nPaneWidth_8 < 0)  nPaneWidth_8 = 0;
+    //for(int i=0; i < nSensorCount; i++)
+        
+    this->m_ctlStatusBar.SetPaneInfo(0, indicators[0], SBPS_NORMAL, nPaneWidth_1);
+    this->m_ctlStatusBar.SetPaneInfo(1, indicators[1], SBPS_NORMAL, nPaneWidth_2);
+    this->m_ctlStatusBar.SetPaneInfo(2, indicators[2], SBPS_OWNERDRAW, nPaneWidth_3);
 
-	this->m_ctlStatusBar.SetPaneInfo(3, indicators[3], SBPS_NORMAL, nPaneWidth_4);
+    this->m_ctlStatusBar.SetPaneInfo(3, indicators[3], SBPS_NORMAL, nPaneWidth_4);
     this->m_ctlStatusBar.SetPaneInfo(4, indicators[4], SBPS_NORMAL, nPaneWidth_5);
-	this->m_ctlStatusBar.SetPaneInfo(5, indicators[5], SBPS_NORMAL, nPaneWidth_6);
-	this->m_ctlStatusBar.SetPaneInfo(6, indicators[6], SBPS_NORMAL, nPaneWidth_7);
-	this->m_ctlStatusBar.SetPaneInfo(7, indicators[7], SBPS_NORMAL, nPaneWidth_8);
-	
+    this->m_ctlStatusBar.SetPaneInfo(5, indicators[5], SBPS_NORMAL, nPaneWidth_6);
+    this->m_ctlStatusBar.SetPaneInfo(6, indicators[6], SBPS_NORMAL, nPaneWidth_7);
+    this->m_ctlStatusBar.SetPaneInfo(7, indicators[7], SBPS_NORMAL, nPaneWidth_8);
+    
 }
 
 //void CIWBDlg::AdjustStatusBar(int left, int top, int cx, int cy)
@@ -1492,7 +1502,7 @@ HRESULT CIWBDlg::OnTrayNotifyMsg(WPARAM wParam,LPARAM lParam)
                 pCtxMenu->EnableMenuItem(ID_AUTO_ADD_MASK_AREA, MF_BYCOMMAND|(isRunning ? MF_ENABLED:MF_GRAYED));
                 //pCtxMenu->EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25, MF_BYCOMMAND|(isRunning ? MF_ENABLED:MF_GRAYED));
                 //pCtxMenu->EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36, MF_BYCOMMAND|(isRunning ? MF_ENABLED:MF_GRAYED));
-				pCtxMenu->EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | (isRunning ? MF_ENABLED : MF_GRAYED));
+                pCtxMenu->EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | (isRunning ? MF_ENABLED : MF_GRAYED));
                 pCtxMenu->EnableMenuItem(ID_CTXMENU_AUTOCALIBRATE, MF_BYCOMMAND|(isRunning ? MF_ENABLED:MF_GRAYED));
 
 
@@ -1549,34 +1559,43 @@ HRESULT CIWBDlg::OnTrayNotifyMsg(WPARAM wParam,LPARAM lParam)
 LRESULT CIWBDlg::OnClose(WPARAM wParam,LPARAM lParam)
 {
     // TODO: Add your message handler code here and/or call default
-	this->StopRunning();
+    this->StopRunning();
     if(m_pUSBDevDetector)
     {
         delete m_pUSBDevDetector;
         m_pUSBDevDetector = NULL;
     }
-	if(m_pUSBDevDetector_HID)
-	{
-		delete m_pUSBDevDetector_HID;
-		m_pUSBDevDetector_HID = NULL;
-	}
+    if(m_pUSBDevDetector_HID)
+    {
+        delete m_pUSBDevDetector_HID;
+        m_pUSBDevDetector_HID = NULL;
+    }
 
+    /*
+    CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+    if (pSensor)
+    {
+        const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+        if (!devInfo.m_strDevPath.IsEmpty())
+        {   //如果为空的话，那么PID.VID就为空了，不不要保存
+            SaveConfig();
+        }
+    }
+    */
 
-	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-	if (pSensor)
-	{
-		const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-		if (!devInfo.m_strDevPath.IsEmpty())
-		{   //如果为空的话，那么PID.VID就为空了，不不要保存
-		    SaveConfig();
-		}
-	}
+    //Removed by xuke, 2020/10/15
+    //避免计算机正在关机，IWB执行到SaveConfig,还未退出，这时如果客户突然断电
+    //则导致生成的配置文件格式不完整。在下次开机启动时，载入配置文件失败, 高清
+    //摄像头直接使用标清的参数。
+    //<<但如果不保存则界面上的一些状态无法保存。
+    SaveConfig();
+    //>>
 
     DeleteObject(m_hUCShieldBitmap);
 
     CDialog::OnClose();
 
-	LOG_INF("CIWBDlg::OnClose()");
+    LOG_INF("CIWBDlg::OnClose()");
     return 0;
 
 }
@@ -1725,16 +1744,16 @@ HRESULT CIWBDlg::OnManualCalibrationDone (WPARAM wParam,LPARAM lParam)
     if(m_oIWBSensorManager.IsCalibarateOk())
     {
         //保存配置信息
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor)
-		{
-			const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-			if (!devInfo.m_strDevPath.IsEmpty())
-			{
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor)
+        {
+            const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+            if (!devInfo.m_strDevPath.IsEmpty())
+            {
                 this->SaveConfig();
-			}
+            }
 
-		}
+        }
 
         //最小化到托盘
         MinimizeToTray();
@@ -1775,20 +1794,16 @@ BOOL CIWBDlg::LoadConfig()
     ::LoadConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData);
 
     //根据加密狗设置实际的笔触和手触模式
-	//所有的整成一個加密狗信息
-	for (size_t i = 0 ; i < ::g_tSysCfgData.vecSensorConfig.size() ; i++ )
-	{
-		TSensorConfig& sensorConfig = ::g_tSysCfgData.vecSensorConfig[i];
-		for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
-		{
-			sensorConfig.vecSensorModeConfig[eProjectionMode].advanceSettings.m_eTouchType = GetActualTouchType();
-		}
-	}
-
-//    //将配置数据设置到传感器中去
-	 ///////modify by zhaown 2019.8.2
-//    this->m_oIWBSensorManager.SetCfgData(g_tSysCfgData);
-
+    //所有的整成一個加密狗信息
+    for (size_t i = 0 ; i < ::g_tSysCfgData.vecSensorConfig.size() ; i++ )
+    {
+        TSensorConfig& sensorConfig = ::g_tSysCfgData.vecSensorConfig[i];
+        for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
+        {
+            sensorConfig.vecSensorModeConfig[eProjectionMode].advanceSettings.m_eTouchType = GetActualTouchType();
+        }
+    }
+    
     return TRUE;
 }
 
@@ -1800,7 +1815,7 @@ BOOL CIWBDlg::SaveConfig()
     //获取所有图像传感器的配置信息
     this->m_oIWBSensorManager.GetCfgData(g_tSysCfgData);
 
-	size_t nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
+    size_t nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
     //写入配置文件
     ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nSensorCount);
 
@@ -1828,77 +1843,77 @@ HRESULT CIWBDlg::OnCameraStatusNotify(WPARAM wParam,LPARAM lParam)
 {
     LPCTSTR lpszText =(LPCTSTR)wParam;
     int    nCameraID = lParam;
-	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
+    int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
     if(0 == nCameraID)
     {
         this->m_ctlStatusBar.SetPaneText(PANE_STATE, lpszText, TRUE);
     }
-	switch (nSensorCount)
-	{
-	   case 2:
-		  if (1 == nCameraID)
-		  {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
-		  }
-		  break;
-	   case 3:
-		   if (1 == nCameraID)
-		   {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
-		   }
-		   else if (2 == nCameraID)
-		   {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
-		   }
-		   else{}
-		   break;
-	   case 4:
-		   if (1 == nCameraID)  {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
-		   }
-		   else if (2 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
-		   }
-		   else if (3 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
-		   }
-		   else{}
-		   break;
-	   case 5:
-		   if (1 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
-		   }
-		   else if (2 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
-		   }
-		   else if (3 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
-		   }
-		   else if(4 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE5, lpszText, TRUE);
-		   }
-		   else { }
-		   break;
-	   case 6:
-		   if (1 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
-		   }
-		   else if (2 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
-		   }
-		   else if (3 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
-		   }
-		   else if (4 == nCameraID) {
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE5, lpszText, TRUE);
-		   }
-		   else if(5 == nCameraID){
-			   this->m_ctlStatusBar.SetPaneText(PANE_STATE6, lpszText, TRUE);
-		   }
-		   break;
+    switch (nSensorCount)
+    {
+       case 2:
+          if (1 == nCameraID)
+          {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+          }
+          break;
+       case 3:
+           if (1 == nCameraID)
+           {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+           }
+           else if (2 == nCameraID)
+           {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+           }
+           else{}
+           break;
+       case 4:
+           if (1 == nCameraID)  {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+           }
+           else if (2 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+           }
+           else if (3 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
+           }
+           else{}
+           break;
+       case 5:
+           if (1 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+           }
+           else if (2 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+           }
+           else if (3 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
+           }
+           else if(4 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE5, lpszText, TRUE);
+           }
+           else { }
+           break;
+       case 6:
+           if (1 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE2, lpszText, TRUE);
+           }
+           else if (2 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE3, lpszText, TRUE);
+           }
+           else if (3 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE4, lpszText, TRUE);
+           }
+           else if (4 == nCameraID) {
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE5, lpszText, TRUE);
+           }
+           else if(5 == nCameraID){
+               this->m_ctlStatusBar.SetPaneText(PANE_STATE6, lpszText, TRUE);
+           }
+           break;
 
 
-	}
+    }
 
     return 0;
 }
@@ -2008,7 +2023,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         pDevInterface->dbcc_classguid.Data4[7]
                     ); 
                     AtlTrace(_T("\t\tInterface name %s\r\n"), pDevInterface->dbcc_name);
-					
+                    
                     if(m_oUSBCameraDeviceList.IsCandidateDevice(pDevInterface->dbcc_name))
                     {
                         //更新设备列表
@@ -2017,26 +2032,27 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         const TCaptureDeviceInstance* pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance(pDevInterface->dbcc_name);
                         if(pDevInst)
                         {
-                            //在检测到新设备时重新读取加密狗
-                            theApp.ReadUSBKey();
-							UpdateInfoAboutDongle();
+                            //在检测到新设备时读取新插入的加密狗
+                            CW2A strDevpath(pDevInterface->dbcc_name);
+                            theApp.OnPlugInUSBKey(strDevpath);
 
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
                         }
                     }
-					else
-					{
-						int nVID = 0; 
-						int nPID = 0;
-						int ret = _stscanf_s(pDevInterface->dbcc_name, _T("\\\\?\\HID#VID_%04x&PID_%04x"), &nVID, &nPID);
-						if (nVID ==13961 && nPID ==34658)
-						{
-						   //在检测到新设备时重新读取加密狗
-						   theApp.ReadUSBKey();
-						   UpdateInfoAboutDongle();
-						}
+                    else
+                    {
+                        UINT uVID = 0; 
+                        UINT uPID = 0;
+                        int ret = _stscanf_s(pDevInterface->dbcc_name, _T("\\\\?\\HID#VID_%04x&PID_%04x"), &uVID, &uPID);
+                        if(this->IsEligibleUSBKey(uVID, uPID))
+                        {
+                            //在检测到新设备时读取新插入的加密狗
+                            CW2A strDevpath(pDevInterface->dbcc_name);
+                            theApp.OnPlugInUSBKey(strDevpath);
+                           UpdateInfoAboutDongle();
+                        }
 
-					}
+                    }
                 }
                 break;
 
@@ -2094,26 +2110,30 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         //更新设备列表
                         this->m_oUSBCameraDeviceList.UpdateDeviceList();
 
-						//响应PlugOut事件
-						this->m_oIWBSensorManager.OnCameraPlugOut(pDevInterface->dbcc_name);
+                        //响应PlugOut事件
+                        this->m_oIWBSensorManager.OnCameraPlugOut(pDevInterface->dbcc_name);
                         
-						//在检测到新设备时重新读取加密狗
-						theApp.ReadUSBKey();
+                        //在检测到新设备时读取新插入的加密狗
+                        CW2A strDevpath(pDevInterface->dbcc_name);
+                        theApp.OnPlugOutUSBKey(strDevpath);
 
-						UpdateInfoAboutDongle();
+                        UpdateInfoAboutDongle();
                     }
-					else
-					{
-						int nVID = 0;
-						int nPID = 0;
-						int ret = _stscanf_s(pDevInterface->dbcc_name, _T("\\\\?\\HID#VID_%04x&PID_%04x"), &nVID, &nPID);
-						if (nVID == 13961 && nPID == 34658)
-						{
-						    //在检测到新设备时重新读取加密狗
-						    theApp.ReadUSBKey();
-						    UpdateInfoAboutDongle();
-						}
-					}
+                    else
+                    {
+                        int nVID = 0;
+                        int nPID = 0;
+                        int ret = _stscanf_s(pDevInterface->dbcc_name, _T("\\\\?\\HID#VID_%04x&PID_%04x"), &nVID, &nPID);
+                        if (nVID == 13961 && nPID == 34658)
+                        {
+
+                            //在检测到新设备时读取新插入的加密狗
+                            CW2A strDevpath(pDevInterface->dbcc_name);
+                            theApp.OnPlugOutUSBKey(strDevpath);
+
+                            UpdateInfoAboutDongle();
+                        }
+                    }
                 }
 
                 break;
@@ -2163,94 +2183,94 @@ void CIWBDlg::OnMenuParameterSettings()
 
     if(paramsSettingSheet.DoModal() == IDOK)
     {
-		pSensor->SetCfgData(paramsSettingSheet.GetSensorConfig(), &paramsSettingSheet.GetGlobalSettings());
+        pSensor->SetCfgData(paramsSettingSheet.GetSensorConfig(), &paramsSettingSheet.GetGlobalSettings());
 
         g_tSysCfgData.vecSensorConfig[pSensor->GetID()] = paramsSettingSheet.GetSensorConfig();
         g_tSysCfgData.globalSettings = paramsSettingSheet.GetGlobalSettings();
 
-		const TCaptureDeviceInstance& devInfo  = pSensor->GetDeviceInfo();
-		if (!devInfo.m_strDevPath.IsEmpty())
-		{
-			 int nCount = this->m_oIWBSensorManager.GetSensorCount();
+        const TCaptureDeviceInstance& devInfo  = pSensor->GetDeviceInfo();
+        if (!devInfo.m_strDevPath.IsEmpty())
+        {
+             int nCount = this->m_oIWBSensorManager.GetSensorCount();
              ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nCount);
-		}
+        }
 
-		////////////把设置的是否动态屏蔽传到需要的地方去
-		TSensorModeConfig* TSensorModeConfig = NULL;
-		EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+        ////////////把设置的是否动态屏蔽传到需要的地方去
+        TSensorModeConfig* TSensorModeConfig = NULL;
+        EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
-		TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
+        TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
         //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
-		if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
-			|| g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
-			|| g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
-			)
-		{
-			if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
-			{
-		         TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
-				 pSensor->SetStrokeInterpolate(TRUE);
-			}
-		}
+        if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
+            || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
+            || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
+            )
+        {
+            if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
+            {
+                 TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
+                 pSensor->SetStrokeInterpolate(TRUE);
+            }
+        }
 
-		/////设置是否开启自动屏蔽功能
-		if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
-		{
-		    pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
-		}
-		else
-		{
-			pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
-		}
-		////////////设置是否开启抗干扰功能
-		if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
-		{
-			pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
-		}
-		else
-		{
-			pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
-		}
-		/////////设置是否启用手动绘制的静态屏蔽图
-		if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
-		{
-			pSensor->GetPenPosDetector()->EnableOnlineScreenArea(TRUE);
-		}
-		else
-		{
-			pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
-		}
-		///////////////////
-		if (TSensorModeConfig->advanceSettings.bDisableReflectionSpot)
-		{
-			pSensor->GetPenPosDetector()->DisableReflectionPoint(TRUE);
-		}
-		else {
-			pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
-		}
-		//是否单点操作
-		if (g_tSysCfgData.globalSettings.bSinglePointMode)
-		{
-		    this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
-		}
-		else
-		{ 
-			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
-		}
+        /////设置是否开启自动屏蔽功能
+        if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
+        {
+            pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
+        }
+        else
+        {
+            pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
+        }
+        ////////////设置是否开启抗干扰功能
+        if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
+        {
+            pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
+        }
+        else
+        {
+            pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
+        }
+        /////////设置是否启用手动绘制的静态屏蔽图
+        if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
+        {
+            pSensor->GetPenPosDetector()->EnableOnlineScreenArea(TRUE);
+        }
+        else
+        {
+            pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
+        }
+        ///////////////////
+        if (TSensorModeConfig->advanceSettings.bDisableReflectionSpot)
+        {
+            pSensor->GetPenPosDetector()->DisableReflectionPoint(TRUE);
+        }
+        else {
+            pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
+        }
+        //是否单点操作
+        if (g_tSysCfgData.globalSettings.bSinglePointMode)
+        {
+            this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
+        }
+        else
+        { 
+            this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
+        }
 
-		/////是否进行隔空操作
-		EAIROPERATE_CLICKMODE eClickMode = g_tSysCfgData.globalSettings.eClickMode;
-		if(g_tSysCfgData.globalSettings.bAirOperatePermission)
-		{
-			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(true, eClickMode);
-		}
-		else
-		{
-			this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(false, eClickMode);
-		}
+        /////是否进行隔空操作
+        EAIROPERATE_CLICKMODE eClickMode = g_tSysCfgData.globalSettings.eClickMode;
+        if(g_tSysCfgData.globalSettings.bAirOperatePermission)
+        {
+            this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(true, eClickMode);
+        }
+        else
+        {
+            this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(false, eClickMode);
+        }
 
-		//设置平滑系数
-		this->m_oIWBSensorManager.GetSpotListProcessor().SetSmoothCoefficient(TSensorModeConfig->advanceSettings.nSmoothCoefficient);
+        //设置平滑系数
+        this->m_oIWBSensorManager.GetSpotListProcessor().SetSmoothCoefficient(TSensorModeConfig->advanceSettings.nSmoothCoefficient);
 
     }//if
 }
@@ -2386,9 +2406,9 @@ void CIWBDlg::OnTimer(UINT_PTR nIDEvent)
         //    }
         //    break;
 
-	case TIMER_FOR_SENSOR_MANAGER:
-		this->m_oIWBSensorManager.OnTimer((LPVOID)this);
-		break;
+    case TIMER_FOR_SENSOR_MANAGER:
+        this->m_oIWBSensorManager.OnTimer((LPVOID)this);
+        break;
 
     case TIMER_EVENT_SCREEN_RECOGNITION_CLOSE:
         m_oScreenRecognition.StopRecognition();
@@ -2499,22 +2519,21 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
 
         *pLastBackslash=_T('\0');
 
-		
-		TCHAR szFileBaseName[MAX_PATH];
-		_tcscpy_s(szFileBaseName, _countof(szFileBaseName), szModuleFileName);
+        
+        TCHAR szFileBaseName[MAX_PATH];
+        _tcscpy_s(szFileBaseName, _countof(szFileBaseName), szModuleFileName);
 
-		PathRemoveExtension(szFileBaseName);
-		
+        PathRemoveExtension(szFileBaseName);
 
-		//<<2017,解决Win10删除动态链接库的问题,用IWBProxy.exe代替IWb.exe自动启动
-		_stprintf_s(
-			szModuleFileName,
-			_countof(szModuleFileName),
-			//_T("%s\\%sProxy.exe"),
+        //<<2017,解决Win10删除动态链接库的问题,用IWBProxy.exe代替IWb.exe自动启动
+        _stprintf_s(
+            szModuleFileName,
+            _countof(szModuleFileName),
+            //_T("%s\\%sProxy.exe"),
             _T("%s\\%s.exe"),
-			szWorkingDirectory,
-			PathFindFileName(szFileBaseName));
-		//>>
+            szWorkingDirectory,
+            PathFindFileName(szFileBaseName));
+        //>>
 
         CString strCmdLine;
         strCmdLine.Format(_T("-AutoRun -%s"),theApp.IsForAllUsers()?_T("AllUsers"):_T("CurrentUser"));
@@ -2640,8 +2659,8 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 {
     CDialog::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
 
-	if (pPopupMenu != m_oMenu.GetSubMenu(0) && pPopupMenu != m_oMenu.GetSubMenu(1))	return;
-	
+    if (pPopupMenu != m_oMenu.GetSubMenu(0) && pPopupMenu != m_oMenu.GetSubMenu(1))	return;
+    
     // TODO: Add your message handler code here
 
     if(this->m_oIWBSensorManager.IsRunning())
@@ -2654,7 +2673,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         m_oMenu.EnableMenuItem(ID_AUTO_ADD_MASK_AREA, MF_BYCOMMAND| MF_ENABLED);
 
         //使能"光斑采样"菜单项
-	    m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_ENABLED);
+        m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_ENABLED);
 
         //使能“4点标定"菜单项
         m_oMenu.EnableMenuItem(ID_MENU_AUTO_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
@@ -2665,7 +2684,7 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //使能"手动校正"菜单项
         //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25, MF_BYCOMMAND| MF_ENABLED);
         //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36, MF_BYCOMMAND| MF_ENABLED);
-		m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
+        m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
 
         //使能相机镜头模式
         m_oMenu.EnableMenuItem(ID_WORKMODE_NORMAL_USAGE,  MF_BYCOMMAND|MF_ENABLED); 
@@ -2682,14 +2701,14 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 m_oMenu.CheckMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_UNCHECKED);
 
                 //使能"光斑采样"菜单项
-			    if (GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
-			    {
-				     m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_GRAYED);
-			    }
-			    else
-			    {
+                if (GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+                {
+                     m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND | MF_GRAYED);
+                }
+                else
+                {
                      m_oMenu.EnableMenuItem(ID_OPERATION_LIGHTSPOTSAMPLING, MF_BYCOMMAND| MF_ENABLED);
-			    }
+                }
 
                 //使能"手动编辑屏蔽区"子菜单
                 m_oMenu.EnableMenuItem(ID_ADD_MASK_RECTANGLE_2X,   MF_BYCOMMAND| MF_ENABLED);
@@ -2703,14 +2722,14 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 //使能"手动校正"子菜单
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_ENABLED);
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_ENABLED);
-			    m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
+                m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_ENABLED);
 
 
 
-				////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
-				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
-				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
-				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_GRAYED);
+                ////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+                m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_GRAYED);
 
                 break;
 
@@ -2734,12 +2753,12 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                //灰化"手动校正"子菜单
                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
                //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_GRAYED);
-			   m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
+               m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
 
-			   ////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
-			   m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_ENABLED);
-			   m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_ENABLED);
-			   m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE,MF_BYCOMMAND| MF_ENABLED);
+               ////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+               m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_ENABLED);
+               m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_ENABLED);
+               m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE,MF_BYCOMMAND| MF_ENABLED);
 
                break;
 
@@ -2763,28 +2782,28 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 //灰化"手动校正"子菜单
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_GRAYED);
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE36,  MF_BYCOMMAND| MF_GRAYED);
-			    m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE, MF_BYCOMMAND | MF_GRAYED);
 
-				////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
-				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
-				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
-				m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE,MF_BYCOMMAND| MF_GRAYED);
+                ////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+                m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
+                m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE,MF_BYCOMMAND| MF_GRAYED);
 
                 break;
         }
 
-		////插值
-		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_ENABLED);	
-		///高级设置
-		///如果是手触或者笔触电子白板的话，那么就灰掉高级设置
-		//if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
-		//{
-		//	m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
-		//}
-		//else
-		{
-		     m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_ENABLED);
-		}
+        ////插值
+        m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_ENABLED);	
+        ///高级设置
+        ///如果是手触或者笔触电子白板的话，那么就灰掉高级设置
+        //if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
+        //{
+        //	m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
+        //}
+        //else
+        {
+             m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_ENABLED);
+        }
 
     }
     else
@@ -2817,18 +2836,18 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         m_oMenu.EnableMenuItem(ID_WORKMODE_IMAGE_TUNNING, MF_BYCOMMAND|MF_GRAYED); 
         m_oMenu.EnableMenuItem(ID_WORKMODE_LASER_TUNNING, MF_BYCOMMAND|MF_GRAYED);
 
-		////插值
-		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_GRAYED);
-		///高级设置
-		m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
+        ////插值
+        m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_GRAYED);
+        ///高级设置
+        m_oMenu.EnableMenuItem(ID_MENU_ADVANCESSETTING, MF_BYCOMMAND | MF_GRAYED);
 
-		////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
-		m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
-		m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
-		m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_GRAYED);
+        ////////绘制屏蔽图只有在摄像头模式下才可以使用，其他模式下直接是灰掉的
+        m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_START, MF_BYCOMMAND | MF_GRAYED);
+        m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_CLEAR, MF_BYCOMMAND | MF_GRAYED);
+        m_oMenu.EnableMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_GRAYED);
 
-		//更新固件。。
-		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
+        //更新固件。。
+        m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
 
     }
 
@@ -2843,127 +2862,137 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         //AtlTrace(_T("OnInitMenuPopup, MF_CHECKED\r\n"));
     }
 
-	if (this->m_oIWBSensorManager.GetSensor()->GetCameraType() == E_CAMERA_MODEL_2)
-	{
-		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
-	}
-	else
-	{
-		m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_ENABLED);
-	}
+    if (this->m_oIWBSensorManager.GetSensor()->GetCameraType() == E_CAMERA_MODEL_2)
+    {
+        m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_GRAYED);
+    }
+    else
+    {
+        m_oMenu.EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_UPDATEFIRMWARE, MF_BYCOMMAND | MF_ENABLED);
+    }
 
-	////add by vera_zhao 2018.12.04
-	ETouchScreenAspectRatio eScreenRatio;
+    ////add by vera_zhao 2018.12.04
+    ETouchScreenAspectRatio eScreenRatio;
 
-	eScreenRatio = g_tSysCfgData.globalSettings.eTouchScreenAspectRatio;	
+    eScreenRatio = g_tSysCfgData.globalSettings.eTouchScreenAspectRatio;	
 
-	///>>end
-	switch(eScreenRatio)
-	{
-		case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_UNCHECKED  ); 
+    ///>>end
+    switch(eScreenRatio)
+    {
+        case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_UNCHECKED  ); 
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND|MF_CHECKED    );
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND|MF_UNCHECKED  );
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_UNCHECKED  );
-			break;
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_UNCHECKED  );
+            break;
 
-		case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_UNCHECKED  ); 
+        case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_UNCHECKED  ); 
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND|MF_UNCHECKED  );
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND|MF_CHECKED    );
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_UNCHECKED  );
-			break;
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_UNCHECKED  );
+            break;
 
-		case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_UNCHECKED  ); 
+        case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_UNCHECKED  ); 
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND|MF_UNCHECKED  );
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND|MF_UNCHECKED  );
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_CHECKED    );
-			break;
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_CHECKED    );
+            break;
 
-		default:
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_CHECKED    ); 
+        default:
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND|MF_CHECKED    ); 
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND|MF_UNCHECKED  );
             m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND|MF_UNCHECKED  );
-			m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_UNCHECKED  );
+            m_oMenu.CheckMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND|MF_UNCHECKED  );
 
-	}//switch
+    }//switch
 
 
 
-	DEVMODE dm;
-	//initialize the DEVMODE structure
-	//ZeroMemory(&dm, sizeof(dm));
-	dm.dmSize = sizeof(dm);
+    DEVMODE dm;
+    //initialize the DEVMODE structure
+    //ZeroMemory(&dm, sizeof(dm));
+    dm.dmSize = sizeof(dm);
 
-	
-	/*
-	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
-	if (!(dm.dmFields & DM_DISPLAYFIXEDOUTPUT) || dm.dmDisplayFixedOutput == DMDFO_CENTER || dm.dmDisplayFixedOutput == DMDFO_STRETCH)
-	{//dmDisplayFixedOutput未置位或者其值等于DMDFO_CENTER或者DMDFO_STRETCH时，禁用"Touch Screen Aspect Ratio"菜单项
-		
-	 //灰化"自动设置宽高比"菜单项
-	 m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND | MF_GRAYED);
-	 m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND | MF_GRAYED);
-	 m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND | MF_GRAYED);
-	 m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND | MF_GRAYED);
+    
+    /*
+    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+    if (!(dm.dmFields & DM_DISPLAYFIXEDOUTPUT) || dm.dmDisplayFixedOutput == DMDFO_CENTER || dm.dmDisplayFixedOutput == DMDFO_STRETCH)
+    {//dmDisplayFixedOutput未置位或者其值等于DMDFO_CENTER或者DMDFO_STRETCH时，禁用"Touch Screen Aspect Ratio"菜单项
+        
+     //灰化"自动设置宽高比"菜单项
+     m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO,  MF_BYCOMMAND | MF_GRAYED);
+     m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND | MF_GRAYED);
+     m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND | MF_GRAYED);
+     m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3,   MF_BYCOMMAND | MF_GRAYED);
 
-	}
-	else
-	{
-		//使能"自动设置宽高比"菜单项
-		m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO, MF_BYCOMMAND  | MF_ENABLED);
-		m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND | MF_ENABLED);
-		m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND | MF_ENABLED);
-		m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3, MF_BYCOMMAND   | MF_ENABLED);
-	}
-	*/
-	///////插值标志
-	BOOL bEnableStrokeInterpolateTemp= FALSE ;
-	BOOL bEnableOnlineScreenArea = FALSE;
+    }
+    else
+    {
+        //使能"自动设置宽高比"菜单项
+        m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_AUTO, MF_BYCOMMAND  | MF_ENABLED);
+        m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_09, MF_BYCOMMAND | MF_ENABLED);
+        m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_16_10, MF_BYCOMMAND | MF_ENABLED);
+        m_oMenu.EnableMenuItem(ID_TOUCHSCREENASPECTRATIO_4_3, MF_BYCOMMAND   | MF_ENABLED);
+    }
+    */
+    ///////插值标志
+    BOOL bEnableStrokeInterpolateTemp= FALSE ;
+    BOOL bEnableOnlineScreenArea = FALSE;
 
-	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
-	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
-	if (lpSensor)
-	{
-		TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[lpSensor->GetID()].vecSensorModeConfig[eProjectionMode].advanceSettings;
-		bEnableStrokeInterpolateTemp = advanceSettings.bEnableStrokeInterpolate;
-	}
-	////是否进行插值
-	if (bEnableStrokeInterpolateTemp)
-	{
-		m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_CHECKED);
-	}
-	else
-	{
-		m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_UNCHECKED);
-	}
-	//////是否启用绘制的外部勾勒图
-	if (this->m_oIWBSensorManager.IsEnableOnlineScreenArea())
-	{
-        m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);	       
-	}
-	else
-	{
+    CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
+    if (lpSensor)
+    {
+        TAdvancedSettings& advanceSettings = g_tSysCfgData.vecSensorConfig[lpSensor->GetID()].vecSensorModeConfig[eProjectionMode].advanceSettings;
+        bEnableStrokeInterpolateTemp = advanceSettings.bEnableStrokeInterpolate;
+    }
+    ////是否进行插值
+    if (bEnableStrokeInterpolateTemp)
+    {
+        m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_CHECKED);
+    }
+    else
+    {
+        m_oMenu.CheckMenuItem(ID_INSTALLATIONANDDEBUGGING_ENABLEINTERPOLATE, MF_BYCOMMAND | MF_UNCHECKED);
+    }
+    //////是否启用绘制的外部勾勒图
+    if (this->m_oIWBSensorManager.IsEnableOnlineScreenArea())
+    {
+        m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);
+    }
+    else
+    {
         m_oMenu.CheckMenuItem(ID_MENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
-	}
+    }
 
     //如果"虚拟驱动"已打开, 则使能"Mouse"和"TouchPad"菜单项"
     InitDeviceUseModeMenuItemWithMenu(&m_oMenu);
 
-	//如果未使能"在线注册功能", 则隐藏帮助菜单下的“注册"菜单项
-	BOOL bEnableOnlineRegisterTemp;
-	bEnableOnlineRegisterTemp = g_tSysCfgData.globalSettings.bEnableOnlineRegister;
-	if(!bEnableOnlineRegisterTemp)
-	{
-		m_oMenu.RemoveMenu(ID_MENU_ONLINE_REGISTER, MF_BYCOMMAND);
-	}
+    //如果未使能"在线注册功能", 则隐藏帮助菜单下的“注册"菜单项
+    BOOL bEnableOnlineRegisterTemp;
+    bEnableOnlineRegisterTemp = g_tSysCfgData.globalSettings.bEnableOnlineRegister;
+    if(!bEnableOnlineRegisterTemp)
+    {
+        m_oMenu.RemoveMenu(ID_MENU_ONLINE_REGISTER, MF_BYCOMMAND);
+    }
 
 
     //如果是多屏屏接, 添加"触屏布局设计工具"菜单项
     if (theApp.GetScreenMode() >= EScreenModeDouble)
     {
+        CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
+        MENUITEMINFO menuItemInfo;
+        memset(&menuItemInfo, 0, sizeof(MENUITEMINFO));
+        menuItemInfo.cbSize = sizeof(MENUITEMINFO);
+
+        if (pInstallMenu && !pInstallMenu->GetMenuItemInfo(ID_SWTICH_SCREENMODE, &menuItemInfo))
+        {
+            AppendScreenModeSubmenu();
+        }
+
         BOOL bIsVisible = this->m_oIWBSensorManager.GetScreenLayoutDesigner().IsVisible();
         m_oMenu.CheckMenuItem(ID_MENU_TOUCHSREEEN_LAYOUT_DESIGNER, MF_BYCOMMAND | bIsVisible?MF_CHECKED: MF_UNCHECKED);
     }
@@ -2973,9 +3002,9 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
         for (EScreenMode eScreenMode = EScreenModeSingle; eScreenMode <= theApp.GetScreenModeFromUSBKey(); eScreenMode = EScreenMode(eScreenMode + 1))
         {
             UINT uMenuID = ID_SWTICH_SCREENMODE_ONE + (UINT)eScreenMode;
-
-            if (eScreenMode == theApp.GetScreenMode())
-            {//勾选当前的屏接模式
+            int nSensorCount = int(eScreenMode) + 1;
+            if (nSensorCount == this->m_oIWBSensorManager.GetSensorCount())
+            {//勾选当前的拼接模式
                 m_oMenu.CheckMenuItem(uMenuID, MF_BYCOMMAND | MF_CHECKED );
             }
             else
@@ -3009,7 +3038,7 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 //    POINT ptClient = point;
 //    ScreenToClient(&ptClient);
 //    CIWBSensor* pSensor = this->m_oIWBSensorManager.SensorFromPt(ptClient);
-	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+    CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
     if(NULL == pSensor) return;
 
     m_pSelectedSensor = pSensor;//更新选中的传感器指针
@@ -3070,7 +3099,7 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         else
         {
             //只有在正常使用模式下才使能"手动校正"
-            if(this->m_oIWBSensorManager.GetLensMode() == E_NORMAL_USAGE_MODE)
+            if(pSensor->GetLensMode() == E_NORMAL_USAGE_MODE)
             {
                 pSubMenu->EnableMenuItem(
                     ID_SENSORCTXMENU_MANUAL_CALIBRATE,
@@ -3084,26 +3113,26 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             }
         }
 
-		if (g_tSysCfgData.globalSettings.bEnable4PointsCalibrate )
-		{
-			if (pSensor->IsDetecting())
-			{
-		    	pSubMenu->EnableMenuItem(
-				       ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
-				       MF_BYCOMMAND | MF_ENABLED);
-			}
-			else
-			{
-				pSubMenu->EnableMenuItem(
-					ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
-					MF_BYCOMMAND | MF_GRAYED);
-			}
+        if (g_tSysCfgData.globalSettings.bEnable4PointsCalibrate )
+        {
+            if (pSensor->IsDetecting())
+            {
+                pSubMenu->EnableMenuItem(
+                       ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
+                       MF_BYCOMMAND | MF_ENABLED);
+            }
+            else
+            {
+                pSubMenu->EnableMenuItem(
+                    ID_SENSORCTXMENU_FOURPOINTCALIBRATION,
+                    MF_BYCOMMAND | MF_GRAYED);
+            }
 
-		}
-		else
-		{
-			pSubMenu->RemoveMenu(ID_SENSORCTXMENU_FOURPOINTCALIBRATION, MF_BYCOMMAND);
-		}
+        }
+        else
+        {
+            pSubMenu->RemoveMenu(ID_SENSORCTXMENU_FOURPOINTCALIBRATION, MF_BYCOMMAND);
+        }
 
         //"自动屏蔽..."菜单项
         pSubMenu->EnableMenuItem(
@@ -3120,10 +3149,10 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
             ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING,
             MF_BYCOMMAND|(pSensor->IsDetecting()?MF_ENABLED:MF_GRAYED));
 
-		if (GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
-		{
-			pSubMenu->EnableMenuItem(ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING, MF_BYCOMMAND|MF_GRAYED);
-		}
+        if (GetActualTouchType() == E_DEVICE_PALM_TOUCH_CONTROL)
+        {
+            pSubMenu->EnableMenuItem(ID_SENSORCTXMENU_LIGHTSPOT_SAMPLING, MF_BYCOMMAND|MF_GRAYED);
+        }
 
         //"安装向导菜单项"
         pSubMenu->EnableMenuItem(
@@ -3221,33 +3250,33 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
             }
         }
-		/////////只有在摄像头模式下才能进行屏蔽图绘制
-		if(FALSE == pSensor->IsDetecting() || pSensor->GetLensMode() != E_VIDEO_TUNING_MODE)
-		{
-			pSubMenu->EnableMenuItem(
-				ID_SENSORCTXMENU_DRAWMASKFRAME_START,
-				MF_BYCOMMAND | MF_GRAYED);
+        /////////只有在摄像头模式下才能进行屏蔽图绘制
+        if(FALSE == pSensor->IsDetecting() || pSensor->GetLensMode() != E_VIDEO_TUNING_MODE)
+        {
+            pSubMenu->EnableMenuItem(
+                ID_SENSORCTXMENU_DRAWMASKFRAME_START,
+                MF_BYCOMMAND | MF_GRAYED);
 
-			pSubMenu->EnableMenuItem(
-				ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE,
-				MF_BYCOMMAND | MF_GRAYED);
+            pSubMenu->EnableMenuItem(
+                ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE,
+                MF_BYCOMMAND | MF_GRAYED);
 
-			pSubMenu->EnableMenuItem(
-				ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR,
-				MF_BYCOMMAND | MF_GRAYED);
-		}
-		else
-		{
-			if (pSensor->IsEnableOnlineScreenArea())
-			{
-				pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);
-			}
-			else
-			{
-				pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
-			}
+            pSubMenu->EnableMenuItem(
+                ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR,
+                MF_BYCOMMAND | MF_GRAYED);
+        }
+        else
+        {
+            if (pSensor->IsEnableOnlineScreenArea())
+            {
+                pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_UNCHECKED);
+            }
+            else
+            {
+                pSubMenu->CheckMenuItem(ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE, MF_BYCOMMAND | MF_CHECKED);
+            }
 
-		}
+        }
 
         //显示传感器快捷菜单
         pSubMenu->TrackPopupMenu(
@@ -3282,8 +3311,8 @@ void CIWBDlg::OnLButtonDown(UINT nFlags, CPoint point)
     TRACE(_T("OnLButtonDown\r\n"));
     CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(point);
     if(pSensor == NULL) return;
-	
-	m_oIWBSensorManager.SelectAsCurrentSensor(pSensor);
+    
+    m_oIWBSensorManager.SelectAsCurrentSensor(pSensor);
 
     if(pSensor->IsDetecting())
     {//只有在运行时才能够手动编辑屏蔽图
@@ -3377,25 +3406,25 @@ void CIWBDlg::OnLButtonUp(UINT nFlags, CPoint point)
             break;
     }//swtich
 
-	if (m_bStartDrawOnlineScreenArea)
-	{
-		CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor == NULL) return;
+    if (m_bStartDrawOnlineScreenArea)
+    {
+        CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor == NULL) return;
 
-		if (pSensor->IsDetecting())
-		{
-			RECT rcDisplayArea = pSensor->GetVideoPlayer()->GetDisplayArea();
-			int nPlayWndWidth = rcDisplayArea.right - rcDisplayArea.left;
-			int nPlayWndHeight = rcDisplayArea.bottom - rcDisplayArea.top;
-			int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
-			int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
-			CPoint pt;
-			pt.x = (point.x  - rcDisplayArea.left) * nSrcImgWidth /nPlayWndWidth;
-			pt.y = (point.y  - rcDisplayArea.top ) * nSrcImgHeight /nPlayWndHeight;
+        if (pSensor->IsDetecting())
+        {
+            RECT rcDisplayArea = pSensor->GetVideoPlayer()->GetDisplayArea();
+            int nPlayWndWidth = rcDisplayArea.right - rcDisplayArea.left;
+            int nPlayWndHeight = rcDisplayArea.bottom - rcDisplayArea.top;
+            int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
+            int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
+            CPoint pt;
+            pt.x = (point.x  - rcDisplayArea.left) * nSrcImgWidth /nPlayWndWidth;
+            pt.y = (point.y  - rcDisplayArea.top ) * nSrcImgHeight /nPlayWndHeight;
 
-			pSensor->GetPenPosDetector()->SetCurrentOnLineScreenAreaPt(pt);
-		}
-	}
+            pSensor->GetPenPosDetector()->SetCurrentOnLineScreenAreaPt(pt);
+        }
+    }
 
     CDialog::OnLButtonUp(nFlags, point);
 }
@@ -3478,22 +3507,22 @@ void CIWBDlg::OnMouseMove(UINT nFlags, CPoint point)
     }//if
 
     ////////////在移动的时候把把最后一个点传递过去就好了。
-	if (m_bStartDrawOnlineScreenArea)
-	{
-		if (pSensor->IsDetecting())
-		{
-			RECT rcDisplayArea = pSensor->GetVideoPlayer()->GetDisplayArea();
-			int nPlayWndWidth = rcDisplayArea.right - rcDisplayArea.left;
-			int nPlayWndHeight = rcDisplayArea.bottom - rcDisplayArea.top;
-			int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
-			int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
-			CPoint pt;
-			pt.x = point.x *nSrcImgWidth / nPlayWndWidth;
-			pt.y = point.y* nSrcImgHeight / nPlayWndHeight;
+    if (m_bStartDrawOnlineScreenArea)
+    {
+        if (pSensor->IsDetecting())
+        {
+            RECT rcDisplayArea = pSensor->GetVideoPlayer()->GetDisplayArea();
+            int nPlayWndWidth = rcDisplayArea.right - rcDisplayArea.left;
+            int nPlayWndHeight = rcDisplayArea.bottom - rcDisplayArea.top;
+            int nSrcImgWidth = pSensor->GetPenPosDetector()->GetSrcImageWidth();
+            int nSrcImgHeight = pSensor->GetPenPosDetector()->GetSrcImageHeight();
+            CPoint pt;
+            pt.x = point.x *nSrcImgWidth / nPlayWndWidth;
+            pt.y = point.y* nSrcImgHeight / nPlayWndHeight;
 
-			pSensor->GetInterceptFilter()->SetDrawMovePt(pt);
-		}
-	}
+            pSensor->GetInterceptFilter()->SetDrawMovePt(pt);
+        }
+    }
 
     CDialog::OnMouseMove(nFlags, point);
 }
@@ -3851,7 +3880,7 @@ void CIWBDlg::OnEndManualMaskAreaEdit()//结束编辑
 //    CIWBSensor*  pSensor = this->m_oIWBSensorManager.SensorFromPt(ptCursor);
 //    if(pSensor == NULL) return;
 
-	CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
+    CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
 
 
     pSensor->GetPenPosDetector()->SaveStaticMaskFrame();
@@ -4123,20 +4152,20 @@ HRESULT CIWBDlg::OnAutoCalibrateDone(WPARAM wParam, LPARAM lParam)
     this->m_oIWBSensorManager.OnIWBSensorAutoCalibrateDone(
           E_AUTO_CALIBRATOR_OK == eError,
           bSimulateMode);
-	
+    
     if(m_oIWBSensorManager.IsCalibarateOk())
     {
 
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor)
-		{
-			const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-			if (!devInfo.m_strDevPath.IsEmpty())
-			{
-		    	this->SaveConfig();
-			}
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor)
+        {
+            const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+            if (!devInfo.m_strDevPath.IsEmpty())
+            {
+                this->SaveConfig();
+            }
 
-		}
+        }
 
 //        //保存配置信息
 //        this->SaveConfig();
@@ -4153,13 +4182,13 @@ HRESULT CIWBDlg::OnAutoCalibrateDone(WPARAM wParam, LPARAM lParam)
         //延时100ms后再作"屏幕内干扰光斑"的静态屏蔽
         //SetTimer(TIMER_AUTO_CLUTTER_DETECTION_AFTER_AUTO_CALIBRATION, 100, NULL);
     }
-	else
-	{
-		//20170921 自动校正失败, 无条件弹出主窗体,显示校正失败
-		m_oTray.Remove();
-		m_bVisible = TRUE;
-		this->ShowWindow(SW_SHOW);
-	}
+    else
+    {
+        //20170921 自动校正失败, 无条件弹出主窗体,显示校正失败
+        m_oTray.Remove();
+        m_bVisible = TRUE;
+        this->ShowWindow(SW_SHOW);
+    }
     m_tipProcServer.OnAutoCalibrateDone(E_AUTO_CALIBRATOR_OK == eError);
 
     return 0L;
@@ -4353,7 +4382,7 @@ void CIWBDlg::OnSpotCalibrationSetting()
 ///在没有设置完的情况下退出设置的界面的。
 HRESULT CIWBDlg::OnBreakSpotSetting(WPARAM wParam, LPARAM lParam)
 {
-	int nSId = int(wParam);
+    int nSId = int(wParam);
     this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(FALSE, nSId);
 
     return 0;
@@ -4363,7 +4392,7 @@ HRESULT CIWBDlg::OnBreakSpotSetting(WPARAM wParam, LPARAM lParam)
 //@功能:完成设置后调用的函数。是有WM_FINISH_BOLBSETTING消息响应的。
 HRESULT CIWBDlg::OnFinshSpotSetting(WPARAM wParam, LPARAM lParam)
 {
-	int nSId = int(lParam);
+    int nSId = int(lParam);
     this->m_oIWBSensorManager.OnIWBSensorLightSpotSamplingDone(TRUE, nSId);
 
     if(this->m_oIWBSensorManager.AllSamplingIsDone())
@@ -4458,19 +4487,19 @@ LRESULT CIWBDlg::OnDisPlayWindow(WPARAM wParam, LPARAM lParam)
 
 BOOL CIWBDlg::OnQueryEndSession()
 {
-	//From MSDN:
-	//WM_QUERYENDSESSION
-	//Each application should return TRUE or FALSE immediately upon receiving this message, 
-	//and defer any cleanup operations until it receives the WM_ENDSESSION message.
+    //From MSDN:
+    //WM_QUERYENDSESSION
+    //Each application should return TRUE or FALSE immediately upon receiving this message, 
+    //and defer any cleanup operations until it receives the WM_ENDSESSION message.
 
-	LOG_INF("OnQueryEndSession Begin.\n");
-	/*
-	if (!CDialog::OnQueryEndSession())
-	{
-		LOG_INF("OnQueryEndSession return false.\n");
-		return FALSE;
-	}*/
-	return TRUE;
+    LOG_INF("OnQueryEndSession Begin.\n");
+    /*
+    if (!CDialog::OnQueryEndSession())
+    {
+        LOG_INF("OnQueryEndSession return false.\n");
+        return FALSE;
+    }*/
+    return TRUE;
 
 
 
@@ -4481,28 +4510,28 @@ BOOL CIWBDlg::OnQueryEndSession()
 
 void CIWBDlg::OnEndSession(BOOL bEnding)
 {
-	//MSDN:
-	//Applications that have unsaved data could save the data to a temporary location 
-	//and restore it the next time the application starts.
-	//It is recommended that applications save their data and state frequently; 
-	//for example, automatically save data between save operations initiated 
-	//by the user to reduce the amount of data to be saved at shutdown.
-	//The application need not call the DestroyWindow or PostQuitMessage 
-	//function when the session is ending.
+    //MSDN:
+    //Applications that have unsaved data could save the data to a temporary location 
+    //and restore it the next time the application starts.
+    //It is recommended that applications save their data and state frequently; 
+    //for example, automatically save data between save operations initiated 
+    //by the user to reduce the amount of data to be saved at shutdown.
+    //The application need not call the DestroyWindow or PostQuitMessage 
+    //function when the session is ending.
 
-	CDialog::OnEndSession(bEnding);
-	
-	// TODO:  Add your specialized query end session code here
+    CDialog::OnEndSession(bEnding);
+    
+    // TODO:  Add your specialized query end session code here
 
 
-	//PostMessage(WM_CLOSE, 0, 0);
-	//此处如果使用PostMessage, 则不会调用
-	//OnClose函数，而直接退出
-	LOG_INF("OnQueryEndSession. Send WM_CLOSE\n");
+    //PostMessage(WM_CLOSE, 0, 0);
+    //此处如果使用PostMessage, 则不会调用
+    //OnClose函数，而直接退出
+    LOG_INF("OnQueryEndSession. Send WM_CLOSE\n");
 
-	SendMessage(WM_CLOSE, 0, 0);
-	// TODO: Add your message handler code here
-	LOG_INF("CIWBDlg::OnEndSession. bEnding=%d\n", bEnding);
+    SendMessage(WM_CLOSE, 0, 0);
+    // TODO: Add your message handler code here
+    LOG_INF("CIWBDlg::OnEndSession. bEnding=%d\n", bEnding);
 }
 
 LRESULT CIWBDlg::OnGraphNotify(WPARAM wParam, LPARAM lParam)
@@ -4616,7 +4645,7 @@ LRESULT CIWBDlg::OnChangeAutoCalibrateLightGray(WPARAM wParam, LPARAM lParam)
 
 LRESULT CIWBDlg::OnChangeVideoDisplayDelay(WPARAM wParam, LPARAM lParam)
 {
-	return 0L;
+    return 0L;
 }
 
 
@@ -4653,19 +4682,19 @@ void CIWBDlg::OnVideoTuningMode()
 void CIWBDlg::OnNormalUsageMode()
 {
     // TODO: Add your command handler code here
-	//如果正在绘制时切换到正常模式下，那么就需要退出绘制编辑状态，恢复正常模式状态
+    //如果正在绘制时切换到正常模式下，那么就需要退出绘制编辑状态，恢复正常模式状态
     if (m_bStartDrawOnlineScreenArea)
-	{
-		m_bStartDrawOnlineScreenArea = false;
-	    CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-	    if (pSensor)
-	    {
-		    pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
-			pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
-			pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
-		    pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
-	    }
-	}
+    {
+        m_bStartDrawOnlineScreenArea = false;
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor)
+        {
+            pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+            pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+            pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+            pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
+        }
+    }
 
     this->m_oIWBSensorManager.SwitchToMode(E_NORMAL_USAGE_MODE);
     //如果处于双屏拼接模式，则开启屏幕识别显示
@@ -4680,19 +4709,19 @@ void CIWBDlg::OnNormalUsageMode()
 void CIWBDlg::OnLaserTunningModel()
 {
     // TODO: Add your command handler code here
-	//如果正在绘制时切换到激光器模式下，那么就需要退出绘制编辑状态，恢复激光器模式状态
-	if (m_bStartDrawOnlineScreenArea)
-	{
-		m_bStartDrawOnlineScreenArea = false;
-		CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-		if (pSensor)
-		{
-			pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
-			pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
-			pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
-			pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
-		}
-	}
+    //如果正在绘制时切换到激光器模式下，那么就需要退出绘制编辑状态，恢复激光器模式状态
+    if (m_bStartDrawOnlineScreenArea)
+    {
+        m_bStartDrawOnlineScreenArea = false;
+        CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+        if (pSensor)
+        {
+            pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+            pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+            pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+            pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
+        }
+    }
 
     this->m_oIWBSensorManager.SwitchToMode(E_LASER_TUNING_MODE);
 
@@ -4721,8 +4750,8 @@ void CIWBDlg::OnControlOff()
 
 void CIWBDlg::OnMenuManualCalibrate()
 {
-	// TODO: Add your command handler code here
-	this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, -1);
+    // TODO: Add your command handler code here
+    this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, -1);
 }
 
 void CIWBDlg::OnMenuManualCalibrate25()
@@ -4734,7 +4763,7 @@ void CIWBDlg::OnMenuManualCalibrate25()
 void CIWBDlg::OnMenuManualCalibrate36()
 {
     // TODO: Add your command handler code here
-	//36点校正
+    //36点校正
     this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), 6, 6, -1);
 }
 
@@ -4774,37 +4803,37 @@ BOOL CIWBDlg::OnEraseBkgnd(CDC* pDC)
 void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     // TODO: Add your message handler code here and/or call default
-	///双击响应的函数
+    ///双击响应的函数
     CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
     if(pSensor)
     {
-		if (m_bStartDrawOnlineScreenArea)
-		{
-			//m_nDrawOnlineAreaCount等于-1的话说明是单个屏绘制的，绘制完直接退出，如果不等于0说明不是单屏绘制，
-			if(m_nDrawOnlineAreaCount == -1)
-			{
+        if (m_bStartDrawOnlineScreenArea)
+        {
+            //m_nDrawOnlineAreaCount等于-1的话说明是单个屏绘制的，绘制完直接退出，如果不等于0说明不是单屏绘制，
+            if(m_nDrawOnlineAreaCount == -1)
+            {
                  m_bStartDrawOnlineScreenArea = false;
-			}
-			else
-			{
-			    m_nDrawOnlineAreaCount++;
-				if (m_nDrawOnlineAreaCount >= m_nActiveDetectCameraId)
-				{
-					m_bStartDrawOnlineScreenArea = false;
-				}
-			}			
-			////加上引导框
-			pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
+            }
+            else
+            {
+                m_nDrawOnlineAreaCount++;
+                if (m_nDrawOnlineAreaCount >= m_nActiveDetectCameraId)
+                {
+                    m_bStartDrawOnlineScreenArea = false;
+                }
+            }			
+            ////加上引导框
+            pSensor->GetInterceptFilter()->SetStartDrawMaskFrame(false);
 
-			pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
-			pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
-			pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
+            pSensor->GetPenPosDetector()->SaveOnLineScreenArea();
+            pSensor->GetPenPosDetector()->ShowGuideRectangle(m_bPreGuideRectangleVisible);
+            pSensor->GetVideoPlayer()->ClearOSDText(E_OSDTEXT_TYPE_SHOW_INFO);
 
-		}
-		else
-		{
+        }
+        else
+        {
              OnAdvancedSettings(pSensor);
-		}
+        }
 
         //CString strAdditionalCaption;
 
@@ -4866,10 +4895,10 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
          this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, m_pSelectedSensor->GetID());
         break;
 
-	case ID_SENSORCTXMENU_FOURPOINTCALIBRATION:
+    case ID_SENSORCTXMENU_FOURPOINTCALIBRATION:
 
-	     this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
-		break;
+         this->m_oIWBSensorManager.Start4BasePointMarking(this->GetSafeHwnd(), m_pSelectedSensor->GetID());
+        break;
 
 
     case ID_SENSORCTXMENU_AUTOMASK:
@@ -4891,23 +4920,23 @@ void CIWBDlg::OnSensorCtxMenu(UINT uID)
             OnStartIntallerWithTips(m_pSelectedSensor);
         }
         break;
-	case ID_SENSORCTXMENU_DRAWMASKFRAME_START:
-	{
-		m_bStartDrawOnlineScreenArea = true;
-		m_nDrawOnlineAreaCount = -1 ;
-		m_bPreGuideRectangleVisible =m_pSelectedSensor->GetPenPosDetector()->IsGuideRectangleVisible()?true:false;
-		m_pSelectedSensor->OnStartDrawOnlineScreenArea();
-	}
-		break;
+    case ID_SENSORCTXMENU_DRAWMASKFRAME_START:
+    {
+        m_bStartDrawOnlineScreenArea = true;
+        m_nDrawOnlineAreaCount = -1 ;
+        m_bPreGuideRectangleVisible =m_pSelectedSensor->GetPenPosDetector()->IsGuideRectangleVisible()?true:false;
+        m_pSelectedSensor->OnStartDrawOnlineScreenArea();
+    }
+        break;
 
-	case ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE:
-		m_pSelectedSensor->OnEnableDrawOnlineScreenArea(!m_pSelectedSensor->IsEnableOnlineScreenArea());
-		break;
+    case ID_SENSORCTXMENU_DRAWMASKFRAME_DISABLE:
+        m_pSelectedSensor->OnEnableDrawOnlineScreenArea(!m_pSelectedSensor->IsEnableOnlineScreenArea());
+        break;
 
-	case ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR:
-		m_pSelectedSensor->OnClearDrawOnlineScreenArea();
-		 m_bStartDrawOnlineScreenArea = false;
-		break;
+    case ID_SENSORCTXMENU_DRAWMASKFRAME_CLEAR:
+        m_pSelectedSensor->OnClearDrawOnlineScreenArea();
+         m_bStartDrawOnlineScreenArea = false;
+        break;
 
     }//switch
 
@@ -4987,7 +5016,7 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 
     //DOMODAL_RET ret = paramsSettingSheet.DoModal();
 
-	DOMODAL_RET ret = paramsSettingSheet.DoModal();
+    DOMODAL_RET ret = paramsSettingSheet.DoModal();
 
     if(ret == IDOK)
     {
@@ -4995,91 +5024,91 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
         //保存配置文件
          g_tSysCfgData.vecSensorConfig[pSensor->GetID()] = paramsSettingSheet.GetSensorConfig();
          g_tSysCfgData.globalSettings = paramsSettingSheet.GetGlobalSettings();
-		
+        
         //写入配置文件
-		 const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-		 if (!devInfo.m_strDevPath.IsEmpty())
-		 {
-			 int nCount = this->m_oIWBSensorManager.GetSensorCount();
+         const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+         if (!devInfo.m_strDevPath.IsEmpty())
+         {
+             int nCount = this->m_oIWBSensorManager.GetSensorCount();
             ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nCount);
-		 }
+         }
 
-		 ////////////////////////////////////////////
-		 TSensorModeConfig* TSensorModeConfig = NULL;
-		 EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+         ////////////////////////////////////////////
+         TSensorModeConfig* TSensorModeConfig = NULL;
+         EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
 
-		 TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
+         TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
 
-		 //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
-		 if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
-			 || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
-			 || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
-			)
-		 {
-			 if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
-			 {
-				 TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
-				 pSensor->SetStrokeInterpolate(TRUE);
-			 }
-		 }
+         //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
+         if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
+             || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
+             || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
+            )
+         {
+             if (TSensorModeConfig->advanceSettings.m_eTouchType != E_DEVICE_PALM_TOUCH_CONTROL)
+             {
+                 TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
+                 pSensor->SetStrokeInterpolate(TRUE);
+             }
+         }
 
-		 /////设置是否开启自动屏蔽功能
-		 if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
-		 {
-			 pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
-		 }
-		 else
-		 {
-			 pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
-		 }
-		 ////////////设置是否开启抗干扰功能
-		 if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
-		 {
-			 pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
-		 }
-		 else
-		 {
-			 pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
-		 }
-		 /////////设置是否启用手动绘制的静态屏蔽图
-		 if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
-		 {
-			 pSensor->GetPenPosDetector()->EnableOnlineScreenArea(TRUE);
-		 }
-		 else
-		 {
-			 pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
-		 }
-		 ///////////////////
-		 if (TSensorModeConfig->advanceSettings.bDisableReflectionSpot)
-		 {
-			 pSensor->GetPenPosDetector()->DisableReflectionPoint(TRUE);
-		 }
-		 else {
-			 pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
-		 }
-		 if (g_tSysCfgData.globalSettings.bSinglePointMode)
-		 {
-			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
-		 }
-		 else
-		 {
-			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
-		 }
+         /////设置是否开启自动屏蔽功能
+         if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
+         {
+             pSensor->GetPenPosDetector()->EnableDynamicMasking(TRUE);
+         }
+         else
+         {
+             pSensor->GetPenPosDetector()->EnableDynamicMasking(FALSE);
+         }
+         ////////////设置是否开启抗干扰功能
+         if (TSensorModeConfig->advanceSettings.bIsAntiJamming)
+         {
+             pSensor->GetPenPosDetector()->EnableAntiJamming(TRUE);
+         }
+         else
+         {
+             pSensor->GetPenPosDetector()->EnableAntiJamming(FALSE);
+         }
+         /////////设置是否启用手动绘制的静态屏蔽图
+         if (TSensorModeConfig->advanceSettings.bIsOnLineScreenArea)
+         {
+             pSensor->GetPenPosDetector()->EnableOnlineScreenArea(TRUE);
+         }
+         else
+         {
+             pSensor->GetPenPosDetector()->EnableOnlineScreenArea(FALSE);
+         }
+         ///////////////////
+         if (TSensorModeConfig->advanceSettings.bDisableReflectionSpot)
+         {
+             pSensor->GetPenPosDetector()->DisableReflectionPoint(TRUE);
+         }
+         else {
+             pSensor->GetPenPosDetector()->DisableReflectionPoint(FALSE);
+         }
+         if (g_tSysCfgData.globalSettings.bSinglePointMode)
+         {
+             this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(true);
+         }
+         else
+         {
+             this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetSinglePointMode(false);
+         }
 
-		 /////是否进行隔空操作
-		 EAIROPERATE_CLICKMODE eClickMode = g_tSysCfgData.globalSettings.eClickMode;
-		 if (g_tSysCfgData.globalSettings.bAirOperatePermission)
-		 {
-			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(true, eClickMode);
-		 }
-		 else
-		 {
-			 this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(false, eClickMode);
-		 }
+         /////是否进行隔空操作
+         EAIROPERATE_CLICKMODE eClickMode = g_tSysCfgData.globalSettings.eClickMode;
+         if (g_tSysCfgData.globalSettings.bAirOperatePermission)
+         {
+             this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(true, eClickMode);
+         }
+         else
+         {
+             this->m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetAirOperateMode(false, eClickMode);
+         }
 
-		 //设置平滑系数
-		 this->m_oIWBSensorManager.GetSpotListProcessor().SetSmoothCoefficient(TSensorModeConfig->advanceSettings.nSmoothCoefficient);
+         //设置平滑系数
+         this->m_oIWBSensorManager.GetSpotListProcessor().SetSmoothCoefficient(TSensorModeConfig->advanceSettings.nSmoothCoefficient);
 
     }//if
 
@@ -5089,23 +5118,23 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 //@功能:应用传感器的配置
 HRESULT CIWBDlg::OnApplySensorConfig(WPARAM wParam, LPARAM lParam)
 {
-	CAdvancedSettingsDlg* pAdvSettingsDlg = reinterpret_cast<CAdvancedSettingsDlg*>(wParam);
-	CIWBSensor* pSensor = reinterpret_cast<CIWBSensor*>(lParam);
+    CAdvancedSettingsDlg* pAdvSettingsDlg = reinterpret_cast<CAdvancedSettingsDlg*>(wParam);
+    CIWBSensor* pSensor = reinterpret_cast<CIWBSensor*>(lParam);
 
-	pSensor->SetCfgData(pAdvSettingsDlg->GetSensorConfig(), &pAdvSettingsDlg->GetGlobalSettings());
+    pSensor->SetCfgData(pAdvSettingsDlg->GetSensorConfig(), &pAdvSettingsDlg->GetGlobalSettings());
 
-	//保存配置文件
-	g_tSysCfgData.vecSensorConfig[pSensor->GetID()] = pAdvSettingsDlg->GetSensorConfig();
-	g_tSysCfgData.globalSettings = pAdvSettingsDlg->GetGlobalSettings();
+    //保存配置文件
+    g_tSysCfgData.vecSensorConfig[pSensor->GetID()] = pAdvSettingsDlg->GetSensorConfig();
+    g_tSysCfgData.globalSettings = pAdvSettingsDlg->GetGlobalSettings();
 
-	const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-	if (!devInfo.m_strDevPath.IsEmpty())
-	{
-	   //写入配置文件
-		int nCount = this->m_oIWBSensorManager.GetSensorCount();
+    const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+    if (!devInfo.m_strDevPath.IsEmpty())
+    {
+       //写入配置文件
+        int nCount = this->m_oIWBSensorManager.GetSensorCount();
        ::SaveConfig(PROFILE::CONFIG_FILE_NAME, ::g_tSysCfgData, nCount);
-	}
-	return 0L;
+    }
+    return 0L;
 }
 
 void CIWBDlg::OnStartIntallerWithTips(CIWBSensor* pSensor)
@@ -5340,15 +5369,15 @@ void CIWBDlg::InitDeviceUseModeMenuItemWithMenu(CMenu *pMenu)
         pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, MF_BYCOMMAND| MF_GRAYED);
     }
 
-	////////////////add by zhaown if是HID模式，按原来的走，如果只是TUIO模式，那么鼠标和触屏选项要灰掉
-	bool bHIDMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchHIDMode();
-	bool bTUIOMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchTUIOMode();
-	//////只有TUIO模式，HID模式选择全部灰掉
-	if (!bHIDMode && bTUIOMode)
-	{
-		pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_MOUSE, MF_BYCOMMAND | MF_GRAYED);
-		pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, MF_BYCOMMAND | MF_GRAYED);
-	}
+    ////////////////add by zhaown if是HID模式，按原来的走，如果只是TUIO模式，那么鼠标和触屏选项要灰掉
+    bool bHIDMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchHIDMode();
+    bool bTUIOMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchTUIOMode();
+    //////只有TUIO模式，HID模式选择全部灰掉
+    if (!bHIDMode && bTUIOMode)
+    {
+        pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_MOUSE, MF_BYCOMMAND | MF_GRAYED);
+        pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_TOUCHPAD, MF_BYCOMMAND | MF_GRAYED);
+    }
 
 }
 
@@ -5361,60 +5390,60 @@ void CIWBDlg::OnChangeTouchScreenAspectRatio(UINT uID)
 //@功能:与APP通信的协议
 HRESULT CIWBDlg::OnAppCommMsg(WPARAM wParam, LPARAM lParam)
 {
-	switch (wParam)
-	{
-	case 1:
-		if (lParam == 1)
-		{//禁用触控
-			this->m_oIWBSensorManager.EnableOpticalPen(FALSE);
-		}
-		else if (lParam == 2)
-		{
-			//进入正常使用模式
-			this->m_oIWBSensorManager.SwitchToMode(E_NORMAL_USAGE_MODE);
+    switch (wParam)
+    {
+    case 1:
+        if (lParam == 1)
+        {//禁用触控
+            this->m_oIWBSensorManager.EnableOpticalPen(FALSE);
+        }
+        else if (lParam == 2)
+        {
+            //进入正常使用模式
+            this->m_oIWBSensorManager.SwitchToMode(E_NORMAL_USAGE_MODE);
 
-			//使能触控
-			this->m_oIWBSensorManager.EnableOpticalPen(TRUE);
+            //使能触控
+            this->m_oIWBSensorManager.EnableOpticalPen(TRUE);
 
-		}
-		break;
+        }
+        break;
 
-	case 2:
-		//自动定位
-		OnStartMenuAutoCalibrate();
-		break;
-	case  3:
-		//控制IRCUT
-		if(lParam == 1)
-		{
-			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
-			if (lpSensor)
-			{
-				IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(),FALSE,lpSensor->GetDeviceInfo().m_nPID,lpSensor->GetDeviceInfo().m_nVID);
-		    }
-		}
-		else if (lParam == 2)
-		{
-			CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
-			if (lpSensor)
-			{
-			    IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE, lpSensor->GetDeviceInfo().m_nPID, lpSensor->GetDeviceInfo().m_nVID);
-			}
-		}
-		break;
+    case 2:
+        //自动定位
+        OnStartMenuAutoCalibrate();
+        break;
+    case  3:
+        //控制IRCUT
+        if(lParam == 1)
+        {
+            CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
+            if (lpSensor)
+            {
+                IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(),FALSE,lpSensor->GetDeviceInfo().m_nPID,lpSensor->GetDeviceInfo().m_nVID);
+            }
+        }
+        else if (lParam == 2)
+        {
+            CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor();
+            if (lpSensor)
+            {
+                IRCUTSwtich(lpSensor->GetVideoPlayer()->GetCaptureFilter(), TRUE, lpSensor->GetDeviceInfo().m_nPID, lpSensor->GetDeviceInfo().m_nVID);
+            }
+        }
+        break;
 
-	default:
-		break;
-	}
-	return 0L;
+    default:
+        break;
+    }
+    return 0L;
 }
 
 
 void CIWBDlg::OnInstallationanddebuggingUpdatefirmware()
 {
-	// TODO: Add your command handler code here
-	CUpdateFirmwareDlg  updateFirmwareDlg;
-	updateFirmwareDlg.DoModal();
+    // TODO: Add your command handler code here
+    CUpdateFirmwareDlg  updateFirmwareDlg;
+    updateFirmwareDlg.DoModal();
 
 }
 
@@ -5422,178 +5451,179 @@ void CIWBDlg::OnInstallationanddebuggingUpdatefirmware()
 //更新加密锁的状态
 void CIWBDlg::UpdateInfoAboutDongle()
 {
-	//CString strAboutDongle =
-	//	theApp.IsHardwareKeyExist() ?
-	//	_T("Dongle Ok/color:black") :
-	//	_T("Dongle missing/color:red");
-	CString strAboutDongle =
-		theApp.IsHardwareKeyExist() ?
-		g_oResStr[IDS_STRING476]:(theApp.IsOnlineRegistered()?_T(""):g_oResStr[IDS_STRING477]);
+    //CString strAboutDongle =
+    //	theApp.IsHardwareKeyExist() ?
+    //	_T("Dongle Ok/color:black") :
+    //	_T("Dongle missing/color:red");
+    CString strAboutDongle =
+        theApp.IsHardwareKeyExist() ?
+        g_oResStr[IDS_STRING476]:(theApp.IsOnlineRegistered()?_T(""):g_oResStr[IDS_STRING477]);
 
-	strAboutDongle += theApp.IsHardwareKeyExist() ? _T("/color:black") : _T("/color:red");
+    strAboutDongle += theApp.IsHardwareKeyExist() ? _T("/color:black") : _T("/color:red");
 
-	m_ctlStatusBar.SetPaneText(PANE_DONGLE, strAboutDongle, TRUE);
+    m_ctlStatusBar.SetPaneText(PANE_DONGLE, strAboutDongle, TRUE);
 
-	int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
-	if (nSensorCount > 1)
-	{
-		//m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_DONGLE, strAboutDongle, TRUE);
-	}
+    int nSensorCount = this->m_oIWBSensorManager.GetSensorCount();
+    if (nSensorCount > 1)
+    {
+        //m_ctlStatusBar.SetPaneText(StatusPaneCountEachSensor + PANE_DONGLE, strAboutDongle, TRUE);
+    }
 
-	//201680629,硬件加密狗丢失，不要弹出对话框，因为客户有的设备只有软注册，没有硬件加密狗
-	/*
-	//<<弹出对话框提示
-	if(!theApp.IsHardwareKeyExist())
-	{
-		::MessageBox(NULL, g_oResStr[IDS_STRING477], g_oResStr[IDS_STRING103], MB_ICONERROR | MB_OK);
-	}
-	*/
-	//>>
+    //201680629,硬件加密狗丢失，不要弹出对话框，因为客户有的设备只有软注册，没有硬件加密狗
+    /*
+    //<<弹出对话框提示
+    if(!theApp.IsHardwareKeyExist())
+    {
+        ::MessageBox(NULL, g_oResStr[IDS_STRING477], g_oResStr[IDS_STRING103], MB_ICONERROR | MB_OK);
+    }
+    */
+    //>>
 }
 
 void CIWBDlg::OnInstallationanddebuggingEnableinterpolate()
 {
     // TODO: Add your command handler code here
-	/////需要把改变的设置进行保存
-	EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
-	/////插值的设定情况是在不管在哪个屏幕下，只要点击设置所有的屏上的插值都进行设置
-	int nCount = this->m_oIWBSensorManager.GetSensorCount();
-	for (int i = 0; i < nCount; i++)
-	{
-	     CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
+    /////需要把改变的设置进行保存
+    EProjectionMode eProjectionMode = g_tSysCfgData.globalSettings.eProjectionMode;
+    /////插值的设定情况是在不管在哪个屏幕下，只要点击设置所有的屏上的插值都进行设置
+    int nCount = this->m_oIWBSensorManager.GetSensorCount();
+    for (int i = 0; i < nCount; i++)
+    {
+         CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
          if (pSensor)
-	     {
-		     TAdvancedSettings &AdvancedSettings = g_tSysCfgData.vecSensorConfig[i].vecSensorModeConfig[eProjectionMode].advanceSettings;
-		     AdvancedSettings.bEnableStrokeInterpolate = !AdvancedSettings.bEnableStrokeInterpolate;
-		     pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate?TRUE:FALSE);
-	     }
-	}	
+         {
+             TAdvancedSettings &AdvancedSettings = g_tSysCfgData.vecSensorConfig[i].vecSensorModeConfig[eProjectionMode].advanceSettings;
+             AdvancedSettings.bEnableStrokeInterpolate = !AdvancedSettings.bEnableStrokeInterpolate;
+             pSensor->SetStrokeInterpolate(AdvancedSettings.bEnableStrokeInterpolate?TRUE:FALSE);
+         }
+    }	
 }
 
 void CIWBDlg::OnMenuAdvancessetting()
 {
-	// TODO: Add your command handler code here
-	// TODO: Add your command handler code here
-	CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
-	std::vector<CAtlString>  vecCameraInfo;
-	if (pSensor)
-	{
-		const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-		for (size_t i = 0; i < devInfo.m_vecVideoFmt.size(); i++)
-		{
-			CAtlString strFormatName = GetVideoFormatName(devInfo.m_vecVideoFmt[i]);
-			for (size_t j =0; j< m_aryCandidateResolution.size(); j++)
-			{
-				if (_tcsicmp(strFormatName,m_aryCandidateResolution[j]) == 0)
-				{
+    // TODO: Add your command handler code here
+    // TODO: Add your command handler code here
+    CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor();
+    std::vector<CAtlString>  vecCameraInfo;
+    if (pSensor)
+    {
+        const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+        for (size_t i = 0; i < devInfo.m_vecVideoFmt.size(); i++)
+        {
+            CAtlString strFormatName = GetVideoFormatName(devInfo.m_vecVideoFmt[i]);
+            for (size_t j =0; j< m_aryCandidateResolution.size(); j++)
+            {
+                if (_tcsicmp(strFormatName,m_aryCandidateResolution[j]) == 0)
+                {
                      vecCameraInfo.push_back(strFormatName);
-					 break;
-				}
-			}
-		}
-	}
-	CAtlString CurrentUserResolution = pSensor->GetVideoPlayer()->CurrentCameraResolution();
+                     break;
+                }
+            }
+        }
+    }
+    CAtlString CurrentUserResolution = pSensor->GetVideoPlayer()->CurrentCameraResolution();
 
-	CameraFmtDialog  camerafmtdlg;
-	camerafmtdlg.SetCameraResolution(vecCameraInfo, CurrentUserResolution);
+    CameraFmtDialog  camerafmtdlg;
+    camerafmtdlg.SetCameraResolution(vecCameraInfo, CurrentUserResolution);
 
-	DWORD dIP = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetIPadress();
-	int nPort = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetPort();
-	int Width = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetScreenWidth();
-	int Height= m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetScreenHeight();
+    DWORD dIP = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetIPadress();
+    int nPort = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetPort();
+    int Width = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetScreenWidth();
+    int Height= m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetScreenHeight();
 
-	camerafmtdlg.SetTUIOParams(dIP, nPort, Width, Height);
-	///////////////////////////////////
-	CAtlString  SelectValue;
-	if (camerafmtdlg.DoModal() == IDOK)
-	{
-		SelectValue = camerafmtdlg.GetSelectComboxvalue();
-		if (pSensor)
-		{
-			const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
-			for (size_t j = 0; j < devInfo.m_vecVideoFmt.size(); j++)
-			{
-				CAtlString strFName = GetVideoFormatName(devInfo.m_vecVideoFmt[j]);
-				if (strFName == SelectValue)
-				{
-					pSensor->SetFavoriateMediaType(devInfo.m_vecVideoFmt[j]);
-					break;
-				}
-			}
-		}
+    camerafmtdlg.SetTUIOParams(dIP, nPort, Width, Height);
+    ///////////////////////////////////
+    CAtlString  SelectValue;
+    if (camerafmtdlg.DoModal() == IDOK)
+    {
+        SelectValue = camerafmtdlg.GetSelectComboxvalue();
+        if (pSensor)
+        {
+            const TCaptureDeviceInstance& devInfo = pSensor->GetDeviceInfo();
+            for (size_t j = 0; j < devInfo.m_vecVideoFmt.size(); j++)
+            {
+                CAtlString strFName = GetVideoFormatName(devInfo.m_vecVideoFmt[j]);
+                if (strFName == SelectValue)
+                {
+                    pSensor->SetFavoriateMediaType(devInfo.m_vecVideoFmt[j]);
+                    break;
+                }
+            }
+        }
 
-		/////得到触控方式，如果两个都是不选择的话，就强行的置为HID触控模式。
-		bool bHIDMode = camerafmtdlg.GetTouchHIDMode();
-		bool bTUIOMode = camerafmtdlg.GetTouchTUIOMode();
-		if (!bHIDMode && !bTUIOMode)
-		{
-			g_tSysCfgData.globalSettings.bTouchHIDMode = true;
-			//bHIDMode = true;
-		}
-		else
-		{
-			g_tSysCfgData.globalSettings.bTouchHIDMode= bHIDMode;
-		}
-		g_tSysCfgData.globalSettings.bTouchTUIOMode  = bTUIOMode;
+        //得到触控方式，如果两个都是不选择的话，就强行的置为HID触控模式。
+        bool bHIDMode = camerafmtdlg.GetTouchHIDMode();
+        bool bTUIOMode = camerafmtdlg.GetTouchTUIOMode();
+        if (!bHIDMode && !bTUIOMode)
+        {
+            g_tSysCfgData.globalSettings.bTouchHIDMode = true;
+            //2020/10/19, uncommented out by xuke
+            bHIDMode = true;
+        }
+        else
+        {
+            g_tSysCfgData.globalSettings.bTouchHIDMode= bHIDMode;
+        }
+        g_tSysCfgData.globalSettings.bTouchTUIOMode  = bTUIOMode;
 
-		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchTUIOMode(bTUIOMode);
-		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchHIDMode(bHIDMode);
+        m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchTUIOMode(bTUIOMode);
+        m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTouchHIDMode(bHIDMode);
 
-		m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTUIOParams(camerafmtdlg.GetIPAddress(),camerafmtdlg.GetPort(), camerafmtdlg.GetScreenWidth(), camerafmtdlg.GetScreenHeight());
+        m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().SetTUIOParams(camerafmtdlg.GetIPAddress(),camerafmtdlg.GetPort(), camerafmtdlg.GetScreenWidth(), camerafmtdlg.GetScreenHeight());
 
-		////////////////////////保存数据
-		int nCount = this->m_oIWBSensorManager.GetSensorCount();
-		if (nCount >0)
-		{
-			pSensor->SetResolutionType(SelectValue);			
-		}
-		//写入配置文件
-SaveConfig();
-	}
+        ////////////////////////保存数据
+        int nCount = this->m_oIWBSensorManager.GetSensorCount();
+        if (nCount >0)
+        {
+            pSensor->SetResolutionType(SelectValue);			
+        }
+        //写入配置文件
+        SaveConfig();
+    }
 }
 void CIWBDlg::OnMenuStartDrawOnlineScreenArea()
 {
-	// TODO: Add your command handler code here
-	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
-	m_bStartDrawOnlineScreenArea = true;
-	m_nDrawOnlineAreaCount = 0;   //绘制第几个屏蔽图
-	m_nActiveDetectCameraId = 0;  //实际运行的摄像头个数
-	for (int i = 0; i < nSensorCount; i++)
-	{
-	   ////去掉引导框
-	   CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
-	   if (lpSensor)
-	   {
-		   ////如果没有运行，那么就不存在需要绘制屏蔽图了。
-		   if (lpSensor->IsDetecting())
-		   {
-			   m_nActiveDetectCameraId++;  //实际检测到打开的摄像头个数，因为有几个sensor不一定都打开。
-				m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible() ? true : false;
-			   lpSensor->OnStartDrawOnlineScreenArea();
-		   }
-	   }
-	}
+    // TODO: Add your command handler code here
+    int nSensorCount = m_oIWBSensorManager.GetSensorCount();
+    m_bStartDrawOnlineScreenArea = true;
+    m_nDrawOnlineAreaCount = 0;   //绘制第几个屏蔽图
+    m_nActiveDetectCameraId = 0;  //实际运行的摄像头个数
+    for (int i = 0; i < nSensorCount; i++)
+    {
+       ////去掉引导框
+       CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
+       if (lpSensor)
+       {
+           ////如果没有运行，那么就不存在需要绘制屏蔽图了。
+           if (lpSensor->IsDetecting())
+           {
+               m_nActiveDetectCameraId++;  //实际检测到打开的摄像头个数，因为有几个sensor不一定都打开。
+                m_bPreGuideRectangleVisible = lpSensor->GetPenPosDetector()->IsGuideRectangleVisible() ? true : false;
+               lpSensor->OnStartDrawOnlineScreenArea();
+           }
+       }
+    }
 }
 
 void CIWBDlg::OnMenuClearDrawOnlineScreenArea()
 {
-	// TODO: Add your command handler code here
-	m_bStartDrawOnlineScreenArea = false;
-	int nSensorCount = m_oIWBSensorManager.GetSensorCount();
-	for (int i = 0; i < nSensorCount; i++)
-	{
-     	CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
-	    if (lpSensor)
-	    {
-    	    lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
-	}
-	}
+    // TODO: Add your command handler code here
+    m_bStartDrawOnlineScreenArea = false;
+    int nSensorCount = m_oIWBSensorManager.GetSensorCount();
+    for (int i = 0; i < nSensorCount; i++)
+    {
+        CIWBSensor* lpSensor = this->m_oIWBSensorManager.GetSensor(i);
+        if (lpSensor)
+        {
+            lpSensor->GetPenPosDetector()->DeleteOnLineScreenArea();
+    }
+    }
 }
 
 void CIWBDlg::OnMenuEnableDrawOnlineScreenArea()
 {
-	// TODO: Add your command handler code here
-	this->m_oIWBSensorManager.EnableOnlineScreenArea(!this->m_oIWBSensorManager.IsEnableOnlineScreenArea());
+    // TODO: Add your command handler code here
+    this->m_oIWBSensorManager.EnableOnlineScreenArea(!this->m_oIWBSensorManager.IsEnableOnlineScreenArea());
 
 }
 
@@ -5613,9 +5643,9 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
 {
     UINT uID = UINT(lParam);
 
-	switch (uID)
-	{
-	case BUTTON_ID_OK:
+    switch (uID)
+    {
+    case BUTTON_ID_OK:
     {//
         //隐藏屏幕布局编辑工具
         this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
@@ -5623,14 +5653,14 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
         this->m_oIWBSensorManager.ApplyScreenLayout();
         SaveConfig();
     }
-	break;
+    break;
 
-	case BUTTON_ID_CANCEL:
+    case BUTTON_ID_CANCEL:
     {//
         //隐藏屏幕布局编辑工具
         this->m_oIWBSensorManager.GetScreenLayoutDesigner().DoDesign(FALSE);
 
-		/*
+        /*
         for (UINT uLayoutIndex = 0; uLayoutIndex < g_tSysCfgData.vecScreenLayouts.size(); uLayoutIndex++)
         {
             const TScreenLayout&layout = g_tSysCfgData.vecScreenLayouts[uLayoutIndex];
@@ -5643,48 +5673,48 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
                 break;
             }
         }
-		*/
+        */
 
-			const ESplitScreeMode& eSelectedSplitScreenMode = g_tSysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
-			const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
-			
-			//if (pScreenLayout)
-			{
-				this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+            const ESplitScreeMode& eSelectedSplitScreenMode = g_tSysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
+            const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+            
+            //if (pScreenLayout)
+            {
+                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
     }
-			
+            
 
-		}
-		break;
+        }
+        break;
 
-		case BUTTON_ID_RESET:
+        case BUTTON_ID_RESET:
     {
 
         this->m_oIWBSensorManager.GetScreenLayoutDesigner().Reset();
-		}
-		break;
+        }
+        break;
 
-		case BUTTON_ID_ROTATE_90:
-		{
-			ESplitScreeMode eSelectedSplitScreenMode = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetSplitScreenMode();
-			
-			//交换水平分割模式和垂直分割模式
-			if (E_SPLIT_SCREEN_VERT == eSelectedSplitScreenMode)
-			{
-				eSelectedSplitScreenMode = E_SPLIT_SCREEN_HORZ;
-    }   
-			else if (E_SPLIT_SCREEN_HORZ == eSelectedSplitScreenMode)
-			{
-				eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
-			}
-			
-			const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+        case BUTTON_ID_ROTATE_90:
+        {
+            ESplitScreeMode eSelectedSplitScreenMode = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetSplitScreenMode();
+            
+            //交换水平分割模式和垂直分割模式
+            if (E_SPLIT_SCREEN_VERT == eSelectedSplitScreenMode)
+            {
+                eSelectedSplitScreenMode = E_SPLIT_SCREEN_HORZ;
+            }
+            else if (E_SPLIT_SCREEN_HORZ == eSelectedSplitScreenMode)
+            {
+                eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+            }
+            
+            const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
 
-			this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+            this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
 
-		}
-		break;
-	}
+        }
+        break;
+    }
     return 0L;
 
 }
@@ -5723,9 +5753,9 @@ void CIWBDlg::OnSwitchToFusionScreenMode(UINT uID)
     InvalidateRect(&rcDisplayArea, TRUE);
     UpdateWindow();
 
-	int cx = rcDisplayArea.Width();
-	int cy = rcDisplayArea.Height();
-	AdjustStatusBar(cx,cy);
+    int cx = rcDisplayArea.Width();
+    int cy = rcDisplayArea.Height();
+    AdjustStatusBar(cx,cy);
 
 }
 
@@ -5767,44 +5797,79 @@ void CIWBDlg::OnOperationFourpointcalibration()
 
 BOOL CIWBDlg::LoadResolutionConfig()
 {
-	const TCHAR* lpszXMLFileName = _T("DeviceResolution.xml");
-	TiXmlDocument oXMLDoc;
-	if (!oXMLDoc.LoadFile(CT2CA(lpszXMLFileName), TIXML_ENCODING_UTF8))
-	{
-		return FALSE;
-	}
-	TiXmlElement* pRootElement = oXMLDoc.RootElement();
-	if (pRootElement == NULL) return FALSE;
-	TiXmlNode* pChild = NULL;
-	while (pChild = pRootElement->IterateChildren("USBCamera", pChild))
-	{
-		const char* NodeName = pChild->Value();//节点名称
-		const char* lpszResolution = ((TiXmlElement*)pChild)->Attribute("Resolution");
-		if (lpszResolution == NULL || strlen(lpszResolution) == 0)
-		{
-			break;
-		}
+    const TCHAR* lpszXMLFileName = _T("DeviceResolution.xml");
+    TiXmlDocument oXMLDoc;
+    if (!oXMLDoc.LoadFile(CT2CA(lpszXMLFileName), TIXML_ENCODING_UTF8))
+    {
+        return FALSE;
+    }
+    TiXmlElement* pRootElement = oXMLDoc.RootElement();
+    if (pRootElement == NULL) return FALSE;
+    TiXmlNode* pChild = NULL;
+    while (pChild = pRootElement->IterateChildren("USBCamera", pChild))
+    {
+        const char* NodeName = pChild->Value();//节点名称
+        const char* lpszResolution = ((TiXmlElement*)pChild)->Attribute("Resolution");
+        if (lpszResolution == NULL || strlen(lpszResolution) == 0)
+        {
+            break;
+        }
 
-		CAtlString strDeviceResolution;
-		strDeviceResolution.Format(_T("%s"), (LPCTSTR)(CA2T(lpszResolution)));
-		m_aryCandidateResolution.push_back(strDeviceResolution);
-	}
-	return TRUE;
+        CAtlString strDeviceResolution;
+        strDeviceResolution.Format(_T("%s"), (LPCTSTR)(CA2T(lpszResolution)));
+        m_aryCandidateResolution.push_back(strDeviceResolution);
+    }
+    return TRUE;
 }
 
 
 HRESULT CIWBDlg::OnPowerBroadcast(WPARAM wParam, LPARAM lParam)
 {
-	if (wParam == PBT_APMRESUMEAUTOMATIC)
-	{
-		Sleep(500);
-		int nSensorCount  = this->m_oIWBSensorManager.GetSensorCount();
-		for (int i = 0; i < nSensorCount; i++)
-		{
-			CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
-			pSensor->SwitchLensMode(pSensor->GetLensMode());
-		}
-	}
-	return S_OK;
+    if (wParam == PBT_APMRESUMEAUTOMATIC)
+    {
+        Sleep(500);
+        int nSensorCount  = this->m_oIWBSensorManager.GetSensorCount();
+        for (int i = 0; i < nSensorCount; i++)
+        {
+            CIWBSensor* pSensor = this->m_oIWBSensorManager.GetSensor(i);
+            pSensor->SwitchLensMode(pSensor->GetLensMode());
+        }
+    }
+    return S_OK;
 }
 
+
+//@功能:其他运行实例启动时, 检测到已有实例存在，要求既有实例显示主窗体。
+HRESULT CIWBDlg::OnBetweenInstanceMsg(WPARAM wParam, LPARAM lParam)
+{
+    OnCtxmenuShowMainWindow();
+    return 0;
+}
+
+//@功能:判断是否是合法的USBkey
+BOOL CIWBDlg::IsEligibleUSBKey(UINT uVID, UINT uPID)
+{
+    BOOL bMatched = FALSE;
+    UINT uDeviceCount = m_oUSBCameraDeviceList.GetDeviceInstanceCount();
+    for (UINT uIndex = 0; uIndex < uDeviceCount; uIndex++)
+    {
+        const TCaptureDeviceInstance* pDevInst = m_oUSBCameraDeviceList.GetCaptureDeviceInstance(uIndex);
+        if (pDevInst->m_nVID == uVID && pDevInst->m_nVID == uPID)
+        {
+            bMatched = TRUE;
+            break;
+        }
+    }
+    
+    if (!bMatched)
+    {//查看是否等于外置加密狗的VID和PID
+        if (uVID == 0x3689 && uPID == 0x8762)
+        {
+            bMatched = TRUE;
+        }
+
+    }
+
+
+    return bMatched;
+}

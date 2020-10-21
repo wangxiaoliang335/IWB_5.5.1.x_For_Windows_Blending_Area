@@ -270,6 +270,10 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 //        GetDlgItem(IDC_BUTTON_ATTACH_TO_A_SCREEN)->ShowWindow(SW_HIDE);
 //     }
 	
+    //2020/09/29
+    //禁用桌面/墙面选择单选框
+    GetDlgItem(IDC_DESKTOPMODE)->EnableWindow(FALSE);
+    GetDlgItem(IDC_WALLMODE)->EnableWindow(FALSE);
 
 	m_ctrlSpinSmoothCoef.SetRange(0, 10);
 	return TRUE;  // return TRUE unless you set the focus to a control

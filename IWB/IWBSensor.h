@@ -56,8 +56,8 @@ public:
 
     //@功能:只是设置相机的镜头模式，并不实际执行动作
     //@参数:eMode, 镜头模式枚举值
-    void SetLensMode(ESensorLensMode eMode){ m_eLensMode = eMode;}
-    ESensorLensMode GetLensMode()const{ return this->m_eLensMode;}
+    void SetLensMode(ESensorLensMode eMode){ m_tCfgData.eLensMode = eMode;}
+    ESensorLensMode GetLensMode()const{ return m_tCfgData.eLensMode;}
 
 
     
@@ -299,7 +299,7 @@ protected:
 //  ISpotListProcessor* m_pSpotListProcessor;
 
   //传感器镜头模式
-  ESensorLensMode m_eLensMode;
+  //ESensorLensMode m_eLensMode;
   ECameraType     m_eCameraType;
 
   //<<调试工具, 查看校正点

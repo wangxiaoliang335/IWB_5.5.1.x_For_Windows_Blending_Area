@@ -107,7 +107,7 @@ void CIWBSensorManager::AssignCamera(const CUsbCameraDeviceList& cameraList)
     {
         CIWBSensor& sensor = *m_vecSensors[i];
         const TCaptureDeviceInstance& devInfo = sensor.GetDeviceInfo();
-        for(int j=0; j<m; j++)
+        for(int j=0; j < m; j++)
         {
             if(camear_instance_assigned[j]) continue;
 
@@ -123,7 +123,7 @@ void CIWBSensorManager::AssignCamera(const CUsbCameraDeviceList& cameraList)
     }  
 
     //剩下的按顺序分配
-    for(int i=0; i< n; i++)
+    for(int i=0; i < n; i++)
     {   
         if(sensor_assigned[i]) continue;//已分配
         CIWBSensor& sensor = *m_vecSensors[i];
@@ -138,6 +138,48 @@ void CIWBSensorManager::AssignCamera(const CUsbCameraDeviceList& cameraList)
             break;
         }
     }
+
+    //检查"未分配到设备的sensor"的设备路径是否与"已分配到设备的sensor“的设备路径相同。
+    //若相同则"未分配到设备的sensor"的设备路径清空。
+    //为什么需要要怎样做呢,
+    //存在这种场景, 两屏模式，只插入一个摄像头，
+    //问题再现步骤
+    //step1: 将相机分配给第二个屏幕播放，弹出属性对话框按下确定,目的是更新g_tSysCfgData, 这样g_tSysCfgData中记录了
+    //       第二个sensor的设备路径为相机的硬件路径。
+    //step2: 将分屏模式切换到单屏模式，弹出属性对话框按下确定,目的是更新g_tSysCfgData,g_tSysCfgData中记录了
+    //       第一个sensor的设备路径为相机的硬件路径，至此g_tSysCfgData中的两个sensor拥有相同设备路径了
+    //step3: 将分屏模式切换到双屏模式，出现如下问题:
+    //       两个sensor的设备路径完全相同，则它们无法交换播放窗体
+    //       播放时一个窗体正常播放，另外一个窗体视频播放失败
+    //
+    //g_tSysCfgData.vecSensorConfig是一个元素个数为SENSOR_NUMBER的数组。
+    for (int i = 0; i < n; i++)
+    {
+        if (sensor_assigned[i]) continue;//后续只处理"未分配到设备的sensor",已经分配了设备的则跳过
+        
+        CIWBSensor& sensorUnassigned = *m_vecSensors[i];
+        const TCaptureDeviceInstance& devInfoUnassigned = sensorUnassigned.GetDeviceInfo();
+
+        for (int j = 0; j < n; j++)
+        {
+            if (!sensor_assigned[j]) continue;//跳过"未分配到设备的sensor", 后续只与"已经分配到设备的sensor"比较。
+            if (i == j) continue;//自己不跟自己比较
+
+            const CIWBSensor& sensorAssigned = *m_vecSensors[j];
+            const TCaptureDeviceInstance& devInfoAssigned = sensorAssigned.GetDeviceInfo();
+            
+            if (0 == _tcsicmp(devInfoUnassigned.m_strDevPath, devInfoAssigned.m_strDevPath))
+            {
+                //发现了"未分配到设备的sensor"和"已经分配到设备的sensor"的设备路径相同
+                //则清空"未分配到设备的sensor"的设备路径。
+                TCaptureDeviceInstance devPathClearedInstance = devInfoUnassigned;
+                devPathClearedInstance.m_strDevPath = _T("");
+                sensorUnassigned.SetDeviceInfo(devPathClearedInstance);
+            }
+
+        }
+    }
+
 
 }
 
@@ -299,6 +341,7 @@ ESensorLensMode CIWBSensorManager::GetLensMode()const
     ESensorLensMode eMode = E_NORMAL_USAGE_MODE;
 
      int nSensorCount = (int)m_vecSensors.size();
+     
      if(nSensorCount > 0)
      {
          eMode = m_vecSensors[0]->GetLensMode();
@@ -307,6 +350,24 @@ ESensorLensMode CIWBSensorManager::GetLensMode()const
      return eMode;
 }
 
+
+//@功能:判断是否有处于正常使用模式下的相机
+BOOL CIWBSensorManager::HasNormalUsageCamera()const
+{
+    int nSensorCount = (int)m_vecSensors.size();
+    BOOL bYes = FALSE;
+
+    for (int i = 0; i < nSensorCount; i++)
+    {
+        if (m_vecSensors[i]->GetLensMode() == E_NORMAL_USAGE_MODE)
+        {
+            bYes = TRUE;
+            break;
+        }
+    }
+
+    return bYes;
+}
 
 
 void CIWBSensorManager::DrawSelectBound(HWND hWnd)
@@ -523,7 +584,8 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 
         m_vecSensors[i]->SetCfgData(sysCfgData.vecSensorConfig[i], &sysCfgData.globalSettings);
         //设置工作模式
-        m_vecSensors[i]->SetLensMode(sysCfgData.globalSettings.eLensMode);
+        //m_vecSensors[i]->SetLensMode(sysCfgData.globalSettings.eLensMode);
+        m_vecSensors[i]->SetLensMode(sysCfgData.vecSensorConfig[i].eLensMode);
     }
     //
 	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
@@ -574,26 +636,6 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
 			this->ApplyScreenLayout();
 		}
 
-        //UINT uLayoutCount = pScreenLayoutsize();
-        //for (UINT uLayoutIndex = 0; uLayoutIndex < uLayoutCount; uLayoutIndex++)
-        //{
-        //    const TScreenLayout& screenLayout = sysCfgData.vecScreenLayouts[uLayoutIndex];
-
-        //    if (screenLayout.vecScreens.size() != m_vecSensors.size())
-        //        continue;
-
-        //    if (screenLayout.vecScreens.size() != screenLayout.vecMergeAreas.size() + 1)
-        //        continue;
-
-
-        //    this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&screenLayout.vecScreens[0], screenLayout.vecScreens.size());
-        //    this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&screenLayout.vecMergeAreas[0], screenLayout.vecMergeAreas.size());
-
-
-        //    this->ApplyScreenLayout();
-        //    break;
-
-        //}//for
     }
 }
 
@@ -631,62 +673,8 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
 		const TScreenLayout& screenLayout    = m_oScreenLayoutDesigner.GetScreenLayout();
 		ESplitScreeMode     eSplitScreenMode = m_oScreenLayoutDesigner.GetSplitScreenMode();
 
-
 		sysCfgData.screenLayoutManger.SetScreenLayout(eSplitScreenMode, screenLayout);
-        //UINT uScreenCount = 0;
-        //const RectF* pRelScreens = this->m_oScreenLayoutDesigner.GetScreenRelativeLayouts(&uScreenCount);
-
-        //UINT uMergeAreaCount = 0;
-        //const RectF* pRelMergeAreas = this->m_oScreenLayoutDesigner.GetRelativeMergeAreas(&uMergeAreaCount);
-
-        ////选择配置文件中屏幕数等于当前实际屏幕数的布局,进行更新
-        //UINT uLayoutCount = sysCfgData.vecScreenLayouts.size();
-
-        //BOOL bUpdateScreenLayout = FALSE;//已更新标志
-
-        //for (UINT uLayoutIndex = 0; uLayoutIndex < uLayoutCount; uLayoutIndex++)
-        //{
-        //    TScreenLayout& screenLayout = sysCfgData.vecScreenLayouts[uLayoutIndex];
-
-        //    if (screenLayout.vecScreens.size() == uScreenCount)
-        //    {//配置数据中的screenCount和编辑界面中的SceenCount一致, 则更新配置中的ScreenLayout.
-        //        for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
-        //        {
-        //            screenLayout.vecScreens[uScreenIndex] = pRelScreens[uScreenIndex];
-        //        }
-
-        //        for (UINT uAreaIndex = 0; uAreaIndex < uMergeAreaCount; uAreaIndex++)
-        //        {
-        //            screenLayout.vecMergeAreas[uAreaIndex] = pRelMergeAreas[uAreaIndex];
-        //        }
-
-        //        bUpdateScreenLayout = TRUE;
-        //        break;
-        //    }
-
-        //}//for
-
-        //if (!bUpdateScreenLayout)
-        //{
-        //    TScreenLayout screenLayout;
-
-        //    screenLayout.vecScreens.resize(uScreenCount);
-
-        //    for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
-        //    {
-        //        screenLayout.vecScreens[uScreenIndex] = pRelScreens[uScreenIndex];
-        //    }
-
-
-        //    screenLayout.vecMergeAreas.resize(uMergeAreaCount);
-        //    for (UINT uAreaIndex = 0; uAreaIndex < uMergeAreaCount; uAreaIndex++)
-        //    {
-        //        screenLayout.vecMergeAreas[uAreaIndex] = pRelMergeAreas[uAreaIndex];
-        //    }
-
-        //    sysCfgData.vecScreenLayouts.push_back(screenLayout);
-        //}
-        }
+    }
 
     return TRUE;
 }
@@ -1084,17 +1072,20 @@ void CIWBSensorManager::OnIWBSensorManualCalibrateDone(BOOL bSuccess, DWORD dwCt
 //      nSensorID, 传感器ID; -1时,为全部传感器校正。
 void CIWBSensorManager::StartSearchMaskArea(HWND hNotifyWindow, int nSensorID)
 {
+    size_t nSensorCount = m_vecSensors.size();
     if(nSensorID == -1)
     {
         //所有传感器禁用光笔
-        for(size_t i=0; i<m_vecSensors.size(); i++)
+        for(size_t i=0; i < nSensorCount; i++)
         {   
             m_vecSensors[i]->EnableOpticalPen(FALSE);
+
+            m_vecSensors[i]->SwitchLensMode(E_LASER_TUNING_MODE);
         }
 
         if(m_vecSensors.size() >= 1)
         {//???如果传感器未工作怎么办?
-             for(size_t i=0; i<m_vecSensors.size(); i++)
+             for(size_t i = 0; i < nSensorCount; i++)
             {  
                 if(m_vecSensors[i]->IsDetecting())
                 {//第一个处于正常工作的图像传感器进入自动屏蔽流程
@@ -1111,6 +1102,17 @@ void CIWBSensorManager::StartSearchMaskArea(HWND hNotifyWindow, int nSensorID)
     {
         if(m_vecSensors[nSensorID]->IsDetecting())
         {
+            //自动光斑屏蔽时, 在多屏模式下所有激光器都有打开，否则生成的屏蔽图
+            //只屏蔽部分干扰。
+            m_vecLastSensorLensMode.resize(nSensorCount);
+
+            for (size_t i = 0; i < nSensorCount; i++)
+            {
+                m_vecLastSensorLensMode[i] = m_vecSensors[i]->GetCfgData().eLensMode;
+                m_vecSensors[i]->SwitchLensMode(E_LASER_TUNING_MODE);
+            }
+
+            //
             m_vecSensors[nSensorID]->EnableOpticalPen(FALSE);
             m_vecSensors[nSensorID]->StartAutoMasking(hNotifyWindow);
 
@@ -1138,6 +1140,18 @@ void CIWBSensorManager::OnIWBSensorSearchMaskAreaDone(BOOL bSuccess)
                 m_hNotifyWindow);
             return;
         }
+    }
+    else
+    {
+        int nSensorCount = m_vecSensors.size();
+        //恢复其它Sensor的状态
+        for (size_t nSensorID = 0; nSensorID < nSensorCount; nSensorID++)
+        {
+            if (nSensorID == m_nCurrentSensorID) continue;
+            
+            m_vecSensors[nSensorID]->SwitchLensMode(m_vecLastSensorLensMode[nSensorID]);
+        }
+
     }
 }
 
@@ -1583,6 +1597,17 @@ BOOL CIWBSensorManager::IsCalibrated()const
      }
 
      return TRUE;
+}
+
+//功能:判断是否有校正成功的相机存在
+BOOL CIWBSensorManager::HasCalibratedCamera()const
+{
+    for (size_t i = 0; i < m_vecSensors.size(); i++)
+    {
+        if (m_vecSensors[i]->IsCalibrated()) return TRUE;
+    }
+
+    return FALSE;
 }
 
 

@@ -110,10 +110,14 @@ LRESULT   CManualCalibrateWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM 
 
         for(int i = 0; i <= m_nCurrentCalibratePos; i++)
         {
+            POINT ptCenter = m_vecCrossSymbol[i].ptCenter;
+            ptCenter.x -= m_rcBoundary.left;
+            ptCenter.y -= m_rcBoundary.top;
+
 
             DrawCarlibrationMark(
                 ps.hdc, 
-                m_vecCrossSymbol[i].ptCenter,
+                ptCenter,
                 m_vecCrossSymbol[i].bAdjusted?m_vecCrossSymbol[i].clrAdjustAfter : m_vecCrossSymbol[i].clrAdjustBefore,
                 m_vecCrossSymbol[i].size);
 
@@ -148,8 +152,8 @@ LRESULT   CManualCalibrateWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM 
             TrackPopupMenu(
                 hCtxMenu, 
                 TPM_RIGHTALIGN|TPM_BOTTOMALIGN,
-                pt.x,
-                pt.y,
+                pt.x + m_rcBoundary.left,
+                pt.y + m_rcBoundary.top,
                 0,
                 m_hWnd,
                 NULL);
@@ -238,18 +242,25 @@ void CManualCalibrateWnd::StartCalibrate(const TManualCalibrateParameters& param
         m_oAllCalibMap[i].rcMonitor   = parameters.vecScreenInfos[i].rcArea;
     }
 
-	RECT rcBoundary;
-	rcBoundary.left   = 0;
-	rcBoundary.top    = 0;
-	rcBoundary.right  = 0;
-	rcBoundary.bottom = 0;
+	//RECT rcBoundary;
+	//rcBoundary.left   = 0;
+	//rcBoundary.top    = 0;
+	//rcBoundary.right  = 0;
+	//rcBoundary.bottom = 0;
 	for (size_t i = 0; i < m_calibrateParameters.vecScreenInfos.size(); i++)
 	{
 		RECT rcArea = parameters.vecScreenInfos[i].rcArea;
-		if (rcArea.left  < rcBoundary.left ) rcBoundary.left   = rcArea.left;
-		if (rcArea.right > rcBoundary.right) rcBoundary.right  = rcArea.right;
-		if (rcArea.top < rcBoundary.top    ) rcBoundary.top    = rcArea.top;
-		if (rcArea.bottom > rcBoundary.top ) rcBoundary.bottom = rcArea.bottom;
+        if (0 == i)
+        {
+            m_rcBoundary = rcArea;
+        }
+        else
+        {
+            if (rcArea.left < m_rcBoundary.left) m_rcBoundary.left = rcArea.left;
+            if (rcArea.right > m_rcBoundary.right) m_rcBoundary.right = rcArea.right;
+            if (rcArea.top < m_rcBoundary.top) m_rcBoundary.top = rcArea.top;
+            if (rcArea.bottom > m_rcBoundary.top) m_rcBoundary.bottom = rcArea.bottom;
+        }
 	}
 	
     InitMonitorCalibrateSymCoord();
@@ -260,10 +271,10 @@ void CManualCalibrateWnd::StartCalibrate(const TManualCalibrateParameters& param
 		m_hWnd,
 		HWND_TOPMOST,
 		//HWND_TOP, 
-		rcBoundary.left,
-		rcBoundary.top,
-		rcBoundary.right,
-		rcBoundary.bottom,
+        m_rcBoundary.left,
+        m_rcBoundary.top,
+        m_rcBoundary.right,
+        m_rcBoundary.bottom,
 		SWP_SHOWWINDOW);
 	SetFocus(m_hWnd);
 

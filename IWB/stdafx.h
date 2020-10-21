@@ -44,6 +44,7 @@
 
 #include "atlstr.h"
 #include "ResStr.h"
+//#include "ResDialogTemplates.h"
 
 #include <afxpriv.h>
 

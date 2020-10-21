@@ -215,8 +215,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,5,1,5
- PRODUCTVERSION 5,5,0,5
+ FILEVERSION 5,5,1,9
+ PRODUCTVERSION 5,5,1,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -232,11 +232,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "FileDescription", "Laser Touch Calibration System "
-            VALUE "FileVersion", "5.5.1.5"
+            VALUE "FileVersion", "5.5.1.9"
             VALUE "InternalName", "Optical Pen"
             VALUE "OriginalFilename", "OpticalPen.exe"
             VALUE "ProductName", "Laser Touch  Calibration System"
-            VALUE "ProductVersion", "5.5.0.5"
+            VALUE "ProductVersion", "5.5.1.9"
         END
     END
     BLOCK "VarFileInfo"
@@ -452,7 +452,7 @@ END
 IDD_OPTICALPEN_DIALOG DIALOGEX 0, 0, 528, 350
 STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Laser Touch Calibration Program (Version 5.5.1.4)"
+CAPTION "Laser Touch Calibration Program (Version 5.5.1.9)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 END
@@ -639,17 +639,17 @@ BEGIN
     PUSHBUTTON      "More GLBoard Gesture Settings ...",IDC_BUTTON_GLBGRMORE,200,149,141,14,WS_DISABLED
 END
 
-IDD_DIALOG_ONLINE_REGISTER DIALOGEX 0, 0, 260, 106
+IDD_DIALOG_ONLINE_REGISTER DIALOGEX 0, 0, 261, 211
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Online Register"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Online Register",IDC_BUTTON_ONLINE_REGISTER,59,85,68,14
-    PUSHBUTTON      "Cancel",IDCANCEL,127,85,50,14
+    DEFPUSHBUTTON   "Online Register",IDC_BUTTON_ONLINE_REGISTER,59,190,68,14
+    PUSHBUTTON      "Cancel",IDCANCEL,127,190,50,14
     LTEXT           "Serial Number:",IDC_STATIC,7,7,48,8
     EDITTEXT        IDC_EDIT_SN_NUMBER,56,7,120,14,ES_AUTOHSCROLL
-    LTEXT           "",IDC_STATIC_ONLINE_REGISTER_INFO,7,22,246,64,WS_BORDER
+    LTEXT           "",IDC_STATIC_ONLINE_REGISTER_INFO,7,22,247,166,WS_BORDER
 END
 
 IDD_DIALOG_ATTACH_SCREEN DIALOGEX 0, 0, 325, 141
@@ -787,7 +787,7 @@ CAPTION "Gloview Laser Touch Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,211,10,20,20
-    LTEXT           "Gloview Laser Touch Calibration System 5.5.1.4",IDC_STATIC,8,10,148,8,SS_NOPREFIX
+    LTEXT           "Gloview Laser Touch Calibration System 5.5.1.9",IDC_STATIC,8,10,148,8,SS_NOPREFIX
     LTEXT           "EASI Tech Ltd. Copyright (C)  2020/01/01 --- 2050/01/01",IDC_STATIC,8,21,200,8
     DEFPUSHBUTTON   "Ok",IDOK,171,72,50,16,WS_GROUP
     LTEXT           "Shanghai Easi Computer Technology Co.Ltd.",IDC_STATIC,8,32,140,8
@@ -804,7 +804,7 @@ CAPTION "Laser Touch Calibration Program"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,207,5,20,20
-    LTEXT           "Laser Touch Calibration System 5.5.1.4",IDC_STATIC,8,10,127,8,SS_NOPREFIX
+    LTEXT           "Laser Touch Calibration System 5.5.1.9",IDC_STATIC,8,10,127,8,SS_NOPREFIX
     DEFPUSHBUTTON   "Ok",IDOK,190,44,37,13,WS_GROUP
     LTEXT           "Copyright (C) 2020/01/01 --- 2050/01/01",IDC_STATIC,9,27,132,8
 END
@@ -918,9 +918,9 @@ BEGIN
     IDD_DIALOG_ONLINE_REGISTER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 253
+        RIGHTMARGIN, 254
         TOPMARGIN, 7
-        BOTTOMMARGIN, 99
+        BOTTOMMARGIN, 204
     END
 
     IDD_DIALOG_ATTACH_SCREEN, DIALOG
@@ -1028,6 +1028,11 @@ BEGIN
 END
 
 IDD_DIALOG_GESTURE_SETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_OPTICALPEN_DIALOG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

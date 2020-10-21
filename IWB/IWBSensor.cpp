@@ -64,12 +64,12 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
 
     CIWBSensor* lpThis = reinterpret_cast<CIWBSensor*>(lpCtx);
 
-    TSensorModeConfig* TSensorModeConfig = NULL;
+    TSensorModeConfig* pSensorModeConfig = NULL;
     EProjectionMode eProjectionMode  = g_tSysCfgData.globalSettings.eProjectionMode;
 
-    TSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[eProjectionMode];
+    pSensorModeConfig = &lpThis->m_tCfgData.vecSensorModeConfig[eProjectionMode];
 
-    const TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[lpThis->m_eCameraType][lpThis->m_tCfgData.eSelectedLensType];
+    const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[lpThis->m_eCameraType][lpThis->m_tCfgData.eSelectedLensType];
 
     TVideoProcAmpProperty cameraParams;
 
@@ -231,7 +231,7 @@ BOOL  CIWBSensor::OnAutoCalibChangeCameraParams(EChangeCalibCameraParams eCtrlMo
     case E_CAMERA_AUTO_MASK:
 
         EDeviceTouchType eTouchType;
-        eTouchType = TSensorModeConfig->advanceSettings.m_eTouchType;
+        eTouchType = pSensorModeConfig->advanceSettings.m_eTouchType;
         switch (eTouchType)
         {
            case E_DEVICE_PEN_TOUCH_WHITEBOARD:
@@ -393,7 +393,7 @@ BOOL CIWBSensor::Run()
     }
 
     //切换到已设置的镜头模式
-    SwitchLensMode(this->m_eLensMode);
+    SwitchLensMode(this->m_tCfgData.eLensMode);
 
     return bRet;
 }
@@ -601,10 +601,13 @@ void CIWBSensor::SwitchLensMode(ESensorLensMode eMode)
         break;
     }
 
-    m_eLensMode = eMode;
-	//add by vera_zhao 2109.12.18
+    //m_eLensMode = eMode;
+    m_tCfgData.eLensMode = eMode;
+    
+    
+    //add by vera_zhao 2109.12.18
 	//全局工作模式和第一个相机的相机的工作模式保持一致。
-	g_tSysCfgData.globalSettings.eLensMode = m_eLensMode;
+	//g_tSysCfgData.globalSettings.eLensMode = m_eLensMode;
 }
 
 //@功能:设置视频捕获设备信息
@@ -844,7 +847,8 @@ void CIWBSensor::SetGlobalCfgData(const GlobalSettings* pGlobalSettings)
     }
 
     //根据工作模式立即生效摄像头参数
-    switch (m_eLensMode)
+    //switch (m_eLensMode)
+    switch (this->m_tCfgData.eLensMode)
     {
     case E_VIDEO_TUNING_MODE:
         m_oVideoPlayer.SetCameraParams(lensCfg.installTunningSettings.cameraParams);

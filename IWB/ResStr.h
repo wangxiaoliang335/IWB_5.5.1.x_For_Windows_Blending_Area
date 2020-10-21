@@ -20,7 +20,7 @@ public:
     {
 
         if(m_hInst == NULL) return;
-        BOOL bResult = EnumResourceTypes(          
+        BOOL bResult = EnumResourceTypes(
                         m_hInst,//HMODULE hModule,
                         EnumResTypeProc,// ENUMRESTYPEPROC lpEnumFunc,
                         (LONG_PTR)this     //LONG_PTR lParam
@@ -90,7 +90,7 @@ public:
 					assert(str.GetLength() == cch);
 
 				    
-					DwordString_Pair pair(uFirstID,str);					
+					DwordString_Pair pair(uFirstID,str);
 					pThis->m_stringHashTable.insert(pair);
 					lpsz += cch;            
 			}

@@ -172,7 +172,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RemoteDebug|Win32'">
-    <OutDir>$(RemoteDir)\</OutDir>
+    <OutDir>$(RemoteDir)\$(Configuration)\</OutDir>
     <IntDir>..\Intermidate\$(ProjectName)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>

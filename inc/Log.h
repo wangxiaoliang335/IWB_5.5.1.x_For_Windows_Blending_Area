@@ -297,9 +297,16 @@ static CAsyncLog_Init  s_AsyncLog_Init;
      {
          CAsyncLog::TLogBuf& refLogBuf = s_AsyncLog_Init.s_oAsyncLog.GetLogBuf(nBufIndex);
 
+         sprintf_s(refLogBuf.szText, "[pid:0x%x][tid:0x%x]", GetCurrentProcessId(), GetCurrentThreadId());
+
+         size_t nOffset = strlen(refLogBuf.szText);
+
+         size_t textBufferSize = sizeof(refLogBuf.szText) - nOffset;
          va_list args;
         va_start(args, szFormat);
-        vsnprintf_s( refLogBuf.szText, _countof(refLogBuf.szText) - 1,sizeof(refLogBuf.szText) - 1, szFormat, args); 
+
+
+        vsnprintf_s(&refLogBuf.szText[nOffset], textBufferSize, textBufferSize, szFormat, args);
 
         s_AsyncLog_Init.s_oAsyncLog.QueueNewLog(nBufIndex);
 
@@ -333,35 +340,43 @@ inline BOOL _cdecl AsyncTypedLog(int nType, const char* szFormat,...)
 
     CAsyncLog::TLogBuf& refLogBuf = s_AsyncLog_Init.s_oAsyncLog.GetLogBuf(nBufIndex);
     
+    sprintf_s(refLogBuf.szText, "[pid:0x%x][tid:0x%x]", GetCurrentProcessId(), GetCurrentThreadId());
+
+    size_t nOffset = strlen(refLogBuf.szText);
+    size_t textBufferSize = sizeof(refLogBuf.szText) - nOffset;
+
     switch(nType)
     {
     case LOG_TYPE_INF://正常信息
-        strcpy_s(refLogBuf.szText, _countof(refLogBuf.szText), "[INF]");
+        strcpy_s(&refLogBuf.szText[nOffset], textBufferSize, "[INF]");
         break;
 
     case LOG_TYPE_WRN://警告信息
-        strcpy_s(refLogBuf.szText,_countof(refLogBuf.szText), "[WRN]");
+        strcpy_s(&refLogBuf.szText[nOffset], textBufferSize, "[WRN]");
         break;
 
     case LOG_TYPE_ERR://错误信息
-        strcpy_s(refLogBuf.szText,_countof(refLogBuf.szText), "[ERR]");
+        strcpy_s(&refLogBuf.szText[nOffset], textBufferSize, "[ERR]");
         break;
 
     case LOG_TYPE_DBG:
-        strcpy_s(refLogBuf.szText, _countof(refLogBuf.szText),"[DBG]");
+        strcpy_s(&refLogBuf.szText[nOffset], textBufferSize,"[DBG]");
         break;
 
     default:
-        strcpy_s(refLogBuf.szText, _countof(refLogBuf.szText),"[UNK]");
+        strcpy_s(&refLogBuf.szText[nOffset], textBufferSize,"[UNK]");
         break;
     }
     va_list args;
     va_start(args, szFormat);
     
-    int nOffset = strlen(refLogBuf.szText);
-    vsnprintf_s( &refLogBuf.szText[nOffset], _countof(refLogBuf.szText) - nOffset - 1 ,sizeof(refLogBuf.szText) - nOffset - 1, szFormat, args);
+    nOffset = strlen(refLogBuf.szText);
+    textBufferSize = sizeof(refLogBuf.szText) - nOffset;
 
-    strcat_s(refLogBuf.szText, _countof(refLogBuf.szText), "\r\n");
+    vsnprintf_s( &refLogBuf.szText[nOffset], textBufferSize, textBufferSize, szFormat, args);
+    
+    
+    strcat_s(refLogBuf.szText, sizeof(refLogBuf.szText), "\r\n");
 
 
 

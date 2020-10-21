@@ -24,25 +24,28 @@ EDeviceTouchType GetActualTouchType();
 //@返回值:
 SIZE GetActualScreenControlSize();
 
-struct AllUSBKeyTouchType
+struct USBKeyInformation
 {
-	EDeviceTouchType eUSBKeyTouchType;//
-	EPalmTouchControlType   ePalmTouchControlType;
-	EScreenMode    eScreenModeFromUsbKey;
+    EDeviceTouchType        eUSBKeyTouchType     ;//
+    EPalmTouchControlType   ePalmTouchControlType;//
+    EFingerTouchControlType eFingerTouchControlType;
+    EScreenMode             eScreenModeFromUsbKey;//
 
-	AllUSBKeyTouchType()
-	{
-		eUSBKeyTouchType = E_DEVICE_NOFIND;
-		ePalmTouchControlType = E_PLAM_TOUCHCONTROL_UnKnow;
-		eScreenModeFromUsbKey = EScreenModeSingle;
-	}
+
+    USBKeyInformation()
+    {
+        eUSBKeyTouchType        = E_DEVICE_NOT_FOUND;
+        ePalmTouchControlType   = E_PLAM_TOUCHCONTROL_UNKNOWN;
+        eFingerTouchControlType = E_FINGER_TOUCHCONTROL_UNKNOWN;
+        eScreenModeFromUsbKey   = EScreenModeSingle;
+    }
 };
 
 
 struct TAutoCalibrateCompensateData
 {
-	TAutoCalibCompCoefs coefs;//自动补偿系数
-	double throwRatioOfLens  ;//采样镜头的投射比	
+    TAutoCalibCompCoefs coefs;//自动补偿系数
+    double throwRatioOfLens  ;//采样镜头的投射比	
 };
 
 class CIWBApp : public CWinApp
@@ -51,10 +54,10 @@ public:
     CIWBApp();
 
     ~CIWBApp();
-// Overrides
+    // Overrides
 
     virtual BOOL InitInstance();
-    
+
     BOOL IsStartFromAutoRun()const
     {
         return m_bAutoRunMode;
@@ -65,13 +68,14 @@ public:
         return m_bForAllUser;
     }
 
-    
-    EDeviceTouchType  GetUSBKeyTouchType() const;
-	EPalmTouchControlType GetPalmTouchType()const;
-	EFingerTouchControlType GetFingerTouchType() const;
 
-	int  GatAllUSBKeyTouchTypeCount();
-	const AllUSBKeyTouchType* GatAllUSBKeyTouchType() const;
+    EDeviceTouchType  GetUSBKeyTouchType() const;
+    EPalmTouchControlType GetPalmTouchType()const;
+    EFingerTouchControlType GetFingerTouchType() const;
+
+    //int  GetAllUSBKeyTouchTypeCount();
+    //const USBKeyInformation* GetAllUSBKeyInformations() const;
+    const  std::unordered_map<std::string, USBKeyInformation>& GetAllUSBKeyInformations() const;
     //int GetDoubleScreenMerge() const
     //{
     //  return m_nDoubleScreenType ;
@@ -81,11 +85,12 @@ public:
     EScreenMode GetScreenModeFromUSBKey()const;
 
     int GetScreenCount() const;
-	int GetScreenModeFromUSBKeyCount()const;
+    int GetScreenModeFromUSBKeyCount()const;
 
     BOOL IsHardwareKeyExist()const
     {
-        return m_bFoundHardwareUSBKey;
+        //return m_bFoundHardwareUSBKey;
+        return m_uHardwareUSBKeyCount > 0 ? TRUE : FALSE;
     }
 
     BOOL IsOnlineRegistered()const
@@ -94,9 +99,9 @@ public:
     }
     LPCTSTR GetLangeCode()const
     {
-        return (LPCTSTR) m_strLanguageCode;
+        return (LPCTSTR)m_strLanguageCode;
     }
-// Implementation
+    // Implementation
     BOOL ParseCmdLine(LPCTSTR lpCmdLine);
 
     //@功能: 载入OEM资源。
@@ -112,12 +117,12 @@ public:
     //      包括配置文件的目录路径和调试输出文件保存的目录路径。
     void  InitDirectoryInformation();
 
-    CDispDevFinder& GetMonitorFinder(){return m_oDispMonitorFinder;}
+    CDispDevFinder& GetMonitorFinder() { return m_oDispMonitorFinder; }
 
-    CString m_strSettingsDir         ;//配置文件存放目录
-    CString m_strSystemDir           ; //安装程序下系统目录的位置
+    CString m_strSettingsDir;//配置文件存放目录
+    CString m_strSystemDir; //安装程序下系统目录的位置
     CString m_strIntermediatOutputDir;//调试输出文件存放目录
-    CString m_strFirmwareDirectory   ;//固件文件目录
+    CString m_strFirmwareDirectory;//固件文件目录
 
     //@功能:从USBKey中读取信息
     //@参数:bFirstTime, 第一次检测UsbKey的存在
@@ -125,15 +130,22 @@ public:
     //      第二次及以后则不再弹出兑换框。
     void ReadUSBKey(BOOL bFirstTime = FALSE);
 
-	
-	//@功能:根据设备路径查找自动校准补偿系数
-	const TAutoCalibrateCompensateData* GetCompensateData(const char* strDevPath)const;
-	
-	//@功能:重置自动校准补偿系数
-	void  ResetCompensateData();
+    BOOL ReadUSBKeyData(UINT uKeyIndex);
 
-	//@功能:获取所有自动补偿校正系数
-	void GetAllCompensateData(std::vector<TAutoCalibrateCompensateData>& compensateData);
+    void OnPlugOutUSBKey(const char* szDevPath);
+    void OnPlugInUSBKey(const char* szDevPath);
+
+    //@功能:根据设备路径查找自动校准补偿系数
+    const TAutoCalibrateCompensateData* GetCompensateData(const char* strDevPath)const;
+
+    //@功能:重置自动校准补偿系数
+    void  ResetCompensateData();
+
+    //@功能:获取所有自动补偿校正系数
+    void GetAllCompensateData(std::vector<TAutoCalibrateCompensateData>& compensateData);
+
+    UINT& GetBetweenInstanceMsg()  { return  m_uBetweenInstanceMsg; }
+
 protected:
     DECLARE_MESSAGE_MAP()
 
@@ -143,36 +155,41 @@ protected:
     BOOL   m_bForAllUser ;//所有用户标志
 
     //int    m_nUSBKeyTouchType;////0:为3DTouch电子白板,1:为手指触控电子白板，2:为高清手指触控，3:为手掌互动  
-    EDeviceTouchType m_eUSBKeyTouchType;//
+    //EDeviceTouchType m_eUSBKeyTouchType;//
 
-	EPalmTouchControlType   m_ePalmTouchControlType;    //手掌互动类型
-	EFingerTouchControlType  m_eFingerTouchControlType; //手指触控类型
+   // EPalmTouchControlType    m_ePalmTouchControlType;   //手掌互动类型
+    //EFingerTouchControlType  m_eFingerTouchControlType; //手指触控类型
 
-	std::vector<AllUSBKeyTouchType>  m_VecAllUsbKeyTouchType ;
+    //std::vector<USBKeyInformation>  m_VecAllUsbKeyTouchType ;
+
+    std::unordered_map<std::string, USBKeyInformation> m_AllUSbKeyInformations;
     
     //EScreenType    m_eScreenType; //0:为单屏，1：为双屏
 
-    EScreenMode    m_eScreenModeFromUsbKey;//从机密狗注册信息中得到的屏幕模式
+    //EScreenMode    m_eScreenModeFromUsbKey;//从机密狗注册信息中得到的屏幕模式
    
 
-    BOOL           m_bFoundHardwareUSBKey;//发现硬件USB Key标志
+    //BOOL           m_bFoundHardwareUSBKey;//发现硬件USB Key标志
+    UINT           m_uHardwareUSBKeyCount;//发现硬件USB Key标志
     BOOL           m_bIsOnlineRegistered;//是否在线注册了。
     CString        m_strLanguageCode;//语言编码
 
     CDispDevFinder m_oDispMonitorFinder;
 
-	
+    
 
 
 
-	std::unordered_map<std::string, TAutoCalibrateCompensateData> m_allCompensateCoefs;
-	
-	
-	
-	//const static   int     COMPENSATE_NUM = 6;
-	//double    m_pParams[COMPENSATE_NUM];
-	//double    m_nCollectType;
+    std::unordered_map<std::string, TAutoCalibrateCompensateData> m_allCompensateCoefs;
+    
+    
+    
+    //const static   int     COMPENSATE_NUM = 6;
+    //double    m_pParams[COMPENSATE_NUM];
+    //double    m_nCollectType;
     //static const int m_nStartDelayTime = 5000;//10000ms,最大启动延迟时间
+
+    UINT m_uBetweenInstanceMsg;
 
 };
 

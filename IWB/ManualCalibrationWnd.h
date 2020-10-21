@@ -134,4 +134,7 @@ protected:
 	DWORD m_dwCtxData;
 
 
+    RECT m_rcBoundary;
+
+
 };

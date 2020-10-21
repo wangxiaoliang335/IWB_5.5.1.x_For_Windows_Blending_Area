@@ -1467,7 +1467,8 @@ BOOL CAutoCalibratorImpl2::StartCalibrating(const TAutoCalibrateParams& autoCali
     rcVirtualScreen.right = rcVirtualScreen.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
     rcVirtualScreen.bottom = rcVirtualScreen.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-
+    //rcVirtualScreen.right = rcVirtualScreen.left + GetSystemMetrics(SM_CXSCREEN);
+    //rcVirtualScreen.bottom = rcVirtualScreen.top + GetSystemMetrics(SM_CYSCREEN);
 
     //生成校正窗体，尺寸为包含所有屏幕的虚拟屏幕的尺寸
     if (HWND(m_AutoCalibrateWnd) == NULL)
@@ -1717,7 +1718,9 @@ void CAutoCalibratorImpl2::EndCalibrating()
         {
             PostThreadMessage(m_dwSimulatedCalibrateThreadId, WM_QUIT, 0, 0);
             //WaitForSingleObject(m_hSimulatedCalibrateThread, INFINITE);
+            //m_oAVIInput.Close();
             m_oAVIInput.close();
+            
         }
         else
         {
@@ -4346,10 +4349,10 @@ BOOL CAutoCalibratorImpl2::DoCornerMatch(const std::vector<TImageCalibPoint>& co
         int nExpectedPtNumber = rectLayer.m_vecScreenMarkNo.size();
 
 
-        //如果是一个圈层
+        //如果是个圈层
         if (LayerMarkerHorzNumber > 1 && LayerMarkerVertNumber > 1)
         {
-            //Step 1. 对每个校正点, 找出距离其最近的至多16个邻接点。
+            //Step 1. 对每个校正点, 找出距离其最近的至多MAX_NEIBHBOUR个邻接点。
             for (std::vector<TVertex>::size_type i = 0;
                 i < nCornerRemained;
                 i++)
@@ -4685,12 +4688,70 @@ BOOL CAutoCalibratorImpl2::DoCornerMatch(const std::vector<TImageCalibPoint>& co
 
             CVertexSort<TVertex>  vertexSorter;
 
+
+            if (m_eDebugLevel >= E_CALIB_DEBUG_LEVEL_DEBUG)
+            {
+                CImageFrame dbgFrame;
+                BYTE value = 0x10;
+                dbgFrame.SetSize(m_oPatternFrame.Width(), m_oPatternFrame.Height(), 1, &value);
+
+                for (size_t i = 0; i < outlayer.size(); i++)
+                {
+                    int nNo = (int)i;
+                    POINT pt = outlayer[i].ptCoord;
+
+                    dbgFrame.SetPixel(pt, 0xFF);
+
+                    pt.x += 2;
+                    pt.y += 2;
+
+                    char szText[32];
+                    sprintf_s(szText, sizeof(szText), "%d", nNo);
+
+
+                    dbgFrame.PutStr(pt.x, pt.y, szText, 0x7E, 7/*font size*/);
+                }
+
+                Debug_SaveImageFrame(dbgFrame, _T("LayerVertexBeforeSort.jpg"));
+            }
+
+
+
             //排列圈层上的点，使之成为一个四边形
             if (!vertexSorter(&outlayer[0], outlayer.size(), true))
             {
                 bMatchSuccess = FALSE;
                 break;
             }
+
+
+
+            if (m_eDebugLevel >= E_CALIB_DEBUG_LEVEL_DEBUG)
+            {
+                CImageFrame dbgFrame;
+                BYTE value = 0x10;
+                dbgFrame.SetSize(m_oPatternFrame.Width(), m_oPatternFrame.Height(), 1, &value);
+
+                for (size_t i = 0; i < outlayer.size(); i++)
+                {
+                    int nNo = (int)i;
+                    POINT pt = outlayer[i].ptCoord;
+
+                    dbgFrame.SetPixel(pt, 0xFF);
+
+                    pt.x += 2;
+                    pt.y += 2;
+
+                    char szText[32];
+                    sprintf_s(szText, sizeof(szText), "%d", nNo);
+
+
+                    dbgFrame.PutStr(pt.x, pt.y, szText, 0x7E, 7/*font size*/);
+                }
+
+                Debug_SaveImageFrame(dbgFrame, _T("LayerVertexAfterSort.jpg"));
+            }
+
 
 
             //外圈校正点已经按方位有序排列了,现在需要从一圈校正点中找出四个角上的点。
@@ -4950,8 +5011,8 @@ BOOL CAutoCalibratorImpl2::DoSimulateCalibrate(LPCTSTR lpszAVIFilePath, HWND hNo
 
     this->m_ePattern = eGridsNumber;
 
-    int Radius = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, uCx);
-    m_oCalibratePattern.InitPattern(Radius, this->m_CurrentMonitorInfo.rcArea);
+    //int Radius = m_oCalibratePattern.CalculateCalibPatternRadius(this->m_ePattern, uCx);
+    //m_oCalibratePattern.InitPattern(Radius, this->m_CurrentMonitorInfo.rcArea);
 
     TCHAR szSmulateParamsFileName[MAX_PATH];
     _tcscpy_s(szSmulateParamsFileName, _countof(szSmulateParamsFileName), lpszAVIFilePath);
@@ -5908,17 +5969,26 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
 
     CAutoCalibratorImpl2* pCalibrator = reinterpret_cast<CAutoCalibratorImpl2*>(lpCtx);
 
+    const BITMAPINFOHEADER* bmpinfoHeader = pCalibrator->m_oAVIInput.GetAVIFormat();
+    if (bmpinfoHeader == NULL)
+    {
+        return -1;
+    }
+
+    int nImageWidth  = bmpinfoHeader->biWidth;
+    int nImageHeight = bmpinfoHeader->biHeight;
+
     //生成调试窗体
     int nCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
     int nFrameCx = GetSystemMetrics(SM_CXFRAME);
     int nFrameCy = GetSystemMetrics(SM_CYFRAME);
 
-    RECT rcPosition;
-    rcPosition.left = 0;
-    rcPosition.top = 0;
 
-    rcPosition.right = 640;
-    rcPosition.bottom = 480;
+    RECT rcPosition;
+    rcPosition.left  = 0;
+    rcPosition.top   = 0;
+    rcPosition.right = nImageWidth;
+    rcPosition.bottom = nImageHeight;
 
     rcPosition.right += nFrameCx * 2;
     rcPosition.bottom += nCaptionHeight + nFrameCy * 2;
@@ -5935,17 +6005,15 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
         rcPosition.bottom - rcPosition.top,
         SWP_SHOWWINDOW);
 
-    const BITMAPINFOHEADER* bmpinfoHeader = pCalibrator->m_oAVIInput.GetAVIFormat();
-    if (bmpinfoHeader == NULL)
-    {
-        return -1;
-    }
+
+    
+
 
     CImageFrame mjpgFrame;
     CImageFrame grayFrame;
 
-    mjpgFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, bmpinfoHeader->biBitCount >> 3);
-    grayFrame.SetSize(bmpinfoHeader->biWidth, bmpinfoHeader->biHeight, 1);
+    mjpgFrame.SetSize(nImageWidth, nImageHeight, bmpinfoHeader->biBitCount >> 3);
+    grayFrame.SetSize(nImageWidth, nImageHeight, 1);
 
     CImageFrame onlineScreenArea;
 
@@ -5990,6 +6058,8 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
             LONG lSamples = 0;
             BOOL bRet = FALSE;
 
+
+            mjpgFrame.SetSize(nImageWidth, nImageHeight, 2);
             //bRet = pCalibrator->m_oAVIInput.Read((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, &lSamples);
             bRet = pCalibrator->m_oAVIInput.readFrame((BYTE*)mjpgFrame.GetData(), mjpgFrame.Size(), &lBytes, &lSamples);
             if (!bRet)
@@ -5999,8 +6069,15 @@ ULONG _stdcall CAutoCalibratorImpl2::SimulatedCalibrateProc(LPVOID lpCtx)
                 break;
             }
 
-            int nMJPGDataLength = 0;
-            m_oMJPGDecoder.ProcessData(mjpgFrame.GetData(), lBytes, (BYTE *)grayFrame.GetData(), &nMJPGDataLength);
+            if (bmpinfoHeader->biCompression == MJPG)
+            {
+                int nMJPGDataLength = 0;
+                m_oMJPGDecoder.ProcessData(mjpgFrame.GetData(), lBytes, (BYTE *)grayFrame.GetData(), &nMJPGDataLength);
+            }
+            else if (bmpinfoHeader->biCompression == YUY2)
+            {
+                Covert2MonochromeFrame_Y(*(CYUY2Frame*)&mjpgFrame, grayFrame);
+            }
 
             //用在线的屏蔽图做与运算
             grayFrame &= onlineScreenArea;
@@ -6448,7 +6525,7 @@ void CAutoCalibratorImpl2::DbgLoadSimulateParams(LPCTSTR lpszFileName)
             memset(&params, 0, sizeof(params));
 
             nRet = sscanf_s(szText,
-                "expected-brightness=%hhd, spd=%hhd, video-delay=%d, brightness=%d, gamma=%d\n",
+                "expected-brightness=%hhd, spd=%hhd, video-delay=%hhd, brightness=%d, gamma=%d\n",
                 &params.autoCalibrateImageParams.autoCalibrateExpectedBrightness,
                 &params.autoCalibrateImageParams.autoCalibrateSpeed,
                 &params.autoCalibrateImageParams.videoDislayDelay,

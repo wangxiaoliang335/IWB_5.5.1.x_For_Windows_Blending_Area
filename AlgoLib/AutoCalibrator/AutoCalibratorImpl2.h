@@ -342,7 +342,7 @@ public:
     //@参数:dwLatencyTimes， 时间延迟倍数
     void Init(DWORD dwTimeMagnification, DWORD dwVideoDisplayDelay, BOOL bUseAbsTime=FALSE)
     {
-        m_dwTimeBegin = GetTickCount();
+         m_dwTimeBegin = GetTickCount();
 
         if (dwTimeMagnification <= 0 )
         {

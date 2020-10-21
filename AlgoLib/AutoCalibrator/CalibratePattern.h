@@ -1368,6 +1368,16 @@ public:
                  m_nRowCount = MAX_OBJ_NUMBER / m_nColCount;
              }
          }
+
+         if (m_nColCount < 2)
+         {
+             m_nColCount = 2;
+         }
+
+         if (m_nRowCount < 2)
+         {
+             m_nRowCount = 2;
+         }
         
         int nHorzInterval_integer     = (nScreenWidth - leftMargin - rightMargin - nRadius - nRadius) / (m_nColCount - 1);
         int nHorzInterval_remainder   = (nScreenWidth - leftMargin - rightMargin - nRadius - nRadius) % (m_nColCount - 1);

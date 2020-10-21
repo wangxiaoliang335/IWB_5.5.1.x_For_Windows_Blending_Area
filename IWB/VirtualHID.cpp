@@ -1270,7 +1270,7 @@ void CVirtualHID::UpdateAttachedMonitorInfo()
 
     UINT32 nMaxActiveCx = 0, nMaxActiveCy = 0;
     BOOL bMatched = FALSE;
-    for (int i = 0; i < nDisplayDevCount; i++)
+    for (int i = 0; i < nDisplayDevCount && !bMatched; i++)
     {
         const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(i);
 
@@ -1283,21 +1283,26 @@ void CVirtualHID::UpdateAttachedMonitorInfo()
             //Monitor 1: 1920*1080
             //Minitor 2: 1920*1200
             //系统选择1920:1080作为触屏的宽高比
+
+            //if (IsWin10OrGreater())
+            {
+                if (IsMonitorAttachedToPointerDevice(
+                    pointerDevicePath,
+                    inf.monitorDevicePath))
+                {
+                    m_aspectRatioNominator   = inf.targetMode.targetVideoSignalInfo.activeSize.cx;
+                    m_aspectRatioDenominator =  inf.targetMode.targetVideoSignalInfo.activeSize.cy;
+
+                    bMatched = TRUE;
+                    break;
+                 }
+            }
+
             if (nMaxActiveCx < inf.targetMode.targetVideoSignalInfo.activeSize.cx)
             {
                 nMaxActiveCx = inf.targetMode.targetVideoSignalInfo.activeSize.cx;
                 nMaxActiveCy = inf.targetMode.targetVideoSignalInfo.activeSize.cy;
             }
-            //if (IsMonitorAttachedToPointerDevice(
-            //    pointerDevicePath,
-            //    inf.monitorDevicePath))
-            //{
-            //    m_aspectRatioNominator   = inf.targetMode.targetVideoSignalInfo.activeSize.cx;
-            //    m_aspectRatioDenominator =  inf.targetMode.targetVideoSignalInfo.activeSize.cy;
-
-            //    bMatched = TRUE;
-            //    break;
-            // }
 
         }//fo(j)
 

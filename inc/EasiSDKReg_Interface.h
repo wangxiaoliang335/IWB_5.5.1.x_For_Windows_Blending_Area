@@ -128,6 +128,13 @@ EASISDKREG_INTERFACE_API HRESULT SDKREG_GetAppType(int* pAppType, UINT uUSBKeyIn
 EASISDKREG_INTERFACE_API UINT SDKREG_GetUSBKeyCount();
 
 
+//@功 能:返回USB Key的路径
+//@参数:uUSBKeyIndex, USBKey的索引号
+//      devPath, 保存设备路径的缓冲区
+//      bufSize, 缓冲区尺寸
+EASISDKREG_INTERFACE_API HRESULT SDKREG_GetUSBKeyDevPath(UINT uUSBKeyIndex, char* devPathBuf, int bufSize);
+
+
 //@功  能:读取多屏拼接类型,和SDKREG_GetAppType返回的多屏拼接使能配合使用
 //@返回值:B0~31的定义如下
 //       B0:双屏拼接

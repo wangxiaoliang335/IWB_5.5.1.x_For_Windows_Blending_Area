@@ -58,6 +58,9 @@ public:
     //@说明:全局的工作模式与第一个相机保持一致
     ESensorLensMode GetLensMode()const;
 
+    //@功能:判断是否有处于正常使用模式下的相机
+    BOOL HasNormalUsageCamera()const;
+
     //功能:执行自动校正操作
     //@参数:nSensorID, 传感器编号(0~n), -1时指全体传感器  
     //BOOL DoAutoCalibrate(int nSensorID);
@@ -263,6 +266,9 @@ public:
     //功能:判断是否已经完成校正
     BOOL IsCalibrated()const;
 
+    //功能:判断是否有校正成功的相机存在
+    BOOL HasCalibratedCamera()const;
+
 
 	void OnTimer(LPVOID lpCtx);
 
@@ -285,6 +291,9 @@ protected:
 	static const int SELECT_BOUND_WIDTH = 5;
 
     std::vector<CIWBSensor*> m_vecSensors;
+    
+    //保存上一次传感器状态的数组
+    std::vector<ESensorLensMode> m_vecLastSensorLensMode;
     
     //显示其查找类实例
     //CDispDevFinder      m_oDispMonitorFinder;

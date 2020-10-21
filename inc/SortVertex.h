@@ -9,9 +9,7 @@
 //
 //
 #include <math.h>
-
-
-
+#include <bitset>
 template<class T>
 class CVertexSort
 {
@@ -36,6 +34,8 @@ public:
     BOOL operator() (T* vertices, int n, BOOL clockwise)
     {
 
+        if(n <= 1) return FALSE;
+        
         int nSegmentCount = (n*(n-1)) >> 1;
 
         if(m_nVerticesCount < n)
@@ -45,15 +45,15 @@ public:
         }
 
         m_nVerticesCount  = n;
+
         m_vecVertexInfo.resize(n);
 
-
-        //计算所有线段的长度
-        for(int K = 0; K < n - 1; K  ++)
+        //计算所有结点之间的距离
+        for (int K = 0; K < n - 1; K++)
         {
             const T& vertex_K = vertices[K];
 
-            for(int L = K + 1;  L < n; L ++)
+            for (int L = K + 1; L < n; L++)
             {
                 const T& vertex_L = vertices[L];
 
@@ -62,260 +62,81 @@ public:
 
                 long length_square = dx*dx + dy*dy;
 
-                SetLineSegmentLength(K, L,length_square);
+                SetLineSegmentLength(K, L, length_square);
 
             }//for-each(l)
 
         }//for-each(k)
 
 
-        //搜索每个结点距离其最近的M个结点
-        //保留最有可能是其邻接点的两个结点。
-        //const int M = 7;
-        const int M = 11;
 
-        TNeighbour neighbours[M];//按照距离升序排列的数组
-        int neighbourCount = 0;
 
-        for(int  K = 0; K < n; K++)
+        TVertexInfo* pVertexInfo = &m_vecVertexInfo[0];
+        
+        //寻找第0个结点的最近两个邻结点。
+        SearchTwoNeighbours(vertices, 0, pVertexInfo);
+        
+        if(pVertexInfo->nNeighborCount < 2) return FALSE;
+
+        int nProcessCount = 1;
+
+        //寻找邻结点的邻接点
+        int nCurrentVertex;
+        int nEndVerTex = pVertexInfo->aryNeighborVertices[0];
+        
+        nCurrentVertex = pVertexInfo->aryNeighborVertices[1];
+
+        //当前结点的一个已知邻结点结点是0
+        int nAnotherNeightborVertex = 0;
+        
+        pVertexInfo  = &m_vecVertexInfo[nCurrentVertex];
+        
+        //标记可用候选结点的标志数组
+        std::vector<bool> vecNeighourCandidates;
+        vecNeighourCandidates.resize(n);
+        for(int i = 0; i < n; i++)
         {
+            vecNeighourCandidates[i] = true;
+        }
 
-            //初始化neighbour数据
-            for(int I = 0; I < M; I++)
-            {
-                neighbours[I].distance = (std::numeric_limits<long>::max)();
-                neighbours[I].nVertex  = -1;
-            }
-            neighbourCount = 0;
+        vecNeighourCandidates[0] = false;
 
-            for(int L = 0; L < n;  L++)
-            {
-                if(K == L) continue;//自己和自己不比较
+        while (nProcessCount < n )
+        {
+            pVertexInfo->aryNeighborVertices[0] = nAnotherNeightborVertex;
+            pVertexInfo->aryNeighborVertices[1] = -1;
+            pVertexInfo->nNeighborCount = 1;
 
-                int distance = GetLineSegmentLength(K,L);
-
-                if(neighbours[M-1].distance < distance)//距离大于距离最远的邻接点，显然不是邻接点的候选。
-                {
-                    continue;
-                }
-
-                int nInsertPos = 0;
-
-                while(nInsertPos < M)
-                {
-                    if(distance < neighbours[nInsertPos].distance)
-                    {
-                        break;
-                    }
-                    nInsertPos ++;
-                }
-
-                if(nInsertPos == M)
-                {
-                    continue;
-                }
-
-                //插入排序
-                for(int I = M-1; I > nInsertPos; I --)
-                {
-                    neighbours[I] = neighbours[I-1];
-
-                }//for
-
-                neighbours[nInsertPos].nVertex  = L;
-                neighbours[nInsertPos].distance = distance;
-
-                if(neighbourCount < M)
-                {
-                    neighbourCount ++;
-                }
-
-            }
-
-            //计算矢量
-            for(int I = 0; I < neighbourCount; I++)
-            {
-                int L = neighbours[I].nVertex;
-                neighbours[I].Vx = vertices[L].ptCoord.x -  vertices[K].ptCoord.x;
-                neighbours[I].Vy = vertices[L].ptCoord.y -  vertices[K].ptCoord.y;
-            }
-
-            //static double sin_theta_threshold = sin(15.0*M_PI /180.0);
-            //static double sin_theta__square_threshold = sin_theta_threshold*sin_theta_threshold;
-            static double sin_theta_threshold =  sin(15.0*M_PI /180.0);
-            static long    cross_product_threshold =  long(100*sin_theta_threshold);
-            static long    cross_product_square_threshold = cross_product_threshold*cross_product_threshold;
-            static long    norm_square_product_threshold  = 10000;
-
-
-            //合并位于同一方向的邻接点
-            for(int I = 0; I < neighbourCount - 1; I++)
-            {
-                //long norm_vector_I_square = neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy;
-                double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy));
-
-                int J = I +1;
-                while(J < neighbourCount)
-                {
-                    //计算矢量I,J的点积和叉积,
-                    long dotProduct   = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
-                    long crossProduct = neighbours[I].Vx*neighbours[J].Vy - neighbours[I].Vy*neighbours[J].Vx;
-                    
-                    /*
-                    long crossProduct_square = crossProduct*crossProduct;
-
-                    long norm_vector_J_square =  neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy;
-
-
-                    if(dotProduct > 0 &&  __int64(crossProduct_square)*__int64(norm_square_product_threshold) < __int64(cross_product_square_threshold) * __int64(norm_vector_I_square) * __int64(norm_vector_J_square))
-                  
-                    //sin(theta) > sin_theta_threshold
-                    //crossProdut=|Vi||Vj|sin(theta);
-                    //
-                    //sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
-                    //用dotProduct的符号>0来限定两矢量夹角属于[-pi/2, pi/2]
-                    //用crossProduct的绝对值来判定是否两矢量的夹角来判定夹角小于设定的门限角
-                    //当然也可以用dotProduct的值来判定， dotProduct值越大，则意味着两矢量夹角越大。              
-
-			        */
-					double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy);
-					
-					//sin(theta) > sin_theta_threshold
-					//crossProdut=|Vi||Vj|sin(theta);
-					//
-					//sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
-					//
-					if(dotProduct > 0 && abs(crossProduct) < sin_theta_threshold*norm_vector_I*norm_vector_J)
-
-                    {//位于同一方向，即夹角<15度
-                        //移除J
-                        for(int pos = J; pos < neighbourCount - 1; pos ++)
-                        {
-                            neighbours[pos] = neighbours[pos + 1];
-                        }
-
-                        neighbourCount --;
-                    }
-                    else
-                    {
-                        J ++;
-                    }
-
-                }//while(J)
-
-            }//for(I)
-
-
-            //以当前结点为原点, 按方位角排列各矢量。
-            SortNeighbours(neighbours, neighbourCount);
-
-
-            //在剩下的邻接点中, 以本结点为原点, 选取夹角最大的两个邻接点。
-            //角度比较时, 为了取消浮点除法运算,推导算法如下
-            //SGN(dot(A,B))*cos(A,B)^2 = SGN(dot(A,B))* [dot(A,B)^2]/[norm_A^2* norm_B^2];
-            //SGN(dot(C,D))*cos(C,D)^2 = SGN(dot(C,D))* [dot(C,D)^2]/[norm_C^2 * norm_D^2];
-            //不等式SGN(dot(A,B))*cos(A,B)^2  > SGN(dot(C,D))*cos(C,D)^2等价于
-            //不等式
-            //[SGN(dot(A,B))* [dot(A,B)^2]/[norm_A^2* norm_B^2] > SGN(dot(C,D))* [dot(C,D)^2]/[norm_C^2 * norm_D^2]
-            //
-            //进一步等价于
-            //[SGN(dot(A,B))* [dot(A,B)^2]*[norm_C^2 * norm_D^2] > SGN(dot(C,D)) * [dot(C,D)^2]*[norm_A^2* norm_B^2]
-            //所以需要记录夹角最小时的失量的点积平方和矢量的模。
-
-            //__int64 dotProduct_Sign_Square_candidate = (std::numeric_limits<long>::max)();
-            //__int64 norm_square_product_candidate = 0;
+            SearchNextNeighbour(vertices, nCurrentVertex, pVertexInfo, vecNeighourCandidates);
             
-            int index[2];
-            index[0] = index[1] = -1;
+            vecNeighourCandidates[nCurrentVertex] = false;
+             
+            nProcessCount++;
 
-            int nNearestVectorCount = 0;
-            if(neighbourCount < 2)
+            nAnotherNeightborVertex = nCurrentVertex;
+            nCurrentVertex = pVertexInfo->aryNeighborVertices[1];
+
+            pVertexInfo = &m_vecVertexInfo[nCurrentVertex];
+           
+            if (nCurrentVertex == nEndVerTex)
             {
-                for(int I = 0; I < neighbourCount; I++)
-                {
-                    index[I] = neighbours[I].nVertex;
-                }
-                nNearestVectorCount = neighbourCount;
+                pVertexInfo->aryNeighborVertices[0] = nAnotherNeightborVertex;
+                pVertexInfo->aryNeighborVertices[1] = 0;
+                pVertexInfo->nNeighborCount = 2;
+                nProcessCount ++;
+                break;
             }
-            else
-            {
-                //候选两个邻接矢量的点积
-                double  dotProduct_candidate = (std::numeric_limits<long>::max)();
+            
 
-                //选两个邻接矢量的模的乘积
-                double  norm_product_candidate = 0;
+        }//while
 
-                for(int I = 0; I <= neighbourCount - 1; I++)
-                {
-                    /*
-                    __int64 norm_vector_I_square = neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy;
+        if (nProcessCount != n)
+        {//只找到了一个局部闭合图形，不是全局闭合图形
 
-                    int J = I + 1;//方位邻结点索引
-                    if( J == neighbourCount)
-                    {
-                        J = 0;
-                    }
+            return FALSE;
+        }
 
-                    __int64 norm_vector_J_square =  neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy;
-                    __int64 dotProduct   = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
-
-                    __int64 dotProduct_Sign_Square = dotProduct*dotProduct*((dotProduct > 0)?1:-1);
-
-                    //在12800*720P情形下,容易造成溢出
-                    //if( (__int64(dotProduct_Sign_Square) * __int64(norm_square_product_candidate)) < __int64(dotProduct_Sign_Square_candidate) * __int64(norm_vector_I_square) * __int64(norm_vector_J_square))
-                    {
-                        dotProduct_Sign_Square_candidate = dotProduct_Sign_Square;
-
-                        norm_square_product_candidate = norm_vector_I_square*norm_vector_J_square;
-
-                        index[0] = neighbours[I].nVertex;
-                        index[1] = neighbours[J].nVertex;
-
-                        nNearestVectorCount = 2;
-                    }
-                    */
-
-                    double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx + neighbours[I].Vy*neighbours[I].Vy));
-
-                    int J = I + 1;//方位邻结点索引
-                    if (J == neighbourCount)
-                    {
-                        J = 0;
-                    }
-
-                    double norm_vector_J = sqrt(double(neighbours[J].Vx*neighbours[J].Vx + neighbours[J].Vy*neighbours[J].Vy));
-
-                    double dotProduct = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
-
-                    //cosine函数在[0,pi]上单调递减函数
-                    //cos(t1)<cos(t0), 则t1 > t0
-                    //
-                    if(dotProduct*norm_product_candidate < dotProduct_candidate*norm_vector_I*norm_vector_J)
-                    {
-                        dotProduct_candidate = dotProduct;
-
-                        norm_product_candidate = norm_vector_I*norm_vector_J;
-
-                        index[0] = neighbours[I].nVertex;
-                        index[1] = neighbours[J].nVertex;
-
-                        nNearestVectorCount = 2;
-                    }
-
-
-                }//for(I)
-            }//else
-
-            for(int I = 0; I < nNearestVectorCount; I++)
-            {
-                m_vecVertexInfo[K].aryNeighborVertices[I ] = index[I];
-            }
-
-            m_vecVertexInfo[K].nNeighborCount = nNearestVectorCount;
-
-
-        }//for(K)
-
+        //接下来把所有的邻接点串连起来。
         std::vector<int> vecIndex;
         vecIndex.resize(n);
 
@@ -330,7 +151,7 @@ public:
         {
             return FALSE;
         }
-        int nCurrentVertex = m_vecVertexInfo[nPrevVertexIndex].aryNeighborVertices[0];
+        nCurrentVertex = m_vecVertexInfo[nPrevVertexIndex].aryNeighborVertices[0];
 
         do
         {
@@ -394,6 +215,14 @@ public:
 
 
 protected:
+
+    struct TVertexInfo //结点信息
+    {
+        int aryNeighborVertices[2];//记录结点邻接点的数组。
+        int nNeighborCount;
+    };
+
+
     //@功能:判断结点的排列顺序是否是顺时针排列。
     //@参数:pVertices, 结点数组
     //      pSequence, 排列的结点编号数组
@@ -484,7 +313,8 @@ protected:
     }
 
 
-
+    //@功能:设置Lth结点和Kth结点之间的距离，保存在一个一维数组中而不是一个二维的矩阵中，节省
+    //      一半的空间避免了冗余的信息存储。
     void SetLineSegmentLength(int K, int L, long length)
     {
         if(K == L) return ;//线段两端的结点编号不能相同
@@ -649,11 +479,417 @@ protected:
 
     }
 
-    struct TVertexInfo //结点信息
+
+    //@功能:寻找索引为K的结点的左右两个邻结点
+    //@参数:K, 结点索引号    
+    //      pVertexInfo, 输出参数，保存搜索信息
+    void SearchTwoNeighbours(T* vertices, int K, TVertexInfo* pVertexInfo)
     {
-        int aryNeighborVertices[2];//记录结点邻接点的数组。
-        int nNeighborCount;
-    };
+        int n = m_nVerticesCount;
+        //需要记录保存的M个最近距离邻结点
+        const int M = 11;
+
+        //按照距离升序排列的数组
+        TNeighbour neighbours[M];
+        int neighbourCount = 0;
+
+        //初始化neighbour数据
+        for(int I = 0; I < M; I++)
+        {
+            neighbours[I].distance = (std::numeric_limits<long>::max)();
+            neighbours[I].nVertex  = -1;
+        }
+        
+        neighbourCount = 0;
+
+        for(int L = 0; L < n;  L++)
+        {
+            if(K == L) continue;//自己和自己不比较
+
+            int distance = GetLineSegmentLength(K,L);
+
+            if(neighbours[M-1].distance < distance)//距离大于距离最远的邻接点，显然不是邻接点的候选。
+            {
+                continue;
+            }
+
+
+            //插入排序，按照距结点K的距离从小到大排列
+            int nInsertPos = 0;
+
+            while(nInsertPos < M)
+            {
+                if(distance < neighbours[nInsertPos].distance)
+                {
+                    break;
+                }
+                nInsertPos ++;
+            }
+
+            if(nInsertPos == M)
+            {
+                continue;
+            }
+
+            //插入排序
+            for(int I = M-1; I > nInsertPos; I --)
+            {
+                neighbours[I] = neighbours[I-1];
+
+            }//for
+
+            neighbours[nInsertPos].nVertex  = L;
+            neighbours[nInsertPos].distance = distance;
+
+            if(neighbourCount < M)
+            {
+                neighbourCount ++;
+            }
+
+        }
+
+        //以结点K为原点计算邻接矢量
+        for(int I = 0; I < neighbourCount; I++)
+        {
+            int L = neighbours[I].nVertex;
+            neighbours[I].Vx = vertices[L].ptCoord.x -  vertices[K].ptCoord.x;
+            neighbours[I].Vy = vertices[L].ptCoord.y -  vertices[K].ptCoord.y;
+        }
+
+
+        //矢量夹角小于15度，可以认为两矢量方向一致
+        static double  sin_theta_threshold =  sin(15.0*M_PI /180.0);
+        static double  distance_diff_times = 5;//20%
+        //合并位于同一方向的邻接点
+        for(int I = 0; I < neighbourCount - 1; I++)
+        {
+            //Ith矢量的模
+            double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx +  neighbours[I].Vy*neighbours[I].Vy));
+
+            //判断Ith矢量和其他矢量的夹角小于"方向一致"门限
+            int J = I +1;
+            while(J < neighbourCount)
+            {
+                //计算矢量I,J的点积和叉积,
+                double dotProduct   = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
+                double crossProduct = neighbours[I].Vx*neighbours[J].Vy - neighbours[I].Vy*neighbours[J].Vx;
+                
+
+                //sin(theta) > sin_theta_threshold
+                //crossProdut=|Vi||Vj|sin(theta);
+                //
+                //sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
+                //用dotProduct的符号>0来限定两矢量夹角属于[-pi/2, pi/2]
+                //用crossProduct的绝对值来判定是否两矢量的夹角来判定夹角小于设定的门限角
+                //当然也可以用dotProduct的值来判定， dotProduct值越小，则意味着两矢量夹角越大。
+
+                double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx +  neighbours[J].Vy*neighbours[J].Vy);
+
+                //dotProduct > 0，矢量夹角属于[0,π/2];并且两矢量夹角小于15.
+                if(dotProduct > 0 && abs(crossProduct) < sin_theta_threshold*norm_vector_I*norm_vector_J)
+                {//位于同一方向，即夹角<15度
+                 //移除Jth矢量
+                    long  dist_diff = abs(neighbours[I].distance - neighbours[J].distance);
+                    long max_dist = neighbours[I].distance > neighbours[J].distance ? neighbours[I].distance : neighbours[J].distance;
+
+                    if (dist_diff*distance_diff_times > max_dist)
+                    {//距离相差悬殊的才合并
+                        for (int pos = J; pos < neighbourCount - 1; pos++)
+                        {
+                            neighbours[pos] = neighbours[pos + 1];
+                        }
+
+                        neighbourCount--;
+                        continue;
+                    }
+
+                   
+                }
+                J ++;
+
+
+            }//while(J)
+
+        }//for(I)
+
+
+        //以当前结点为原点, 按方位角排列各矢量。
+        SortNeighbours(neighbours, neighbourCount);
+
+
+
+        //在剩下的邻接点中, 以本结点为原点, 选取夹角最大的两个邻接点。
+        int index[2];
+        index[0] = index[1] = -1;
+
+        int nNearestVectorCount = 0;
+        if(neighbourCount < 2)
+        {
+            for(int I = 0; I < neighbourCount; I++)
+            {
+                index[I] = neighbours[I].nVertex;
+            }
+            nNearestVectorCount = neighbourCount;
+        }
+        else
+        {
+            //候选两个邻接矢量的点积
+            double  dotProduct_candidate = (std::numeric_limits<long>::max)();
+
+            //选两个邻接矢量的模的乘积
+            double  norm_product_candidate = 0;
+
+            for(int I = 0; I <= neighbourCount - 1; I++)
+            {
+
+                double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx + neighbours[I].Vy*neighbours[I].Vy));
+
+                int J = I + 1;//邻矢量索引
+                if (J == neighbourCount)
+                {
+                    J = 0;
+                }
+
+                double norm_vector_J = sqrt(double(neighbours[J].Vx*neighbours[J].Vx + neighbours[J].Vy*neighbours[J].Vy));
+
+                double dotProduct = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
+
+                //cosine函数在[0,pi]上单调递减函数
+                //cos(t1)<cos(t0), 则t1 > t0
+                //
+                if(dotProduct*norm_product_candidate < dotProduct_candidate*norm_vector_I*norm_vector_J)
+                {
+                    dotProduct_candidate = dotProduct;
+
+                    norm_product_candidate = norm_vector_I*norm_vector_J;
+
+                    index[0] = neighbours[I].nVertex;
+                    index[1] = neighbours[J].nVertex;
+
+                    nNearestVectorCount = 2;
+                }
+
+            }//for(I)
+        }//else
+
+
+        if(pVertexInfo)
+        {
+            for(int I = 0; I < nNearestVectorCount; I++)
+            {
+                pVertexInfo->aryNeighborVertices[I] = index[I];
+            }
+
+            pVertexInfo->nNeighborCount = nNearestVectorCount;
+
+        }
+    }
+
+
+    //@功能:已知索引为K的结点的的一个邻结点，寻找索引为K的结点的另外一个邻结点
+    //@参数:K, 结点索引号
+    //      pVertexInfo, 输出参数，保存搜索信息
+    //     pCandidateFlags, 结点可否选择标志，pCandidateFlag[i]=true, 则意味者ith结点可以作为搜索候选
+    void SearchNextNeighbour(T* vertices, int K, TVertexInfo* pVertexInfo, const std::vector<bool>& vecNeighourCandidates)
+    {
+        assert(pVertexInfo->nNeighborCount == 1 && pVertexInfo->aryNeighborVertices[0] != -1);
+
+        int nOtherNeighbourVertex = pVertexInfo->aryNeighborVertices[0];
+        int nOtherNeighbourVx = vertices[nOtherNeighbourVertex].ptCoord.x - vertices[K].ptCoord.x;
+        int nOtherNeighbourVy = vertices[nOtherNeighbourVertex].ptCoord.y - vertices[K].ptCoord.y;
+        double norm_vector_other_neighbour = sqrt(nOtherNeighbourVx*nOtherNeighbourVx + nOtherNeighbourVy*nOtherNeighbourVy);
+
+        int n = m_nVerticesCount;
+        //需要记录保存的M个最近距离邻结点
+        const int M = 11;
+
+        //按照距离升序排列的数组
+        TNeighbour neighbours[M];
+        int neighbourCount = 0;
+
+        //初始化neighbour数据
+        for (int I = 0; I < M; I++)
+        {
+            neighbours[I].distance = (std::numeric_limits<long>::max)();
+            neighbours[I].nVertex = -1;
+        }
+
+        neighbourCount = 0;
+
+        for (int L = 0; L < n; L++)
+        {
+            if (K == L) continue;//自己不和自己比较
+
+            if (!vecNeighourCandidates[L]) continue;//非候选则直接跳过
+
+            int distance = GetLineSegmentLength(K, L);
+
+            if (neighbours[M - 1].distance < distance)//距离大于距离最远的邻接点，显然不是邻接点的候选。
+            {
+                continue;
+            }
+
+
+            //插入排序，按照距结点K的距离从小到大排列
+            int nInsertPos = 0;
+
+            while (nInsertPos < M)
+            {
+                if (distance < neighbours[nInsertPos].distance)
+                {
+                    break;
+                }
+                nInsertPos++;
+            }
+
+            if (nInsertPos == M)
+            {
+                continue;
+            }
+
+            //插入排序
+            for (int I = M - 1; I > nInsertPos; I--)
+            {
+                neighbours[I] = neighbours[I - 1];
+
+            }//for
+
+            neighbours[nInsertPos].nVertex = L;
+            neighbours[nInsertPos].distance = distance;
+
+            if (neighbourCount < M)
+            {
+                neighbourCount++;
+            }
+
+        }
+
+        //以结点K为原点计算邻接矢量
+        for (int I = 0; I < neighbourCount; I++)
+        {
+            int L = neighbours[I].nVertex;
+            neighbours[I].Vx = vertices[L].ptCoord.x - vertices[K].ptCoord.x;
+            neighbours[I].Vy = vertices[L].ptCoord.y - vertices[K].ptCoord.y;
+        }
+
+
+        //矢量夹角小于15度，可以认为两矢量方向一致
+        static double  sin_theta_threshold = sin(15.0*M_PI / 180.0);
+        static double  distance_diff_times = 5;//20%
+        //合并位于同一方向的邻接点
+        for (int I = 0; I < neighbourCount - 1; I++)
+        {
+            //Ith矢量的模
+            double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx + neighbours[I].Vy*neighbours[I].Vy));
+
+            //判断Ith矢量和其他矢量的夹角小于"方向一致"门限
+            int J = I + 1;
+            while (J < neighbourCount)
+            {
+                //计算矢量I,J的点积和叉积,
+                double dotProduct = neighbours[I].Vx*neighbours[J].Vx + neighbours[I].Vy*neighbours[J].Vy;
+                double crossProduct = neighbours[I].Vx*neighbours[J].Vy - neighbours[I].Vy*neighbours[J].Vx;
+
+
+                //sin(theta) > sin_theta_threshold
+                //crossProdut=|Vi||Vj|sin(theta);
+                //
+                //sin(theta) = crossProdut/(|Vi||Vj|) <  sin_theta_threshold <==> crossProdut >=  sin_theta_threshold * |Vi| * |Vj|
+                //用dotProduct的符号>0来限定两矢量夹角属于[-pi/2, pi/2]
+                //用crossProduct的绝对值来判定是否两矢量的夹角来判定夹角小于设定的门限角
+                //当然也可以用dotProduct的值来判定， dotProduct值越小，则意味着两矢量夹角越大。
+
+                double norm_vector_J = sqrt(neighbours[J].Vx*neighbours[J].Vx + neighbours[J].Vy*neighbours[J].Vy);
+
+                //dotProduct > 0，矢量夹角属于[0,π/2];并且两矢量夹角小于15.
+                if (dotProduct > 0 && abs(crossProduct) < sin_theta_threshold*norm_vector_I*norm_vector_J)
+                {//位于同一方向，即夹角<15度
+                 //移除Jth矢量
+
+                    long  dist_diff = abs(neighbours[I].distance - neighbours[J].distance);
+                    long max_dist = neighbours[I].distance > neighbours[J].distance ? neighbours[I].distance : neighbours[J].distance;
+
+                    if (dist_diff*distance_diff_times > max_dist)
+                    {//距离相差悬殊的才合并
+
+                        for (int pos = J; pos < neighbourCount - 1; pos++)
+                        {
+                            neighbours[pos] = neighbours[pos + 1];
+                        }
+
+                        neighbourCount--;
+
+                        continue;
+                    }
+                }
+
+               J++;
+
+
+            }//while(J)
+
+        }//for(I)
+
+
+         //以当前结点为原点, 按方位角排列各矢量。
+        SortNeighbours(neighbours, neighbourCount);
+
+
+
+        //在剩下的邻接点中, 以本结点为原点, 选取与已有邻结点夹角最大的1个邻接点。
+        int index[1];
+        index[0] = -1;
+
+        int nNearestVectorCount = 0;
+        if (neighbourCount < 1)
+        {
+            for (int I = 0; I < neighbourCount; I++)
+            {
+                index[I] = neighbours[I].nVertex;
+            }
+            nNearestVectorCount = neighbourCount;
+        }
+        else
+        {
+            //候选两个邻接矢量的点积
+            double  dotProduct_candidate = (std::numeric_limits<long>::max)();
+
+            //选两个邻接矢量的模的乘积
+            double  norm_product_candidate = 0;
+
+            for (int I = 0; I <= neighbourCount - 1; I++)
+            {
+
+                double norm_vector_I = sqrt(double(neighbours[I].Vx*neighbours[I].Vx + neighbours[I].Vy*neighbours[I].Vy));
+
+
+                double dotProduct = neighbours[I].Vx*nOtherNeighbourVx + neighbours[I].Vy*nOtherNeighbourVy;
+
+                //cosine函数在[0,pi]上单调递减函数
+                //cos(t1)<cos(t0), 则t1 > t0
+                //
+                if (dotProduct*norm_product_candidate < dotProduct_candidate*norm_vector_I * norm_vector_other_neighbour)
+                {
+                    dotProduct_candidate = dotProduct;
+                    norm_product_candidate = norm_vector_I*norm_vector_other_neighbour;
+                    index[0] = neighbours[I].nVertex;
+                }
+
+            }//for(I)
+        }//else
+
+
+        if (pVertexInfo)
+        {
+            pVertexInfo->aryNeighborVertices[1] = index[0];
+            pVertexInfo->nNeighborCount = 2;
+
+        }
+
+
+    }
+
+
 
 
 

@@ -196,23 +196,31 @@ BOOL COnlineRegisterDlg::OnInitDialog()
            g_oResStr[IDS_STRING462],
            theApp.GetScreenModeFromUSBKey() >= EScreenModeDouble? (LPCTSTR)strFusionInfo :g_oResStr[IDS_STRING463]);
 
-	   int nCount = theApp.GatAllUSBKeyTouchTypeCount();
+	   //int nCount = theApp.GetAllUSBKeyTouchTypeCount();
+
+       const  std::unordered_map<std::string, USBKeyInformation>& allUsbkeyInformations = theApp.GetAllUSBKeyInformations();
 	   //説明插入了多餘1個的加密狗
-	   if(nCount >1)
+	   //if(nCount >1)
+       if(allUsbkeyInformations.size() > 1)
 	   {
-	         const AllUSBKeyTouchType *eAllUSBKeyTouchType = theApp.GatAllUSBKeyTouchType();
+	        // const USBKeyInformation *eAllUSBKeyTouchType = theApp.GetAllUSBKeyInformations();
+           
 	         m_strText.Append(g_oResStr[IDS_STRING497]);
 			 int nUsbKeyCount = 0;
-	         for (int i = 0; i < nCount; i++)
+
+	         //for (int i = 0; i < nCount; i++)
+             for(auto& it = allUsbkeyInformations.begin(); it != allUsbkeyInformations.end(); it++)
 	         {
-				 if (eAllUSBKeyTouchType[i].eUSBKeyTouchType == E_DEVICE_NOFIND) continue;
+				 //if (eAllUSBKeyTouchType[i].eUSBKeyTouchType == E_DEVICE_NOFIND) continue;
+                 if (it->second.eUSBKeyTouchType == E_DEVICE_NOT_FOUND) continue;
 
 				 nUsbKeyCount++;
 		          CString   strEachUSBKey = _T("");
 		          CString   strEachKey = _T("");
 		          CString   strEachPalmTouch = _T("--");
 		          CString   strFusionInfo = _T("");
-		          switch(eAllUSBKeyTouchType[i].eUSBKeyTouchType)
+		          //switch(eAllUSBKeyTouchType[i].eUSBKeyTouchType)
+                  switch(it->second.eUSBKeyTouchType)
 		          {
 		             case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 				          strEachUSBKey = g_oResStr[IDS_STRING460];
@@ -226,15 +234,18 @@ BOOL COnlineRegisterDlg::OnInitDialog()
 			              break;
 		             case E_DEVICE_PALM_TOUCH_CONTROL:
 				          strEachUSBKey = g_oResStr[IDS_STRING496];
-				          strEachPalmTouch = GetPalmTouchTypeString(eAllUSBKeyTouchType[i].ePalmTouchControlType);
+				          //strEachPalmTouch = GetPalmTouchTypeString(eAllUSBKeyTouchType[i].ePalmTouchControlType);
+                          strEachPalmTouch = GetPalmTouchTypeString(it->second.ePalmTouchControlType);
 				          break;
 			         default:
 				          break;
 		           }
 		           CString  strFusion =_T("");
-		           strFusion.Format(g_oResStr[IDS_STRING464], (int)eAllUSBKeyTouchType[i].eScreenModeFromUsbKey+1);
+		           //strFusion.Format(g_oResStr[IDS_STRING464], (int)eAllUSBKeyTouchType[i].eScreenModeFromUsbKey+1);
+                   strFusion.Format(g_oResStr[IDS_STRING464], (int)it->second.eScreenModeFromUsbKey + 1);
 		           strEachKey.Format(_T("\r\n(%d:)%s(%s),%s"), nUsbKeyCount, strEachUSBKey, strEachPalmTouch,
-			       eAllUSBKeyTouchType[i].eScreenModeFromUsbKey >= EScreenModeDouble ? (LPCTSTR)strFusion : g_oResStr[IDS_STRING463]);
+			       //eAllUSBKeyTouchType[i].eScreenModeFromUsbKey >= EScreenModeDouble ? (LPCTSTR)strFusion : g_oResStr[IDS_STRING463]);
+                   it->second.eScreenModeFromUsbKey >= EScreenModeDouble ? (LPCTSTR)strFusion : g_oResStr[IDS_STRING463]);
 	               m_strText.Append(strEachKey);
 	         }
 	   }       

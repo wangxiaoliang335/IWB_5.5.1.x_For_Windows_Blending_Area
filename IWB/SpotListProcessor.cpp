@@ -1280,13 +1280,13 @@ RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& mon
         if (uCameraIndex == 0)
         {  //只有右边的一个融合区
             const RECT* pMergeArea = m_oSpotMerger.GetMergeArea(nMergeAreaIndex);
-            rcVisibleArea.right = pMergeArea->right;
+            if(pMergeArea) rcVisibleArea.right = pMergeArea->right;
         }
         else if (uCameraIndex == m_uCameraCount - 1)
         {//只有左边的一个融合区
             nMergeAreaIndex = uCameraIndex - 1; 
-            const RECT* pMergeArea = m_oSpotMerger.GetMergeArea(nMergeAreaIndex);            
-            rcVisibleArea.left = pMergeArea->left;
+            const RECT* pMergeArea = m_oSpotMerger.GetMergeArea(nMergeAreaIndex);
+            if (pMergeArea) rcVisibleArea.left = pMergeArea->left;
         }
         else
         {//左右两边各有一个融合区
@@ -1294,12 +1294,13 @@ RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& mon
             //左边的融合区
             nMergeAreaIndex = uCameraIndex - 1;
             const RECT* pLeftMergeArea = m_oSpotMerger.GetMergeArea(nMergeAreaIndex);
-            rcVisibleArea.left = pLeftMergeArea->left;
+            
+            if(pLeftMergeArea) rcVisibleArea.left = pLeftMergeArea->left;
             
             //右边的融合区
             nMergeAreaIndex = uCameraIndex;
             const RECT* pRightMergeArea = m_oSpotMerger.GetMergeArea(nMergeAreaIndex);
-            rcVisibleArea.right = pRightMergeArea->right;
+            if(pRightMergeArea) rcVisibleArea.right = pRightMergeArea->right;
         }
     }
 

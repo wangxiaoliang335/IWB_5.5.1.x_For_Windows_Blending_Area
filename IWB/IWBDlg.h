@@ -793,11 +793,16 @@ protected:
 
 protected:
     void InitMenu();
+    void AppendScreenModeSubmenu();
     void InsertMenuItem2TheMenu(CMenu *pMenu, const int &nInsertIndex, const DWORD &dwIMenuItemID, LPTSTR lpszMenuItemName);
     void InsertParamSettingMenuItem(CMenu *pMenu, const int &nInsertIndex);
     void InitDeviceUseModeMenuItemWithMenu(CMenu *pMenu);
-    
 
+    //@功能:其他运行实例启动时, 检测到已有实例存在，要求既有实例显示主窗体。
+    HRESULT OnBetweenInstanceMsg(WPARAM wParam, LPARAM lParam);
+
+    //@功能:判断是否是合法的USBkey
+    BOOL IsEligibleUSBKey(UINT uVID, UINT uPID);
 public:
     //<<aded by toxuke@gmail.com, 2013/05/06
     //任务栏重新生成事件消息
@@ -844,4 +849,6 @@ public:
     afx_msg void OnOperationFourpointcalibration();
 
 	std::vector<CAtlString>      m_aryCandidateResolution;
+
+
 };

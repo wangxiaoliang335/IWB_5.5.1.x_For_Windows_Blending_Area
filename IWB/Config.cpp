@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 //#include "headers.h"
 #include "..\inc\MyAPI.h"
-
 TSysConfigData g_tSysCfgData;
 
 //@功能:保存屏幕布局数据
@@ -9,6 +8,99 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
 
 //@功能:载入所有的视频布局
 BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutManager);
+
+//@功能:保证系统在突然断电的情形下,也能够保证配置数据写入的文件的完整。
+//@说明:
+//step1:将配置数据写入一个新的临时文件.tmp中去.
+//step2:如果存在Backup文件删除原有的.backup文件
+//step3: 原有的配置文件命名为.backup文件
+//step4: 把新文件.tmp改名为正常的配置文件.dll.
+//载入配置时，如果配置文件不存在，则从backup文件中载入
+BOOL SafelySaveAsUTF(const TCHAR*  lpszConfigFilePath, const char* lpszContent)
+{
+    TCHAR szTempFilePath  [MAX_PATH];
+    TCHAR szBackupFilePath[MAX_PATH];
+
+    _tcscpy_s(szTempFilePath, _countof(szTempFilePath), lpszConfigFilePath);
+    PathRenameExtension(szTempFilePath, _T(".tmp"));
+
+    _tcscpy_s(szBackupFilePath, _countof(szBackupFilePath), lpszConfigFilePath);
+    PathRenameExtension(szBackupFilePath, _T(".bak"));
+
+
+    char UTF8BOM[3] = { '\xEF','\xBB','\xBF' };
+
+    std::ofstream theFile;
+    //注意:
+    //代码若为:theFile.open(CT2A(lpszConfigFilePath) , ios_base::out) ;
+    //则路径中若有中文字符，
+    //mbstowc_s(NULL,wc_Name, FILENAME_MAX,fileName,FILENAMEMAX-1)
+    //返回的wc_name中为乱码
+    //
+    theFile.open(CT2W(szTempFilePath), ios_base::out | ios_base::trunc);
+
+    if (theFile.is_open())
+    {
+        theFile.write(UTF8BOM, 3);
+
+        //中文GB2312编码页号
+        UINT CP_GB2312 = 936;
+
+        //MBCS 转 Unicode
+        CA2W wcharContent(lpszContent, CP_GB2312);
+
+        //计算UTF8编码的长度
+        int utf8_length =
+            WideCharToMultiByte(
+                CP_UTF8,
+                0,
+                wcharContent,
+                -1,
+                NULL,
+                0,
+                NULL,
+                NULL);
+
+        char* utf_8_buf = (char*)malloc(utf8_length);
+
+        //Unicode转为UTF8编码
+        WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            wcharContent,
+            -1,
+            utf_8_buf,
+            utf8_length,
+            NULL,
+            NULL);
+
+        theFile.write(utf_8_buf, strlen(utf_8_buf));
+
+        theFile.close();
+
+        free((void*)utf_8_buf);
+
+        if (PathFileExists(szBackupFilePath))
+        {//Delete Original .bak fiel
+            DeleteFile(szBackupFilePath);
+        }
+
+        if (PathFileExists(lpszConfigFilePath))
+        {//Original ConfigFile renamed to .bak
+          MoveFile(lpszConfigFilePath, szBackupFilePath);
+
+          DeleteFile(lpszConfigFilePath);
+        }
+
+        MoveFile(szTempFilePath, lpszConfigFilePath);
+    }
+    else
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
 
 
 //@功能:载入相机参数
@@ -2842,7 +2934,36 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TLensConfig& lensConfig)
     TiXmlDocument oXMLDoc;
     if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath),TIXML_ENCODING_UTF8))
     {
-        return FALSE;
+        CT2CA ct2caConfigFilePath(lpszConfigFilePath);
+        LOG_ERR("oXMLDoc.LoadFile(%s, TIXML_ENCODDING_UTF8) failed with error(row=%d, col=%d): %s",
+            (LPSTR)ct2caConfigFilePath,
+            oXMLDoc.ErrorRow(),
+            oXMLDoc.ErrorCol(),
+            oXMLDoc.ErrorDesc());
+
+
+        //从备份文件中读取配置
+        TCHAR szBackupFilePath[MAX_PATH];
+        _tcscpy_s(szBackupFilePath, _countof(szBackupFilePath), lpszConfigFilePath);
+        PathRenameExtension(szBackupFilePath, _T(".bak"));
+
+        if (!oXMLDoc.LoadFile(CT2A(szBackupFilePath), TIXML_ENCODING_UTF8))
+        {
+           CT2CA ct2caBackupFilePath(szBackupFilePath);
+           
+           LOG_ERR("oXMLDoc.LoadFile(%s, TIXML_ENCODDING_UTF8) failed with error(row=%d, col=%d): %s",
+                (LPSTR)ct2caBackupFilePath,
+                oXMLDoc.ErrorRow(),
+                oXMLDoc.ErrorCol(),
+                oXMLDoc.ErrorDesc());
+                return FALSE;
+        }
+
+        //将.bak文件拷贝为配置文件(.dll)
+        DeleteFile(lpszConfigFilePath);
+        BOOL bFailIfExists = FALSE;
+        CopyFile(szBackupFilePath, lpszConfigFilePath, FALSE);
+
     }
     TiXmlElement *pRootElement = oXMLDoc.RootElement();
     if(pRootElement == NULL)
@@ -2872,10 +2993,11 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TLensConfig& lensConfig)
     SaveConfig(pLensConfig, lensConfig);
 
 
+
     //以UTF-8编码格式保存
     TiXmlPrinter  printer;
     oXMLDoc.Accept(&printer);
-
+    /*
     char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
 
     std::ofstream theFile;
@@ -2921,8 +3043,10 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TLensConfig& lensConfig)
     {
         return FALSE;
     }
+    */
 
-    return TRUE;
+    BOOL bReturn = SafelySaveAsUTF(lpszConfigFilePath, printer.CStr());
+    return bReturn;
 }
 
 BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId, ECameraType eCameraType, ELensType Lentype)
@@ -2974,35 +3098,41 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 
 	SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
 
-//	for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
-//	{
+    //调试信息
+    //<<debug
+    if (eCameraType == E_CAMERA_MODEL_2)
+    {
+        
+        const TLensConfig& lensConfig = sensorModeCfg.lensConfigs[eCameraType][Lentype];
 
-//		//保存各种镜头的配置参数
-//		TCHAR szPath[MAX_PATH];
-//		_stprintf_s(
-//			szPath,
-//			_countof(szPath),
-//			_T("%s\\Sensor%02d\\%s\\%s"),
-//			(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-//			nSensorId,
-//			GetProjectModeString(EProjectionMode(nModeIndex)),
-//			GetCameraTypeString(eCameraType));
+        long brightnessFingerTouchControl = lensConfig.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+        long brightnessFingerTouchWhiteBoard = lensConfig.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
+        long brightnessPalmTouchControl = lensConfig.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+        long brightnessPenTouchWhiteBoard = lensConfig.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
 
-		//递归创建子目录
-		//CreateFullDirectory(CA2CT(szPath));
-//		CreateFullDirectory(szPath);
+        CT2CA ct2aDebugPath(szPathRatio);
 
-//		for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
-//		{
-//			//保存各种镜头的配置参数
-//			TCHAR szPathRatio[MAX_PATH];
-//			memset(szPathRatio, 0, sizeof(szPathRatio));
-//			_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
-//
-//			SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][i]);
+        if (brightnessFingerTouchControl > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchControl %d > 64! xml file path=%s", brightnessFingerTouchControl, (const char*)ct2aDebugPath);
+        }
 
-//		}
-//	}
+        if (brightnessFingerTouchWhiteBoard > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchWhiteBoard %d > 64! xml file path=%s", brightnessFingerTouchWhiteBoard, (const char*)ct2aDebugPath);
+        }
+
+        if (brightnessPalmTouchControl > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PalmTouchControl %d > 64! xml file path=%s", brightnessPalmTouchControl, (const char*)ct2aDebugPath);
+        }
+
+        if (brightnessPenTouchWhiteBoard > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PenTouchWhiteBoard %d > 64! xml file path=%s", brightnessPenTouchWhiteBoard, (const char*)ct2aDebugPath);
+        }
+    }
+    //debug>>
 	return TRUE;
 }
 
@@ -3056,7 +3186,12 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
         {
             const char* paramName  = ((TiXmlElement*)pChild)->Attribute("name");
             const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
-            if(paramName && paramValue && _stricmp(paramName, "DevicePath") == 0)
+
+            if (paramName && paramValue && _stricmp(paramName, "LensMode") == 0)
+            { //启动时的工作模式
+                sensorCfg.eLensMode = (ESensorLensMode)atoi(paramValue);
+            }
+            else if(paramName && paramValue && _stricmp(paramName, "DevicePath") == 0)
             {
                 sensorCfg.strFavoriteDevicePath = paramValue;
             }
@@ -3139,11 +3274,20 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
 //      nSensorId, 传感器编号
 BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 {
-    //设备路径
-    TiXmlComment* pXmlComment = new TiXmlComment("设备路径");
+    //工作模式
+    TiXmlComment*  pXmlComment = new TiXmlComment("启动时的工作模式。0:图像调试模式;1:激光器调试模式;2:正常使用模式");
     pNode->LinkEndChild(pXmlComment);
 
     TiXmlElement * pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "LensMode");
+    pElement->SetAttribute("value", int(sensorCfg.eLensMode));
+    pNode->LinkEndChild(pElement);
+
+    //设备路径
+    pXmlComment = new TiXmlComment("设备路径");
+    pNode->LinkEndChild(pXmlComment);
+
+     pElement = new TiXmlElement("Param");
     pElement->SetAttribute("name", "DevicePath");
     pElement->SetAttribute("value", CT2A(sensorCfg.strFavoriteDevicePath));
     pNode->LinkEndChild(pElement);
@@ -3232,6 +3376,8 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 		}
 		pNode->LinkEndChild(pElement);
         
+
+
 		SaveConfig(pElement, sensorCfg.vecSensorModeConfig[i], i,nSensorId, eCameraType, sensorCfg.eSelectedLensType);
 	}
     return TRUE;
@@ -3310,6 +3456,48 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
 					{
 						LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[eCameraType][i]);
 					}
+                    else
+                    {
+                         CT2CA ct2aDebugPath(szPathRatio);
+                         LOG_ERR("Path %s does not exist!", (const char*)ct2aDebugPath);
+                    }
+                    //<<调试代码
+                    //调查高清相机亮度参数变为标清参数的问题
+                    //高清相机“正常使用”模式下的亮度参数合法值为[-64,64]之间的整数。
+                    //现在在客户那里出现了亮度值在150的情况。
+                    if (E_CAMERA_MODEL_2 == eCameraType)
+                    {
+                        const TLensConfig& lensConfig = sensorModeCfg.lensConfigs[eCameraType][i];
+
+                        long brightnessFingerTouchControl    = lensConfig.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+                        long brightnessFingerTouchWhiteBoard = lensConfig.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
+                        long brightnessPalmTouchControl      = lensConfig.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+                        long brightnessPenTouchWhiteBoard    = lensConfig.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
+
+                        CT2CA ct2aDebugPath(szPathRatio);
+
+                        if(brightnessFingerTouchControl > 64 )
+                        {
+                            LOG_ERR("LoadConfig Error!HD Camera  Brightness of FingerTouchControl %d > 64! xml file path=%s", brightnessFingerTouchControl, (const char*)ct2aDebugPath);
+                        }
+
+                        if(brightnessFingerTouchWhiteBoard > 64)
+                        {
+                            LOG_ERR("LoadConfig Error!HD Camera  Brightness of FingerTouchWhiteBoard %d > 64! xml file path=%s", brightnessFingerTouchWhiteBoard, (const char*)ct2aDebugPath);
+                        }
+
+                        if(brightnessPalmTouchControl > 64)
+                        {
+                            LOG_ERR("LoadConfig Error!HD Camera  Brightness of PalmTouchControl %d > 64! xml file path=%s", brightnessPalmTouchControl, (const char*)ct2aDebugPath);
+                        }
+                        
+                        if(brightnessPenTouchWhiteBoard > 64)
+                        {
+                            LOG_ERR("LoadConfig Error!HD Camera  Brightness of PenTouchWhiteBoard %d > 64! xml file path=%s", brightnessPenTouchWhiteBoard, (const char*)ct2aDebugPath);
+                        }
+                    }
+                    //调试代码>>
+
 				}//for(i)
 
 			}//for(eCameraType)
@@ -3340,6 +3528,16 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
 
 	} while (pChild);
 
+    //如果从配置文件载入配置的SensorCfg数目少于SENSRO_NUMBER,
+    //则未载入配置的SensorCfg拷贝第一个Sensor的配置数据。
+    while (nSensorIndex < SENSOR_NUMBER)
+    {
+        allSensorCfg[nSensorIndex] = allSensorCfg[0];
+        allSensorCfg[nSensorIndex].strFavoriteDevicePath = _T("");//设备路径设为空，避免冲突
+        nSensorIndex++;
+    }
+
+
 	return TRUE;
 }
 
@@ -3350,7 +3548,28 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData)
     TiXmlDocument oXMLDoc;
     if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath),TIXML_ENCODING_UTF8))
     {
-        return FALSE;
+
+        //从备份文件中读取配置
+        TCHAR szBackupFilePath[MAX_PATH];
+        _tcscpy_s(szBackupFilePath, _countof(szBackupFilePath), lpszConfigFilePath);
+        PathRenameExtension(szBackupFilePath, _T(".bak"));
+
+        if (!oXMLDoc.LoadFile(CT2A(szBackupFilePath), TIXML_ENCODING_UTF8))
+        {
+            CT2CA ct2caBackupFilePath(szBackupFilePath);
+
+            LOG_ERR("oXMLDoc.LoadFile(%s, TIXML_ENCODDING_UTF8) failed with error(row=%d, col=%d): %s",
+                (LPSTR)ct2caBackupFilePath,
+                oXMLDoc.ErrorRow(),
+                oXMLDoc.ErrorCol(),
+                oXMLDoc.ErrorDesc());
+            return FALSE;
+        }
+
+        //将.bak文件拷贝为配置文件(.dll)
+        DeleteFile(lpszConfigFilePath);
+        BOOL bFailIfExists = FALSE;
+        CopyFile(szBackupFilePath, lpszConfigFilePath, FALSE);
     }
     TiXmlElement *pRootElement = oXMLDoc.RootElement();
     if(pRootElement == NULL)
@@ -3433,6 +3652,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
     TiXmlPrinter  printer;
     oXMLDoc.Accept(&printer);
 
+    /*
     char UTF8BOM[3]={'\xEF','\xBB','\xBF'};
 
     std::ofstream theFile;
@@ -3441,7 +3661,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
     //则路径中若有中文字符，
     //mbstowc_s(NULL,wc_Name, FILENAME_MAX,fileName,FILENAMEMAX-1)
     //返回的wc_name中为乱码
-    //
+
     theFile.open(CT2W(lpszConfigFilePath) , ios_base::out | ios_base::trunc) ;
 
     if(theFile.is_open())
@@ -3483,8 +3703,10 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
 
         theFile.close();
         free(utf_8_buf);
-    }
-    return TRUE;
+    }*/
+
+    BOOL bReturn = SafelySaveAsUTF(lpszConfigFilePath, printer.CStr());
+    return bReturn;
 }
 
 
@@ -3609,6 +3831,8 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
     TiXmlPrinter  printer;
     oXMLDoc.Accept(&printer);
 
+
+    /*
     char UTF8BOM[3] = { '\xEF','\xBB','\xBF' };
 
     std::ofstream theFile;
@@ -3662,7 +3886,10 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
         free((void*)utf_8_buf);
     }
     return TRUE;
+    */
 
+    BOOL bReturn = SafelySaveAsUTF(lpszConfigFilePath, printer.CStr());
+    return bReturn;
 }
 
 //@功能:载入所有的视频布局
@@ -3673,7 +3900,28 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
 	TiXmlDocument oXMLDoc;
 	if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
 	{
-		return FALSE;
+        //从备份文件中读取配置
+        TCHAR szBackupFilePath[MAX_PATH];
+        _tcscpy_s(szBackupFilePath, _countof(szBackupFilePath), lpszConfigFilePath);
+        PathRenameExtension(szBackupFilePath, _T(".bak"));
+
+        if (!oXMLDoc.LoadFile(CT2A(szBackupFilePath), TIXML_ENCODING_UTF8))
+        {
+            CT2CA ct2caBackupFilePath(szBackupFilePath);
+
+            LOG_ERR("oXMLDoc.LoadFile(%s, TIXML_ENCODDING_UTF8) failed with error(row=%d, col=%d): %s",
+                (LPSTR)ct2caBackupFilePath,
+                oXMLDoc.ErrorRow(),
+                oXMLDoc.ErrorCol(),
+                oXMLDoc.ErrorDesc());
+            return FALSE;
+        }
+
+        //将.bak文件拷贝为配置文件(.dll)
+        DeleteFile(lpszConfigFilePath);
+        BOOL bFailIfExists = FALSE;
+        CopyFile(szBackupFilePath, lpszConfigFilePath, FALSE);
+
 	}
 	TiXmlElement *pRootElement = oXMLDoc.RootElement();
 	if (pRootElement == NULL)

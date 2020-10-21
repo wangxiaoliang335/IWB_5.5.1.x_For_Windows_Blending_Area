@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "../inc/CameraSpecs.h"
-
+#include "../inc/Log.h"
 //#define SENSOR_NUMBER 6
 
 //屏幕模式
@@ -173,11 +173,11 @@ enum ESensorLensMode
 //触控类型
 enum EDeviceTouchType
 {
-    E_DEVICE_PEN_TOUCH_WHITEBOARD   , //笔触控电子白板（精准触控）
-    E_DEVICE_FINGER_TOUCH_WHITEBOARD, //手触控电子白板（精准触控）
-	E_DEVICE_PALM_TOUCH_CONTROL     , //手掌互动
-	E_DEVICE_FINGER_TOUCH_CONTROL   , //手指触控(大画面精准触控)
-	E_DEVICE_NOFIND                 , //没发现加密狗
+    E_DEVICE_PEN_TOUCH_WHITEBOARD    = 0, //笔触控电子白板（精准触控）
+    E_DEVICE_FINGER_TOUCH_WHITEBOARD = 1, //手触控电子白板（精准触控）
+	E_DEVICE_PALM_TOUCH_CONTROL      = 2, //手掌互动
+	E_DEVICE_FINGER_TOUCH_CONTROL    = 3, //手指触控(大画面精准触控)
+	E_DEVICE_NOT_FOUND                = -1, //没发现加密狗
 };
 
 //触控方式类型
@@ -196,6 +196,7 @@ enum EFingerTouchControlType
 	E_FINGER_TOUCHCONTROL_F3 = 3,
 	E_FINGER_TOUCHCONTROL_F4 = 4,
 	E_FINGER_TOUCHCONTROL_F5 = 5,
+    E_FINGER_TOUCHCONTROL_UNKNOWN = -1,
 };
 
 /////手掌互动触控的类型
@@ -217,7 +218,7 @@ enum EPalmTouchControlType
 	E_PLAM_TOUCHCONTROL_T5 = 11, //(这个是高清摄像头)手掌互动触控的类型，激光器是放在中间位置的。
 	E_PLAM_TOUCHCONTROL_TX1 =12,
 	E_PLAM_TOUCHCONTROL_TX2 = 13,
-	E_PLAM_TOUCHCONTROL_UnKnow = -1,
+	E_PLAM_TOUCHCONTROL_UNKNOWN = -1,
 };
 
 enum EHIDDeviceMode
@@ -246,6 +247,10 @@ inline const TCHAR* GetProjectModeString(EProjectionMode eProjectionMode)
         return _T("DesktopMode");
         break;
 
+    default:
+        LOG_ERR("Unknown Project Mode, eProjectionMode=%d", (int)eProjectionMode);
+        break;
+
     }//switch
 
     return _T("");
@@ -272,6 +277,10 @@ inline const TCHAR*  GetCameraTypeString(ECameraType eCameraType)
         case E_CAMERA_MODEL_2:
             return _T("OV2710");
 
+        default:
+            LOG_ERR("Unknown Camera Type, eCameraType=%d", (int)eCameraType);
+            break;
+
     }//switch
 
     return _T("");
@@ -293,6 +302,10 @@ inline ECameraType GetCameraType(UINT uPID, UINT uVID)
 	{
 		eCameraType = E_CAMERA_MODEL_2;
 	}
+    else
+    {
+        LOG_ERR("GetCameraType(pid=0x%x, vid=0x%x) is unexpected!", uPID, uVID);
+    }
 	return eCameraType;
 }
 
@@ -350,7 +363,9 @@ struct GlobalSettings
     GlobalSettings()
     {
         langCode                 = _T("");
-		eProjectionMode          = E_PROJECTION_DESKTOP;
+		//eProjectionMode          = E_PROJECTION_DESKTOP;
+        //默认模式为墙面
+        eProjectionMode          = E_PROJECTION_WALL;
         nDebugLevel              = 0;
         bDebugMode               = FALSE;
         bSaveIntermediateFile    = FALSE;
@@ -2231,6 +2246,7 @@ struct TSensorModeConfig
 //传感器配置信息
 struct TSensorConfig
 {
+    ESensorLensMode  eLensMode              ;//镜头工作模式
     CAtlString       strFavoriteDevicePath  ; //优先选择的视频设备路径
     CAtlString       strFavoriteMediaType   ; //选择的视频格式名称
     ELensType        eSelectedLensType      ; //当前选中的镜头类型
@@ -2244,6 +2260,8 @@ struct TSensorConfig
 
     TSensorConfig()
     {
+        eLensMode = E_VIDEO_TUNING_MODE;//缺省图像调试模式
+
         //attachedMonitorIds.resize(1);
         //attachedMonitorIds[0] = 0;//缺省关联0号屏幕。
         strFavoriteDevicePath = _T("");

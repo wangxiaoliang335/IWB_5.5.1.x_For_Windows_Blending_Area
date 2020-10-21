@@ -16,7 +16,10 @@ CAVIFile::CAVIFile()
     m_bmpInfoHeader.biBitCount = 16;
     m_bmpInfoHeader.biCompression = MAKEFOURCC('M', 'J','P', 'G');
 
-
+    //<<temp,2020/09/27
+    //m_bmpInfoHeader.biWidth = 640;
+    //m_bmpInfoHeader.biHeight = 480;
+    //temp>>
 
 
 }
@@ -159,6 +162,7 @@ bool CAVIFile::IsOpen()const
 
 const BITMAPINFOHEADER*  CAVIFile::GetAVIFormat()const
 {
+
     return &m_bmpInfoHeader;
 }
 
