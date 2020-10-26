@@ -30,13 +30,13 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
+	TSensorModeConfig* pSensorModeConfig = NULL;
 
-	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	pSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-	TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
+	TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
-	DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, TSensorModeConfig->advanceSettings.nSpotProportion);
+	DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, pSensorModeConfig->advanceSettings.nSpotProportion);
 	DDX_Control(pDX, IDC_SPIN_SPOTPROPORTION, m_ctlSpotProportion);
 
 	DDX_Control(pDX, IDC_SPIN_SET_AUTOCALIBRATION_BRIGHTNESS, m_ctlNormalUserBrightness);
@@ -48,13 +48,13 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_VIDEODISPLAYDELAY, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.videoDislayDelay);
 	DDX_Control(pDX, IDC_SPIN_VIDEODISPLAYDELAY, m_ctlVideoIsplayDelay);
 
-	DDX_Radio(pDX, IDC_RADIO_PEN_TOUCH, (int&)TSensorModeConfig->advanceSettings.m_eTouchType);
+	DDX_Radio(pDX, IDC_RADIO_PEN_TOUCH, (int&)pSensorModeConfig->advanceSettings.m_eTouchType);
 
 	DDX_Radio(pDX, IDC_DESKTOPMODE, (int&)m_tGlobalSettings.eProjectionMode);
 
 	//根据手触和笔触的不同设置不同的摄像头亮度参数。
 	//<<add by vera_zhao 2019.10.08
-	switch (TSensorModeConfig->advanceSettings.m_eTouchType)
+	switch (pSensorModeConfig->advanceSettings.m_eTouchType)
 	{
 	case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 		DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT, lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness);
@@ -78,25 +78,25 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_INSTALLGAMMA, lensCfg.installTunningSettings.cameraParams.Prop_VideoProcAmp_Gamma);
 
 	//滑动系数
-	DDX_Text(pDX, IDC_EDIT_SMOOTH_COEF, TSensorModeConfig->advanceSettings.nSmoothCoefficient);
+	DDX_Text(pDX, IDC_EDIT_SMOOTH_COEF, pSensorModeConfig->advanceSettings.nSmoothCoefficient);
 
 	//>>>end
 	//delete by vera_zhao
 	//     DDX_Text(pDX, IDC_EDIT_SET_NORMALUSAGE_BRIGHTNESS_COEFFICIENT,
-	//        (TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)?
+	//        (pSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)?
 	//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness
 	//        :
 	//        lensCfg.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness
 	//        );
 
 	DDX_Check(pDX, IDC_CHECK_RECORD_VIDEO, m_tGlobalSettings.bRecordVideo);
-	DDX_Check(pDX, IDC_CHECK_REAR_PROJECTOR, TSensorModeConfig->advanceSettings.bIsRearProjection);
+	DDX_Check(pDX, IDC_CHECK_REAR_PROJECTOR, pSensorModeConfig->advanceSettings.bIsRearProjection);
 
 	/////////////////
-	DDX_Check(pDX, IDC_CHECK_DYNAMICMASKFRAMECONTROL, TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame);
-	DDX_Check(pDX, IDC_CHECK_ANTIJAMMINGCONTROL, TSensorModeConfig->advanceSettings.bIsAntiJamming);
+	DDX_Check(pDX, IDC_CHECK_DYNAMICMASKFRAMECONTROL, pSensorModeConfig->advanceSettings.bIsDynamicMaskFrame);
+	DDX_Check(pDX, IDC_CHECK_ANTIJAMMINGCONTROL, pSensorModeConfig->advanceSettings.bIsAntiJamming);
 
-	DDX_Check(pDX, IDC_CHECK_DISABLEREFLECTIONPOINT, TSensorModeConfig->advanceSettings.bDisableReflectionSpot);
+	DDX_Check(pDX, IDC_CHECK_DISABLEREFLECTIONPOINT, pSensorModeConfig->advanceSettings.bDisableReflectionSpot);
 	DDX_Check(pDX, IDC_CHECK_SINGLEPOINTMODE, m_tGlobalSettings.bSinglePointMode);
 
 	DDX_Control(pDX, IDC_SPIN_INSTALLBRIGHTNESS, m_ctlInstallBrightness);
@@ -203,10 +203,10 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 		GetDlgItem(IDC_RADIO_PALMTOUCHCONTROL)->EnableWindow(FALSE);
 
 		//如果使用类型为笔触,则禁用"相应光斑大小比例输入框"和spin控件。
-		TSensorModeConfig* TSensorModeConfig = NULL;
-		TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+		TSensorModeConfig* pSensorModeConfig = NULL;
+		pSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 		//只有手指精确触控的时候才需要光斑大小判断
-		if ( TSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
+		if ( pSensorModeConfig->advanceSettings.m_eTouchType == E_DEVICE_FINGER_TOUCH_WHITEBOARD)
 		{
 			GetDlgItem(IDC_EDIT_SPOTPROPORTION)->EnableWindow(TRUE);
 		}
@@ -322,15 +322,15 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
 {
 	//桌面墙面进行判断
 
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	TSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	TSensorModeConfig* pSensorModeConfig = NULL;
+	pSensorModeConfig = &this->m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 	
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
-	TSensorModeConfig->advanceSettings.nSpotProportion = SPOT_DEFAULT_POS;
+	pSensorModeConfig->advanceSettings.nSpotProportion = SPOT_DEFAULT_POS;
 
     //根据手触和笔触动态更改
-	switch(TSensorModeConfig->advanceSettings.m_eTouchType)
+	switch(pSensorModeConfig->advanceSettings.m_eTouchType)
 	{
 	   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 		   lensCfg.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness = lensCfg.normalUsageSettings_PenTouchWhiteBoard.defaultParams.Prop_VideoProcAmp_Brightness;
@@ -364,7 +364,7 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
     //lensCfg.autoCalibrateSettings.calibrateImageParamsList[0].autoCalibrateHilightGray  = AUTOCALIBRATELIGHTGRAY;
     lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateHilightGray  = lensCfg.autoCalibrateSettingsList[0].defaultCalibrateImageParams.autoCalibrateHilightGray;
 
-	switch (TSensorModeConfig->advanceSettings.m_eTouchType)
+	switch (pSensorModeConfig->advanceSettings.m_eTouchType)
 	{
 	   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 		   if (lensCfg.autoMaskSettings.cAutoMaskDetectThreshold > lensCfg.normalUsageSettings_PenTouchWhiteBoard.cYThreshold)
@@ -400,13 +400,13 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
     this->m_tGlobalSettings.bRecordVideo = FALSE;
 
     //缺省不使用背投模式
-	TSensorModeConfig->advanceSettings.bIsRearProjection = FALSE;
+	pSensorModeConfig->advanceSettings.bIsRearProjection = FALSE;
 
 	//缺省开启动态屏蔽功能
-	TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame = TRUE;
+	pSensorModeConfig->advanceSettings.bIsDynamicMaskFrame = TRUE;
 	
 	//缺省不使用抗干扰功能
-	TSensorModeConfig->advanceSettings.bIsAntiJamming = FALSE;
+	pSensorModeConfig->advanceSettings.bIsAntiJamming = FALSE;
 
     //更新数据到控件中去
 	UpdateData(FALSE);
@@ -591,11 +591,11 @@ void CAdvancedSettingsDlg::OnBnClickedRadioFingerTouch()
 {
 	// TODO: Add your control notification handler code here
 
-	 TSensorModeConfig* TSensorModeConfig = NULL;
+	 TSensorModeConfig* pSensorModeConfig = NULL;
 	 ///m_tGlobalSettings.eProjectionMode=0是桌面，m_tGlobalSettings.eProjectionMode=1是墙面
-	 TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	 pSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-     TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
+     TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 	 if (IsDlgButtonChecked(IDC_RADIO_FINGER_TOUCH) == BST_CHECKED)
 	 {
@@ -880,10 +880,10 @@ void CAdvancedSettingsDlg::OnBnClickedRadioPenTouch()
 {
 	// TODO: Add your control notification handler code here
 	//////判断是墙面还是桌面
-	TSensorModeConfig* TSensorModeConfig = NULL;
-	TSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	TSensorModeConfig* pSensorModeConfig = NULL;
+	pSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 	if (IsDlgButtonChecked(IDC_RADIO_PEN_TOUCH) == BST_CHECKED)
 	{
         //笔触模式下,不能够设置光斑比例
@@ -916,11 +916,11 @@ void CAdvancedSettingsDlg::OnEnChangeEditAutomaskdetectthreshold()
 	{
 		return;
 	}
-	TSensorModeConfig* TSensorModeConfig = NULL;
+	TSensorModeConfig* pSensorModeConfig = NULL;
 
-	TSensorModeConfig = & m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+	pSensorModeConfig = & m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
 
-    TLensConfig& lensCfg = TSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
+    TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
 	CString StrText;
 
@@ -935,7 +935,7 @@ void CAdvancedSettingsDlg::OnEnChangeEditAutomaskdetectthreshold()
 		bForceValidate = TRUE;
 	}
 	//if (npos > m_nThreshold)
-	switch (TSensorModeConfig->advanceSettings.m_eTouchType)
+	switch (pSensorModeConfig->advanceSettings.m_eTouchType)
 	{
 	    case E_DEVICE_PEN_TOUCH_WHITEBOARD:
 			if (npos > lensCfg.normalUsageSettings_PenTouchWhiteBoard.cYThreshold)
