@@ -81,7 +81,15 @@ public:
     //  return m_nDoubleScreenType ;
     //}
 
-    EScreenMode GetScreenMode()const;
+    //慢速版本
+    EScreenMode GetScreenMode() const ;
+
+    //快速版本
+    EScreenMode ScreenMode() const
+    {
+        return m_eScreenMode;
+    }
+
     EScreenMode GetScreenModeFromUSBKey()const;
 
     int GetScreenCount() const;
@@ -190,6 +198,8 @@ protected:
     //static const int m_nStartDelayTime = 5000;//10000ms,最大启动延迟时间
 
     UINT m_uBetweenInstanceMsg;
+
+    EScreenMode m_eScreenMode;
 
 };
 

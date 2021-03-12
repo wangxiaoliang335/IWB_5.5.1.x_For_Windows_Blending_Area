@@ -226,8 +226,19 @@ public:
             for(int i=0; i < N ; i++)
             {
                 vecImagePts[i] = data[i].pt2DImageCoord;
-                vecScreenPts[i].d[0] = double(data[i].ptScreenCoord.x);
-                vecScreenPts[i].d[1] = double(data[i].ptScreenCoord.y);
+
+                if (calibData.bUsingScreenPhysicalDimensions)
+                {
+                    vecScreenPts[i].d[0] = double(calibData.nScreenWidthInmm  * (data[i].ptScreenCoord.x - rcMonitor.left) / nMonitorScreenWidth);
+                    vecScreenPts[i].d[1] = double(calibData.nScreenHeightInmm * (data[i].ptScreenCoord.y - rcMonitor.top ) / nMonitorScreenHeight);
+                }
+                else
+                {
+                    vecScreenPts[i].d[0] = double(data[i].ptScreenCoord.x);
+                    vecScreenPts[i].d[1] = double(data[i].ptScreenCoord.y);
+                }
+
+
             }
             
 
@@ -281,6 +292,9 @@ public:
         m_calibParams.szImage    = calibData.szImage;
         m_calibParams.eCalibType = calibData.eCalibType;//校正类别:手动，自动
 
+        m_calibParams.bUsingScreenPhysicalDimensions = calibData.bUsingScreenPhysicalDimensions;
+        m_calibParams.nScreenWidthInmm  = calibData.nScreenWidthInmm;
+        m_calibParams.nScreenHeightInmm = calibData.nScreenHeightInmm;
         //<<test
 #ifdef USE_CYLINDER_BULB_MODEL
         if(m_calibParams.eCalibType == E_CALIBRATE_TYPE_AUTO)
@@ -358,6 +372,18 @@ public:
         }
         BOOL bRet = m_vecCameraModels[nMonitorId].FromImage2World(&pt2DContact, 1, pptScreen);
 
+
+        if (m_calibParams.bUsingScreenPhysicalDimensions && m_calibParams.nScreenWidthInmm &&  m_calibParams.nScreenHeightInmm)
+        {//用屏幕物理尺寸做线性调整
+            const RECT & rcMonitor = m_calibParams.allCalibCoefs[nMonitorId].rcMonitor;
+            int nMonitorWidth = rcMonitor.right - rcMonitor.left;
+            int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
+
+            pptScreen->d[0] = (pptScreen->d[0] - 0) * nMonitorWidth / m_calibParams.nScreenWidthInmm   + rcMonitor.left;
+            pptScreen->d[1] = (pptScreen->d[1] - 0) * nMonitorHeight / m_calibParams.nScreenHeightInmm + rcMonitor.top;
+        }
+
+
         return bRet;
     }
 
@@ -366,15 +392,26 @@ public:
     {
         if (nMonitorId < 0 || size_t(nMonitorId) >= m_vecCameraModels.size()) return FALSE;
 
+        std::vector<TPoint3D> vecPtNormalizedWorld;
+        vecPtNormalizedWorld.resize(nPtNumber);
+
+        if(m_calibParams.bUsingScreenPhysicalDimensions && m_calibParams.nScreenWidthInmm &&  m_calibParams.nScreenHeightInmm)
+        {
+            const RECT & rcMonitor = m_calibParams.allCalibCoefs[nMonitorId].rcMonitor;
+            int nMonitorScreenWidth = rcMonitor.right - rcMonitor.left;
+            int nMonitorScreenHeight = rcMonitor.bottom - rcMonitor.top;
+            
+            for (int i = 0; i < nPtNumber; i++)
+            {
+                vecPtNormalizedWorld[i].d[0] = m_calibParams.nScreenWidthInmm *(ptWorld[i].d[0] - rcMonitor.left) / nMonitorScreenWidth;
+                vecPtNormalizedWorld[i].d[1] = m_calibParams.nScreenHeightInmm*(ptWorld[i].d[1] - rcMonitor.top) / nMonitorScreenHeight;
+            }
+            ptWorld = &vecPtNormalizedWorld[0];
+        }
+
+
         BOOL bRet = m_vecCameraModels[nMonitorId].MapWorldToImage(ptWorld, nPtNumber, ptImage);
-        //if (bRet)
-        //{
-        //    for (int i = 0; i < nPtNumber; i++)
-        //    {
-        //        ptImage[i].d[0] /= m_tCMOSChipSpec.pixel_size;
-        //        ptImage[i].d[1] /= m_tCMOSChipSpec.pixel_size;
-        //    }
-        //}
+
         return bRet;
     }
 
@@ -457,8 +494,7 @@ public:
 
         return dv;
     }
-
-
+    
 
     //@功能:返回校正方程参数
     virtual const TCalibParams* GetCalibParams()const

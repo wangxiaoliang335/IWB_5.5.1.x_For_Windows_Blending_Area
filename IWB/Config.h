@@ -654,6 +654,17 @@ struct ManualCalibrateSettings
 };
 
 
+//自动校正时的设定参数值
+struct AutoCalibratePatternSettings
+{
+    int nPatternRowCount;//自动校图案的行数
+    AutoCalibratePatternSettings()
+    {
+        nPatternRowCount = 5;
+    }
+};
+
+
 //高级设定
 struct TAdvancedSettings
 {
@@ -675,6 +686,10 @@ struct TAdvancedSettings
 	BOOL bDisableReflectionSpot;   //反射点是否响应
 	int  nSmoothCoefficient;       //设置平滑系数
 
+    BOOL bUsingScreenPhysicalDimensions;//使用屏幕物理尺寸标志(Yes/No);
+    LONG nScreenWidthInmm;//屏幕宽度(单位:mm)
+    LONG nScreenHeightInmm;//屏幕高度(单位:mm)
+
     TAdvancedSettings()
     {
         nAutoMaskDilateRadius        = 1             ;
@@ -691,6 +706,10 @@ struct TAdvancedSettings
 		bIsOnLineScreenArea = FALSE;
 		bDisableReflectionSpot = FALSE;
 		nSmoothCoefficient = 0;
+
+        bUsingScreenPhysicalDimensions = false;
+        nScreenWidthInmm = 1920;
+        nScreenHeightInmm = 1080;
     }
 };
 
@@ -862,6 +881,7 @@ struct TSensorModeConfig
 	TAdvancedSettings       advanceSettings;//高级设置
 	TLensConfig             lensConfigs[E_CAMERA_MODEL_COUNT][E_LENS_TYPE_COUNT];
 	ManualCalibrateSettings manualCalibrateSetting;//手动校正时的参数设置
+    AutoCalibratePatternSettings autoCalibratePatternSettings;//自动校正图案的参数设置
 	TCalibParams            calibParam;//校正参数
 
 	TSensorModeConfig()

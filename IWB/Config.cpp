@@ -1636,7 +1636,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoMaskSettings& autoMasktSettings)
 }
 
 
-//@功能:载入正常使用时的配置信息
+//@功能:载入手动校正的配置信息
 //@参数:pNode, 指向配置文件中<ManualCalibrate>节点的指针
 //      manualCalibrateSettings, 输出参数, 手动校正配置信息
 BOOL LoadConfig(TiXmlNode *pNode, ManualCalibrateSettings& manualCalibrateSettings)
@@ -1668,6 +1668,7 @@ BOOL LoadConfig(TiXmlNode *pNode, ManualCalibrateSettings& manualCalibrateSettin
     return TRUE;
 }
 
+
 //@功能:保存手动校正的参数
 //@参数:pNode, 指向配置文件中<ManualCalibrate>节点的指针
 //      manualCalibrateSettings, 输入参数, 手动校正配置信息
@@ -1693,137 +1694,204 @@ BOOL SaveConfig(TiXmlNode *pNode, const ManualCalibrateSettings& manualCalibrate
     return TRUE;
 }
 
+
+//@功能:载入自动校正的配置信息
+//@参数:pNode, 指向配置文件中<AutoCalibratePattern>节点的指针
+//      autoCalibrateSettings, 输出参数, 自动校正配置信息
+BOOL LoadConfig(TiXmlNode *pNode, AutoCalibratePatternSettings& autoCalibratePatternSettings)
+{
+    if (pNode == NULL) return FALSE;
+    TiXmlNode* pChild = NULL;
+    do
+    {
+        pChild = pNode->IterateChildren(pChild);
+        if (NULL == pChild) break;
+        const char* lpszElementName = pChild->Value();
+        if (_stricmp(lpszElementName, "Param") == 0)
+        {
+            const char* paramName = ((TiXmlElement*)pChild)->Attribute("name");
+            const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
+
+            if (paramName && paramValue && _stricmp(paramName, "PatternRowCount") == 0)
+            { //自动校正时的图案的行数
+                int nPatternRowCount = atoi(paramValue);
+
+                if (nPatternRowCount < 5 ) nPatternRowCount = 5;
+                if (nPatternRowCount > 17) nPatternRowCount = 17;
+                autoCalibratePatternSettings.nPatternRowCount = nPatternRowCount;
+            }
+
+        }
+
+    } while (pChild);
+    return TRUE;
+}
+
+//@功能:保存自动校正的参数
+//@参数:pNode, 指向配置文件中<AutoCalibratePattern>节点的指针
+//      autoCalibratePatternSettings, 输入参数, 自动校正配置信息
+BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibratePatternSettings& autoCalibratePatternSettings)
+{
+    //自动校正每行的校正点列数
+    TiXmlComment* pXmlComment = new TiXmlComment("自动校正图案行数, 范围(5~17)");
+    pNode->LinkEndChild(pXmlComment);
+
+    TiXmlElement * pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "PatternRowCount");
+    pElement->SetAttribute("value", autoCalibratePatternSettings.nPatternRowCount);
+    pNode->LinkEndChild(pElement);   
+    return TRUE;
+}
+
+
+
 //@功能:载入正常使用时的配置信息
 //@参数:pNode, 指向配置文件中<AdvanceSettings>节点的指针
 //      advanceSettings, 输出参数, 手动校正配置信息
 BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 {
-    if(pNode == NULL) return FALSE;
+    if (pNode == NULL) return FALSE;
     TiXmlNode* pChild = NULL;
     do
     {
         pChild = pNode->IterateChildren(pChild);
-        if(NULL == pChild) break;
+        if (NULL == pChild) break;
         const char* lpszElementName = pChild->Value();
-        if(_stricmp(lpszElementName, "Param") == 0)
+        if (_stricmp(lpszElementName, "Param") == 0)
         {
-            const char* paramName  = ((TiXmlElement*)pChild)->Attribute("name");
+            const char* paramName = ((TiXmlElement*)pChild)->Attribute("name");
             const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
-            if(_stricmp(paramName, "ClutterMaskingAreaInflationRadius") == 0)
+            if (_stricmp(paramName, "ClutterMaskingAreaInflationRadius") == 0)
             {//干扰光斑屏蔽区膨胀半径
                 advanceSettings.nAutoMaskDilateRadius = atoi(paramValue);
-            }	
-            else if(_stricmp(paramName, "SpotProportion") == 0)
+            }
+            else if (_stricmp(paramName, "SpotProportion") == 0)
             {//响应光斑大小比例
                 advanceSettings.nSpotProportion = atoi(paramValue);
             }
-            else if(_stricmp(paramName, "EraserMultiples") == 0)
+            else if (_stricmp(paramName, "EraserMultiples") == 0)
             {//板擦与光斑的倍数
                 advanceSettings.nMultEraser = atoi(paramValue);
             }
-            else if(_stricmp(paramName, "SetFixedBlobTime") == 0)
+            else if (_stricmp(paramName, "SetFixedBlobTime") == 0)
             {//检测为固定光斑的时间
                 advanceSettings.nFixedBlobSetTime = atoi(paramValue);
             }
-			else if (_stricmp(paramName, "EnableStrokeInterpolate") == 0)
-			{
-				if (_stricmp(paramValue, "Yes") == 0)
-				{
-					advanceSettings.bEnableStrokeInterpolate = TRUE;
-				}
-				else
-				{
-					advanceSettings.bEnableStrokeInterpolate = FALSE;
-				}
-			}
-			else if (_stricmp(paramName, "DeviceTouchType") == 0)
-			{
-				if (paramValue &&_stricmp(paramValue, "Finger_Touch_WhiteBoard") == 0)
-				{
-					advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
-				}
-				else if(paramValue &&_stricmp(paramValue, "Pen_Touch_WhiteBoard") == 0)
-				{
-					advanceSettings.m_eTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
-				}
-				else if(paramValue &&_stricmp(paramValue, "Finger_Touch_Control") == 0)
-				{
-					advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
-				}
-				else if (paramValue &&_stricmp(paramValue, "Palm_Touch_Control") == 0)
-				{
-					advanceSettings.m_eTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
-				}
-				else
-				{
-				}
-			}
-			else if (_stricmp(paramName, "RearProjectionDevice") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					advanceSettings.bIsRearProjection = TRUE;
-				}
-				else
-				{
-					advanceSettings.bIsRearProjection = FALSE;
-				}
+            else if (_stricmp(paramName, "EnableStrokeInterpolate") == 0)
+            {
+                if (_stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bEnableStrokeInterpolate = TRUE;
+                }
+                else
+                {
+                    advanceSettings.bEnableStrokeInterpolate = FALSE;
+                }
+            }
+            else if (_stricmp(paramName, "DeviceTouchType") == 0)
+            {
+                if (paramValue &&_stricmp(paramValue, "Finger_Touch_WhiteBoard") == 0)
+                {
+                    advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+                }
+                else if (paramValue &&_stricmp(paramValue, "Pen_Touch_WhiteBoard") == 0)
+                {
+                    advanceSettings.m_eTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD;
+                }
+                else if (paramValue &&_stricmp(paramValue, "Finger_Touch_Control") == 0)
+                {
+                    advanceSettings.m_eTouchType = E_DEVICE_FINGER_TOUCH_CONTROL;
+                }
+                else if (paramValue &&_stricmp(paramValue, "Palm_Touch_Control") == 0)
+                {
+                    advanceSettings.m_eTouchType = E_DEVICE_PALM_TOUCH_CONTROL;
+                }
+                else
+                {
+                }
+            }
+            else if (_stricmp(paramName, "RearProjectionDevice") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bIsRearProjection = TRUE;
+                }
+                else
+                {
+                    advanceSettings.bIsRearProjection = FALSE;
+                }
 
-			}
-			else if(_stricmp(paramName, "DynamicMaskFrame") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes")== 0)
-				{
-					advanceSettings.bIsDynamicMaskFrame = TRUE;
-				}
-				else {
-					advanceSettings.bIsDynamicMaskFrame = FALSE;
-				}
-			}
-			else if(_stricmp(paramName, "AntiJamming") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					advanceSettings.bIsAntiJamming = TRUE;
-				}
-				else
-				{
-					advanceSettings.bIsAntiJamming = FALSE;
-				}
-			}
-			else if (_stricmp(paramName, "OnLineScreenArea") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					advanceSettings.bIsOnLineScreenArea = TRUE;
-				}
-				else
-				{
-					advanceSettings.bIsOnLineScreenArea = FALSE;
-				}
-			}
-			else if(_stricmp(paramName, "DisableReflectionSpot") == 0)
-			{
-				if(paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					advanceSettings.bDisableReflectionSpot = TRUE;
-				}
-				else
-				{
-					advanceSettings.bDisableReflectionSpot = FALSE;
-				}
-			}
-			else if(_stricmp(paramName, "SetSmoothCoefficient") == 0)
-			{
-				advanceSettings.nSmoothCoefficient = atoi(paramValue);
-			}
-			else
-			{
+            }
+            else if (_stricmp(paramName, "DynamicMaskFrame") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bIsDynamicMaskFrame = TRUE;
+                }
+                else {
+                    advanceSettings.bIsDynamicMaskFrame = FALSE;
+                }
+            }
+            else if (_stricmp(paramName, "AntiJamming") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bIsAntiJamming = TRUE;
+                }
+                else
+                {
+                    advanceSettings.bIsAntiJamming = FALSE;
+                }
+            }
+            else if (_stricmp(paramName, "OnLineScreenArea") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bIsOnLineScreenArea = TRUE;
+                }
+                else
+                {
+                    advanceSettings.bIsOnLineScreenArea = FALSE;
+                }
+            }
+            else if (_stricmp(paramName, "DisableReflectionSpot") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bDisableReflectionSpot = TRUE;
+                }
+                else
+                {
+                    advanceSettings.bDisableReflectionSpot = FALSE;
+                }
+            }
+            else if (_stricmp(paramName, "SetSmoothCoefficient") == 0)
+            {
+                advanceSettings.nSmoothCoefficient = atoi(paramValue);
+            }
+            else if (_stricmp(paramName, "UsingScreenPhysicalDimensions") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    advanceSettings.bUsingScreenPhysicalDimensions = TRUE;
+                }
+                else
+                {
+                    advanceSettings.bUsingScreenPhysicalDimensions = FALSE;
+                }
 
-			}
+            }
+            else if (_stricmp(paramName, "ScreenPhysicalWidth") == 0)
+            {
+                advanceSettings.nScreenWidthInmm = atoi(paramValue);
+            }
+            else if (_stricmp(paramName, "ScreenPhysicalHeight") == 0)
+            {
+                advanceSettings.nScreenHeightInmm = atoi(paramValue);
+            }
         }
 
-    }while(pChild);
+    } while (pChild);
     return TRUE;
 }
 
@@ -1958,6 +2026,37 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 	pElement->SetAttribute("name", "SetSmoothCoefficient");
 	pElement->SetAttribute("value", advanceSettings.nSmoothCoefficient);
 	pNode->LinkEndChild(pElement);
+
+
+    //使能屏幕物理尺寸标志，在屏幕内容拉伸严重时使用
+    pXmlComment = new TiXmlComment("使能屏幕物理尺寸, 屏幕显示畸变严重时使用(Yes/No)");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "UsingScreenPhysicalDimensions");
+    pElement->SetAttribute("value", advanceSettings.bUsingScreenPhysicalDimensions?"Yes":"No");
+    pNode->LinkEndChild(pElement);
+
+
+    //屏幕物理宽度
+    pXmlComment = new TiXmlComment("屏幕宽度，单位:毫米");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ScreenPhysicalWidth");
+    pElement->SetAttribute("value", advanceSettings.nScreenWidthInmm);
+    pNode->LinkEndChild(pElement);
+
+
+    //屏幕物理高度
+    pXmlComment = new TiXmlComment("屏幕高度，单位:毫米");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ScreenPhysicalHeight");
+    pElement->SetAttribute("value", advanceSettings.nScreenHeightInmm);
+    pNode->LinkEndChild(pElement);
+
 
     return TRUE;
 }
@@ -2169,28 +2268,28 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
         {
             const char* paramName  = ((TiXmlElement*)pChild)->Attribute("name");
             const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
-            if(paramName && paramValue)
+            if (paramName && paramValue)
             {
-                if(_stricmp(paramName, "ImageWidth") == 0)
+                if (_stricmp(paramName, "ImageWidth") == 0)
                 {
                     calibParams.szImage.cx = atoi(paramValue);
                 }
-                else if(_stricmp(paramName, "ImageHeight") == 0)
+                else if (_stricmp(paramName, "ImageHeight") == 0)
                 {
                     calibParams.szImage.cy = atoi(paramValue);
                 }
-                else if (_stricmp(paramName, "CalibrateModel") ==0 )
+                else if (_stricmp(paramName, "CalibrateModel") == 0)
                 {
                     int nCalibrateModel = E_CALIBRATE_MODEL(atoi(paramValue));
-                    if (nCalibrateModel < 0 || nCalibrateModel >= (int) E_CALIBRATE_MODEL_COUNT)
+                    if (nCalibrateModel < 0 || nCalibrateModel >= (int)E_CALIBRATE_MODEL_COUNT)
                     {
                         nCalibrateModel = 0;
                     }
                     calibParams.eCalibrateModel = E_CALIBRATE_MODEL(nCalibrateModel);
                 }
-                else if(_stricmp(paramName, "CalibrateType") == 0)
+                else if (_stricmp(paramName, "CalibrateType") == 0)
                 {
-                    if(_stricmp(paramValue,"Auto") == 0)
+                    if (_stricmp(paramValue, "Auto") == 0)
                     {
                         calibParams.eCalibType = E_CALIBRATE_TYPE_AUTO;
                     }
@@ -2199,6 +2298,26 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
                         calibParams.eCalibType = E_CALIBRATE_TYPE_MANUAL;
                     }
 
+                }
+                else if (_stricmp(paramName, "UsingScreenPhysicalDimensions") == 0)
+                {
+                    if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                    {
+                        calibParams.bUsingScreenPhysicalDimensions = TRUE;
+                    }
+                    else
+                    {
+                        calibParams.bUsingScreenPhysicalDimensions = FALSE;
+                    }
+
+                }
+                else if (_stricmp(paramName, "ScreenPhysicalWidth") == 0)
+                {
+                    calibParams.nScreenWidthInmm = atoi(paramValue);
+                }
+                else if (_stricmp(paramName, "ScreenPhysicalHeight") == 0)
+                {
+                    calibParams.nScreenHeightInmm = atoi(paramValue);
                 }
             }
         }
@@ -2269,6 +2388,38 @@ BOOL SaveConfig(TiXmlNode *pNode, const TCalibParams& calibParams)
     pElement->SetAttribute("name", "CalibrateType");
     pElement->SetAttribute("value", calibParams.eCalibType == E_CALIBRATE_TYPE_AUTO ?"Auto":"Manual");
     pNode->LinkEndChild(pElement);
+
+    //使能屏幕物理尺寸标志，在屏幕内容拉伸严重时使用
+    pXmlComment = new TiXmlComment("使能屏幕物理尺寸, 屏幕显示畸变严重时使用(Yes/No)");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "UsingScreenPhysicalDimensions");
+    pElement->SetAttribute("value", calibParams.bUsingScreenPhysicalDimensions ? "Yese" : "No");
+    pNode->LinkEndChild(pElement);
+
+
+    //屏幕物理宽度
+    pXmlComment = new TiXmlComment("屏幕宽度，单位:毫米");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ScreenPhysicalWidth");
+    pElement->SetAttribute("value", calibParams.nScreenWidthInmm);
+    pNode->LinkEndChild(pElement);
+
+
+    //屏幕物理高度
+    pXmlComment = new TiXmlComment("屏幕高度，单位:毫米");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ScreenPhysicalHeight");
+    pElement->SetAttribute("value", calibParams.nScreenHeightInmm);
+    pNode->LinkEndChild(pElement);
+
+
+
 
     pXmlComment = new TiXmlComment("所有监视器校正参数");
     pNode->LinkEndChild(pXmlComment);
@@ -3059,104 +3210,116 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 	pNode->LinkEndChild(pElement);
 	SaveConfig(pElement, sensorModeCfg.advanceSettings);
 
-	//手动校正参数
-	pXmlComment = new TiXmlComment("手动校正参数");
-	pNode->LinkEndChild(pXmlComment);
+    //手动校正参数
+    pXmlComment = new TiXmlComment("手动校正参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("ManualCalibrate");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, sensorModeCfg.manualCalibrateSetting);
+    pElement = new TiXmlElement("ManualCalibrate");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, sensorModeCfg.manualCalibrateSetting);
 
+    //自动校正参数
+    pXmlComment = new TiXmlComment("自动校正参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	//校正方程系数
-	pXmlComment = new TiXmlComment("校正方程参数");
-	pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("AutoCalibratePattern");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, sensorModeCfg.autoCalibratePatternSettings);
 
-	pElement = new TiXmlElement("CalibateEquationParams");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, sensorModeCfg.calibParam);
+    
+    //校正方程系数
+    pXmlComment = new TiXmlComment("校正方程参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	//		//保存各种镜头的配置参数
-	TCHAR szPath[MAX_PATH];
-	_stprintf_s(
-		szPath,
-		_countof(szPath),
-		_T("%s\\Sensor%02d\\%s\\%s"),
-		(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-		nSensorId,
-		GetProjectModeString(EProjectionMode(nModeIndex)),
-		GetCameraTypeString(eCameraType));
+    pElement = new TiXmlElement("CalibateEquationParams");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, sensorModeCfg.calibParam);
 
-	//递归创建子目录
-	//CreateFullDirectory(CA2CT(szPath));
-	CreateFullDirectory(szPath);
+    //		//保存各种镜头的配置参数
+    TCHAR szPath[MAX_PATH];
+    _stprintf_s(
+        szPath,
+        _countof(szPath),
+        _T("%s\\Sensor%02d\\%s\\%s"),
+        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+        nSensorId,
+        GetProjectModeString(EProjectionMode(nModeIndex)),
+        GetCameraTypeString(eCameraType));
 
-	//保存各种镜头的配置参数
-	TCHAR szPathRatio[MAX_PATH];
-	memset(szPathRatio, 0, sizeof(szPathRatio));
-	_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
+//递归创建子目录
+//CreateFullDirectory(CA2CT(szPath));
+CreateFullDirectory(szPath);
 
-	SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
+//保存各种镜头的配置参数
+TCHAR szPathRatio[MAX_PATH];
+memset(szPathRatio, 0, sizeof(szPathRatio));
+_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
 
-    //调试信息
-    //<<debug
-    if (eCameraType == E_CAMERA_MODEL_2)
+SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
+
+//调试信息
+//<<debug
+if (eCameraType == E_CAMERA_MODEL_2)
+{
+
+    const TLensConfig& lensConfig = sensorModeCfg.lensConfigs[eCameraType][Lentype];
+
+    long brightnessFingerTouchControl = lensConfig.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+    long brightnessFingerTouchWhiteBoard = lensConfig.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
+    long brightnessPalmTouchControl = lensConfig.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+    long brightnessPenTouchWhiteBoard = lensConfig.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
+
+    CT2CA ct2aDebugPath(szPathRatio);
+
+    if (brightnessFingerTouchControl > 64)
     {
-        
-        const TLensConfig& lensConfig = sensorModeCfg.lensConfigs[eCameraType][Lentype];
-
-        long brightnessFingerTouchControl = lensConfig.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
-        long brightnessFingerTouchWhiteBoard = lensConfig.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
-        long brightnessPalmTouchControl = lensConfig.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
-        long brightnessPenTouchWhiteBoard = lensConfig.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
-
-        CT2CA ct2aDebugPath(szPathRatio);
-
-        if (brightnessFingerTouchControl > 64)
-        {
-            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchControl %d > 64! xml file path=%s", brightnessFingerTouchControl, (const char*)ct2aDebugPath);
-        }
-
-        if (brightnessFingerTouchWhiteBoard > 64)
-        {
-            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchWhiteBoard %d > 64! xml file path=%s", brightnessFingerTouchWhiteBoard, (const char*)ct2aDebugPath);
-        }
-
-        if (brightnessPalmTouchControl > 64)
-        {
-            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PalmTouchControl %d > 64! xml file path=%s", brightnessPalmTouchControl, (const char*)ct2aDebugPath);
-        }
-
-        if (brightnessPenTouchWhiteBoard > 64)
-        {
-            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PenTouchWhiteBoard %d > 64! xml file path=%s", brightnessPenTouchWhiteBoard, (const char*)ct2aDebugPath);
-        }
+        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchControl %d > 64! xml file path=%s", brightnessFingerTouchControl, (const char*)ct2aDebugPath);
     }
-    //debug>>
-	return TRUE;
+
+    if (brightnessFingerTouchWhiteBoard > 64)
+    {
+        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchWhiteBoard %d > 64! xml file path=%s", brightnessFingerTouchWhiteBoard, (const char*)ct2aDebugPath);
+    }
+
+    if (brightnessPalmTouchControl > 64)
+    {
+        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PalmTouchControl %d > 64! xml file path=%s", brightnessPalmTouchControl, (const char*)ct2aDebugPath);
+    }
+
+    if (brightnessPenTouchWhiteBoard > 64)
+    {
+        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PenTouchWhiteBoard %d > 64! xml file path=%s", brightnessPenTouchWhiteBoard, (const char*)ct2aDebugPath);
+    }
+}
+//debug>>
+return TRUE;
 }
 
 
 BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
 {
-	if (pNode == NULL) return FALSE;
-	TiXmlNode* pChild = NULL;
-	do
-	{
-		pChild = pNode->IterateChildren(pChild);
-		if (NULL == pChild)
-		{
-			break;
-		}
-		const char* lpszElementName = pChild->Value();
-		if (_stricmp(lpszElementName, "AdvanceSettings") == 0)
-		{	//高级设置参数
-			LoadConfig(pChild, sensorModeCfg.advanceSettings);
-		}
-		else if (_stricmp(lpszElementName, "ManualCalibrate") == 0)
-		{   //手动校正参数
-			LoadConfig(pChild, sensorModeCfg.manualCalibrateSetting);
-		}
+    if (pNode == NULL) return FALSE;
+    TiXmlNode* pChild = NULL;
+    do
+    {
+        pChild = pNode->IterateChildren(pChild);
+        if (NULL == pChild)
+        {
+            break;
+        }
+        const char* lpszElementName = pChild->Value();
+        if (_stricmp(lpszElementName, "AdvanceSettings") == 0)
+        {	//高级设置参数
+            LoadConfig(pChild, sensorModeCfg.advanceSettings);
+        }
+        else if (_stricmp(lpszElementName, "ManualCalibrate") == 0)
+        {   //手动校正参数
+            LoadConfig(pChild, sensorModeCfg.manualCalibrateSetting);
+        }
+        else if (_stricmp(lpszElementName, "AutoCalibratePattern") == 0)
+        {   //自动校正参数
+            LoadConfig(pChild, sensorModeCfg.autoCalibratePatternSettings);
+        }
 		else if (_stricmp(lpszElementName, "CalibateEquationParams") == 0)
 		{  //校正方程参数
 			LoadConfig(pChild, sensorModeCfg.calibParam);

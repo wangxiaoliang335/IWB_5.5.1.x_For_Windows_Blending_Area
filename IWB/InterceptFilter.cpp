@@ -206,7 +206,8 @@ m_bEnableBrightnessAutoRegulating(FALSE),
 m_bCaptureImage(FALSE),
 m_nFrameSkipCount(0),
 m_oFpsDetector(60),
-m_bStartDrawOnlineScreenArea(false)
+m_bStartDrawOnlineScreenArea(false),
+m_bIsDetecting(FALSE)
 {
 
 
@@ -291,7 +292,7 @@ HRESULT  CInterceptFilter::DecideBufferSize(
     CMediaType mt(m_pInput->CurrentMediaType());
 
 
-    pprop->cBuffers = 1;
+    pprop->cBuffers = 2;
     pprop->cbBuffer = mt.GetSampleSize();;
     pprop->cbAlign  = 2;
 
@@ -363,6 +364,8 @@ void CInterceptFilter::CaptureImage()
 // Transform place holder - should never be called
 HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 {
+    if (!m_bIsDetecting) return S_OK;
+
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
     m_oLostFrameDetector.DoDetect();
@@ -505,8 +508,9 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
                 //					dbgFile.close();
                 //				}
 
-                                //将MJPG图片帧解码为灰度图像。
+                //将MJPG图片帧解码为灰度图像。
                 m_oMJPGDecoder.ProcessData(pSrcBuf, pIn->GetSize(), (BYTE*)m_GraySrcFrame.GetData(), &nMJPGDataLength);
+
                 //这个数据会压缩，因此会变小。
                 nImageDataLength = nMJPGDataLength;
                 //				if (bDebug)
@@ -594,6 +598,7 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
     ////如果是摄像头模式的话不做光斑检测工作。
 
     m_pPenPosDetector->DoDetect(&m_GraySrcFrame, m_pSensor->GetLensMode());
+
 
     if (this->m_pVideoPlayer)
     {
@@ -914,13 +919,19 @@ BOOL CInterceptFilter::StartDetect(HWND hDisplayWnd, int nSrcImageWidth, int nSr
 
     m_oFpsDetector.Reset();
 
-    return m_pPenPosDetector->StartDetect(hDisplayWnd, nSrcImageWidth, nSrcImageHeight,m_pSensor);
+    m_pPenPosDetector->StartDetect(hDisplayWnd, nSrcImageWidth, nSrcImageHeight, m_pSensor);
+    
+     m_bIsDetecting = TRUE;
+
+    return TRUE;
 
 }
 
 BOOL CInterceptFilter::StopDetect()
 {
-    return m_pPenPosDetector->StopDetect();
+     m_pPenPosDetector->StopDetect();
+     m_bIsDetecting = FALSE;
+     return TRUE;
 }
 
 void CInterceptFilter::ViewMonoImage(HWND hWnd)

@@ -509,6 +509,7 @@ inline HRESULT EnumVideoCaptureDevice(CaptuerDeviceInstanceSet& instanceSet)
 
     HDEVINFO hDevInfo = INVALID_HANDLE_VALUE;
 
+
     hDevInfo = 
         SetupDiGetClassDevs(
             &KSCATEGORY_CAPTURE,	
@@ -517,6 +518,17 @@ inline HRESULT EnumVideoCaptureDevice(CaptuerDeviceInstanceSet& instanceSet)
             DIGCF_PRESENT | DIGCF_DEVICEINTERFACE  
 
           );
+
+
+    /*
+    hDevInfo =
+        SetupDiGetClassDevs(
+            &CLSID_VideoInputDeviceCategory,
+            NULL,
+            NULL,
+            DIGCF_PRESENT | DIGCF_DEVICEINTERFACE
+        );
+        */
 
 
     if(hDevInfo == INVALID_HANDLE_VALUE)

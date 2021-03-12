@@ -186,4 +186,6 @@ protected:
 	bool    m_bStartDrawOnlineScreenArea;
 	CPoint  m_PtMove;
 
+
+    BOOL m_bIsDetecting;
 };

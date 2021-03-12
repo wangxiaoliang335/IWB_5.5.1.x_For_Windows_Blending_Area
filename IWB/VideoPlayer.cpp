@@ -2444,7 +2444,7 @@ void CVideoPlayer::UpdateVideoStreamForamtInfo(int nImageWidth, int nImageHeight
 	 ////这个是需要在高级设置的对话框中进行显示的，每个摄像头的所有格式都需要各自显示的，这个只是当前选中的格式而已
 	 m_sCurrentCameraResolution.Format(_T("%d X %d %s"), nImageWidth, nImageHeight, Compress);
 	 /////这个是在帧率下显示的只显示第一个摄像头的信息	 
-	 if (theApp.GetScreenMode() == EScreenModeSingle)
+	 if (theApp.ScreenMode() == EScreenModeSingle)
 	 {
 		 _stprintf_s(
 			       m_szStatusText,

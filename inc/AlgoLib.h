@@ -55,6 +55,13 @@ inline int GetPatternCols(E_AutoCalibratePattern pattern)
     return  9 + int(pattern);
 }
 
+inline E_AutoCalibratePattern GetAutoCalibratePattern(int cols)
+{
+
+    return E_AutoCalibratePattern(cols - 5);
+
+}
+
 //自动校正错误代码
 enum EAutoCalibrateError
 {
@@ -150,6 +157,12 @@ struct TCalibParams
         szImage.cy = 480;
 
         eCalibrateModel = E_CALIBRATE_MODEL_GENERICAL_CAMERA;
+
+
+        bUsingScreenPhysicalDimensions = FALSE;//使用屏幕物理尺寸标志
+        nScreenWidthInmm  = 0;//屏幕物理宽度
+        nScreenHeightInmm = 0;//屏幕物理高度
+
     }
 
     E_CALIBRATE_MODEL eCalibrateModel;//定位校正使用的模型
@@ -157,6 +170,11 @@ struct TCalibParams
     E_CALIBRATE_TYPE eCalibType;//手动/自动校正
     SIZE szImage;
     ALL_CALIB_COEFS allCalibCoefs;
+
+    BOOL bUsingScreenPhysicalDimensions;//使用屏幕物理尺寸标志
+    LONG nScreenWidthInmm;//屏幕物理宽度
+    LONG nScreenHeightInmm;//屏幕物理高度
+
 };
 
 struct TMonitorCalibData
@@ -188,6 +206,9 @@ struct TCalibData
         szImage.cy = 1080;
         lpCtx = NULL;//
 
+        bUsingScreenPhysicalDimensions = false;
+        nScreenWidthInmm  = 0;
+        nScreenHeightInmm = 0;
     }
 
     E_CALIBRATE_MODEL eCalibrateModel;//定位校正使用的模型
@@ -198,6 +219,9 @@ struct TCalibData
     ALL_MOITOR_CALIB_DATA allMonitorCalibData;
     LPVOID lpCtx;//上下文辅助数据
 
+    BOOL bUsingScreenPhysicalDimensions;//使用屏幕物理尺寸标志
+    LONG nScreenWidthInmm ;//屏幕物理宽度
+    LONG nScreenHeightInmm;//屏幕物理高度
 
 
 };

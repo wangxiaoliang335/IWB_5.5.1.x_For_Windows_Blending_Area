@@ -120,7 +120,8 @@ CIWBApp::CIWBApp()
     //m_eScreenModeFromUsbKey(EScreenModeSingle),
     //m_bFoundHardwareUSBKey(FALSE),
     m_uHardwareUSBKeyCount(0),
-    m_bIsOnlineRegistered(FALSE)
+    m_bIsOnlineRegistered(FALSE),
+    m_eScreenMode(EScreenModeSingle)
 {
     // TODO: add construction code here,
     // Place all significant initialization in InitInstance
@@ -305,6 +306,8 @@ BOOL CIWBApp::InitInstance()
     int nVScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
     int nVScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
+    m_eScreenMode = GetScreenMode();
+
     LOG_INF("Screen Size = %d X %d, Virtual Screen Size = %d X %d, <Left,Top>=<%d,%d>,  Multiple Screen Merge Eabled:%s\n",
         nCxScreen,
         nCyScreen,
@@ -312,7 +315,7 @@ BOOL CIWBApp::InitInstance()
         nCyVScreen,
         nVScreenLeft,
         nVScreenTop,
-        (GetScreenMode() >= EScreenModeDouble) ? "Yes" : "No");
+        (m_eScreenMode >= EScreenModeDouble) ? "Yes" : "No");
 
     int nDisplayDevCount = m_oDispMonitorFinder.GetDisplayDevCount();
 
@@ -672,7 +675,7 @@ void CIWBApp::InitDirectoryInformation()
 
 EDeviceTouchType  CIWBApp::GetUSBKeyTouchType()const
 {
-    EDeviceTouchType eDeviceTouchType = E_DEVICE_FINGER_TOUCH_WHITEBOARD;
+    EDeviceTouchType eDeviceTouchType = E_DEVICE_NOT_FOUND;
 
     for (auto it = m_AllUSbKeyInformations.begin(); it != m_AllUSbKeyInformations.end(); it++)
     {
@@ -723,6 +726,7 @@ EFingerTouchControlType CIWBApp::GetFingerTouchType() const
 
 EScreenMode CIWBApp::GetScreenMode()const
 {
+    //此处特别耗时
     EScreenMode eScreenMode = GetScreenModeFromUSBKey();
     
     //add by vera_zhao2019.12.12

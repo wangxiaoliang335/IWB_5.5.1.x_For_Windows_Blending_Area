@@ -2037,6 +2037,9 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             theApp.OnPlugInUSBKey(strDevpath);
 
                             this->m_oIWBSensorManager.OnCameraPlugIn(*pDevInst);
+                            
+                            //更新状态信息
+                            UpdateInfoAboutDongle();
                         }
                     }
                     else
@@ -2049,6 +2052,8 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             //在检测到新设备时读取新插入的加密狗
                             CW2A strDevpath(pDevInterface->dbcc_name);
                             theApp.OnPlugInUSBKey(strDevpath);
+                            
+                            //更新状态信息
                            UpdateInfoAboutDongle();
                         }
 
@@ -2117,6 +2122,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                         CW2A strDevpath(pDevInterface->dbcc_name);
                         theApp.OnPlugOutUSBKey(strDevpath);
 
+                        //更新状态信息
                         UpdateInfoAboutDongle();
                     }
                     else
@@ -2131,6 +2137,7 @@ HRESULT CIWBDlg::OnDeviceChange(WPARAM wParam, LPARAM lParam)
                             CW2A strDevpath(pDevInterface->dbcc_name);
                             theApp.OnPlugOutUSBKey(strDevpath);
 
+                            //更新状态信息
                             UpdateInfoAboutDongle();
                         }
                     }
@@ -5372,7 +5379,7 @@ void CIWBDlg::InitDeviceUseModeMenuItemWithMenu(CMenu *pMenu)
     ////////////////add by zhaown if是HID模式，按原来的走，如果只是TUIO模式，那么鼠标和触屏选项要灰掉
     bool bHIDMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchHIDMode();
     bool bTUIOMode = m_oIWBSensorManager.GetSpotListProcessor().GetVirtualHID().GetTouchTUIOMode();
-    //////只有TUIO模式，HID模式选择全部灰掉
+    //只有TUIO模式，HID模式选择全部灰掉
     if (!bHIDMode && bTUIOMode)
     {
         pMenu->EnableMenuItem(ID_INSTALLATIONANDDEBUGGING_MOUSE, MF_BYCOMMAND | MF_GRAYED);

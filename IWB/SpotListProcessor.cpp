@@ -510,7 +510,7 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
 
     BOOL bAllOutsideMergeArea = TRUE;
 
-    if(theApp.GetScreenMode() >= EScreenModeDouble)
+    if(theApp.ScreenMode() >= EScreenModeDouble)
     {//多屏拼接模式
         for (int i = 0; i < nLightSpotCount; i++)
         {
@@ -734,7 +734,7 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
 void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCount)
 {
     //双屏拼接时，融合区内的光斑合并。
-    if(theApp.GetScreenMode() >= EScreenModeDouble)
+    if(theApp.ScreenMode() >= EScreenModeDouble)
     {
         m_oSpotMerger.DoMerge(pLightSpots, &nLightSpotCount);
     }
@@ -1248,7 +1248,7 @@ void CSpotListProcessor::OnDisplayChange(int nScreenWidth, int nScreenHeight)
     this->m_oStrokFilter.OnSetTouchScreenDimension(nDiagonalPhysicalLength, sizeScreen);
 
     //通知"光斑合并模块"屏幕分辨率发生了变化
-    if(theApp.GetScreenMode() >= EScreenModeDouble)
+    if(theApp.ScreenMode() >= EScreenModeDouble)
     {
         this->m_oSpotMerger.OnDisplayChange(nScreenWidth,  nScreenHeight);
     }
@@ -1274,7 +1274,7 @@ RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& mon
 {
     RECT rcVisibleArea = monitorArea;
     
-    if (theApp.GetScreenMode() >= EScreenModeDouble)
+    if (theApp.ScreenMode() >= EScreenModeDouble)
     {
         int nMergeAreaIndex = 0;
         if (uCameraIndex == 0)
