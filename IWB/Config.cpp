@@ -2395,7 +2395,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const TCalibParams& calibParams)
 
     pElement = new TiXmlElement("Param");
     pElement->SetAttribute("name", "UsingScreenPhysicalDimensions");
-    pElement->SetAttribute("value", calibParams.bUsingScreenPhysicalDimensions ? "Yese" : "No");
+    pElement->SetAttribute("value", calibParams.bUsingScreenPhysicalDimensions ? "Yes" : "No");
     pNode->LinkEndChild(pElement);
 
 
