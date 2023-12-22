@@ -18,71 +18,350 @@ enum EScreenMode
 
 #define  SENSOR_NUMBER int(EScreenModeNumber)
 
-struct TScreenLayout
-{
-    std::vector<RectF> vecScreens   ;//屏幕区域数组
-    std::vector<RectF> vecMergeAreas;//光斑融合区数组
-};
-
-
 //屏幕分割模式
-enum ESplitScreeMode
-{
-	E_SPLIT_SCREEN_VERT = 0,//沿垂直方向切割屏幕
-	E_SPLIT_SCREEN_HORZ = 1,//沿水平方向切割屏幕
-	E_SPLIT_SCREEN_MODE_COUNT = 2
-};
+//enum ESplitScreeMode
+//{
+//	E_SPLIT_SCREEN_VERT = 0,//沿垂直方向切割屏幕
+//	E_SPLIT_SCREEN_HORZ = 1,//沿水平方向切割屏幕
+//	E_SPLIT_SCREEN_MODE_COUNT = 2
+//};
 
-
-struct LayoutCollection
+struct SplitMode
 {
-	ESplitScreeMode eSplitScreenModel;         //选择的屏幕切割方式
-	std::vector<TScreenLayout> allScreenLayout;//所有的屏幕布局
-	
-	LayoutCollection()
+	SplitMode()
 	{
-		eSplitScreenModel = E_SPLIT_SCREEN_VERT;
+		rows = 1;
+		cols = 1;
 	}
+
+	SplitMode(int r, int c)
+	{
+		rows = r;
+		cols = c;
+	}
+
+	int rows;//行, 一列cell的个数
+	int cols;//列, 一行cell的个数
 };
+
+inline bool operator == (const SplitMode& lh, const SplitMode& rh)
+{
+	if (lh.cols == rh.cols && lh.rows == rh.rows)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+struct SplitEdge
+{
+//	ESplitScreeMode eMode;//分割线类型
+	float pos     ;//分割线位置
+	float limit[2];//融合区左右/上下位置 偏移分割线位置
+};
+
+class TScreenLayout
+{
+public:
+	TScreenLayout()
+	{
+			
+	}
+
+	explicit TScreenLayout(const SplitMode& splitMode)
+	{
+		Init(splitMode);
+	}
+
+	const std::vector<SplitEdge>& GetSplitEdges() const
+	{
+		return m_vecSplitEdges;
+	}
+
+	void Init(const SplitMode& splitMode)
+	{
+
+		int rows = splitMode.rows;
+		int cols = splitMode.cols;
+
+		std::vector<SplitEdge> vecSplitEdges(rows + 1 + cols + 1);
+
+		//在归一化坐标中计算切割边界
+		SplitEdge* pHorzEdge = &vecSplitEdges[0];
+
+		float pos = 0.0;
+		float fInterval = 1.0f / rows;
+
+		float fMergeAreaHalfSize = 0.025f;//融合区占屏幕宽度5%左右。
+
+		for (int r = 0; r < rows + 1; r++)
+		{
+			if (r == 0)
+			{
+				pos = 0.0;
+				pHorzEdge[r].limit[0] = 0;
+				pHorzEdge[r].limit[1] = 0;
+			}
+			else if (r == rows)
+			{
+				pos = 1.0;
+				pHorzEdge[r].limit[0] = 0;
+				pHorzEdge[r].limit[1] = 0;
+
+			}
+			else
+			{
+				pHorzEdge[r].limit[0] = fMergeAreaHalfSize;
+				pHorzEdge[r].limit[1] = fMergeAreaHalfSize;
+
+			}
+
+			pHorzEdge[r].pos = pos;
+			pos += fInterval;
+		}
+
+
+		SplitEdge* pVertEdge = &vecSplitEdges[rows + 1];
+
+		pos = 0.0;
+		fInterval = 1.0f / cols;
+		for (int c = 0; c < cols + 1; c++)
+		{
+
+			if (c == 0)
+			{
+				pos = 0.0;
+				pVertEdge[c].limit[0] = 0;
+				pVertEdge[c].limit[1] = 0;
+			}
+			else if (c == cols)
+			{
+				pos = 1.0;
+				pVertEdge[c].limit[0] = 0;
+				pVertEdge[c].limit[1] = 0;
+
+			}
+			else
+			{
+				pVertEdge[c].limit[0] = fMergeAreaHalfSize;
+				pVertEdge[c].limit[1] = fMergeAreaHalfSize;
+
+			}
+			pVertEdge[c].pos = pos;
+			pos += fInterval;
+		}
+
+		UpdateLayout(splitMode, vecSplitEdges);
+	}
+
+
+	//@Params:
+	// row, 每行的cell个数
+	// col, 每列的cell个数
+	//@说明:splitEdges, 数组先存放(splitMode.rows+1)条水平边界，再存放(splitMode.cols+1)条垂直边界。
+	void UpdateLayout(const SplitMode& splitMode, const std::vector<SplitEdge>& splitEdges)
+	{
+
+		int rows = splitMode.rows;
+		int cols = splitMode.cols;
+
+		m_splitMode = splitMode;
+
+		size_t splitEdgeCount = rows + 1 + cols + 1;
+
+		assert(splitEdges.size() == splitEdgeCount);
+
+		m_vecSplitEdges = splitEdges;
+		m_vecScreenAreas.resize(rows * cols);
+
+		const SplitEdge* pHorzEdges = &splitEdges[0];
+		const SplitEdge* pVertEdges = &splitEdges[rows + 1];
+
+		//生成屏幕区域数组
+		for (int r = 0; r < rows; r++)
+		{
+			for (int c = 0; c < cols; c++)
+			{
+				RectF& rectF = m_vecScreenAreas[r * cols + c];
+				rectF.left   = pVertEdges[c].pos; 
+				rectF.right  = pVertEdges[c + 1].pos;
+				rectF.top    = pHorzEdges[r].pos;
+				rectF.bottom = pHorzEdges[r + 1].pos;
+			}
+		}
+
+
+		//生成内部融合区数组
+		int nMergeArea_Rows = rows > 0 ? rows - 1 : 0;
+		int nMergeArea_Cols = cols > 0 ? cols - 1 : 0;
+		int nMergeAreaCount = nMergeArea_Rows + nMergeArea_Cols;
+
+		m_vecMergeAreas.resize(nMergeAreaCount);
+
+		if (nMergeAreaCount == 0) return;
+
+		RectF* pHorzMergeArea = &m_vecMergeAreas[0];
+		//水平融合区
+		for (int r = 0; r < nMergeArea_Rows; r++)
+		{
+			RectF& rectF = pHorzMergeArea[r];
+
+			const SplitEdge& splitEdge = pHorzEdges[r + 1];
+
+			rectF.top    = splitEdge.pos - splitEdge.limit[0];
+			rectF.bottom = splitEdge.pos + splitEdge.limit[1];
+
+			rectF.left  = 0;
+			rectF.right = 1.0;
+		}
+		
+
+		if (nMergeArea_Cols == 0) return;
+		RectF* pVertMergeArea = &m_vecMergeAreas[nMergeArea_Rows];
+		for (int c = 0; c < nMergeArea_Cols; c++)
+		{
+			RectF& rectF = pVertMergeArea[c];
+
+			const SplitEdge& splitEdge = pVertEdges[c+ 1];
+
+			rectF.left = splitEdge.pos - splitEdge.limit[0];
+			rectF.right = splitEdge.pos + splitEdge.limit[1];
+
+			rectF.top = 0;
+			rectF.bottom = 1.0;
+		}
+
+
+	}
+
+
+	const std::vector<RectF>& GetScreenAreas() const
+	{
+		return m_vecScreenAreas;
+	}
+
+	const std::vector<RectF>& GetMergeAreas() const
+	{
+		return m_vecMergeAreas;
+	}
+
+	const SplitMode GetSplitMode() const
+	{
+		return m_splitMode;
+	}
+protected:
+	SplitMode m_splitMode;
+
+	std::vector<SplitEdge> m_vecSplitEdges;//分割
+
+    std::vector<RectF> m_vecScreenAreas  ;//屏幕区域数组
+
+
+    std::vector<RectF> m_vecMergeAreas;//光斑融合区数组
+};
+
+
+
+
+
+//struct LayoutCollection
+//{
+//	//ESplitScreeMode eSplitScreenModel;//选择的屏幕切割方式
+//	SplitMode splitModel;
+//
+//	std::vector<TScreenLayout> allScreenLayout;//所有的屏幕布局
+//	
+//	LayoutCollection()
+//	{
+//		
+//	}
+//};
 //屏幕布局管理器
 struct ScreenLayoutManager
 {
-	std::map<ESplitScreeMode, LayoutCollection*> allLayoutCollection;
-	
-	ESplitScreeMode eSelectedSplitScreenMode;//当前选择的屏幕分割模式
+	//std::map<SplitMode, LayoutCollection*> allLayoutCollection;
+
+	std::vector<TScreenLayout> allScreenLayout;//所有的屏幕布局
+	std::map<int, SplitMode> mapSplitMode;//sensor个数到屏幕划分的影射。
+
+	//SplitMode selectedSplitScreenMode;//当前选择的屏幕分割模式
 
 	ScreenLayoutManager()
 	{
-		eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+		//eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
 	}
 
 	~ScreenLayoutManager()
 	{
-		for (auto it = allLayoutCollection.begin(); it != allLayoutCollection.end(); it++)
-		{
-			delete it->second;
-		}
+
 	}
 
 	void Reset()
 	{
-		eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
-		allLayoutCollection.clear();
+		//eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+
+		allScreenLayout.clear();
+
+		//selectedSplitScreenMode.rows = 1;
+		//selectedSplitScreenMode.cols = 1;
+
+
 	}
 
-	ESplitScreeMode GetSelectedSplitScreenMode()const
+	//ESplitScreeMode GetSelectedSplitScreenMode()const
+	//SplitMode GetSelectedSplitScreenMode() const
+	//{
+	//	return selectedSplitScreenMode;
+	//}
+
+
+	//void SetSelectedSplitScreenMode(const SplitMode& mode)
+	//{
+	//	selectedSplitScreenMode = mode;
+	//}
+
+	bool GetSplitMode(int SensorCount, SplitMode& splitMode)
 	{
-		return eSelectedSplitScreenMode;
+		auto it = mapSplitMode.find(SensorCount);
+		if (it == mapSplitMode.end())
+		{
+			return false;
+		}
+
+		splitMode = it->second;
+		return true;
+	}
+
+
+
+	void SetSplitMode(int nSensorCount, const SplitMode& splitMode)
+	{
+
+		mapSplitMode[nSensorCount] = splitMode;
 	}
 
 	//@功能:返回指定屏幕分割模式下的指定屏幕个数的屏幕布局数据
-	TScreenLayout* GetScreenLayout(ESplitScreeMode eScreenSplitMode, UINT nScreenCount)
+	//TScreenLayout* GetScreenLayout(ESplitScreeMode eScreenSplitMode, UINT nScreenCount)
+	TScreenLayout* GetScreenLayout(SplitMode splitMode)
 	{
 		TScreenLayout* pScreenLayout = NULL;
 
+
+
+		for (size_t i = 0; i < allScreenLayout.size(); i++)
+		{
+			if (allScreenLayout[i].GetSplitMode() == splitMode)
+			{
+				pScreenLayout = &allScreenLayout[i];
+				break;
+			}
+		}
+
+		/*
 		LayoutCollection* pLayoutCollection = NULL;
 
-		auto it = allLayoutCollection.find(eScreenSplitMode);
+		auto it = allLayoutCollection.find(splitMode);
 
 		if (it != allLayoutCollection.end())
 		{
@@ -92,8 +371,8 @@ struct ScreenLayoutManager
 		{
 			pLayoutCollection = new LayoutCollection();
 
-			pLayoutCollection->eSplitScreenModel = eScreenSplitMode;
-			allLayoutCollection[eScreenSplitMode] = pLayoutCollection;
+			pLayoutCollection->splitModel = splitMode;
+			allLayoutCollection[splitMode] = pLayoutCollection;
 		}
 				
 
@@ -109,53 +388,68 @@ struct ScreenLayoutManager
 			}
 		}
 
+		*/
+
 		return pScreenLayout;
 	}
 
 
 
 	//功能:更新布局数据
-	void SetScreenLayout(ESplitScreeMode eNewSelectedScreenSplitMode, const TScreenLayout& newScreenLayout)
+	//void SetScreenLayout(ESplitScreeMode eNewSelectedScreenSplitMode, const TScreenLayout& newScreenLayout)
+	void SetScreenLayout(const TScreenLayout& newScreenLayout)
 	{
 
-		LayoutCollection* pLayoutCollection = NULL;
+		//LayoutCollection* pLayoutCollection = NULL;
 
-		auto it = allLayoutCollection.find(eNewSelectedScreenSplitMode);
+		//auto it = allLayoutCollection.find(eNewSelectedScreenSplitMode);
 
-		if (it != allLayoutCollection.end())
+		//if (it != allLayoutCollection.end())
+		//{
+		//	pLayoutCollection = it->second;
+		//}
+		//else
+		//{
+		//	pLayoutCollection = new LayoutCollection();
+
+		//	pLayoutCollection->eSplitScreenModel = eNewSelectedScreenSplitMode;
+		//	allLayoutCollection[eNewSelectedScreenSplitMode] = pLayoutCollection;
+		//}
+
+
+		//auto& allScreenLayout = pLayoutCollection->allScreenLayout;
+
+		//BOOL bUpdateDone = FALSE;
+		//for (UINT i = 0; i < allScreenLayout.size(); i++)
+		//{
+		//	TScreenLayout& screenLayoutExists = allScreenLayout[i];
+		//	if (screenLayoutExists.vecScreens.size() == newScreenLayout.vecScreens.size())
+		//	{
+		//		screenLayoutExists = newScreenLayout;
+		//		bUpdateDone = TRUE;
+		//		break;
+		//	}
+		//}
+
+		//if (!bUpdateDone)
+		//{//未发现既有布局，则作为新的布局插入
+		//	allScreenLayout.push_back(newScreenLayout);
+		//}
+
+
+		//this->eSelectedSplitScreenMode = eNewSelectedScreenSplitMode;
+
+		TScreenLayout*  pScreenLayout = GetScreenLayout(newScreenLayout.GetSplitMode());
+
+		if (pScreenLayout)
 		{
-			pLayoutCollection = it->second;
+			*pScreenLayout = newScreenLayout;
 		}
 		else
 		{
-			pLayoutCollection = new LayoutCollection();
-
-			pLayoutCollection->eSplitScreenModel = eNewSelectedScreenSplitMode;
-			allLayoutCollection[eNewSelectedScreenSplitMode] = pLayoutCollection;
-		}
-
-
-		auto& allScreenLayout = pLayoutCollection->allScreenLayout;
-
-		BOOL bUpdateDone = FALSE;
-		for (UINT i = 0; i < allScreenLayout.size(); i++)
-		{
-			TScreenLayout& screenLayoutExists = allScreenLayout[i];
-			if (screenLayoutExists.vecScreens.size() == newScreenLayout.vecScreens.size())
-			{
-				screenLayoutExists = newScreenLayout;
-				bUpdateDone = TRUE;
-				break;
-			}
-		}
-
-		if (!bUpdateDone)
-		{//未发现既有布局，则作为新的布局插入
 			allScreenLayout.push_back(newScreenLayout);
 		}
 
-
-		this->eSelectedSplitScreenMode = eNewSelectedScreenSplitMode;
 	}
 
 	
@@ -359,6 +653,8 @@ struct GlobalSettings
 
 	BOOL                   bAirOperatePermission  ;
 	EAIROPERATE_CLICKMODE   eClickMode             ;
+    uint32_t                circleCalibrateXScale;//圆形校准X坐标缩放尺寸(50~100)
+    uint32_t                circleCalibrateYScale;//圆形校准X坐标缩放尺寸(50~100)
 
     GlobalSettings()
     {
@@ -399,6 +695,9 @@ struct GlobalSettings
 
 		bAirOperatePermission = FALSE;
 		eClickMode = E_MODE_CLICK;
+
+        circleCalibrateXScale = 100;
+        circleCalibrateYScale = 100;
     }
 };
 
@@ -2263,6 +2562,7 @@ struct TSensorModeConfig
     }
 };
 
+#define UNDEFEIN_AREA_NO 0xFFFFFFFF
 //传感器配置信息
 struct TSensorConfig
 {
@@ -2277,6 +2577,9 @@ struct TSensorConfig
     EMonitorAreaType eMonitorAreaType    ;   //手动设置的关联屏幕区域类型
  
 	std::vector<TSensorModeConfig>    vecSensorModeConfig ; //传感器的模式
+
+    UINT             nScreenAreaNo;//屏幕区域编号
+
 
     TSensorConfig()
     {
@@ -2301,6 +2604,8 @@ struct TSensorConfig
 		//////////用来存放墙面和桌面的参数Add by zhaown 2019.7.17
 		vecSensorModeConfig.resize(2);
 
+
+        nScreenAreaNo = UNDEFEIN_AREA_NO;
     }//构造函数
 
 };

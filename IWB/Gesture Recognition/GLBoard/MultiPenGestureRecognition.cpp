@@ -13,7 +13,7 @@ const UINT MyWM_PEN_BASE    = 1027                               ;
 /*模拟多笔消息号结束*/
 
 /*模拟多笔消息号开始*/
-const UINT MyWM_ERASER_BASE    = 1057                                 ;
+const UINT MyWM_ERASER_BASE    = 1127                                 ;
 ////每只橡皮擦的状态消息号定义如下，其中i = 0, ..., MAXERASERNUM
 //const UINT MyWM_ERASERA_Down      = MyWM_ERASER_BASE + 2 * i        ;
 //const UINT MyWM_ERASERA_UP        = MyWM_PEN_BASE + 2 * i + 1       ;

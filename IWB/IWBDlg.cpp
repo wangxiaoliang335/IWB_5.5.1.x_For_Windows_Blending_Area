@@ -11,6 +11,8 @@
 #include "OnlineRegisterDlg.h"
 #include "UpdateFirmwareDlg.h"
 #include <hidsdi.h>
+
+#include "DlgScreenLayoutSettings.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -620,7 +622,11 @@ BEGIN_MESSAGE_MAP(CIWBDlg, CDialog)
     ON_MESSAGE(WM_POWERBROADCAST, &CIWBDlg::OnPowerBroadcast)
 
     ON_REGISTERED_MESSAGE(theApp.GetBetweenInstanceMsg(), &CIWBDlg::OnBetweenInstanceMsg)
-END_MESSAGE_MAP()
+    ON_COMMAND(ID_MENU_CIRCLE_SCREEN_MANUAL_CALIBRATE, &CIWBDlg::OnMenuCircleScreenManualCalibrate)
+
+    ON_COMMAND_RANGE(ID_SET_SENSOR_SCREEN_AREA_1, ID_SET_SENSOR_SCREEN_AREA_36, &CIWBDlg::OnChangeSensorAreaNo)
+        
+    END_MESSAGE_MAP()
 
 
 void CIWBDlg::InitMenu()
@@ -2724,7 +2730,14 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
                 
                 
                 //使能"4点标定"子菜单
-                m_oMenu.EnableMenuItem(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND | MF_ENABLED);
+                if (theApp.IsFourPointCalibrateEnabled())
+                {
+                    m_oMenu.EnableMenuItem(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND | MF_ENABLED);
+                }
+                else
+                {
+                    m_oMenu.EnableMenuItem(ID_MENU_FOURPOINTCALIBRATION, MF_BYCOMMAND | MF_GRAYED);
+                }
 
                 //使能"手动校正"子菜单
                 //m_oMenu.EnableMenuItem(ID_MENU_MANUAL_CALIBRATE25,  MF_BYCOMMAND| MF_ENABLED);
@@ -3051,6 +3064,7 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
     m_pSelectedSensor = pSensor;//更新选中的传感器指针
     CMenu menuSwapTargets;
     CMenu mnuSensorCtx;
+    CMenu menuAreaNo;
     mnuSensorCtx.LoadMenu(IDR_MENU_SENSOR_CTX);
     CMenu* pSubMenu = mnuSensorCtx.GetSubMenu(0);
 
@@ -3285,6 +3299,60 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
         }
 
+
+        if (theApp.GetScreenMode() >= EScreenModeDouble)
+        {//多屏模式下，添加区域绑定菜单项
+
+            MENUITEMINFO mnuiteminfo;
+            memset(&mnuiteminfo, 0, sizeof(MENUITEMINFO));
+            mnuiteminfo.cbSize = sizeof(MENUITEMINFO);
+            mnuiteminfo.fMask = MIIM_FTYPE;
+            mnuiteminfo.fType = MFT_SEPARATOR;
+            pSubMenu->InsertMenuItem(
+                pSubMenu->GetMenuItemCount(),
+                &mnuiteminfo,
+                TRUE);
+
+            menuAreaNo.CreatePopupMenu();
+
+            //屏幕区域列表子菜单
+            mnuiteminfo.fMask = MIIM_SUBMENU | MIIM_ID | MIIM_STRING;
+            mnuiteminfo.dwTypeData = const_cast<LPTSTR>(g_oResStr[IDS_STRING499]);
+            mnuiteminfo.hSubMenu = menuAreaNo.GetSafeHmenu();
+            mnuiteminfo.wID = ID_SET_SENSOR_SCREEN_AREA_NO;
+            pSubMenu->InsertMenuItem(pSubMenu->GetMenuItemCount(), &mnuiteminfo, TRUE);
+
+            int nSensorCount = m_oIWBSensorManager.GetSensorCount();
+            int nCurrentSensorId = pSensor->GetID();
+
+           const SplitMode& splitMode = m_oIWBSensorManager.GetScreenLayoutDesigner().GetScreenLayout().GetSplitMode();
+           int nAreaCount = splitMode.rows * splitMode.cols;
+
+            for (int idx = 0; idx < nAreaCount; idx++)
+            {
+
+ 
+                CString strID;
+                strID.Format(_T("%d"), idx + 1);
+
+                mnuiteminfo.fMask = MIIM_FTYPE | MIIM_STRING | MIIM_ID | MIIM_CHECKMARKS;
+
+                mnuiteminfo.fType = MFT_STRING;
+                mnuiteminfo.dwTypeData = const_cast<LPTSTR>(strID.GetString());
+                mnuiteminfo.wID = ID_SET_SENSOR_SCREEN_AREA_1 + idx;
+
+
+                menuAreaNo.InsertMenuItem(menuAreaNo.GetMenuItemCount(), &mnuiteminfo, TRUE);
+                if (pSensor->GetScreenAreaNo() == idx)
+                {
+                     menuAreaNo.CheckMenuItem(mnuiteminfo.wID, MF_BYCOMMAND | MF_CHECKED);
+                }
+
+            }
+
+
+
+        }
         //显示传感器快捷菜单
         pSubMenu->TrackPopupMenu(
             TPM_LEFTALIGN|TPM_TOPALIGN,
@@ -5682,16 +5750,24 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
         }
         */
 
-            const ESplitScreeMode& eSelectedSplitScreenMode = g_tSysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
-            const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+            //const ESplitScreeMode& eSelectedSplitScreenMode = g_tSysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
+            //const SplitMode& splitMode = g_tSysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
+            SplitMode splitMode;
+            bool bRet = g_tSysCfgData.screenLayoutManger.GetSplitMode(this->m_oIWBSensorManager.GetSensorCount(), splitMode);
             
-            //if (pScreenLayout)
+            if (bRet)
             {
-                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
-    }
+                //const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+                const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(splitMode);
+                if (pScreenLayout)
+                {
+                    //this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+                    this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(*pScreenLayout);
+                }
+            }
             
 
-        }
+     }
         break;
 
         case BUTTON_ID_RESET:
@@ -5702,25 +5778,49 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
         break;
 
         case BUTTON_ID_ROTATE_90:
-        {
-            ESplitScreeMode eSelectedSplitScreenMode = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetSplitScreenMode();
-            
-            //交换水平分割模式和垂直分割模式
-            if (E_SPLIT_SCREEN_VERT == eSelectedSplitScreenMode)
-            {
-                eSelectedSplitScreenMode = E_SPLIT_SCREEN_HORZ;
-            }
-            else if (E_SPLIT_SCREEN_HORZ == eSelectedSplitScreenMode)
-            {
-                eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
-            }
-            
-            const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
+        //{
+        //    ESplitScreeMode eSelectedSplitScreenMode = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetSplitScreenMode();
+        //    
+        //    //交换水平分割模式和垂直分割模式
+        //    if (E_SPLIT_SCREEN_VERT == eSelectedSplitScreenMode)
+        //    {
+        //        eSelectedSplitScreenMode = E_SPLIT_SCREEN_HORZ;
+        //    }
+        //    else if (E_SPLIT_SCREEN_HORZ == eSelectedSplitScreenMode)
+        //    {
+        //        eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+        //    }
+        //    
+        //    const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, this->m_oIWBSensorManager.GetSensorCount());
 
-            this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+        //    this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
 
-        }
+        //}
         break;
+
+
+        case BUTTON_ID_CONFIG:
+        {
+            const TScreenLayout& screenLayout = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetScreenLayout();
+            CDlgScreenLayoutSettings dlg(screenLayout.GetSplitMode());
+            if (IDOK == dlg.DoModal())
+            {
+                const SplitMode& splitMode = dlg.GetSplitMode();
+
+                const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(splitMode);
+                if (pScreenLayout)
+                {
+                    this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(*pScreenLayout);
+                }
+                else
+                {
+                    TScreenLayout newScreenLayout(splitMode);
+                    this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenLayout(newScreenLayout);
+
+                }
+
+            }
+        }
     }
     return 0L;
 
@@ -5879,4 +5979,31 @@ BOOL CIWBDlg::IsEligibleUSBKey(UINT uVID, UINT uPID)
 
 
     return bMatched;
+}
+
+
+
+
+void CIWBDlg::OnMenuCircleScreenManualCalibrate()
+{
+    // TODO: Add your command handler code here
+    this->m_oIWBSensorManager.StartManualCalibrate(this->GetSafeHwnd(), -1, -1, -1, E_MUNUAL_CALIB_CIRCLE);
+}
+
+
+void CIWBDlg::OnChangeSensorAreaNo(UINT uID)
+{
+    CIWBSensor*  pSensor = this->m_oIWBSensorManager.GetSensor();
+    if (pSensor == NULL)
+    {
+        return;
+    }
+
+    int AreaNo = uID - ID_SET_SENSOR_SCREEN_AREA_1;
+
+    pSensor->SetScreenAreaNo(AreaNo);
+    this->m_oIWBSensorManager.ApplyScreenLayout();
+   
+
+
 }

@@ -6,7 +6,7 @@
 #define BUTTON_ID_CANCEL    1
 #define BUTTON_ID_RESET     2
 #define BUTTON_ID_ROTATE_90 3
-
+#define BUTTON_ID_CONFIG    4
 //多屏拼接模式下的幕布局设计工具
 class CScreenLayoutDesigner
 {
@@ -15,7 +15,8 @@ public:
     ~CScreenLayoutDesigner();
 
     //@功能:布局初始化
-    void Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight);
+   // void Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight);
+    void Init(SplitMode splitMode , int nDisplayWidth, int  nDisplayHeight);
 
     //@功能:反初始化
     void Uninit();
@@ -75,10 +76,15 @@ public:
 
     void Reset();
 
-	ESplitScreeMode GetSplitScreenMode()const;
+	//ESplitScreeMode GetSplitScreenMode()const;
+    const SplitMode& GetSplitScreenMode()const;
 
 	//@功能:设置屏幕划分布局
-	void SetScreenLayout(ESplitScreeMode eSplitMode,  const TScreenLayout* pScreenLayout);
+	//void SetScreenLayout(ESplitScreeMode eSplitMode,  const TScreenLayout* pScreenLayout);
+    void SetScreenLayout(const TScreenLayout& pScreenLayout);
+
+
+
 
 	//@功能:返回屏幕划分布局
 	const TScreenLayout& GetScreenLayout()const;
@@ -90,13 +96,14 @@ protected:
     LRESULT  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void InitScreenArea(int nScreenCount);
+    //void InitScreenArea(int nScreenCount);
+    //void InitScreenArea();
 
 	//@功能:沿垂直方向分割屏幕
-	void SliceScreenAreaVert(int nScreenCount);
+	//void SliceScreenAreaVert(int nScreenCount);
 
 	//@功能:沿水平方向分割屏幕
-	void SliceScreenAreaHorz(int nScreenCount);
+	//void SliceScreenAreaHorz(int nScreenCount);
 
     void InitActiveAreas();
     void Draw(HDC hDC);
@@ -123,7 +130,7 @@ protected:
    // std::vector<RectF> m_vecScreenRelativeLayouts;
 
     //屏幕绝对布局
-    std::vector<RECT>  m_vceScreenAbsLayouts;
+    std::vector<RECT>  m_vecScreenAbsLayouts;
 
 
     //触控融合区所在的矩形区域的数组,归一化到(0,0)到(1,1)范围
@@ -133,7 +140,8 @@ protected:
     std::vector<RECT> m_vecMergeAreasAbs;//
 
 	//屏幕分割模式
-	ESplitScreeMode m_eSplitScreenModel;
+	//ESplitScreeMode m_eSplitScreenModel;
+    //SplitMode m_splitMode;
 
 	//屏幕布局数据结构, 存储的坐标都是归一化到[0,1]的屏幕坐标
 	TScreenLayout m_screenLayout;
@@ -143,9 +151,13 @@ protected:
 
     enum EAreaType
     {
-        E_AREA_TYPE_SPLITTER = 0,//屏幕分割条
-        E_AREA_TYPE_BUTTON   = 1,//按钮
-        E_AREA_TYPE_MERGE_BORDER,//融合区边界
+        //E_AREA_TYPE_SPLITTER = 0,//屏幕分割条
+        E_AREA_TYPE_VERT_SPLITTER = 0,//垂直分割条
+        E_AREA_TYPE_HORZ_SPLITTER = 1,//水平分割条
+        E_AREA_TYPE_BUTTON        = 2,//按钮
+        E_AREA_TYPE_VERT_MERGE_BORDER = 3,//垂直融合区边界
+        E_AREA_TYPE_HORZ_MERGE_BORDER = 4,//水平融合区边界
+
         
     };
 
@@ -168,21 +180,22 @@ protected:
     };
 
     //屏幕分割条宽度
-    static const int SPLITTER_WIDTH    = 4;
+    static const int SPLITTER_WIDTH    = 8;
     
     //融合区拖拽宽度
-    static const int BORDER_DRAG_WIDTH = 4;
+    static const int BORDER_DRAG_WIDTH = 8;
 
 
 	//融合区拖拽高度
-	static const int BORDER_DRAG_HEIGHT = 4;
+	static const int BORDER_DRAG_HEIGHT = 8;
 
     std::vector < TActiveArea> m_vecActiveAreas;//活动区域
 
 
 
     void DrawButton(HDC  hDC, const TActiveArea& btn);
-    void DrawSplitter(HDC  hDC, const RECT& rcSpliiter);
+    //void DrawSplitter(HDC  hDC, const RECT& rcSpliiter);
+    void DrawSplitter(HDC  hDC, const TActiveArea& splitter);
     void DrawAllMergeArea(HDC hDC);
 
 

@@ -94,6 +94,7 @@ public:
 
 	virtual void SetSmoothCoefficient(int nSmoothCoff);
 
+    void EnableAutoMerge(bool bEnable);
 protected:
     //@功能:启动处理线程
     BOOL StartProcessThread();
@@ -157,6 +158,8 @@ protected:
     //         TRUE, 兄弟相机是在融合区内看到了光斑
     //        FALSE, 兄弟相机是在融合区内没有发现光斑
     BOOL BuddyCameraFoundSpotInMergeArea(UINT CameraIndex);
+
+
 
 
 protected:
@@ -238,8 +241,9 @@ protected:
     BOOL m_bIsTriggeringGuesture;
 	BOOL m_bEnableStrokeInterpolateTemp;
 
-	double  m_nSmoothCoefficient;
+	double  m_dbSmoothCoefficient;
 
+    BOOL m_bAutoMerge;//使能触控自动融合
 };
 
 ///////////////////////////////////////////////////////////////////////////

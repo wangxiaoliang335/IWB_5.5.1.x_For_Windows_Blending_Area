@@ -11,8 +11,8 @@ CScreenLayoutDesigner::CScreenLayoutDesigner()
     m_hFontButton(NULL),
     m_hFontOld(NULL),
     m_bIsDragging(FALSE),
-    m_pDragArea(NULL),
-	m_eSplitScreenModel(E_SPLIT_SCREEN_VERT)
+    m_pDragArea(NULL)//,
+	//m_eSplitScreenModel(E_SPLIT_SCREEN_VERT)
 {
     m_DisplaySize.cx = ::GetSystemMetrics(SM_CXSCREEN);
 
@@ -45,14 +45,21 @@ BOOL CScreenLayoutDesigner::IsVisible()const
     return IsWindowVisible(m_hWnd);
 }
 
-void CScreenLayoutDesigner::Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight)
+//void CScreenLayoutDesigner::Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight)
+void CScreenLayoutDesigner::Init(SplitMode splitMode, int nDisplayWidth, int  nDisplayHeight)
 {
-    if (nScreenCount == 0) return;
+    //if (nScreenCount == 0) return;
+
+   //m_splitMode = splitMode;
+
 
     m_DisplaySize.cx = nDisplayWidth;
     m_DisplaySize.cy = nDisplayHeight;
     
-    InitScreenArea(nScreenCount);
+    //InitScreenArea(nScreenCount);
+    //InitScreenArea();
+    this->m_screenLayout.Init(splitMode);
+    this->SetScreenLayout(m_screenLayout);
 
 
     m_rcClipCursorOld = RECT{0, 0, m_DisplaySize.cx, m_DisplaySize.cy};
@@ -62,8 +69,11 @@ void CScreenLayoutDesigner::Init(int nScreenCount, int nDisplayWidth, int  nDisp
     InitActiveAreas();
 }
 
-void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
-{
+//void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
+
+//void CScreenLayoutDesigner::InitScreenArea()
+//{
+    /*
 	switch (m_eSplitScreenModel)
 	{
 	case E_SPLIT_SCREEN_VERT:
@@ -75,14 +85,87 @@ void CScreenLayoutDesigner::InitScreenArea(int nScreenCount)
 		break;
 
 	}
+    */
+
+    //int rows = m_splitMode.rows;
+    //int cols = m_splitMode.cols;
+
+    //std::vector<SplitEdge> vecSplitEdges(rows + 1 + cols + 1);
+
+    //int nMergeAreaCount = rows - 1 + cols - 1;
 
 
-}
+    ////水平均分时，每个屏幕的宽度
+    //int nWidthEachArea   = m_DisplaySize.cx / cols;
+    //int nWidthRemainder =  m_DisplaySize.cx % cols;
 
+    ////宽度余数计数
+    //int nWidthRemainderCount = 0;
+
+
+    ////垂直均分时，每个屏幕的高度
+    //int nHeightEachArea  = m_DisplaySize.cy / rows;
+    //int nHeightRemainder = m_DisplaySize.cy % rows;
+
+    ////高度余数计数
+    //int nHeightRemainderCount = 0;
+
+    //RECT  absArea = { 0, 0, m_DisplaySize.cx, m_DisplaySize.cy};
+
+    //for (int r = 0; r < rows; r++)
+    //{
+    //    nHeightRemainderCount += nHeightRemainder;
+
+    //    absArea.bottom = absArea.top + nHeightEachArea;
+
+    //    if (nHeightRemainderCount >= rows)
+    //    {
+    //        absArea.bottom++;
+    //        nHeightRemainderCount -= rows
+    //    }
+
+    //    for (int c = 0; c < cols; c++)
+    //    {
+
+    //        absArea.right = absArea.left + nWidthEachArea;
+
+    //        nWidthRemainderCount += nWidthRemainder;
+
+    //        if (nWidthRemainderCount >= cols)
+    //        {
+    //            absArea.right++;
+    //            nWidthRemainderCount -= cols;
+    //        }
+
+    //        m_vecScreenAbsLayouts[r*cols + c] = absArea;
+
+    //        absArea.left = absArea.right;
+    //    }
+
+    //    absArea.left = 0;
+    //    absArea.top = absArea.bottom;
+    //    nWidthRemainderCount = 0;
+    //}
+
+    
+
+
+
+
+   // m_screenLayout.UpdateLayout(m_splitMode, vecSplitEdges);
+
+
+    //this->SetScreenLayout(m_screenLayout);
+
+   
+//}
+
+
+/*
 //@功能:沿垂直方向分割屏幕
 void CScreenLayoutDesigner::SliceScreenAreaVert(int nScreenCount)
 {
-	m_vceScreenAbsLayouts.resize(nScreenCount);
+	m_vecScreenAbsLayouts.resize(nScreenCount);
 
 	int nMergeAreaCount = nScreenCount - 1;
 	m_screenLayout.vecScreens.resize(nScreenCount);
@@ -112,7 +195,7 @@ void CScreenLayoutDesigner::SliceScreenAreaVert(int nScreenCount)
 			absArea.right++;
 		}
 
-		m_vceScreenAbsLayouts[i] = absArea;
+		m_vecScreenAbsLayouts[i] = absArea;
 
 		relArea.right = (float)absArea.right / (float)m_DisplaySize.cx;
 
@@ -160,10 +243,13 @@ void CScreenLayoutDesigner::SliceScreenAreaVert(int nScreenCount)
 
 }
 
+*/
 
+
+/*
 void CScreenLayoutDesigner::SliceScreenAreaHorz(int nScreenCount)
 {
-	m_vceScreenAbsLayouts.resize(nScreenCount);
+	m_vecScreenAbsLayouts.resize(nScreenCount);
 
 	int nMergeAreaCount = nScreenCount - 1;
 	m_screenLayout.vecScreens.resize(nScreenCount);
@@ -194,7 +280,7 @@ void CScreenLayoutDesigner::SliceScreenAreaHorz(int nScreenCount)
 			absArea.bottom++;
 		}
 
-		m_vceScreenAbsLayouts[i] = absArea;
+		m_vecScreenAbsLayouts[i] = absArea;
 
 		relArea.bottom = (float)absArea.bottom / (float)m_DisplaySize.cy;
 
@@ -249,7 +335,7 @@ void CScreenLayoutDesigner::SliceScreenAreaHorz(int nScreenCount)
 	}//for
 
 }
-
+*/
 
 
 BOOL CScreenLayoutDesigner::InitWindow()
@@ -339,7 +425,7 @@ void CScreenLayoutDesigner::Uninit()
     UninitGDI();
 
     //m_vecScreenRelativeLayouts.clear();
-    m_vceScreenAbsLayouts.clear();
+    m_vecScreenAbsLayouts.clear();
     //m_vecMergeAreasRelative.clear();
     m_vecMergeAreasAbs.clear();
     m_vecActiveAreas.clear();
@@ -423,10 +509,144 @@ void CScreenLayoutDesigner::InitActiveAreas()
     m_vecActiveAreas.clear();
 
     //1.屏幕分割条
-    int nScreenCount = m_vceScreenAbsLayouts.size();
+    int rows = this->m_screenLayout.GetSplitMode().rows;
+    int cols = this->m_screenLayout.GetSplitMode().cols;
+
+
+    const std::vector<SplitEdge>& splitEdge = m_screenLayout.GetSplitEdges();
+
+    const SplitEdge* pHorzEdge = &splitEdge[0];
+
+    ULONG splitterIndex = 0;
+    //水平分割条[1..rows-1]
+    for (int r = 1; r < rows; r++)
+    {
+        TActiveArea activeArea;
+        activeArea.uID = DEFAULT_ID;
+
+        long y = (long)(pHorzEdge[r].pos * this->m_DisplaySize.cy);
+
+        activeArea.rcBound.left   = 0;
+        activeArea.rcBound.right  = this->m_DisplaySize.cx;
+        activeArea.rcBound.top    = y - (SPLITTER_WIDTH >> 1);
+        activeArea.rcBound.bottom = y + (SPLITTER_WIDTH >> 1);
+
+        activeArea.eAreaType = E_AREA_TYPE_HORZ_SPLITTER;
+        activeArea.ulData = splitterIndex;//分割条的索引号
+        
+        m_vecActiveAreas.push_back(activeArea);
+
+        splitterIndex++;
+    }
+
+
+    //垂直分割条
+    splitterIndex = 0;
+
+    const SplitEdge* pVertEdge = &splitEdge[rows+1];
+
+    for (int c = 1; c < cols ; c++)
+    {//跳过第一根垂直分割线和最有一根垂直分割线, 因为者两根线用作左右边界。
+        TActiveArea activeArea;
+        activeArea.uID = DEFAULT_ID;
+
+        long x = (long)(pVertEdge[c].pos * this->m_DisplaySize.cx);
+
+        activeArea.rcBound.left   = x - (SPLITTER_WIDTH >> 1);
+        activeArea.rcBound.right  = x + (SPLITTER_WIDTH >> 1);
+        activeArea.rcBound.top    = 0;
+        activeArea.rcBound.bottom = this->m_DisplaySize.cy;
+
+        activeArea.eAreaType = E_AREA_TYPE_VERT_SPLITTER;
+        activeArea.ulData = splitterIndex;//分割条的索引号
+
+        m_vecActiveAreas.push_back(activeArea);
+        splitterIndex++;
+    }
+
+
+    do
+    {
+        if (m_vecMergeAreasAbs.size() == 0) break;
+
+        const RECT* pHorzMergeArea = &m_vecMergeAreasAbs[0];
+
+        ULONG mergeAreaIndex = 0;
+
+        //水平融合区上下边界
+        for (int r = 0; r < rows - 1; r++)
+        {
+            const RECT& mergeArea = pHorzMergeArea[r];
+
+            TActiveArea activeArea;
+            activeArea.uID = DEFAULT_ID;
+
+
+            //上边界活动区
+            activeArea.rcBound.left = mergeArea.left;
+            activeArea.rcBound.right = mergeArea.right;
+            activeArea.rcBound.top = mergeArea.top - (BORDER_DRAG_WIDTH >> 1);
+            activeArea.rcBound.bottom = mergeArea.top + (BORDER_DRAG_WIDTH >> 1);
+
+            activeArea.eAreaType = E_AREA_TYPE_HORZ_MERGE_BORDER;//水平融合区边界
+            activeArea.ulData = 2 * mergeAreaIndex + 0;//上融合区左边界编号
+
+            m_vecActiveAreas.push_back(activeArea);
+
+            //下边界活动区
+            activeArea.rcBound.top = mergeArea.bottom - (BORDER_DRAG_WIDTH >> 1);
+            activeArea.rcBound.bottom = mergeArea.bottom + (BORDER_DRAG_WIDTH >> 1);
+            activeArea.ulData = 2 * mergeAreaIndex + 1;//下融合区右边界编号
+
+            m_vecActiveAreas.push_back(activeArea);
+
+            mergeAreaIndex++;
+        }
+
+
+        mergeAreaIndex = 0;
+
+        if (m_vecMergeAreasAbs.size() == rows - 1) break;
+        //垂直融合区
+        const RECT* pVertMergeArea = &m_vecMergeAreasAbs[rows - 1];
+        for (int c = 0; c < cols - 1; c++)
+        {
+            const RECT& mergeArea = pVertMergeArea[c];
+
+            TActiveArea activeArea;
+            activeArea.uID = DEFAULT_ID;
+
+            //左边界活动区
+            activeArea.rcBound.left = mergeArea.left - (BORDER_DRAG_WIDTH >> 1);
+            activeArea.rcBound.right = mergeArea.left + (BORDER_DRAG_WIDTH >> 1);
+            activeArea.rcBound.top = mergeArea.top;
+            activeArea.rcBound.bottom = mergeArea.bottom;
+
+            activeArea.eAreaType = E_AREA_TYPE_VERT_MERGE_BORDER;//水平融合区边界
+            activeArea.ulData = 2 * mergeAreaIndex + 0;//左融合区边界编号
+
+            m_vecActiveAreas.push_back(activeArea);
+
+            //右边界活动区
+            activeArea.rcBound.left = mergeArea.right - (BORDER_DRAG_WIDTH >> 1);
+            activeArea.rcBound.right = mergeArea.right + (BORDER_DRAG_WIDTH >> 1);
+            activeArea.ulData = 2 * mergeAreaIndex + 1;//右融合区边界编号
+
+            m_vecActiveAreas.push_back(activeArea);
+
+            mergeAreaIndex++;
+        }
+
+
+    } while (0);
+    /*
+    int nScreenCount = m_vecScreenAbsLayouts.size();
+
+
+
     for (int i = 0; i < nScreenCount - 1; i++)
     {
-        const RECT& rcScreen = m_vceScreenAbsLayouts[i];
+        const RECT& rcScreen = m_vecScreenAbsLayouts[i];
         TActiveArea activeArea;
         activeArea.uID = DEFAULT_ID;
 
@@ -454,7 +674,10 @@ void CScreenLayoutDesigner::InitActiveAreas()
         m_vecActiveAreas.push_back(activeArea);
 
     }//for
+    */
 
+
+    /*
     //2.融合区边界
     int nMergeAreaCount = m_vecMergeAreasAbs.size();
     for (int i = 0; i < nMergeAreaCount; i++)
@@ -509,10 +732,12 @@ void CScreenLayoutDesigner::InitActiveAreas()
 
     }//for
     
+    */
 
     TActiveArea btns[] = 
     {
-		{ BUTTON_ID_ROTATE_90, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("Rotate 90°"), 0 },
+		//{ BUTTON_ID_ROTATE_90, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("Rotate 90°"), 0 },
+        { BUTTON_ID_CONFIG, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("CONFIG"), 0 },
         { BUTTON_ID_RESET, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("RESET"), 0 },
         { BUTTON_ID_OK, RECT{0,0,0,0}, E_AREA_TYPE_BUTTON, _T("OK"), 0},
         { BUTTON_ID_CANCEL, RECT{ 0,0,0,0 }, E_AREA_TYPE_BUTTON, _T("CANCEL"), 0 },
@@ -569,56 +794,102 @@ void CScreenLayoutDesigner::InitActiveAreas()
 
 
 
-void CScreenLayoutDesigner::SetScreenLayout(ESplitScreeMode eSplitMode, const TScreenLayout* pScreenLayout)
+//void CScreenLayoutDesigner::SetScreenLayout(ESplitScreeMode eSplitMode, const TScreenLayout* pScreenLayout)
+void CScreenLayoutDesigner::SetScreenLayout(const TScreenLayout& screenLayout)
 {
-	m_eSplitScreenModel = eSplitMode;
-	UINT uScreenCount = m_screenLayout.vecScreens.size();
-	if (pScreenLayout)
-	{
-		m_screenLayout = *pScreenLayout;
 
-		uScreenCount = m_screenLayout.vecScreens.size();
+    m_screenLayout = screenLayout;
 
-		//更新绝对像素尺寸的屏幕区域数组
-		m_vceScreenAbsLayouts.resize(uScreenCount);
+    const SplitMode& splitMode = m_screenLayout.GetSplitMode();
 
-		for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
-		{
-			const RectF& rectRel = m_screenLayout.vecScreens[screenIndex];
-			RECT& rectAbs = m_vceScreenAbsLayouts[screenIndex];
-
-			rectAbs.left = LONG(rectRel.left  * m_DisplaySize.cx);
-			rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
-
-			rectAbs.top = LONG(rectRel.top    * m_DisplaySize.cy);
-			rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
-		}
+    int rows = splitMode.rows;
+    int cols = splitMode.cols;
 
 
-		//更新绝对像素尺寸的融合区数组
-		UINT uAreaCount = m_screenLayout.vecMergeAreas.size();
-		m_vecMergeAreasAbs.resize(uAreaCount);
+    const std::vector<RectF>& vecNormScreenAreas = m_screenLayout.GetScreenAreas();
 
-		for (UINT areaIndex = 0; areaIndex < uAreaCount; areaIndex++)
-		{
-			const RectF& rectRel = m_screenLayout.vecMergeAreas[areaIndex];
-			RECT&  rectAbs = m_vecMergeAreasAbs[areaIndex];
+    m_vecScreenAbsLayouts.resize(rows * cols);
 
-			rectAbs.left = LONG(rectRel.left   * m_DisplaySize.cx);
-			rectAbs.right = LONG(rectRel.right  * m_DisplaySize.cx);
-			rectAbs.top = LONG(rectRel.top    * m_DisplaySize.cy);
-			rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+    for (size_t i = 0; i < m_vecScreenAbsLayouts.size(); i++)
+    {
+        const RectF& normArea = vecNormScreenAreas[i];
+        RECT& area = m_vecScreenAbsLayouts[i];
 
-		}//for
+        area.left   = LONG(normArea.left  * m_DisplaySize.cx);
+        area.right  = LONG(normArea.right * m_DisplaySize.cx);
+
+        area.top    = LONG(normArea.top    * m_DisplaySize.cy);
+        area.bottom = LONG(normArea.bottom * m_DisplaySize.cy);
+    }
 
 
-	}
-	else
-	{
-		//重新新按照指定的分割模式分割
-		InitScreenArea(uScreenCount);
+    const std::vector<RectF>& vecNormMergeAreas = m_screenLayout.GetMergeAreas();
 
-	}
+    m_vecMergeAreasAbs.resize(rows - 1 + cols - 1);
+
+    for (size_t i = 0; i < vecNormMergeAreas.size(); i++)
+    {
+        const RectF& normArea = vecNormMergeAreas[i];
+        RECT& area = m_vecMergeAreasAbs[i];
+
+        area.left   = LONG(normArea.left   * m_DisplaySize.cx);
+        area.right  = LONG(normArea.right  * m_DisplaySize.cx);
+
+        area.top    = LONG(normArea.top    * m_DisplaySize.cy);
+        area.bottom = LONG(normArea.bottom * m_DisplaySize.cy);
+
+    }
+
+    //m_eSplitScreenModel = eSplitMode;
+
+
+	//UINT uScreenCount = m_screenLayout.vecScreens.size();
+	//if (pScreenLayout)
+	//{
+	//	m_screenLayout = *pScreenLayout;
+
+	//	uScreenCount = m_screenLayout.vecScreens.size();
+
+	//	//更新绝对像素尺寸的屏幕区域数组
+	//	m_vecScreenAbsLayouts.resize(uScreenCount);
+
+	//	for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
+	//	{
+	//		const RectF& rectRel = m_screenLayout.vecScreens[screenIndex];
+	//		RECT& rectAbs = m_vecScreenAbsLayouts[screenIndex];
+
+	//		rectAbs.left = LONG(rectRel.left  * m_DisplaySize.cx);
+	//		rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
+
+	//		rectAbs.top = LONG(rectRel.top    * m_DisplaySize.cy);
+	//		rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+	//	}
+
+
+	//	//更新绝对像素尺寸的融合区数组
+	//	UINT uAreaCount = m_screenLayout.vecMergeAreas.size();
+	//	m_vecMergeAreasAbs.resize(uAreaCount);
+
+	//	for (UINT areaIndex = 0; areaIndex < uAreaCount; areaIndex++)
+	//	{
+	//		const RectF& rectRel = m_screenLayout.vecMergeAreas[areaIndex];
+	//		RECT&  rectAbs = m_vecMergeAreasAbs[areaIndex];
+
+	//		rectAbs.left = LONG(rectRel.left   * m_DisplaySize.cx);
+	//		rectAbs.right = LONG(rectRel.right  * m_DisplaySize.cx);
+	//		rectAbs.top = LONG(rectRel.top    * m_DisplaySize.cy);
+	//		rectAbs.bottom = LONG(rectRel.bottom * m_DisplaySize.cy);
+
+	//	}//for
+
+
+	//}
+	//else
+	//{
+	//	//重新新按照指定的分割模式分割
+	//	InitScreenArea(uScreenCount);
+
+	//}
 
 
 	InitActiveAreas();
@@ -660,11 +931,11 @@ const RECT* CScreenLayoutDesigner::GetScreenAbsoluteLayouts(UINT* pScreenCount)c
 {
     const RECT* pAbsScreen = NULL;
     
-    if(pScreenCount) *pScreenCount = m_vceScreenAbsLayouts.size();
+    if(pScreenCount) *pScreenCount = m_vecScreenAbsLayouts.size();
 
-    if (m_vceScreenAbsLayouts.size() >= 0)
+    if (m_vecScreenAbsLayouts.size() >= 0)
     {
-        pAbsScreen = &m_vceScreenAbsLayouts[0];
+        pAbsScreen = &m_vecScreenAbsLayouts[0];
     }
 
 
@@ -686,12 +957,12 @@ const RECT* CScreenLayoutDesigner::GetScreenAbsoluteLayouts(UINT* pScreenCount)c
 //    }
 //
 //    //更新绝对像素尺寸的屏幕区域数组
-//    m_vceScreenAbsLayouts.resize(uScreenCount);
+//    m_vecScreenAbsLayouts.resize(uScreenCount);
 //
 //    for (UINT screenIndex = 0; screenIndex < uScreenCount; screenIndex++)
 //    {
 //        const RectF& rectRel = m_vecScreenRelativeLayouts[screenIndex];
-//        RECT& rectAbs        = m_vceScreenAbsLayouts[screenIndex];
+//        RECT& rectAbs        = m_vecScreenAbsLayouts[screenIndex];
 //
 //        rectAbs.left  = LONG(rectRel.left  * m_DisplaySize.cx);
 //        rectAbs.right = LONG(rectRel.right * m_DisplaySize.cx);
@@ -768,6 +1039,7 @@ const RectF* CScreenLayoutDesigner::GetRelativeMergeAreas(UINT* pAreaCount)const
 void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
 {
     //int nScreenAreaCount = m_vecScreenRelativeLayouts.size();
+    /*
 	int nScreenAreaCount = m_screenLayout.vecScreens.size();
 
     for (int i = 0; i < nScreenAreaCount; i++)
@@ -775,7 +1047,7 @@ void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
         //屏幕区域
         //RectF& relScreenArea = m_vecScreenRelativeLayouts[i];
 		RectF& relScreenArea = m_screenLayout.vecScreens[i];
-        RECT& absScreenArea = m_vceScreenAbsLayouts[i];
+        RECT& absScreenArea = m_vecScreenAbsLayouts[i];
 
         absScreenArea.left   = relScreenArea.left      * nScreenWidth;
         absScreenArea.right  = relScreenArea.right     * nScreenWidth;
@@ -798,6 +1070,9 @@ void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
         absMergeArea.top    = relMergeArea.top    * nScreenHeight;
         absMergeArea.bottom = relMergeArea.bottom * nScreenHeight;
     }
+    */
+
+    this->SetScreenLayout(this->m_screenLayout);
 
     m_DisplaySize.cx = nScreenWidth;
     m_DisplaySize.cy = nScreenHeight;
@@ -1007,8 +1282,10 @@ void CScreenLayoutDesigner::Draw(HDC hDC)
 
         switch (activeArea.eAreaType)
         {
-        case E_AREA_TYPE_SPLITTER://绘制分割条
-            DrawSplitter(hDC, activeArea.rcBound);
+        case E_AREA_TYPE_HORZ_SPLITTER://绘制分割条
+        case E_AREA_TYPE_VERT_SPLITTER:
+            //DrawSplitter(hDC, activeArea.rcBound);
+            DrawSplitter(hDC, activeArea);
             break;
 
 
@@ -1027,10 +1304,10 @@ void CScreenLayoutDesigner::Draw(HDC hDC)
 //@功能:绘制屏幕标号
 void CScreenLayoutDesigner::DrawScreenLabel(HDC hDC)
 {
-    UINT uScreenCount = m_vceScreenAbsLayouts.size();
+    UINT uScreenCount = m_vecScreenAbsLayouts.size();
     for (UINT uScreenIndex = 0; uScreenIndex < uScreenCount; uScreenIndex++)
     {
-        const RECT& rcArea = m_vceScreenAbsLayouts[uScreenIndex];
+        const RECT& rcArea = m_vecScreenAbsLayouts[uScreenIndex];
 
         LONG areaWidth  = rcArea.right  - rcArea.left;
         LONG areaHeight = rcArea.bottom - rcArea.top;
@@ -1206,7 +1483,8 @@ void CScreenLayoutDesigner::DrawButton(HDC hDC, const TActiveArea& btn)
 
 }
 
-void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
+//void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
+void CScreenLayoutDesigner::DrawSplitter(HDC  hDC, const TActiveArea& splitter)
 {
     LOGPEN logPen;
     //logPen.lopnStyle = PS_DASHDOTDOT;
@@ -1228,7 +1506,7 @@ void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
     
 
 
-
+    const RECT& rcSplitter = splitter.rcBound;
 
     Rectangle(
         hDC,
@@ -1245,7 +1523,28 @@ void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
 
 	POINT pt0, pt1;
 
+    switch (splitter.eAreaType)
+    {
+    case E_AREA_TYPE_VERT_SPLITTER:
+        pt0.x = (rcSplitter.left + rcSplitter.right) >> 1;
+        pt0.y = rcSplitter.top;
 
+        pt1.x = pt0.x;
+        pt1.y = rcSplitter.bottom;
+        break;
+
+
+    case E_AREA_TYPE_HORZ_SPLITTER:
+        pt0.x = rcSplitter.left;
+        pt0.y = (rcSplitter.top + rcSplitter.bottom) >> 1;
+
+        pt1.x = rcSplitter.right;
+        pt1.y = pt0.y;
+        break;
+
+
+    }
+    /*
 	switch (m_eSplitScreenModel)
 	{
 	case E_SPLIT_SCREEN_VERT:
@@ -1265,7 +1564,7 @@ void CScreenLayoutDesigner::DrawSplitter(HDC hDC, const RECT& rcSplitter)
 		break;
 
 	}
-
+    */
 
 
 
@@ -1348,20 +1647,74 @@ void CScreenLayoutDesigner::DrawAllMergeArea(HDC hDC)
 //@参数:splitterArea, 分割条活动区域
 void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
 {
-    if (activeArea.eAreaType != E_AREA_TYPE_SPLITTER) return;
+    if (activeArea.eAreaType != E_AREA_TYPE_VERT_SPLITTER 
+        &&
+        activeArea.eAreaType != E_AREA_TYPE_HORZ_SPLITTER)
+        return;
 
     UINT uSplitterIndex = activeArea.ulData;
 
     GetClipCursor(&m_rcClipCursorOld);
     RECT rcClipCursorNew;
 
-    const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
 
+    int rows = this->m_screenLayout.GetSplitMode().rows;
+    int cols = this->m_screenLayout.GetSplitMode().cols;
+
+    const std::vector<SplitEdge>& splitEdges = this->m_screenLayout.GetSplitEdges();
+
+    const SplitEdge* pHorzSplitEdges = &splitEdges[0];//有rows+1条水平分割线
+    const SplitEdge* pVertSplitEdges = &splitEdges[rows + 1];//有cols+1条水平分割线
+
+
+    switch (activeArea.eAreaType)
+    {
+    case E_AREA_TYPE_HORZ_SPLITTER:
+        {
+            UINT upSplitEdgeIndex = uSplitterIndex;
+            UINT downSplitEdgeIndex = upSplitEdgeIndex + 2;
+            const SplitEdge& upSplitEdge = pHorzSplitEdges[upSplitEdgeIndex];
+            const SplitEdge& downSplitEdge = pHorzSplitEdges[downSplitEdgeIndex];
+
+
+            long top = (upSplitEdge.pos + upSplitEdge.limit[1]) * m_DisplaySize.cy;
+            long bottom = (downSplitEdge.pos - downSplitEdge.limit[0]) * m_DisplaySize.cy;;
+
+            rcClipCursorNew.left = 0;
+            rcClipCursorNew.right = m_DisplaySize.cx;
+            rcClipCursorNew.top = top;
+            rcClipCursorNew.bottom = bottom;
+        }
+        break;
+
+    case E_AREA_TYPE_VERT_SPLITTER:
+        {
+            UINT uLHSplitEdgeIndex = uSplitterIndex;
+            UINT uRHSplitEdgeIndex = uSplitterIndex + 2;
+            const SplitEdge& LHSplitEdge = pVertSplitEdges[uLHSplitEdgeIndex];
+            const SplitEdge& RHSplitEdge = pVertSplitEdges[uRHSplitEdgeIndex];
+
+
+            long left = (LHSplitEdge.pos + LHSplitEdge.limit[1]) * m_DisplaySize.cx;
+            long right = (RHSplitEdge.pos - RHSplitEdge.limit[0]) * m_DisplaySize.cx;;
+
+            rcClipCursorNew.left = left;
+            rcClipCursorNew.right = right;
+            rcClipCursorNew.top = 0;
+            rcClipCursorNew.bottom = m_DisplaySize.cy;
+
+        }
+        break;
+    }
+
+
+    /*
+    const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
 	switch (this->m_eSplitScreenModel)
 	{
 	case E_SPLIT_SCREEN_VERT:
 			{
-				LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].right;
+				LONG nSplitterPos = m_vecScreenAbsLayouts[uSplitterIndex].right;
 
 				LONG nLeftMargin = nSplitterPos - currentMergeArea.left;
 				LONG nRightMargin = currentMergeArea.right - nSplitterPos;
@@ -1437,7 +1790,7 @@ void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
 
 	case E_SPLIT_SCREEN_HORZ:
 		{
-			LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].bottom;
+			LONG nSplitterPos = m_vecScreenAbsLayouts[uSplitterIndex].bottom;
 
 			LONG nUpMargin = nSplitterPos - currentMergeArea.top;
 			LONG nDownMargin = currentMergeArea.bottom - nSplitterPos;
@@ -1508,6 +1861,7 @@ void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
 		break;
 
 	}//switch
+    */
 
 	ClipCursor(&rcClipCursorNew);
 }
@@ -1516,23 +1870,168 @@ void CScreenLayoutDesigner::ConfineSplitterCursor(const TActiveArea& activeArea)
 //@功能:限制融合区边界移动的范围
 void CScreenLayoutDesigner::ConfineMergeBorderCursor(const TActiveArea& activeArea)
 {
-    if (activeArea.eAreaType != E_AREA_TYPE_MERGE_BORDER) return;
-    UINT uSplitterIndex    = activeArea.ulData >> 1;
-    UINT uMegreBorderIndex = activeArea.ulData;
+    if (activeArea.eAreaType != E_AREA_TYPE_HORZ_MERGE_BORDER
+         &&
+        activeArea.eAreaType != E_AREA_TYPE_VERT_MERGE_BORDER
+        ) return;
 
+    GetClipCursor(&m_rcClipCursorOld);
+    RECT rcClipCursorNew;
+
+    rcClipCursorNew = activeArea.rcBound;
+
+
+    int rows = this->m_screenLayout.GetSplitMode().rows;
+    int cols = this->m_screenLayout.GetSplitMode().cols;
+
+    const std::vector<SplitEdge>& splitEdges = this->m_screenLayout.GetSplitEdges();
+
+    const SplitEdge* pHorzSplitEdges = &splitEdges[0];//有rows+1条水平分割线
+    const SplitEdge* pVertSplitEdges = &splitEdges[rows + 1];//有cols+1条水平分割线
+
+
+    ULONG mergeAreaIndex = activeArea.ulData >> 1;
+    
+
+    switch (activeArea.eAreaType)
+    {
+    case E_AREA_TYPE_HORZ_MERGE_BORDER://水平融合区
+        {
+            bool bLowerBorder = activeArea.ulData & 0x01;
+
+            LONG ScreenHeight = m_DisplaySize.cy;
+
+            //最大融合区宽度为屏幕宽度的1/10
+            LONG MAX_MERGE_AREA_HEIGHT = ScreenHeight * 10 / 100;
+
+            
+             UINT upSplitEdgeIndex  = mergeAreaIndex;
+             UINT curSplitEdgeIndex = upSplitEdgeIndex + 1;
+             UINT downSplitEdgeIndex = upSplitEdgeIndex + 2;
+
+             const SplitEdge& upSplitEdge   = pHorzSplitEdges[upSplitEdgeIndex];
+             const SplitEdge& curSplitEdge  = pHorzSplitEdges[curSplitEdgeIndex];
+             const SplitEdge& downSplitEdge = pHorzSplitEdges[downSplitEdgeIndex];
+
+             if (bLowerBorder)
+             {//下边界
+                 long top = curSplitEdge.pos * m_DisplaySize.cy;
+                 long bottom = top + (MAX_MERGE_AREA_HEIGHT >> 1);
+                 long bottomMost = (downSplitEdge.pos - downSplitEdge.limit[0]) * m_DisplaySize.cy - (BORDER_DRAG_WIDTH >> 1);
+                 if (bottom > bottomMost)
+                 {
+                     bottom = bottomMost;
+                 }
+                 rcClipCursorNew.left   = 0;
+                 rcClipCursorNew.right  = m_DisplaySize.cx;
+                 rcClipCursorNew.top    = top;
+                 rcClipCursorNew.bottom = bottom;
+
+
+             }
+
+             else
+             {//上边界
+                 long bottom = curSplitEdge.pos * m_DisplaySize.cy;
+                 long top = bottom - (MAX_MERGE_AREA_HEIGHT >> 1);
+                 long topMost = (upSplitEdge.pos + upSplitEdge.limit[1]) * m_DisplaySize.cy + (BORDER_DRAG_WIDTH >> 1);
+
+                 if (top < topMost)
+                 {
+                     top = topMost;
+                 }
+                 
+                 rcClipCursorNew.left   = 0;
+                 rcClipCursorNew.right  = m_DisplaySize.cx;
+                 rcClipCursorNew.top    = top;
+                 rcClipCursorNew.bottom = bottom;
+
+             }
+  
+             
+        }
+
+        break;
+
+
+
+    case E_AREA_TYPE_VERT_MERGE_BORDER://垂直融合区
+        {
+            bool bRightBorder = activeArea.ulData & 0x01;
+
+            LONG ScreenWidth = m_DisplaySize.cx;
+
+            //最大融合区宽度为屏幕宽度的1/10
+            LONG MAX_MERGE_AREA_WIDTH = ScreenWidth * 10 / 100;
+
+
+            UINT LHSplitEdgeIndex  = mergeAreaIndex;
+            UINT curSplitEdgeIndex = LHSplitEdgeIndex  + 1;
+            UINT RHSplitEdgeIndex  = curSplitEdgeIndex + 1;
+
+            const SplitEdge& LHSplitEdge  = pVertSplitEdges[LHSplitEdgeIndex];
+            const SplitEdge& curSplitEdge = pVertSplitEdges[curSplitEdgeIndex];
+            const SplitEdge& RHSplitEdge  = pVertSplitEdges[RHSplitEdgeIndex];
+
+            if (bRightBorder)
+            {
+                long left  = curSplitEdge.pos * m_DisplaySize.cx;
+                long right = left + (MAX_MERGE_AREA_WIDTH >> 1);
+
+                long rightMost = (RHSplitEdge.pos - RHSplitEdge.limit[0]) * m_DisplaySize.cx - (BORDER_DRAG_WIDTH >> 1);
+
+                if (right > rightMost)
+                {
+                    right = rightMost;
+                }
+                
+                rcClipCursorNew.left  = left;
+                rcClipCursorNew.right = right;
+
+                rcClipCursorNew.top    = 0;
+                rcClipCursorNew.bottom = m_DisplaySize.cy;
+
+            }
+            else
+            {
+                long right = curSplitEdge.pos * m_DisplaySize.cx;
+                long left  = right - (MAX_MERGE_AREA_WIDTH >> 1);
+
+                long leftMost = (LHSplitEdge.pos + LHSplitEdge.limit[1]) *m_DisplaySize.cx + (BORDER_DRAG_WIDTH >> 1);
+                if (left > leftMost)
+                {
+                    left = leftMost;
+                }
+                rcClipCursorNew.left = left;
+                rcClipCursorNew.right = right;
+
+                rcClipCursorNew.top = 0;
+                rcClipCursorNew.bottom = m_DisplaySize.cy;
+            }
+        }
+
+        break;
+    }
+
+
+
+
+
+    //UINT uSplitterIndex    = activeArea.ulData >> 1;
+    //UINT uMegreBorderIndex = activeArea.ulData;
+
+
+
+
+
+    /*
 	const  RECT& currentMergeArea = m_vecMergeAreasAbs[uSplitterIndex];
-
-	GetClipCursor(&m_rcClipCursorOld);
-	RECT rcClipCursorNew;
-	
-	rcClipCursorNew = activeArea.rcBound;
-
 	switch (this->m_eSplitScreenModel)
 	{
 		case E_SPLIT_SCREEN_VERT://沿垂直方向分割
 		{
 			//屏幕分割边界
-			LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].right;
+			LONG nSplitterPos = m_vecScreenAbsLayouts[uSplitterIndex].right;
 			LONG ScreenWidth = m_DisplaySize.cx;
 
 			//最大融合区宽度为屏幕宽度的1/10
@@ -1601,7 +2100,7 @@ void CScreenLayoutDesigner::ConfineMergeBorderCursor(const TActiveArea& activeAr
 		case E_SPLIT_SCREEN_HORZ://沿水平方向分割
 		{
 			//屏幕分割边界
-			LONG nSplitterPos = m_vceScreenAbsLayouts[uSplitterIndex].bottom;
+			LONG nSplitterPos = m_vecScreenAbsLayouts[uSplitterIndex].bottom;
 			LONG ScreenHeight = m_DisplaySize.cy;
 
 			//最大融合区宽度为屏幕宽度的1/10
@@ -1666,6 +2165,7 @@ void CScreenLayoutDesigner::ConfineMergeBorderCursor(const TActiveArea& activeAr
 		break;
 	}//switch
 
+    */
 
 
     ClipCursor(&rcClipCursorNew);
@@ -1677,9 +2177,13 @@ void CScreenLayoutDesigner::OnLButtonDown(UINT uFlags, const POINT& ptCursor)
 
     if (pActiveArea == NULL) return;
 
-    if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER 
+    if (pActiveArea->eAreaType == E_AREA_TYPE_HORZ_SPLITTER
         || 
-        pActiveArea->eAreaType == E_AREA_TYPE_MERGE_BORDER)
+        pActiveArea->eAreaType == E_AREA_TYPE_VERT_SPLITTER
+        ||
+        pActiveArea->eAreaType == E_AREA_TYPE_HORZ_MERGE_BORDER
+        ||
+        pActiveArea->eAreaType == E_AREA_TYPE_VERT_MERGE_BORDER)
     {
         SetCapture(m_hWnd);
         m_bIsDragging = TRUE;
@@ -1700,12 +2204,14 @@ void CScreenLayoutDesigner::OnLButtonDown(UINT uFlags, const POINT& ptCursor)
 
         switch (pActiveArea->eAreaType)
         {
-            case E_AREA_TYPE_SPLITTER:
+            case E_AREA_TYPE_HORZ_SPLITTER:
+            case E_AREA_TYPE_VERT_SPLITTER:
                 ConfineSplitterCursor(*pActiveArea);
                 break;
 
 
-            case E_AREA_TYPE_MERGE_BORDER:
+            case E_AREA_TYPE_VERT_MERGE_BORDER:
+            case E_AREA_TYPE_HORZ_MERGE_BORDER:
                 ConfineMergeBorderCursor(*pActiveArea);
                 break;
         }      
@@ -1719,14 +2225,33 @@ void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
         //拖拽矩形的绘制区域
         RECT dragRect;
 		int splitterWidth = 0;
+
+        switch (m_pDragArea->eAreaType)
+        {
+            case E_AREA_TYPE_VERT_SPLITTER:
+            case E_AREA_TYPE_VERT_MERGE_BORDER:
+                dragRect.top = m_pDragArea->rcBound.top;
+                dragRect.bottom = m_pDragArea->rcBound.bottom;
+                splitterWidth = m_pDragArea->rcBound.right - m_pDragArea->rcBound.left;
+                dragRect.left = ptCursor.x - (splitterWidth >> 1);
+                dragRect.right = ptCursor.x + (splitterWidth >> 1);
+                break;
+
+            case E_AREA_TYPE_HORZ_SPLITTER:
+            case E_AREA_TYPE_HORZ_MERGE_BORDER:
+                dragRect.left = m_pDragArea->rcBound.left;
+                dragRect.right = m_pDragArea->rcBound.right;
+                splitterWidth = m_pDragArea->rcBound.bottom - m_pDragArea->rcBound.top;
+                dragRect.top = ptCursor.y - (splitterWidth >> 1);
+                dragRect.bottom = ptCursor.y + (splitterWidth >> 1);
+                break;
+        }
+
+        /*
 		switch (this->m_eSplitScreenModel)
 		{
 			case E_SPLIT_SCREEN_VERT://垂直切分
-				dragRect.top = m_pDragArea->rcBound.top;
-				dragRect.bottom = m_pDragArea->rcBound.bottom;
-				splitterWidth = m_pDragArea->rcBound.right - m_pDragArea->rcBound.left;
-				dragRect.left  = ptCursor.x - (splitterWidth >> 1);
-				dragRect.right = ptCursor.x + (splitterWidth >> 1);
+
 				break;
 
 			case E_SPLIT_SCREEN_HORZ://水平切分
@@ -1738,7 +2263,7 @@ void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
 				break;
 
 		}
-
+        */
 
 
         CWindowDC dc(CWnd::GetDesktopWindow());
@@ -1762,19 +2287,21 @@ void CScreenLayoutDesigner::OnMouseMove(UINT uFlags, const POINT& ptCursor)
 
 void CScreenLayoutDesigner::OnLButtonUp(UINT uFlags, const POINT& ptCursor)
 {
-    if (m_bIsDragging)
+   if (m_bIsDragging)
     {
         ReleaseCapture();
         m_bIsDragging = FALSE;
 
         switch(m_pDragArea->eAreaType)
         {
-            case E_AREA_TYPE_SPLITTER:
+            case E_AREA_TYPE_VERT_SPLITTER:
+            case E_AREA_TYPE_HORZ_SPLITTER:
                 ClipCursor(&m_rcClipCursorOld);
                 OnDragSplitterDone(m_rcLastDragRect, *m_pDragArea);
                 break;
 
-            case E_AREA_TYPE_MERGE_BORDER:
+            case E_AREA_TYPE_VERT_MERGE_BORDER:
+            case E_AREA_TYPE_HORZ_MERGE_BORDER:
                 ClipCursor(&m_rcClipCursorOld);
                 OnDragMergeAreaBorderDone(m_rcLastDragRect, *m_pDragArea);
                 break;
@@ -1804,11 +2331,57 @@ void CScreenLayoutDesigner::OnLButtonUp(UINT uFlags, const POINT& ptCursor)
 void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea& splitterArea)
 {
  
-    UINT uSplitterIndex = splitterArea.ulData;
-    if (uSplitterIndex >= m_vecMergeAreasAbs.size()) return;
+    //
+    //if (uSplitterIndex >= m_vecMergeAreasAbs.size()) return;
 
+
+
+    int rows = this->m_screenLayout.GetSplitMode().rows;
+    int cols = this->m_screenLayout.GetSplitMode().cols;
+        
+    std::vector<SplitEdge> splitEdges = this->m_screenLayout.GetSplitEdges();
+
+    SplitEdge* pHorzSplitEdges = &splitEdges[0];//有rows+1条水平分割线
+    SplitEdge* pVertSplitEdges = &splitEdges[rows + 1];//有cols+1条水平分割线
+
+
+    UINT uSplitterIndex = splitterArea.ulData;
+
+    UINT uSplitEdgeIndex = uSplitterIndex + 1;
+
+
+    switch (splitterArea.eAreaType)
+    {
+        case E_AREA_TYPE_HORZ_SPLITTER:
+            {//分割条的新位置
+                LONG nNewSplitterPos = (dragRect.top + dragRect.bottom) >> 1;
+
+                pHorzSplitEdges[uSplitEdgeIndex].pos = (float)nNewSplitterPos / (float)m_DisplaySize.cy;
+            }
+
+            break;
+
+
+        case E_AREA_TYPE_VERT_SPLITTER:
+            {//分割条的新位置
+                LONG nNewSplitterPos = (dragRect.left + dragRect.right) >> 1;
+
+                pVertSplitEdges[uSplitEdgeIndex].pos = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
+            }
+        break;
+
+    }
+
+    
+    this->m_screenLayout.UpdateLayout(m_screenLayout.GetSplitMode(), splitEdges);
+
+    this->SetScreenLayout(m_screenLayout);
+
+    /*
     //分割条对应的融合区
     const RECT& mergeArea = m_vecMergeAreasAbs[uSplitterIndex];
+
+
 
 	switch (this->m_eSplitScreenModel)
 	{
@@ -1828,8 +2401,8 @@ void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea
 			UINT uRightAreaIndex = uSplitterIndex + 1;
 
 			//屏幕绝对布局
-			m_vceScreenAbsLayouts[uLeftAreaIndex ].right = nNewSplitterPos;
-			m_vceScreenAbsLayouts[uRightAreaIndex].left   = nNewSplitterPos;
+			m_vecScreenAbsLayouts[uLeftAreaIndex ].right = nNewSplitterPos;
+			m_vecScreenAbsLayouts[uRightAreaIndex].left   = nNewSplitterPos;
 
 			//屏幕相对布局
 			m_screenLayout.vecScreens[uLeftAreaIndex].right = (float)nNewSplitterPos / (float)m_DisplaySize.cx;
@@ -1893,8 +2466,8 @@ void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea
 			UINT uBottomAreaIndex = uSplitterIndex + 1;
 
 			//屏幕绝对布局
-			m_vceScreenAbsLayouts[uTopAreaIndex].bottom = nNewSplitterPos;
-			m_vceScreenAbsLayouts[uBottomAreaIndex].top = nNewSplitterPos;
+			m_vecScreenAbsLayouts[uTopAreaIndex].bottom = nNewSplitterPos;
+			m_vecScreenAbsLayouts[uBottomAreaIndex].top = nNewSplitterPos;
 
 			//屏幕相对布局
 			m_screenLayout.vecScreens[uTopAreaIndex].bottom = (float)nNewSplitterPos / (float)m_DisplaySize.cy;
@@ -1940,6 +2513,10 @@ void CScreenLayoutDesigner::OnDragSplitterDone(const RECT& dragRect, TActiveArea
 
 		break;
 	}//switch
+
+    */
+
+
     //重新绘制
     Draw(m_hMemDC);
 
@@ -1959,7 +2536,72 @@ void CScreenLayoutDesigner::OnDragMergeAreaBorderDone(const RECT& dragRect, TAct
 {
     UINT uBorderIndex = activeArea.ulData;
     UINT uSplitterIndex = (uBorderIndex >> 1);
+
+    int rows = this->m_screenLayout.GetSplitMode().rows;
+    int cols = this->m_screenLayout.GetSplitMode().cols;
+
+    std::vector<SplitEdge> splitEdges = this->m_screenLayout.GetSplitEdges();
+
+    SplitEdge* pHorzSplitEdges = &splitEdges[0];//有rows+1条水平分割线
+    SplitEdge* pVertSplitEdges = &splitEdges[rows + 1];//有cols+1条水平分割线
+
+
+    UINT uSplitEdgeIndex = uSplitterIndex + 1;
+
+    switch (activeArea.eAreaType)
+    {
+        case E_AREA_TYPE_HORZ_MERGE_BORDER:
+        {
+
+            //分割条的新位置
+            LONG borderPos = (dragRect.top + dragRect.bottom) >> 1;
+
+            bool bLowerBorder = uBorderIndex & 0x01;
+            if (bLowerBorder)
+            {
+
+                pHorzSplitEdges[uSplitEdgeIndex].limit[1] = (float)borderPos / (float)m_DisplaySize.cy - pHorzSplitEdges[uSplitEdgeIndex].pos;
+
+            }
+            else
+            {
+
+                pHorzSplitEdges[uSplitEdgeIndex].limit[0] = pHorzSplitEdges[uSplitEdgeIndex].pos - (float)borderPos / (float)m_DisplaySize.cy ;
+            }
+
+        }
+        break;
+
+
+        case E_AREA_TYPE_VERT_MERGE_BORDER:
+        {
+
+            //分割条的新位置
+            LONG borderPos = (dragRect.left + dragRect.right) >> 1;
+
+            bool bRightBorder = uBorderIndex & 0x01;
+
+            if (bRightBorder)
+            {
+                pVertSplitEdges[uSplitEdgeIndex].limit[1] = (float)borderPos / (float)m_DisplaySize.cx - pVertSplitEdges[uSplitEdgeIndex].pos;
+
+            }
+            else
+            {
+                pVertSplitEdges[uSplitEdgeIndex].limit[0] = pVertSplitEdges[uSplitEdgeIndex].pos - (float)borderPos / (float)m_DisplaySize.cx;
+            }
+        }
+         break;
+
+    }
+
+    this->m_screenLayout.UpdateLayout(m_screenLayout.GetSplitMode(), splitEdges);
+
+    this->SetScreenLayout(m_screenLayout);
+   /*
     if (uSplitterIndex >= m_vecMergeAreasAbs.size()) return;
+
+
 	switch (this->m_eSplitScreenModel)
 	{
 		case E_SPLIT_SCREEN_VERT:
@@ -2020,10 +2662,9 @@ void CScreenLayoutDesigner::OnDragMergeAreaBorderDone(const RECT& dragRect, TAct
 
 		}
 		break;
-
-
 	}
 
+    */
 
     //重新绘制
     Draw(m_hMemDC);
@@ -2045,46 +2686,83 @@ BOOL CScreenLayoutDesigner::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
 
     if (pActiveArea)
     {
-        if (pActiveArea->eAreaType == E_AREA_TYPE_BUTTON)
+        switch (pActiveArea->eAreaType)
         {
+        case E_AREA_TYPE_BUTTON:
             SetCursor(m_hCursorhHand);
             return TRUE;
-        }
-        else if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER )
-        {
-			switch (this->m_eSplitScreenModel)
-			{
-			case E_SPLIT_SCREEN_VERT:
-				SetCursor(m_hCursorSplit_Vert);
-				break;
+            break;
 
-			case E_SPLIT_SCREEN_HORZ:
-				SetCursor(m_hCursorSplit_Horz);
-				break;
-			}
-            
-
+        case E_AREA_TYPE_VERT_SPLITTER:
+            SetCursor(m_hCursorSplit_Vert);
             return TRUE;
-        }
-        else if (pActiveArea->eAreaType == E_AREA_TYPE_MERGE_BORDER)
-        {
-			switch (this->m_eSplitScreenModel)
-			{
-				case E_SPLIT_SCREEN_VERT:
-					SetCursor(m_hCursorSplit_Vert);
-					break;
+            break;
 
-				case E_SPLIT_SCREEN_HORZ:
-					SetCursor(m_hCursorSplit_Horz);
-					break;
-			}
+        case E_AREA_TYPE_HORZ_SPLITTER:
+            SetCursor(m_hCursorSplit_Horz);
             return TRUE;
+            break;
+
+        case E_AREA_TYPE_VERT_MERGE_BORDER:
+
+            SetCursor(m_hCursorSplit_Vert);
+            return true;
+            break;
+
+        case E_AREA_TYPE_HORZ_MERGE_BORDER:
+            SetCursor(m_hCursorSplit_Horz);
+            return true;
+            break;
+
         }
+
     }
     else
     {
         SetCursor(m_hCursorArrow);
+
     }
+
+   //     if (pActiveArea->eAreaType == E_AREA_TYPE_BUTTON)
+   //     {
+   //         SetCursor(m_hCursorhHand);
+   //         return TRUE;
+   //     }
+   //     else if (pActiveArea->eAreaType == E_AREA_TYPE_SPLITTER )
+   //     {
+			//switch (this->m_eSplitScreenModel)
+			//{
+			//case E_SPLIT_SCREEN_VERT:
+			//	SetCursor(m_hCursorSplit_Vert);
+			//	break;
+
+			//case E_SPLIT_SCREEN_HORZ:
+			//	SetCursor(m_hCursorSplit_Horz);
+			//	break;
+			//}
+   //         
+
+   //         return TRUE;
+   //     }
+   //     else if (pActiveArea->eAreaType == E_AREA_TYPE_MERGE_BORDER)
+   //     {
+			//switch (this->m_eSplitScreenModel)
+			//{
+			//	case E_SPLIT_SCREEN_VERT:
+			//		SetCursor(m_hCursorSplit_Vert);
+			//		break;
+
+			//	case E_SPLIT_SCREEN_HORZ:
+			//		SetCursor(m_hCursorSplit_Horz);
+			//		break;
+			//}
+   //         return TRUE;
+   //     }
+   // }
+   // else
+   // {
+   //     SetCursor(m_hCursorArrow);
+   // }
 
     //AtlTrace(_T("OnSetCursor \n"));
 
@@ -2112,9 +2790,14 @@ BOOL CScreenLayoutDesigner::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
 
  void CScreenLayoutDesigner::Reset()
  {
-     int nScreenCount = m_vceScreenAbsLayouts.size();
+     int nScreenCount = m_vecScreenAbsLayouts.size();
 
-     InitScreenArea(nScreenCount);
+    // InitScreenArea(nScreenCount);
+
+     this->m_screenLayout.Init(m_screenLayout.GetSplitMode());
+     this->SetScreenLayout(m_screenLayout);
+
+
      InitActiveAreas();
 
      Draw(m_hMemDC);
@@ -2125,9 +2808,14 @@ BOOL CScreenLayoutDesigner::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
      UpdateWindow(this->m_hWnd);
  }
 
- ESplitScreeMode CScreenLayoutDesigner::GetSplitScreenMode()const
+ //ESplitScreeMode CScreenLayoutDesigner::GetSplitScreenMode()const
+ //{
+	// return m_eSplitScreenModel;
+ //}
+
+ const SplitMode& CScreenLayoutDesigner::GetSplitScreenMode()const
  {
-	 return m_eSplitScreenModel;
+     return this->m_screenLayout.GetSplitMode();
  }
 
  const TScreenLayout& CScreenLayoutDesigner::GetScreenLayout()const

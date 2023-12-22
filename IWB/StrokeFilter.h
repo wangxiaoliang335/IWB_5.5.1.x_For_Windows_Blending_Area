@@ -29,9 +29,13 @@ public:
     {
         //根据物理尺寸和屏幕分辩率，计算相应的逻辑距离D1和D2
         int nScreenDiagonalPhysicalLength = int(DEFAULT_SCREEN_DIAGONAL_LENGTH);//缺省物理尺寸80inches
+#if 0       
         int nCx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int nCy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
+#else
+        int nCx = GetSystemMetrics(SM_CXSCREEN);
+        int nCy = GetSystemMetrics(SM_CYSCREEN);
+#endif
         SIZE screenResolution;
         screenResolution.cx = nCx;
         screenResolution.cy = nCy;
@@ -55,7 +59,8 @@ public:
         int nScreenDialgonalLogicalLength = (int)sqrt((float)(nCx*nCx + nCy*nCy));
 
         m_nMaxDistance = (KD2PhysicalDistance * nScreenDialgonalLogicalLength)/nPhysicalDiagonalLength;
-        m_nMaxDistance *= (HISTORY_DISTANCE_LENGTH >>1);
+        //m_nMaxDistance *= (HISTORY_DISTANCE_COUNT >>1);
+        //m_nMaxDistance *= HISTORY_DISTANCE_COUNT;
 
         InitFilter();
 
@@ -71,7 +76,8 @@ public:
     //@功能:对输入的笔迹进行滤波处理
     //@参数:pContactInfo, 输入/输出参数, 触控点信息
     //      nCount, 输入的触控点个数
-    void DoFilter(TContactInfo* pContactInfo, int& nCount, double nSmoothCoefficient = 0.1)
+    //      dbSmoothCoefficient,越大越平滑
+    void DoFilter(TContactInfo* pContactInfo, int& nCount, double dbSmoothCoefficient = 0.1)
     {
         //for(int i=0; i < nCount; i++)
         int i = 0;
@@ -203,7 +209,7 @@ public:
 #ifdef _DEBUG
                     //AtlTrace(_T("newDistance=%f,TotalDistance=%f\n"), dbNewDistance, filter.m_dbTotalDistance);
 #endif
-
+                    double avg_distance = filter.m_dbTotalDistance / filter.m_nHistoryDistanceLength;
 
 
                     //double dx = ptNewInput.d[0] - ptLastSmooth.d[0];
@@ -228,14 +234,15 @@ public:
                     //Beta = 1.0;
 
                     TPoint2D ptSmooth;
-
-                    if(filter.m_uRepeatSampleCount >= 3)//连续多次是同一个输入点,则给输入点就是实际输入点,跳过平滑处理
-                    {
-                        ptSmooth = ptNewInput;
-                        //ptSmooth.d[0] = double(ptNewInput.x);
-                        //ptSmooth.d[1] = double(ptNewInput.y);
-                    }
-                    else if(filter.m_dbTotalDistance < m_nMaxDistance)
+                    //commented out by xuke, 2023/06/27
+                    //if(filter.m_uRepeatSampleCount >= 3)//连续多次是同一个输入点,则给输入点就是实际输入点,跳过平滑处理
+                    //{
+                    //    ptSmooth = ptNewInput;
+                    //    //ptSmooth.d[0] = double(ptNewInput.x);
+                    //    //ptSmooth.d[1] = double(ptNewInput.y);
+                    //}
+                    //else if(avg_distance< m_nMaxDistance
+                    if (avg_distance< m_nMaxDistance)
                     {
                         
                         //计算平滑系数
@@ -246,17 +253,20 @@ public:
                         //抛物线模型
                         //λ = λmin + (λmax - λmin) * sqrt(1 - D/D_max)
                         //double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - distance / m_nMaxDistance);
-                        double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - filter.m_dbTotalDistance / m_nMaxDistance);
+                        double smooth_coef = m_dbMinSmoothCoef + (m_dbMaxSmoothCoef - m_dbMinSmoothCoef)*sqrt(1 - avg_distance / m_nMaxDistance);
 
                         //根据不同的书写区的定位公差不同来调制平滑系数
-                        double dbModulationFactorX = 1.0;
-                        double dbModulationFactorY = 1.0;
-                        this->m_oToleranceDistribute.GetModulateFactors(contactInfo.pt, nSmoothCoefficient,&dbModulationFactorX, &dbModulationFactorY);
-                        double smooth_coef_x = smooth_coef*dbModulationFactorX;
-                        double smooth_coef_y = smooth_coef*dbModulationFactorY;
+                        //double dbModulationFactorX = 1.0;
+                        //double dbModulationFactorY = 1.0;
+                        //this->m_oToleranceDistribute.GetModulateFactors(contactInfo.pt, dbSmoothCoefficient, &dbModulationFactorX, &dbModulationFactorY);
+                        //double smooth_coef_x = smooth_coef*dbModulationFactorX;
+                        //double smooth_coef_y = smooth_coef*dbModulationFactorY;
+                        double smooth_coef_x = smooth_coef*dbSmoothCoefficient;
+                        double smooth_coef_y = smooth_coef*dbSmoothCoefficient;
 
                         ptSmooth.d[0] = smooth_coef_x * ptLastSmooth.d[0] + (1.0 - smooth_coef_x) * ptNewInput.d[0];
                         ptSmooth.d[1] = smooth_coef_y * ptLastSmooth.d[1] + (1.0 - smooth_coef_y) * ptNewInput.d[1];
+
                     }
                     else
                     {
@@ -334,7 +344,8 @@ protected:
     static const int DEBOUCNE_DELAY = 2;//消抖延迟
     static const int MAGINIFY = 1024;
 
-    static const int HISTORY_DISTANCE_LENGTH = 5;
+    static const int HISTORY_DISTANCE_COUNT = 5;
+
     //滤波状态
     struct TFilterState
     {
@@ -345,7 +356,7 @@ protected:
         E_FilterState  m_eFilterState;//滤波状态机状态
 
        //记录移动的历史距离的数组
-        double        m_HistoryDistance[HISTORY_DISTANCE_LENGTH];
+        double        m_HistoryDistance[HISTORY_DISTANCE_COUNT];
         int           m_nHistoryDistanceLength;
         double        m_dbTotalDistance;//总的平均移动距离
     };//

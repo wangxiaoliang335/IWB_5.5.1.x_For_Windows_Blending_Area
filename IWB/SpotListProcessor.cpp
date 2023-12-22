@@ -20,8 +20,9 @@ m_bLastHIDOwnnerAfterGR(true),
 //m_bIsSmartPenReset(true),
 m_bSimulateMode(FALSE),
 m_bIsTriggeringGuesture(FALSE),
-m_nSmoothCoefficient(0),
-m_eCalibrateModel(E_CALIBRATE_MODEL_GENERICAL_CAMERA)
+m_dbSmoothCoefficient(0.0),
+m_eCalibrateModel(E_CALIBRATE_MODEL_GENERICAL_CAMERA),
+m_bAutoMerge(FALSE)
 {
     Reset();
     m_hWriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -528,7 +529,7 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
             }
 
             //if (AppearInMergeArea(spot, dwCameraId, &spot.aux.bBeyondMergeArea, &spot.aux.uMergeAreaIndex))
-            if (AppearInMergeArea(spot, dwCameraId, &spot.aux.uMergeAreaIndex))
+            if (m_bAutoMerge && AppearInMergeArea(spot, dwCameraId, &spot.aux.uMergeAreaIndex))
             {
                 bAllOutsideMergeArea = FALSE;
 
@@ -565,7 +566,7 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
         //当前摄像头的光斑数据都在合并区以外时,要保证buddy摄像头的光斑也在融合区以外,
         //否则因为两个摄像头数据采样的不同步,一个摄像头采集的光斑屏幕坐标在融合区内,另外一个摄像头采集的光斑屏幕坐标在融合区以外,不会被融合，因此
         //光斑处理器会接收到两个光斑, 新生成一支笔, 尔后的光斑可能与新生成的笔匹配，造成原有的笔弹起。
-        if (bAllOutsideMergeArea)
+        if (m_bAutoMerge && bAllOutsideMergeArea)
         {
             if (BuddyCameraFoundSpotInMergeArea(dwCameraId))
             {
@@ -734,7 +735,7 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
 void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCount)
 {
     //双屏拼接时，融合区内的光斑合并。
-    if(theApp.ScreenMode() >= EScreenModeDouble)
+    if(theApp.ScreenMode() >= EScreenModeDouble && m_bAutoMerge)
     {
         m_oSpotMerger.DoMerge(pLightSpots, &nLightSpotCount);
     }
@@ -786,7 +787,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 		      const TMatchInfo* pMatchInfo = m_oSmartPenMatch.GetAllMatchInfo(&nElementCount);
 		      penCount = nElementCount;
 			  //平滑笔迹
-		      m_oStrokFilter.DoFilter(penInfo, penCount, m_nSmoothCoefficient);
+		      m_oStrokFilter.DoFilter(penInfo, penCount, m_dbSmoothCoefficient);
 
 		     for (int i = 0 ; i < penCount; i++ )
 		     {
@@ -816,7 +817,7 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
         if (!DoWindowsGestureRecognition(pLightSpots, nLightSpotCount, penInfo, penCount))
         {
            //平滑笔迹
-           m_oStrokFilter.DoFilter(penInfo, penCount, m_nSmoothCoefficient);
+           m_oStrokFilter.DoFilter(penInfo, penCount, m_dbSmoothCoefficient);
    
 #ifdef _DEBUG
 
@@ -1315,5 +1316,11 @@ CToleranceDistribute& CSpotListProcessor::GetToleranceDistribute()
 
 void CSpotListProcessor::SetSmoothCoefficient(int nSmoothCoff)
 {
-	m_nSmoothCoefficient = (double)nSmoothCoff / 10;
+	m_dbSmoothCoefficient = (double)nSmoothCoff / 10;
+}
+
+
+void CSpotListProcessor::EnableAutoMerge(bool bEnable)
+{
+    m_bAutoMerge = bEnable;
 }

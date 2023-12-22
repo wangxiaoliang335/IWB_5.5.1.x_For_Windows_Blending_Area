@@ -487,6 +487,11 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
 //      nPenCount, ¹â±ÊÖ§Êý
 BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 {
+    //static int temp_debug = 0;
+    //if (temp_debug < 10)
+    //{
+    //    LOG_INF("InputTouchPoints\n");
+    //}
 
     if (nPenCount > _countof(m_TouchPoints))
     {
@@ -634,6 +639,12 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         BOOL bDone = FALSE;
 
 
+
+        //if (temp_debug < 10)
+        //{
+        //    LOG_INF("targetInfo.scaling=%d\r\n", pDisplayDevInfo->targetInfo.scaling);
+        //}
+
         if (DISPLAYCONFIG_SCALING_ASPECTRATIOCENTEREDMAX == pDisplayDevInfo->targetInfo.scaling
             ||
             DISPLAYCONFIG_SCALING_IDENTITY == pDisplayDevInfo->targetInfo.scaling
@@ -682,6 +693,12 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             {
                 m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
             }
+            
+            //if (temp_debug < 10)
+            //{
+            //    LOG_INF("m_eTouchDataAdjustModel=%d, pDisplayDevInfo->targetInfo.scaling=%d\r\n", m_eTouchDataAdjustModel, pDisplayDevInfo->targetInfo.scaling);
+            //   
+            //}
 
             switch (m_eTouchDataAdjustModel)
             {
@@ -703,6 +720,15 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
                 wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
                 wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
+           
+                LOG_INF("aspectRatioNominator=%d,aspectRatioDenominator=%d, nMonitorVirtualPixelWidth=%d,nMonitorVirtualPixelHeight=%d\r\n",
+                    aspectRatioNominator,
+                    aspectRatioDenominator,
+                    nMonitorVirtualPixelWidth,
+                    nMonitorVirtualPixelHeight);
+
+            
+            
             }
             break;
 
@@ -715,6 +741,15 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
                 wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
                 wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
+           
+                //if (temp_debug < 10)
+                //{
+                //    LOG_INF("nSourceWidth=%d,nSourceHeight=%d, nTargetWidth=%d,nTargetHeight=%d\r\n",
+                //        nSourceWidth, nSourceHeight, nTargetWidth, nTargetHeight);
+
+                //}
+            
+            
             }
             break;
             }//switch(m_eTouchDataAdjustModel)
@@ -728,9 +763,11 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         {
             m_TouchPoints[i].wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
             m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop ) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
-
+          
         }
 
+       
+        
     }//for
 
     BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);

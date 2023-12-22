@@ -763,6 +763,7 @@
     <ClCompile Include="DebugVideoLoaderDlg.cpp" />
     <ClCompile Include="DirectShowFunc.cpp" />
     <ClCompile Include="DlgItemResizer.cpp" />
+    <ClCompile Include="DlgScreenLayoutSettings.cpp" />
     <ClCompile Include="Gesture Recognition\GLBoard\GestureEventGenerator.cpp" />
     <ClCompile Include="Gesture Recognition\GLBoard\GLGRTraceLog.cpp" />
     <ClCompile Include="Gesture Recognition\GLBoard\MultiPenGestureRecognition.cpp" />
@@ -992,6 +993,7 @@
     <ClInclude Include="DeviceEventMonitor.h" />
     <ClInclude Include="DirectShowFunc.h" />
     <ClInclude Include="DlgItemResizer.h" />
+    <ClInclude Include="DlgScreenLayoutSettings.h" />
     <ClInclude Include="EnumDevices.h" />
     <ClInclude Include="FrameIntervalDetector.h" />
     <ClInclude Include="Gesture Recognition\GLBoard\GestureEventGenerator.h" />

@@ -14,8 +14,8 @@ public:
         m_ScreenSize.cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         m_ScreenSize.cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 		//modify by vera_zhao 2020.07.03
-        m_dbMinModulateCoef = 0.0;        
-        m_dbMinModulateCoef = 0.3;        
+        m_dbMinModulateCoef = 0.0;
+//        m_dbMinModulateCoef = 0.3;
 		m_dbMaxModulateCoef = 1.0;
 
         m_dbMinToleranceX = 0.0;

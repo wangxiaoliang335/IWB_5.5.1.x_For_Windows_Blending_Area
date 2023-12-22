@@ -30,7 +30,7 @@ struct USBKeyInformation
     EPalmTouchControlType   ePalmTouchControlType;//
     EFingerTouchControlType eFingerTouchControlType;
     EScreenMode             eScreenModeFromUsbKey;//
-
+    BOOL                    bEnableFourPointCalibrate;
 
     USBKeyInformation()
     {
@@ -38,6 +38,7 @@ struct USBKeyInformation
         ePalmTouchControlType   = E_PLAM_TOUCHCONTROL_UNKNOWN;
         eFingerTouchControlType = E_FINGER_TOUCHCONTROL_UNKNOWN;
         eScreenModeFromUsbKey   = EScreenModeSingle;
+        bEnableFourPointCalibrate = FALSE;
     }
 };
 
@@ -73,6 +74,7 @@ public:
     EPalmTouchControlType GetPalmTouchType()const;
     EFingerTouchControlType GetFingerTouchType() const;
 
+    BOOL IsFourPointCalibrateEnabled()const;
     //int  GetAllUSBKeyTouchTypeCount();
     //const USBKeyInformation* GetAllUSBKeyInformations() const;
     const  std::unordered_map<std::string, USBKeyInformation>& GetAllUSBKeyInformations() const;

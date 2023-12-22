@@ -16,11 +16,18 @@ protected:
         {
             //int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
             //int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
+#if 0
             int nCxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
             int nCyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
             int nXVScreen  = GetSystemMetrics(SM_XVIRTUALSCREEN);
             int nYVScreen  = GetSystemMetrics(SM_YVIRTUALSCREEN);
+#else
+            int nCxVScreen = GetSystemMetrics(SM_CXSCREEN);
+            int nCyVScreen = GetSystemMetrics(SM_CYSCREEN);
+            int nXVScreen = 0;
+            int nYVScreen = 0;
 
+#endif
 
             //m_rcWndArea.left  = (nCxScreen - DEFAULT_WIDTH)/2;
             //m_rcWndArea.right = m_rcWndArea.left + DEFAULT_WIDTH;

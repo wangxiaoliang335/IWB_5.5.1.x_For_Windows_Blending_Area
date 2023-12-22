@@ -2,10 +2,13 @@
 //#include "headers.h"
 CSpotMerger::CSpotMerger()
 {
-    
+#if 0
     int nCxScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     int nCyScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
+#else 
+    int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
+    int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
+#endif
     int nRange = nCxScreen > nCyScreen ? nCyScreen : nCxScreen;
 
     m_nMergeDistThreshold = nRange * 2 / 100;

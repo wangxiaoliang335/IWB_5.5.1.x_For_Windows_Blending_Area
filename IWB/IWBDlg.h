@@ -425,7 +425,7 @@ protected:
 	//触屏布局编辑工具
 	afx_msg void OnMenuTouchScreenLayoutDesigner();
 
-
+    void OnChangeSensorAreaNo(UINT uID);
 //=====函数======
 	void AdjustStatusBar(int cx, int cy);
 	BOOL StartRunning();
@@ -851,4 +851,5 @@ public:
 	std::vector<CAtlString>      m_aryCandidateResolution;
 
 
+    afx_msg void OnMenuCircleScreenManualCalibrate();
 };

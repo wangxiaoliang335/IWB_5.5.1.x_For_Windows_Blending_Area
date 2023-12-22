@@ -57,8 +57,16 @@ void CIWBSensorManager::Init(int nSensorCount)
     int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
     int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
 
-    m_oScreenLayoutDesigner.Init(nSensorCount, nCxScreen, nCyScreen);
 
+    //<<xuke,2023/12/21
+    //SplitMode splitMode(1, nSensorCount);
+    // 
+    //SplitMode splitMode(nSensorCount, 1);
+    SplitMode splitMode(1, nSensorCount);
+    //m_oScreenLayoutDesigner.Init(nSensorCount, nCxScreen, nCyScreen);
+    m_oScreenLayoutDesigner.Init(splitMode, nCxScreen, nCyScreen);
+
+    //>>
     ApplyScreenLayout();
 
 }
@@ -586,7 +594,7 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
         //设置工作模式
         //m_vecSensors[i]->SetLensMode(sysCfgData.globalSettings.eLensMode);
         m_vecSensors[i]->SetLensMode(sysCfgData.vecSensorConfig[i].eLensMode);
-    }
+    } 
     //
 	if (theApp.GetUSBKeyTouchType() == E_DEVICE_FINGER_TOUCH_WHITEBOARD || theApp.GetUSBKeyTouchType() == E_DEVICE_PEN_TOUCH_WHITEBOARD)
 	{
@@ -624,17 +632,31 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
         //如果保存的屏幕划分信息和多屏屏接的数目一致，则载入屏幕划分信息
         //选择配置文件中屏幕数等于当前实际屏幕数的布局,
 
-		const ESplitScreeMode& eSelectedSplitScreenMode = sysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
+		//const ESplitScreeMode& eSelectedSplitScreenMode = sysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
 		
-		const TScreenLayout* pScreenLayout = sysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, m_vecSensors.size());
+		//const TScreenLayout* pScreenLayout = sysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, m_vecSensors.size());
 
-		if (pScreenLayout)
+        int nSensorCount = m_vecSensors.size();
+
+        SplitMode splitMode;
+        
+        bool bRet =  sysCfgData.screenLayoutManger.GetSplitMode(nSensorCount, splitMode);
+
+        if (bRet)
         {
-			//this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&pScreenLayout->vecScreens[0], pScreenLayout->vecScreens.size());
-			//this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&pScreenLayout->vecMergeAreas[0], pScreenLayout->vecMergeAreas.size());
-			this->m_oScreenLayoutDesigner.SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
-			this->ApplyScreenLayout();
-		}
+            const TScreenLayout* pScreenLayout = sysCfgData.screenLayoutManger.GetScreenLayout(splitMode);
+            if (pScreenLayout)
+            {
+                //this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&pScreenLayout->vecScreens[0], pScreenLayout->vecScreens.size());
+                //this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&pScreenLayout->vecMergeAreas[0], pScreenLayout->vecMergeAreas.size());
+                //this->m_oScreenLayoutDesigner.SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
+                this->m_oScreenLayoutDesigner.SetScreenLayout(*pScreenLayout);
+                this->ApplyScreenLayout();
+            }
+        }
+
+
+	
 
     }
 }
@@ -671,9 +693,12 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
     {
 
 		const TScreenLayout& screenLayout    = m_oScreenLayoutDesigner.GetScreenLayout();
-		ESplitScreeMode     eSplitScreenMode = m_oScreenLayoutDesigner.GetSplitScreenMode();
+		//ESplitScreeMode     eSplitScreenMode = m_oScreenLayoutDesigner.GetSplitScreenMode();
 
-		sysCfgData.screenLayoutManger.SetScreenLayout(eSplitScreenMode, screenLayout);
+		//sysCfgData.screenLayoutManger.SetScreenLayout(eSplitScreenMode, screenLayout);
+        //sysCfgData.screenLayoutManger.SetSelectedSplitScreenMode(screenLayout.GetSplitMode());
+        sysCfgData.screenLayoutManger.SetSplitMode(nSensorCount, screenLayout.GetSplitMode());
+        sysCfgData.screenLayoutManger.SetScreenLayout(screenLayout);
     }
 
     return TRUE;
@@ -685,6 +710,7 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
 //void CIWBSensorManager::OnCameraPlugIn(LPCTSTR lpszDevicePath)
 void CIWBSensorManager::OnCameraPlugIn(const TCaptureDeviceInstance& devInst)
 {
+    LOG_INF("CIWBSensorManager::OnCameraPlugIn(%s)\r\n", (const char*)CT2A(devInst.m_strDevPath));
     //优先分配设备路径完全匹配的摄像头
     BOOL bMatched = FALSE;
     int  nCandidateIndex  = -1;
@@ -728,6 +754,7 @@ void CIWBSensorManager::OnCameraPlugIn(const TCaptureDeviceInstance& devInst)
 //@功能:USB摄像头拔出事件响应,  插入的USB设想头的设备路径
 void CIWBSensorManager::OnCameraPlugOut(LPCTSTR lpszDevicePath)
 {
+    LOG_INF("CIWBSensorManager::OnCameraPlugOut(%s)\r\n", (const char*)CT2A(lpszDevicePath));
     for(size_t i=0; i<m_vecSensors.size(); i++)
     {
         CIWBSensor& sensor = *m_vecSensors[i];
@@ -986,7 +1013,7 @@ void CIWBSensorManager::OnIWBSensorAutoCalibrateDone(BOOL bSuccess, BOOL bSimula
 //      nPtsInRow, 每行校正点个数， -1: 表示从配置文件中读取
 //      nPtsInCol, 每列校正点个数， -1: 表示从配置文件中读取
 //      nSensorID, -1,全部传感器校正
-void  CIWBSensorManager::StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow, int nPtsInCol, int nSensorID)
+void  CIWBSensorManager::StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow, int nPtsInCol, int nSensorID, EManualCalibrateType eManualCalibType)
 {
     if(nSensorID == -1)
     {
@@ -1008,7 +1035,7 @@ void  CIWBSensorManager::StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow,
         if(m_vecSensors.size() >= 1)
         {
             m_nCurrentSensorID = 0;
-            m_vecSensors[0]->StartManualCalibrate(hNotifyWindow, nPtsInRow, nPtsInCol);
+            m_vecSensors[0]->StartManualCalibrate(hNotifyWindow, nPtsInRow, nPtsInCol, eManualCalibType);
             
         }
 
@@ -1017,7 +1044,7 @@ void  CIWBSensorManager::StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow,
     else if( 0<= nSensorID && nSensorID < (int)m_vecSensors.size())
     {
         m_vecSensors[nSensorID]->EnableOpticalPen(FALSE);
-        m_vecSensors[nSensorID]->StartManualCalibrate(hNotifyWindow, nPtsInRow, nPtsInCol);
+        m_vecSensors[nSensorID]->StartManualCalibrate(hNotifyWindow, nPtsInRow, nPtsInCol, eManualCalibType);
 
         m_eOperationMode = E_MODE_SINGLE_SENSOR;
         m_nCurrentSensorID   = nSensorID;
@@ -1143,7 +1170,7 @@ void CIWBSensorManager::OnIWBSensorSearchMaskAreaDone(BOOL bSuccess)
     }
     else
     {
-        int nSensorCount = m_vecSensors.size();
+        size_t nSensorCount = m_vecSensors.size();
         //恢复其它Sensor的状态
         for (size_t nSensorID = 0; nSensorID < nSensorCount; nSensorID++)
         {
@@ -1340,7 +1367,7 @@ void CIWBSensorManager::LoadSrcFromAVI(LPCTSTR lpszVideoPath1, LPCTSTR lpszVideo
     if(lpszVideoPath1 && _tcslen(lpszVideoPath1))
     {
 		CString strpath1 = lpszVideoPath1;
-		int pos = strpath1.ReverseFind(_T('Sensor'));
+		int pos = strpath1.Find(_T("Sensor"));
 		if (pos > -1)
 		{
 			strpath1 = strpath1.Mid(pos + _tcslen(_T("Sensor")), 1);
@@ -1359,7 +1386,7 @@ void CIWBSensorManager::LoadSrcFromAVI(LPCTSTR lpszVideoPath1, LPCTSTR lpszVideo
         if (lpszVideoPath2 && _tcslen(lpszVideoPath2))
         {
 			CString strpath2 = lpszVideoPath1;
-			int pos = strpath2.ReverseFind(_T('Sensor'));
+			int pos = strpath2.Find(_T("Sensor"));
 			if (pos > -1)
 			{
 				strpath2 = strpath2.Mid(pos + _tcslen(_T("Sensor")), 1);
@@ -1398,6 +1425,7 @@ void CIWBSensorManager::LoadSrcFromAVI(LPCTSTR lpszVideoPath1, LPCTSTR lpszVideo
 //      第二个图像传感器的id
 void CIWBSensorManager::SwapSensorImage(UINT nFirstSensorId, UINT nSecondSensorId)
 {
+    LOG_INF("CIWBSensorManager::SwapSensorImage(%d,%d).\r\n", nFirstSensorId, nSecondSensorId);
     if (nFirstSensorId < 0  || nFirstSensorId  >= m_vecSensors.size()) return;
     if (nSecondSensorId < 0 || nSecondSensorId >= m_vecSensors.size()) return;
 
@@ -1465,11 +1493,54 @@ void CIWBSensorManager::ApplyScreenLayout()
     const RECT* pScreenAreas = m_oScreenLayoutDesigner.GetScreenAbsoluteLayouts(&nScreenAreaCount);
 
 
-    for (UINT i = 0; i < m_vecSensors.size() && i < nScreenAreaCount; i++)
+    for (UINT i = 0; i < m_vecSensors.size(); i++)
     {
-        m_vecSensors[i]->SetAttachedScreenArea(*pScreenAreas);
-        pScreenAreas++;
+        CIWBSensor* pSensor = m_vecSensors[i];
+        
+        UINT nDesiredAreaNo = pSensor->GetScreenAreaNo();
+
+        if (nDesiredAreaNo < nScreenAreaCount)
+        {
+            m_vecSensors[i]->SetAttachedScreenArea(pScreenAreas[nDesiredAreaNo]);
+        }
+        else
+        {
+            //缺省关联最后一个屏幕区域
+            m_vecSensors[i]->SetAttachedScreenArea(pScreenAreas[nScreenAreaCount - 1]);
+            m_vecSensors[i]->SetScreenAreaNo(nScreenAreaCount - 1);
+
+        }
+
+
+        
+        //pScreenAreas++;
     }
+
+
+    //
+    const SplitMode&  splitMode = m_oScreenLayoutDesigner.GetScreenLayout().GetSplitMode();
+
+    BOOL bAutoMerge = FALSE;
+
+    if (splitMode.cols == 1 || splitMode.rows == 1)
+    {
+
+        for (UINT i = 0; i < m_vecSensors.size(); i++)
+        {
+            CIWBSensor* pSensor = m_vecSensors[i];
+            if (pSensor->GetID() != pSensor->GetScreenAreaNo())
+            {
+                break;
+            }
+
+        }
+
+        bAutoMerge = TRUE;
+    }
+
+
+    //
+
 
     UINT nMergeAreaCount;
     const RECT* pMergeAreas = m_oScreenLayoutDesigner.GetAbsoluteMergeAreas(&nMergeAreaCount);
@@ -1479,6 +1550,8 @@ void CIWBSensorManager::ApplyScreenLayout()
         this->m_pSpotListProcessor->GetSpotMerger().SetMergeAreas(pMergeAreas, nMergeAreaCount);
     }
 
+
+    this->m_pSpotListProcessor->EnableAutoMerge(bAutoMerge);
 }
 
 //@功能:屏幕分辨率变化事件响应函数
@@ -1724,10 +1797,13 @@ void CIWBSensorManager::UpdateCalibrateToleranceDistribute()
     const UINT nRows = 10;
     const UINT nCols = 10;
     const UINT nPtCount = nRows*nCols;
-
+#if 0
     int nCx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     int nCy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
+#else
+    int nCx = GetSystemMetrics(SM_CXSCREEN);
+    int nCy = GetSystemMetrics(SM_CYSCREEN);
+#endif
 
     std::vector<TPoint2D> vecPtsOnScreen;
     vecPtsOnScreen.resize(nPtCount);
@@ -1842,9 +1918,14 @@ void CIWBSensorManager::UpdateCalibrateToleranceDistribute()
             calibrateAlgo.GetScreenCoord(pt2DImage, &pt2DScreen,0, TRUE/*bWithoutAutoCalibCompensate*/);
 
             TPoint2D pt2DImageDeviate;
+
+            //
+            double deviation = 1.0;
+
+            //
             //相机图像坐标在水平和垂直方向分别偏移0.5个像素
-            pt2DImageDeviate.d[0] = pt2DImage.d[0] + 0.5;
-            pt2DImageDeviate.d[1] = pt2DImage.d[1] + 0.5;
+            pt2DImageDeviate.d[0] = pt2DImage.d[0] + deviation;
+            pt2DImageDeviate.d[1] = pt2DImage.d[1] + deviation;
 
 
             TPoint2D pt2DScreenDeviate;

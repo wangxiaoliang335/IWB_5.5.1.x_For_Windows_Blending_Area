@@ -111,7 +111,7 @@ public:
     //      nPtsInRow, 每行的校正点个数
     //      nPtsInCol, 每列的校正点个数
     //      hNotifyWnd, 校正结束后的同志消息的接收窗体
-    void  StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow = -1, int nPtsInCol = -1);
+    void  StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow = -1, int nPtsInCol = -1,  EManualCalibrateType eManualCalibType = E_MUNUAL_CALIB_FULL_SCREEN);
 
 
     //@功能:传感器手动校正完成后的事件响应函数
@@ -234,6 +234,9 @@ public:
 
 	  void UpdateThrowRatioDisplayInfo();
 
+
+      UINT GetScreenAreaNo();
+      void SetScreenAreaNo(UINT areaNo);
 protected:
 	  
 	  ELensType MapThrowRatioToLensType(const double& throwRatio);

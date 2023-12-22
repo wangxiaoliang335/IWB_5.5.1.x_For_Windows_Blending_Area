@@ -3,6 +3,7 @@
 // but are changed infrequently
 
 #pragma once
+#include <afxcontrolbars.h>
 
 #define _BIND_TO_CURRENT_VCLIBS_VERSION 1
 

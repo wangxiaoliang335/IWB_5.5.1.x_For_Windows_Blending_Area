@@ -14,11 +14,17 @@ public:
     m_fpSampleDoneProc(NULL)
     {
         //全屏显示
+#if 0
         int nCxVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int nCyVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
         int nXVScreen  = GetSystemMetrics(SM_XVIRTUALSCREEN );
         int nYVScreen  = GetSystemMetrics(SM_YVIRTUALSCREEN );
-
+#else
+        int nCxVScreen = GetSystemMetrics(SM_CXSCREEN);
+        int nCyVScreen = GetSystemMetrics(SM_CYSCREEN);
+        int nXVScreen = 0;
+        int nYVScreen = 0;
+#endif
 
         m_rcWndArea.left    = nXVScreen;
         m_rcWndArea.right   = nXVScreen + nCxVScreen;

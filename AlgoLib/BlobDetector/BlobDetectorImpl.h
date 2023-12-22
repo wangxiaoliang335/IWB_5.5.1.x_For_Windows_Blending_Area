@@ -708,7 +708,7 @@ public:
 
         }
 
-        //Sort(FALSE);//Ωµ–Ú≈≈¡–
+        Sort(FALSE);//Ωµ–Ú≈≈¡–
 
 		return TRUE;
 	}//function ProcessImage

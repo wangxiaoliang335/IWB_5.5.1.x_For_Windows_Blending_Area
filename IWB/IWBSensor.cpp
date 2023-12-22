@@ -304,6 +304,9 @@ CIWBSensor::CIWBSensor(int nID)
     m_rcMonintorArea.right = ::GetSystemMetrics(SM_CXSCREEN);
     m_rcMonintorArea.bottom = ::GetSystemMetrics(SM_CYSCREEN);
 
+
+    this->m_tCfgData.nScreenAreaNo = nID;
+
 }
 
 
@@ -651,6 +654,7 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
     m_tCfgData.strFavoriteDevicePath = m_tDeviceInfo.m_strDevPath;
     m_tCfgData.strFavoriteMediaType = GetVideoFormatName(m_tFavoriteMediaType);
 
+    
 
     m_eCameraType = ::GetCameraType(m_tDeviceInfo.m_nPID, m_tDeviceInfo.m_nVID);
 
@@ -660,6 +664,8 @@ void CIWBSensor::SetDeviceInfo(const TCaptureDeviceInstance& devInfo)
     TSensorModeConfig* pSensorModeConfig = &m_tCfgData.vecSensorModeConfig[eProjectionMode];
     const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
     UpdateAutoCalibrateCompensateCoefs(lensCfg);
+    
+    LOG_INF("CIWBSensor::SetDeviceInfo Sensor[%d].devPath=%s\r\n", this->m_nID, (const char*)CT2A(m_tDeviceInfo.m_strDevPath));
 }
 
 //@功能:返回视频捕获设备信息
@@ -673,7 +679,14 @@ const TCaptureDeviceInstance& CIWBSensor::GetDeviceInfo()const
 //      pGlobalSettings, 输入参数, 指向全局配置信息的指针
 void CIWBSensor::SetCfgData(const TSensorConfig& cfgData, const GlobalSettings* pGlobalSettings)
 {
+
+    UINT oldAreaNo = m_tCfgData.nScreenAreaNo;
     m_tCfgData = cfgData;
+
+    if (m_tCfgData.nScreenAreaNo == UNDEFEIN_AREA_NO)
+    {
+        m_tCfgData.nScreenAreaNo = oldAreaNo;
+    }
 
     m_ThrowRatioInfo.m_dbThrowRatioSelected = TRHOW_RATIO_LIST[m_tCfgData.eSelectedLensType];
     UpdateThrowRatioDisplayInfo();
@@ -1268,7 +1281,7 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
 //      nPtsInRow, 每行的校正点个数
 //      nPtsInCol, 每列的校正点个数
 //      hNotifyWnd, 校正结束后的同志消息的接收窗体
-void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsInCol)
+void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsInCol, EManualCalibrateType eManualCalibType)
 {
     TManualCalibrateParameters parameters;
 
@@ -1293,6 +1306,9 @@ void  CIWBSensor::StartManualCalibrate(HWND hNotifyWnd, int nPtsInRow, int nPtsI
     parameters.nCalibratePointsInRow = (nPtsInRow == -1) ? pSensorModeConfig->manualCalibrateSetting.nPtNumInEachRow : nPtsInRow;
     parameters.nCalibratePointsInCol = (nPtsInCol == -1) ? pSensorModeConfig->manualCalibrateSetting.nPtNumInEachCol : nPtsInCol;
     parameters.hNotifyWnd = hNotifyWnd;
+    parameters.eManualCalibrateType = eManualCalibType;
+
+
     //把图像的高和宽传递进手动校正中
     //add by vera_zhao 2018.11.30
     int ImageWidth = this->m_oPenPosDetector.GetSrcImageWidth();
@@ -1346,10 +1362,30 @@ void CIWBSensor::OnManualCalibrateDone(BOOL bSuccess)
             unsigned char init_value = 0x00;
             maskFrame.SetSize(m_oManualCalibrator.GetScreenAreaMask().Width(), m_oManualCalibrator.GetScreenAreaMask().Height(), 1, &init_value);
             ///如果计算出来的屏蔽图有错误的话，那么就按以前找屏蔽图的方式。
+            EManualCalibrateType eManualCalibrateType = m_oManualCalibrator.GetCalibrateParams().eManualCalibrateType;
 
-            RECT Mrect = m_oPenPosDetector.GettSpotListProcessor()->GetVisibleScreenArea(m_nID, calibData.allMonitorCalibData[0].rcMonitor);
+            if (E_MUNUAL_CALIB_FULL_SCREEN == eManualCalibrateType)
+            {
 
-            if (!GenerateMaskFrameWithCalibrateData(maskFrame, Mrect))
+                RECT Mrect = m_oPenPosDetector.GettSpotListProcessor()->GetVisibleScreenArea(m_nID, calibData.allMonitorCalibData[0].rcMonitor);
+
+                if (!GenerateMaskFrameWithCalibrateData(maskFrame, Mrect))
+                {
+                    maskFrame = m_oManualCalibrator.GetScreenAreaMask();
+                    const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
+
+                    //适当腐蚀屏蔽区，扩到屏幕区域
+                    for (int r = 0; r < lensCfg.autoMaskSettings.nMaskAreaEroseSize; r++)
+                    {
+                        Morph_Dilate8(
+                            maskFrame.GetData(),
+                            maskFrame.GetData(),
+                            maskFrame.Width(),
+                            maskFrame.Height());
+                    }
+                }
+            }
+            else
             {
                 maskFrame = m_oManualCalibrator.GetScreenAreaMask();
                 const TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[this->m_eCameraType][m_tCfgData.eSelectedLensType];
@@ -2262,4 +2298,16 @@ void CIWBSensor::UpdateThrowRatioDisplayInfo()
         _T("Times New Roman"),
         -1);
 
+}
+
+
+UINT CIWBSensor::GetScreenAreaNo()
+{
+
+    return this->m_tCfgData.nScreenAreaNo;
+}
+
+void CIWBSensor::SetScreenAreaNo(UINT areaNo)
+{
+    this->m_tCfgData.nScreenAreaNo = areaNo;
 }

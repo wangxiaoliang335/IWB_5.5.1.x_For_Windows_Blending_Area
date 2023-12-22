@@ -1082,6 +1082,24 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
 	pElement->SetAttribute("value", globalSettings.eClickMode == E_MODE_CLICK ? "Click" : "Double_Click");
 	pNode->LinkEndChild(pElement);
 
+    //圆形校正，x坐标缩放百分比例50~100
+    pXmlComment = new TiXmlComment("圆形校正时，x坐标缩小到的百分比例50~100, 100为保持原尺寸");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "CircleCalibrateXScale");
+    pElement->SetAttribute("value", globalSettings.circleCalibrateXScale);
+    pNode->LinkEndChild(pElement);
+
+
+    //圆形校正，y坐标缩放百分比例50~100
+    pXmlComment = new TiXmlComment("圆形校正时，y坐标缩放百分比例50~100, 100为保持原尺寸");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "CircleCalibrateYScale");
+    pElement->SetAttribute("value", globalSettings.circleCalibrateYScale);
+    pNode->LinkEndChild(pElement);
+
+
     return TRUE;
 }
 
@@ -1636,7 +1654,7 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoMaskSettings& autoMasktSettings)
 }
 
 
-//@功能:载入手动校正的配置信息
+//@功能:载入正常使用时的配置信息
 //@参数:pNode, 指向配置文件中<ManualCalibrate>节点的指针
 //      manualCalibrateSettings, 输出参数, 手动校正配置信息
 BOOL LoadConfig(TiXmlNode *pNode, ManualCalibrateSettings& manualCalibrateSettings)
@@ -1667,7 +1685,6 @@ BOOL LoadConfig(TiXmlNode *pNode, ManualCalibrateSettings& manualCalibrateSettin
     }while(pChild);
     return TRUE;
 }
-
 
 //@功能:保存手动校正的参数
 //@参数:pNode, 指向配置文件中<ManualCalibrate>节点的指针
@@ -2268,28 +2285,28 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
         {
             const char* paramName  = ((TiXmlElement*)pChild)->Attribute("name");
             const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
-            if (paramName && paramValue)
+            if(paramName && paramValue)
             {
-                if (_stricmp(paramName, "ImageWidth") == 0)
+                if(_stricmp(paramName, "ImageWidth") == 0)
                 {
                     calibParams.szImage.cx = atoi(paramValue);
                 }
-                else if (_stricmp(paramName, "ImageHeight") == 0)
+                else if(_stricmp(paramName, "ImageHeight") == 0)
                 {
                     calibParams.szImage.cy = atoi(paramValue);
                 }
-                else if (_stricmp(paramName, "CalibrateModel") == 0)
+                else if (_stricmp(paramName, "CalibrateModel") ==0 )
                 {
                     int nCalibrateModel = E_CALIBRATE_MODEL(atoi(paramValue));
-                    if (nCalibrateModel < 0 || nCalibrateModel >= (int)E_CALIBRATE_MODEL_COUNT)
+                    if (nCalibrateModel < 0 || nCalibrateModel >= (int) E_CALIBRATE_MODEL_COUNT)
                     {
                         nCalibrateModel = 0;
                     }
                     calibParams.eCalibrateModel = E_CALIBRATE_MODEL(nCalibrateModel);
                 }
-                else if (_stricmp(paramName, "CalibrateType") == 0)
+                else if(_stricmp(paramName, "CalibrateType") == 0)
                 {
-                    if (_stricmp(paramValue, "Auto") == 0)
+                    if(_stricmp(paramValue,"Auto") == 0)
                     {
                         calibParams.eCalibType = E_CALIBRATE_TYPE_AUTO;
                     }
@@ -2299,27 +2316,28 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
                     }
 
                 }
-                else if (_stricmp(paramName, "UsingScreenPhysicalDimensions") == 0)
-                {
-                    if (paramValue && _stricmp(paramValue, "Yes") == 0)
-                    {
-                        calibParams.bUsingScreenPhysicalDimensions = TRUE;
-                    }
-                    else
-                    {
-                        calibParams.bUsingScreenPhysicalDimensions = FALSE;
-                    }
+            
+				else if (_stricmp(paramName, "UsingScreenPhysicalDimensions") == 0)
+				{
+					if (paramValue && _stricmp(paramValue, "Yes") == 0)
+					{
+						calibParams.bUsingScreenPhysicalDimensions = TRUE;
+					}
+					else
+					{
+						calibParams.bUsingScreenPhysicalDimensions = FALSE;
+					}
 
-                }
-                else if (_stricmp(paramName, "ScreenPhysicalWidth") == 0)
-                {
-                    calibParams.nScreenWidthInmm = atoi(paramValue);
-                }
-                else if (_stricmp(paramName, "ScreenPhysicalHeight") == 0)
-                {
-                    calibParams.nScreenHeightInmm = atoi(paramValue);
-                }
-            }
+				}
+				else if (_stricmp(paramName, "ScreenPhysicalWidth") == 0)
+				{
+					calibParams.nScreenWidthInmm = atoi(paramValue);
+				}
+				else if (_stricmp(paramName, "ScreenPhysicalHeight") == 0)
+				{
+					calibParams.nScreenHeightInmm = atoi(paramValue);
+				}
+			}
         }
         else if(_stricmp(lpszElementName, "AllMonitorCalibCoefficients") == 0)
         {
@@ -3210,13 +3228,13 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
 	pNode->LinkEndChild(pElement);
 	SaveConfig(pElement, sensorModeCfg.advanceSettings);
 
-    //手动校正参数
-    pXmlComment = new TiXmlComment("手动校正参数");
-    pNode->LinkEndChild(pXmlComment);
+	//手动校正参数
+	pXmlComment = new TiXmlComment("手动校正参数");
+	pNode->LinkEndChild(pXmlComment);
 
-    pElement = new TiXmlElement("ManualCalibrate");
-    pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, sensorModeCfg.manualCalibrateSetting);
+	pElement = new TiXmlElement("ManualCalibrate");
+	pNode->LinkEndChild(pElement);
+	SaveConfig(pElement, sensorModeCfg.manualCalibrateSetting);
 
     //自动校正参数
     pXmlComment = new TiXmlComment("自动校正参数");
@@ -3231,95 +3249,91 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
     pXmlComment = new TiXmlComment("校正方程参数");
     pNode->LinkEndChild(pXmlComment);
 
-    pElement = new TiXmlElement("CalibateEquationParams");
-    pNode->LinkEndChild(pElement);
-    SaveConfig(pElement, sensorModeCfg.calibParam);
+	pElement = new TiXmlElement("CalibateEquationParams");
+	pNode->LinkEndChild(pElement);
+	SaveConfig(pElement, sensorModeCfg.calibParam);
 
-    //		//保存各种镜头的配置参数
-    TCHAR szPath[MAX_PATH];
-    _stprintf_s(
-        szPath,
-        _countof(szPath),
-        _T("%s\\Sensor%02d\\%s\\%s"),
-        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-        nSensorId,
-        GetProjectModeString(EProjectionMode(nModeIndex)),
-        GetCameraTypeString(eCameraType));
+	//		//保存各种镜头的配置参数
+	TCHAR szPath[MAX_PATH];
+	_stprintf_s(
+		szPath,
+		_countof(szPath),
+		_T("%s\\Sensor%02d\\%s\\%s"),
+		(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+		nSensorId,
+		GetProjectModeString(EProjectionMode(nModeIndex)),
+		GetCameraTypeString(eCameraType));
 
-//递归创建子目录
-//CreateFullDirectory(CA2CT(szPath));
-CreateFullDirectory(szPath);
+	//递归创建子目录
+	//CreateFullDirectory(CA2CT(szPath));
+	CreateFullDirectory(szPath);
 
-//保存各种镜头的配置参数
-TCHAR szPathRatio[MAX_PATH];
-memset(szPathRatio, 0, sizeof(szPathRatio));
-_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
+	//保存各种镜头的配置参数
+	TCHAR szPathRatio[MAX_PATH];
+	memset(szPathRatio, 0, sizeof(szPathRatio));
+	_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
 
-SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
+	SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
 
-//调试信息
-//<<debug
-if (eCameraType == E_CAMERA_MODEL_2)
-{
-
-    const TLensConfig& lensConfig = sensorModeCfg.lensConfigs[eCameraType][Lentype];
-
-    long brightnessFingerTouchControl = lensConfig.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
-    long brightnessFingerTouchWhiteBoard = lensConfig.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
-    long brightnessPalmTouchControl = lensConfig.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
-    long brightnessPenTouchWhiteBoard = lensConfig.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
-
-    CT2CA ct2aDebugPath(szPathRatio);
-
-    if (brightnessFingerTouchControl > 64)
+    //调试信息
+    //<<debug
+    if (eCameraType == E_CAMERA_MODEL_2)
     {
-        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchControl %d > 64! xml file path=%s", brightnessFingerTouchControl, (const char*)ct2aDebugPath);
-    }
+        
+        const TLensConfig& lensConfig = sensorModeCfg.lensConfigs[eCameraType][Lentype];
 
-    if (brightnessFingerTouchWhiteBoard > 64)
-    {
-        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchWhiteBoard %d > 64! xml file path=%s", brightnessFingerTouchWhiteBoard, (const char*)ct2aDebugPath);
-    }
+        long brightnessFingerTouchControl = lensConfig.normalUsageSettings_FingerTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+        long brightnessFingerTouchWhiteBoard = lensConfig.normalUsageSettings_FingerTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
+        long brightnessPalmTouchControl = lensConfig.normalUsageSettings_PalmTouchControl.cameraParams.Prop_VideoProcAmp_Brightness;
+        long brightnessPenTouchWhiteBoard = lensConfig.normalUsageSettings_PenTouchWhiteBoard.cameraParams.Prop_VideoProcAmp_Brightness;
 
-    if (brightnessPalmTouchControl > 64)
-    {
-        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PalmTouchControl %d > 64! xml file path=%s", brightnessPalmTouchControl, (const char*)ct2aDebugPath);
-    }
+        CT2CA ct2aDebugPath(szPathRatio);
 
-    if (brightnessPenTouchWhiteBoard > 64)
-    {
-        LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PenTouchWhiteBoard %d > 64! xml file path=%s", brightnessPenTouchWhiteBoard, (const char*)ct2aDebugPath);
+        if (brightnessFingerTouchControl > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchControl %d > 64! xml file path=%s", brightnessFingerTouchControl, (const char*)ct2aDebugPath);
+        }
+
+        if (brightnessFingerTouchWhiteBoard > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of FingerTouchWhiteBoard %d > 64! xml file path=%s", brightnessFingerTouchWhiteBoard, (const char*)ct2aDebugPath);
+        }
+
+        if (brightnessPalmTouchControl > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PalmTouchControl %d > 64! xml file path=%s", brightnessPalmTouchControl, (const char*)ct2aDebugPath);
+        }
+
+        if (brightnessPenTouchWhiteBoard > 64)
+        {
+            LOG_ERR("SaveConfig Parameter Brightness Error!\nHD Camera  Brightness of PenTouchWhiteBoard %d > 64! xml file path=%s", brightnessPenTouchWhiteBoard, (const char*)ct2aDebugPath);
+        }
     }
-}
-//debug>>
-return TRUE;
+    //debug>>
+	return TRUE;
 }
 
 
 BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
 {
-    if (pNode == NULL) return FALSE;
-    TiXmlNode* pChild = NULL;
-    do
-    {
-        pChild = pNode->IterateChildren(pChild);
-        if (NULL == pChild)
-        {
-            break;
-        }
-        const char* lpszElementName = pChild->Value();
-        if (_stricmp(lpszElementName, "AdvanceSettings") == 0)
-        {	//高级设置参数
-            LoadConfig(pChild, sensorModeCfg.advanceSettings);
-        }
-        else if (_stricmp(lpszElementName, "ManualCalibrate") == 0)
-        {   //手动校正参数
-            LoadConfig(pChild, sensorModeCfg.manualCalibrateSetting);
-        }
-        else if (_stricmp(lpszElementName, "AutoCalibratePattern") == 0)
-        {   //自动校正参数
-            LoadConfig(pChild, sensorModeCfg.autoCalibratePatternSettings);
-        }
+	if (pNode == NULL) return FALSE;
+	TiXmlNode* pChild = NULL;
+	do
+	{
+		pChild = pNode->IterateChildren(pChild);
+		if (NULL == pChild)
+		{
+			break;
+		}
+		const char* lpszElementName = pChild->Value();
+		if (_stricmp(lpszElementName, "AdvanceSettings") == 0)
+		{	//高级设置参数
+			LoadConfig(pChild, sensorModeCfg.advanceSettings);
+		}
+		else if (_stricmp(lpszElementName, "ManualCalibrate") == 0)
+		{   //手动校正参数
+			LoadConfig(pChild, sensorModeCfg.manualCalibrateSetting);
+		}
 		else if (_stricmp(lpszElementName, "CalibateEquationParams") == 0)
 		{  //校正方程参数
 			LoadConfig(pChild, sensorModeCfg.calibParam);
@@ -3408,6 +3422,10 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
 					sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_FULLSCREEN;
 				}
 			}
+            else if (paramName && paramValue && _stricmp(paramName, "ScreenAreaNo") == 0)
+            {
+                sensorCfg.nScreenAreaNo = atoi(paramValue);
+            }
         }
 		else if (_stricmp(lpszElementName, "IWBProjectionMode") == 0)
 		{
@@ -3425,6 +3443,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
 			}
 			LoadConfig(pChild, sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex,nSensorId);
 		}
+
 
     }while(pChild);
 
@@ -3517,6 +3536,18 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 			break;
 	}
 	pNode->LinkEndChild(pElement);
+
+
+
+    //传感器关联的屏幕id
+    pXmlComment = new TiXmlComment("传感器关联的屏幕区域编号");
+    pNode->LinkEndChild(pXmlComment);
+
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ScreenAreaNo");
+    pElement->SetAttribute("value", sensorCfg.nScreenAreaNo);
+    pNode->LinkEndChild(pElement);
+
 
 	pXmlComment = new TiXmlComment("投影机放置方式(\"Desktop\":桌面模式; \"Wall\":墙面模式");
 	pNode->LinkEndChild(pXmlComment);
@@ -3873,7 +3904,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
 }
 
 
-
+/*
 const char* GetSplitModeDesc(ESplitScreeMode eSplitMode)
 {
 	const char* desc = "";
@@ -3892,7 +3923,19 @@ const char* GetSplitModeDesc(ESplitScreeMode eSplitMode)
 
 	return desc;
 }
+*/
+const char* GetSplitModeDesc(const SplitMode& splitMode)
+{
+    static char desc[32];
+    
+    sprintf_s<_countof(desc)>(desc, "%dx%d", splitMode.rows, splitMode.cols);
 
+
+
+    return desc;
+}
+
+/*
 ESplitScreeMode GetSplitMode(const char* szSplitMode)
 {
 	ESplitScreeMode  eSplitMode = E_SPLIT_SCREEN_VERT;
@@ -3908,6 +3951,21 @@ ESplitScreeMode GetSplitMode(const char* szSplitMode)
 
 	return eSplitMode;
 }
+*/
+
+SplitMode GetSplitMode(const char* szSplitMode)
+{
+    SplitMode  splitMode;
+    int rows, cols;
+    int ret = sscanf_s(szSplitMode, "%dx%d", &rows, &cols);
+    if (ret == 2)
+    {
+        splitMode.rows = rows;
+        splitMode.cols = cols;
+    }
+
+    return splitMode;
+}
 
 //@功能:保存屏幕布局数据
 BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLayoutManager)
@@ -3919,13 +3977,60 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
     TiXmlComment*  pXmlComment = new TiXmlComment("所有布局");
     oXMLDoc.LinkEndChild(pXmlComment);
 
-    TiXmlElement * pAllLayouts = new TiXmlElement("AllScreenLayouts");
+    TiXmlElement * pRoot = new TiXmlElement("Root");
 	
-	pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.eSelectedSplitScreenMode));
+	//pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.eSelectedSplitScreenMode));
+    //pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.selectedSplitScreenMode));
 
-    oXMLDoc.LinkEndChild(pAllLayouts);
+    oXMLDoc.LinkEndChild(pRoot);
 
 
+    const auto& allScreenLayout = screenLayoutManager.allScreenLayout;
+    for (auto it = allScreenLayout.begin(); it != allScreenLayout.end(); it++)
+    {
+            const auto& screenLayout = *it;
+            TiXmlElement* pScreenLayoutElem = new TiXmlElement("ScreenLayout");
+
+            pScreenLayoutElem->SetAttribute("split_mode", GetSplitModeDesc(screenLayout.GetSplitMode()));
+            TiXmlComment* pXmlComment = new TiXmlComment("分割条");
+            pScreenLayoutElem->LinkEndChild(pXmlComment);
+
+            const auto&  splitEdges = screenLayout.GetSplitEdges();
+            for (auto itEdge = splitEdges.begin(); itEdge != splitEdges.end(); itEdge++)
+            {
+                TiXmlElement* splitEdgeElem = new TiXmlElement("SplitEdge");
+
+                splitEdgeElem->SetDoubleAttribute("pos", itEdge->pos);
+                splitEdgeElem->SetDoubleAttribute("limit_0", itEdge->limit[0]);
+                splitEdgeElem->SetDoubleAttribute("limit_1", itEdge->limit[1]);
+                pScreenLayoutElem->LinkEndChild(splitEdgeElem);
+            }
+
+            pRoot->LinkEndChild(pScreenLayoutElem);
+
+
+    }
+
+
+    pXmlComment = new TiXmlComment("Sensor个数与布局映射关系");
+    pRoot->LinkEndChild(pXmlComment);
+
+    TiXmlElement* pSplitModeMap = new TiXmlElement("split_mode_map");
+
+    pRoot->LinkEndChild(pSplitModeMap);
+
+    for (auto it = screenLayoutManager.mapSplitMode.begin(); it != screenLayoutManager.mapSplitMode.end(); it++)\
+    {
+        TiXmlElement* pMapEntry = new TiXmlElement("map_entry");
+        
+        pMapEntry->SetAttribute("sensor_count", it->first);
+        pMapEntry->SetAttribute("split_mode", GetSplitModeDesc(it->second));
+
+        pSplitModeMap->LinkEndChild(pMapEntry);
+    }
+
+
+    /*
 	const auto& layoutCollection = screenLayoutManager.allLayoutCollection;
 
 	for (auto it = layoutCollection.begin(); it != layoutCollection.end(); it++)
@@ -3933,7 +4038,8 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
 		LayoutCollection* pLayoutCollection = it->second;
 
 		TiXmlElement * pLayoutCollectionElem = new TiXmlElement("LayoutCollection");
-		pLayoutCollectionElem->SetAttribute("SplitMode", GetSplitModeDesc(pLayoutCollection->eSplitScreenModel));
+		
+        //pLayoutCollectionElem->SetAttribute("SplitMode", GetSplitModeDesc(pLayoutCollection->eSplitScreenModel));
 
 		const auto& allScreenLayout = pLayoutCollection->allScreenLayout;
 
@@ -3988,6 +4094,7 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
         pAllLayouts->LinkEndChild(pLayoutCollectionElem);
 
     }//for
+    */
 
 
     //以UTF-8编码格式保存
@@ -4092,16 +4199,18 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
 		return FALSE;
 	}
 
+
+
 	//screenLayoutManager.allLayoutCollection.clear();
 	screenLayoutManager.Reset();
 
 	
-	const char*	szSelectedScreenSplitMode = ((TiXmlElement*)pRootElement)->Attribute("SelectedScreenSplitMode");
+	//const char*	szSelectedScreenSplitMode = ((TiXmlElement*)pRootElement)->Attribute("SelectedScreenSplitMode");
 
-	if (szSelectedScreenSplitMode)
-	{
-		screenLayoutManager.eSelectedSplitScreenMode = GetSplitMode(szSelectedScreenSplitMode);
-	}
+	//if (szSelectedScreenSplitMode)
+	//{
+	//	screenLayoutManager.SetSelectedSplitScreenMode(GetSplitMode(szSelectedScreenSplitMode));
+	//}
 
 	TiXmlNode* pChild_L1 = NULL;
 	do
@@ -4111,31 +4220,18 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
 
 		const char* lpszElementName = pChild_L1->Value();
 
-		if (lpszElementName && _strcmpi(lpszElementName, "LayoutCollection") == 0)
+		if (lpszElementName && _strcmpi(lpszElementName, "ScreenLayout") == 0)
 		{
-			const char* attrValue = ((TiXmlElement*)pChild_L1)->Attribute("SplitMode");
+			const char* attrValue = ((TiXmlElement*)pChild_L1)->Attribute("split_mode");
 
-			ESplitScreeMode eSplitScreenMode = E_SPLIT_SCREEN_VERT;
+            SplitMode  splitMode;
 			
 			if (attrValue)
 			{
-				eSplitScreenMode = GetSplitMode(attrValue);
+                splitMode = GetSplitMode(attrValue);
 			}
-
-			LayoutCollection* pNewLayoutCollection = NULL;
-			
-			auto it = screenLayoutManager.allLayoutCollection.find(eSplitScreenMode);
-			if (it != screenLayoutManager.allLayoutCollection.end())
-			{
-				pNewLayoutCollection = it->second;
-			}
-			else
-			{
-				pNewLayoutCollection = new LayoutCollection;				
-			}
-
-			pNewLayoutCollection->eSplitScreenModel = eSplitScreenMode;
-			
+                       			
+            std::vector<SplitEdge> splitEdges;
 
 			TiXmlNode* pChild_L2 = NULL;
 			do
@@ -4144,97 +4240,85 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
 				if (NULL == pChild_L2) break;
 
 				lpszElementName = pChild_L2->Value();
-				if (lpszElementName && _stricmp(lpszElementName, "ScreenLayout") == 0)
-				{
-					TScreenLayout layout;
+                if (lpszElementName && _stricmp(lpszElementName, "SplitEdge") == 0)
+                {
+                    SplitEdge edge;
 
-					TiXmlNode* pChild_L3 = NULL;
-					do
-					{
-						pChild_L3 = pChild_L2->IterateChildren(pChild_L3);
+                    const char* paramValue = ((TiXmlElement*)pChild_L2)->Attribute("pos");
+                    if (paramValue)
+                    {
+                        edge.pos = atof(paramValue);
+                    }
 
-						if (NULL == pChild_L3) break;
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("limit_0");
+                    if (paramValue)
+                    {
+                        edge.limit[0] = atof(paramValue);
+                    }
 
-						 lpszElementName = pChild_L3->Value();
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("limit_1");
+                    if (paramValue)
+                    {
+                        edge.limit[1] = atof(paramValue);
+                    }
 
-						if (lpszElementName && _stricmp(lpszElementName, "Screen") == 0)
-						{
-							RectF screenArea;
-							memset(&screenArea, 0, sizeof(screenArea));
-
-							const char* paramValue = ((TiXmlElement*)pChild_L3)->Attribute("left");
-							if (paramValue)
-							{
-								screenArea.left = atof(paramValue);
-							}
-
-							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("top");
-							if (paramValue)
-							{
-								screenArea.top = atof(paramValue);
-							}
-
-							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("right");
-							if (paramValue)
-							{
-								screenArea.right = atof(paramValue);
-							}
-
-							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("bottom");
-							if (paramValue)
-							{
-								screenArea.bottom = atof(paramValue);
-							}
-							layout.vecScreens.push_back(screenArea);
-
-						}
-						else if (lpszElementName && _stricmp(lpszElementName, "MergeArea") == 0)
-						{
-
-							RectF mergeArea;
-							memset(&mergeArea, 0, sizeof(mergeArea));
-
-							const char* paramValue = ((TiXmlElement*)pChild_L3)->Attribute("left");
-							if (paramValue)
-							{
-								mergeArea.left = atof(paramValue);
-							}
-
-							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("top");
-							if (paramValue)
-							{
-								mergeArea.top = atof(paramValue);
-							}
-
-							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("right");
-							if (paramValue)
-							{
-								mergeArea.right = atof(paramValue);
-							}
-
-							paramValue = ((TiXmlElement*)pChild_L3)->Attribute("bottom");
-							if (paramValue)
-							{
-								mergeArea.bottom = atof(paramValue);
-							}
-							layout.vecMergeAreas.push_back(mergeArea);
-						}//else if
-					} while (pChild_L3);
-
-					pNewLayoutCollection->allScreenLayout.push_back(layout);
-				}//if(ScreenLayout)
-
+                    splitEdges.push_back(edge);
+                }
 				
 
 			} while (pChild_L2);
 
+            TScreenLayout layout;
+            layout.UpdateLayout(splitMode, splitEdges);
 
-			screenLayoutManager.allLayoutCollection[eSplitScreenMode] = pNewLayoutCollection;
-
+			screenLayoutManager.SetScreenLayout(layout);
 			
-		}//if(LayoutCollection)
+		}
+        else if (lpszElementName && _strcmpi(lpszElementName, "split_mode_map") == 0)
+        {
+
+
+            std::map<int, SplitMode> splitModeMap;
+
+            TiXmlNode* pChild_L2 = NULL;
+            do
+            {
+                pChild_L2 = pChild_L1->IterateChildren(pChild_L2);
+                if (NULL == pChild_L2) break;
+
+                lpszElementName = pChild_L2->Value();
+                if (lpszElementName && _stricmp(lpszElementName, "map_entry") == 0)
+                {
+                  
+                    int nSensorCount = 0;
+
+                    const char* paramValue = ((TiXmlElement*)pChild_L2)->Attribute("sensor_count");
+                    if (paramValue)
+                    {
+                        nSensorCount = atof(paramValue);
+                    }
+
+                    SplitMode splitMode;
+                    paramValue = ((TiXmlElement*)pChild_L2)->Attribute("split_mode");
+                    if (paramValue)
+                    {
+                        splitMode = GetSplitMode(paramValue);
+                    }
+
+                    splitModeMap[nSensorCount] = splitMode;
+
+                }
+
+            } while (pChild_L2);
+
+
+
+            screenLayoutManager.mapSplitMode = splitModeMap;
+        }
 
 	} while (pChild_L1);
+
+
 
 	return TRUE;
 }

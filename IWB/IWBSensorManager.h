@@ -145,7 +145,7 @@ public:
     //      nPtsInRow, 每行校正点个数， -1: 表示从配置文件中读取
     //      nPtsInCol, 每列校正点个数， -1: 表示从配置文件中读取
     //      nSensorID, -1,全部传感器校正
-    void  StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow = -1, int nPtsInCol = -1, int nSensorID=-1);
+    void  StartManualCalibrate(HWND hNotifyWindow, int nPtsInRow = -1, int nPtsInCol = -1, int nSensorID=-1, EManualCalibrateType eManualCalibType = E_MUNUAL_CALIB_FULL_SCREEN);
 
     //@功能:一个图像传感器手动校正正完成后的事件响应函数
     //@参数:bSuccess, 成功/失败标志    

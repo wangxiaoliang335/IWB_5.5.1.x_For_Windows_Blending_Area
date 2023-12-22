@@ -2,6 +2,7 @@
 //#include "headers.h"
 #include "../inc/FillPolygon.h"
 #include "..\MorphologyAlgo\inc\MorphologyAlgo.h"
+#include <math.h>
 #define YELLOW RGB(255,255,0)
 #define RED RGB(255,0,0)
 #define GREEN  RGB(0  ,255,0)  
@@ -263,6 +264,7 @@ void CManualCalibrateWnd::StartCalibrate(const TManualCalibrateParameters& param
         }
 	}
 	
+
     InitMonitorCalibrateSymCoord();
 
     //FullScreen(TRUE);
@@ -395,6 +397,21 @@ void CManualCalibrateWnd::DrawCarlibrationMark(HDC hDC, const POINT& ptCenter, C
 //@参数:parameters, 手动校正参数
 void  CManualCalibrateWnd::InitMonitorCalibrateSymCoord()
 {
+    switch (m_calibrateParameters.eManualCalibrateType)
+    {
+    case E_MUNUAL_CALIB_FULL_SCREEN:
+        InitRectCalibrateSymCoord();
+        break;
+
+    case E_MUNUAL_CALIB_CIRCLE:
+        InitCircleCalibrateSymCoord();
+        break;
+    }
+}
+
+
+void  CManualCalibrateWnd::InitRectCalibrateSymCoord()
+{
     int nCalibratePointsInRow = this->m_calibrateParameters.nCalibratePointsInRow;
     int nCalibratePointsInCol = this->m_calibrateParameters.nCalibratePointsInCol;
     int nCalibratePointsNum   = nCalibratePointsInRow * nCalibratePointsInCol;
@@ -462,6 +479,77 @@ void  CManualCalibrateWnd::InitMonitorCalibrateSymCoord()
 
 }
 
+void  CManualCalibrateWnd::InitCircleCalibrateSymCoord()
+{
+    int nCalibratePointsInRow = this->m_calibrateParameters.nCalibratePointsInRow;
+    int nCalibratePointsInCol = this->m_calibrateParameters.nCalibratePointsInCol;
+    int nCalibratePointsNum = nCalibratePointsInRow * nCalibratePointsInCol;
+
+    m_oAllCalibMap[m_nCurMonitorId].calibData.resize(nCalibratePointsNum);
+
+    m_vecCrossSymbol.resize(nCalibratePointsNum);
+
+    LOG_INF("nCalibratePointsNum=%d\r\n", nCalibratePointsNum);
+
+    const RECT& rcMonitor = this->m_calibrateParameters.vecScreenInfos[m_nCurMonitorId].rcArea;
+
+    int nMonitorWidth = rcMonitor.right - rcMonitor.left;
+    int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
+
+    int crossSymbolIndex = 0;
+    int nX = 0;
+    int nY = 0;
+
+    const int LAYER_COUNT = 4;
+    int layersNumbers[LAYER_COUNT] = { 1, 4, 8, 12 };
+
+    int ptCenterX = nMonitorWidth >> 1;
+    int ptCenterY = nMonitorHeight >> 1;
+    int radius = min(nMonitorWidth, nMonitorHeight) >> 1;
+
+    int radius_interval = (radius - CROSS_SIZE) / (LAYER_COUNT - 1);
+    int r = 0;
+
+    int xScaleSize = g_tSysCfgData.globalSettings.circleCalibrateXScale;
+    int yScaleSize = g_tSysCfgData.globalSettings.circleCalibrateYScale;
+
+    LOG_INF("xScaleSize=%d, yScaleSize=%d", xScaleSize, yScaleSize);
+    for (int layer = 0; layer < _countof(layersNumbers); layer++)
+    {
+        double theta_step = (M_PI*2)/layersNumbers[layer];
+        double theta = 0.0;
+        for (int i = 0; i < layersNumbers[layer]; i++)
+        {
+
+            int nX = ptCenterX + r*cos(theta) * xScaleSize /100.0;
+            int nY = ptCenterY + r*sin(theta) * yScaleSize /100.0;
+
+            TCrossSymbol& cross = m_vecCrossSymbol[crossSymbolIndex];
+            cross.clrAdjustBefore = RED;
+            cross.clrAdjustAfter = GREEN;
+            cross.bAdjusted = FALSE;
+            cross.size.cx = CROSS_SIZE;
+            cross.size.cy = CROSS_SIZE;
+
+            cross.ptCenter.x = nX;
+            cross.ptCenter.y = nY;
+
+            LOG_INF("layer=%d, i=%d, crossSymbolIndex=%d, x=%d, y=%d", layer, i, crossSymbolIndex,nX, nY);
+            TCalibCoordPair& calibCoordPair = m_oAllCalibMap[m_nCurMonitorId].calibData[crossSymbolIndex];
+            calibCoordPair.ptScreenCoord.x = nX;
+            calibCoordPair.ptScreenCoord.y = nY;
+
+            crossSymbolIndex++;
+
+            theta += theta_step;
+        }
+
+        r += radius_interval;
+
+    }//for
+    
+}
+
 
 //@功能:状态机过程函数
 //@参数:stimulus:输入的激励
@@ -486,6 +574,17 @@ void CManualCalibrateWnd::RunCalibStateMachineProc(const TStateMachineInputStimu
 
               int nDeltaU = ptInput.x - m_ptFirstInputImageCoord.x ;
               int nDeltaV = ptInput.y - m_ptFirstInputImageCoord.y ;
+
+              //AtlTrace(_T("x=%d, y=%d, first_x=%d, first_y=%d,ptnDeltaU=%d, nDeltaV=%d, u_deviation=%d, v_deivation=%d \n"), 
+              //    ptInput.x,
+              //    ptInput.y,
+              //    m_ptFirstInputImageCoord.x,
+              //    m_ptFirstInputImageCoord.y,
+              //    nDeltaU,
+              //    nDeltaV,
+              //    MAX_PERMIT_U_DITHER_DEVIATION,
+              //    MAX_PERMIT_V_DITHER_DEVIATION);
+
               if(abs(nDeltaU) < MAX_PERMIT_U_DITHER_DEVIATION && abs(nDeltaV) < MAX_PERMIT_V_DITHER_DEVIATION)
               {
                   m_nLightSpotDetectionCount ++;
@@ -653,6 +752,21 @@ void CManualCalibrateWnd::OnDeviceMissing()
 //@参数:无
 void CManualCalibrateWnd::UpdateScreenAreaMask()
 {
+    switch (m_calibrateParameters.eManualCalibrateType)
+    {
+    case E_MUNUAL_CALIB_FULL_SCREEN:
+        UpdateRectScreenAreaMask();
+        break;
+
+    case E_MUNUAL_CALIB_CIRCLE:
+        UpdateCircleScreenAreaMask();
+        break;
+    }
+}
+
+void CManualCalibrateWnd::UpdateRectScreenAreaMask()
+{
+
     //已知校正按照列优先,从上往下手动采集光斑数据
     //按顺序提取边界处的采样点
     int nPtIndex     = 0;
@@ -768,6 +882,46 @@ void CManualCalibrateWnd::UpdateScreenAreaMask()
     for(int i=0;i<8; i++)
     {
         Morph_Dilate8(m_oScreenAreaMask.GetData(),m_oScreenAreaMask.GetData(),m_oScreenAreaMask.Width(), m_oScreenAreaMask.Height());
+    }
+
+}
+
+
+void CManualCalibrateWnd::UpdateCircleScreenAreaMask()
+{
+    const  std::vector<TCalibCoordPair>& calibData = m_oAllCalibMap[m_nCurMonitorId].calibData;
+
+    std::vector<POINT> vertex;//屏幕遮蔽区多边形顶点坐标数组
+    int nVertexCount = 12;
+    vertex.resize(nVertexCount);
+
+    int nPtIndex = 13;
+    for (int i = 0; i < nVertexCount; i++)
+    {
+        POINT ptImage;
+        ptImage.x = long(calibData[nPtIndex].pt2DImageCoord.d[0]);;
+        ptImage.y = long(calibData[nPtIndex].pt2DImageCoord.d[1]);
+
+        vertex[i] = ptImage;
+        nPtIndex++;
+    }
+
+    //在屏蔽图中填充多边形
+    FillPolygon(
+        m_oScreenAreaMask.GetData(),
+        m_oScreenAreaMask.Width(),
+        m_oScreenAreaMask.Height(),
+        &vertex[0],
+        nVertexCount,
+        0xFF,
+        TRUE);
+
+    //SaveToBitmap(m_oScreenAreaMask, _T("c:\\CircleManualScreenMask.bmp"));
+
+    //屏蔽图中的屏幕区域膨胀10个像素
+    for (int i = 0; i<8; i++)
+    {
+        Morph_Dilate8(m_oScreenAreaMask.GetData(), m_oScreenAreaMask.GetData(), m_oScreenAreaMask.Width(), m_oScreenAreaMask.Height());
     }
 
 }

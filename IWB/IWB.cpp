@@ -176,15 +176,22 @@ VOID CALLBACK  timerProc(
 
 BOOL CIWBApp::InitInstance()
 {
+    LOG_INF("CIWBApp::InitInstance");
+
     SKDREG_Init();
+
+    LOG_INF("SKDREG_Init");
 
     //初始化目录信息
     InitDirectoryInformation();
+
+    LOG_INF("InitDirectoryInformation() done!");
 
     //载入配置信息
     ::LoadConfig(PROFILE::CONFIG_FILE_NAME, g_tSysCfgData);
     m_strLanguageCode = g_tSysCfgData.globalSettings.langCode;
 
+    LOG_INF("LoadConfig done!");
     //事先载入语言资源，因为如果有多个实例时需要给出提示信息
     //查找OEM_RES.dll文件, 如果有则载入, 否则载入
     HINSTANCE hResource = NULL;
@@ -221,6 +228,7 @@ BOOL CIWBApp::InitInstance()
     }
     g_oResStr.Initialize();
 
+    LOG_INF("g_oResStr.Initialize() done!");
     //注册实例间通信消息
     m_uBetweenInstanceMsg = RegisterWindowMessage(g_szForBetweenInstanceNotification);
 
@@ -229,6 +237,7 @@ BOOL CIWBApp::InitInstance()
     {
         if (GetLastError() == ERROR_ALREADY_EXISTS)
         {
+            LOG_INF("ERROR_ALREADY_EXISTS");
             LPARAM lParam = 0;
             WPARAM wParam = 0;
             PostMessage(HWND_BROADCAST, m_uBetweenInstanceMsg, wParam, lParam);
@@ -250,6 +259,7 @@ BOOL CIWBApp::InitInstance()
 
     }
 
+    LOG_INF("CreateMutex done!");
     //AsyncLogInit(_T("OpticalPen.log"));
     //#ifdef _DEBUG
     //	static CMemLeakDetect oMemLeakDetector;
@@ -266,8 +276,12 @@ BOOL CIWBApp::InitInstance()
     InitCommonControlsEx(&InitCtrls);
 
     CWinApp::InitInstance();
+
+    LOG_INF("WinApp::InitInstance() done!");
+
     AfxEnableControlContainer();
 
+    LOG_INF("AfxEnableControlContainer done!");
     //
     // Standard initialization
     // If you are not using these features and wish to reduce the size
@@ -278,7 +292,7 @@ BOOL CIWBApp::InitInstance()
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-
+    LOG_INF("SetRegistryKey done!");
     //Sleep(5000);//延迟启动5秒中
     //m_oUSBCameraList.UpdateDeviceList();
 
@@ -292,6 +306,7 @@ BOOL CIWBApp::InitInstance()
     //{     
     BOOL bFirstTime = TRUE;
     ReadUSBKey(bFirstTime);
+    LOG_INF("ReadUSBKey(bFirstTime) done!");
     //}
     //<<del
     ////说明加密狗是双屏拼接，  再就是验证分辨率的长宽比例，如果长宽的比例小于16:10的时候，说明是单屏的，只是双屏的加密狗而已
@@ -354,6 +369,7 @@ BOOL CIWBApp::InitInstance()
     }//for-each(i)
 
     ParseCmdLine(this->m_lpCmdLine);
+    LOG_INF("ParseCmdLine");
 
     CIWBDlg dlg;
     m_pMainWnd = &dlg;
@@ -748,6 +764,19 @@ EScreenMode CIWBApp::GetScreenMode()const
     return eScreenMode;
 }
 
+BOOL CIWBApp::IsFourPointCalibrateEnabled()const
+{
+    for (auto it = m_AllUSbKeyInformations.begin(); it != m_AllUSbKeyInformations.end(); it++)
+    {
+        if (it->second.bEnableFourPointCalibrate)
+        {
+            return TRUE;
+        }
+
+    }
+
+    return FALSE;
+}
 
 //int  CIWBApp::GetAllUSBKeyTouchTypeCount()
 //{
@@ -771,6 +800,7 @@ const  std::unordered_map<std::string, USBKeyInformation>& CIWBApp::GetAllUSBKey
 //      第二次及以后则不再弹出对话框。
 void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 {
+    LOG_INF("ReadUSBKey() begin");
     //屏幕模式缺省为单屏模式
     //m_eScreenMode      = EScreenModeSingle;
     //m_eScreenModeFromUsbKey = EScreenModeSingle;
@@ -788,15 +818,23 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
     UINT uUsbKeyFound = 0;
     do
     {
+
         UINT uKeyNum = SDKREG_GetUSBKeyCount();
 
+        LOG_INF("SDKREG_GetUSBKeyCount=%d", uKeyNum);
+        
         ResetCompensateData();
+
+        LOG_INF("ResetCompensateData done!");
 
         //读取所有的注册信息，信息合并在ReadUSBKeyData中完成。
         for (UINT uKeyIndex = 0; uKeyIndex < uKeyNum; uKeyIndex++)
         {
             if (ReadUSBKeyData(uKeyIndex))
+            {
+                LOG_INF("ReadUSBKeyData %d", uKeyIndex);
                 uUsbKeyFound++;
+            }
         }//for
 
         if (uUsbKeyFound == 0)
@@ -834,6 +872,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 
 
             BIT_STATUS status = g_bitanswer.Login("", BIT_MODE_AUTO);
+
+            LOG_INF("g_bitanswer.Login done!");
 
             USBKeyInformation usbKeyInformation;
 
@@ -952,6 +992,8 @@ void CIWBApp::ReadUSBKey(BOOL bFirstTime)
 
     //m_bFoundHardwareUSBKey = bFoundUSBKey;
     m_uHardwareUSBKeyCount = uUsbKeyFound;
+
+    LOG_INF("ReadUSBKey() end");
 }
 
 BOOL CIWBApp::ReadUSBKeyData(UINT uKeyIndex)
@@ -1169,6 +1211,8 @@ BOOL CIWBApp::ReadUSBKeyData(UINT uKeyIndex)
         usbKeyInformation.eScreenModeFromUsbKey = eScreenMode;
     }
 
+    usbKeyInformation.bEnableFourPointCalibrate = (nAppType >> 11) & 0x00000001;
+
     std::string map_key = strDevPath;
     m_AllUSbKeyInformations[map_key] = usbKeyInformation;
 
@@ -1282,6 +1326,9 @@ EScreenMode CIWBApp::GetScreenModeFromUSBKey()const
         }
     }
 
+    //<<xuke
+    eScreenMode = EScreenModeHexa;
+    //xuke>>
     return eScreenMode;
 }
 

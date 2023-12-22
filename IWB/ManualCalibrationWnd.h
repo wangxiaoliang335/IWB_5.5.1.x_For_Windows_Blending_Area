@@ -1,12 +1,19 @@
 ﻿	#pragma once
 
-//自动校正参数
+//手动校正参数
+enum EManualCalibrateType
+{
+    E_MUNUAL_CALIB_FULL_SCREEN = 0,//
+    E_MUNUAL_CALIB_CIRCLE      = 1,//原型校正
+};
+
 struct TManualCalibrateParameters
 {
     HWND                     hNotifyWnd;//通知消息接收窗体
     std::vector<TScreenInfo> vecScreenInfos ;//关联的显示器信息
     int                      nCalibratePointsInRow         ;//每行的校正点个数
     int                      nCalibratePointsInCol         ;//每列的校正点个数
+    EManualCalibrateType    eManualCalibrateType;//手动校准类型
 };
 
 
@@ -38,6 +45,8 @@ public:
 
     //@功能:返回手动校正生成的屏幕屏蔽图
     const CImageFrame& GetScreenAreaMask()const { return m_oScreenAreaMask;}
+
+    const TManualCalibrateParameters& GetCalibrateParams() const{ return m_calibrateParameters; }
 protected:
 	//@功能:绘制校正十字符号
 	//@参数:hDC,
@@ -52,6 +61,9 @@ protected:
 	//@功能:初始化校正点坐标	
 	void  InitMonitorCalibrateSymCoord();
 
+    void  InitRectCalibrateSymCoord();
+    void  InitCircleCalibrateSymCoord();
+
 
 	std::vector<TCrossSymbol> m_vecCrossSymbol            ;//校正点坐标
     
@@ -64,6 +76,7 @@ protected:
 
     //POINT       m_ptLastCalibrationCoord;//上一个校正符号的图像坐标
 
+    
 	
     //点校正状态
     enum E_PointCalibrateState
@@ -127,7 +140,8 @@ protected:
     //@功能:根据手动校正点勾勒的轮廓更新屏幕影像屏蔽图
     //@参数:无
     void UpdateScreenAreaMask();
-
+    void UpdateRectScreenAreaMask();
+    void UpdateCircleScreenAreaMask();
 
 	BOOL m_bRestoreTaskbar;//恢复状态栏标志
 
