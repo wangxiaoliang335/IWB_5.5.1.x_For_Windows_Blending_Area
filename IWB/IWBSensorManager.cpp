@@ -1550,7 +1550,7 @@ void CIWBSensorManager::ApplyScreenLayout()
         this->m_pSpotListProcessor->GetSpotMerger().SetMergeAreas(pMergeAreas, nMergeAreaCount);
     }
 
-
+    bAutoMerge = FALSE;
     this->m_pSpotListProcessor->EnableAutoMerge(bAutoMerge);
 }
 

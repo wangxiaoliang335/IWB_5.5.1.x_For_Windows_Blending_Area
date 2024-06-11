@@ -1225,8 +1225,9 @@ void CIWBSensor::OnAutoCalibrateDone(BOOL bSuccess)
             unsigned char init_value = 0x00;
             maskFrame.SetSize(m_oAutoCalibrator.GetMaskFrame().Width(), m_oAutoCalibrator.GetMaskFrame().Height(), 1, &init_value);
 
-            RECT Mrect = m_oPenPosDetector.GettSpotListProcessor()->GetVisibleScreenArea(m_nID, pCalibData->allMonitorCalibData[0].rcMonitor);
-            if (GenerateMaskFrameWithCalibrateData(maskFrame, Mrect))
+            //RECT Mrect = m_oPenPosDetector.GettSpotListProcessor()->GetVisibleScreenArea(m_nID, pCalibData->allMonitorCalibData[0].rcMonitor);
+            const RECT& maskRect = this->m_rcMonintorArea;
+            if (GenerateMaskFrameWithCalibrateData(maskFrame, maskRect))
             {
                 //把计算好的屏蔽图和动态静态屏蔽图进行与运算。
                 CImageFrame AllMaskFrame = m_oAutoCalibrator.GetMaskFinderFrame(maskFrame);

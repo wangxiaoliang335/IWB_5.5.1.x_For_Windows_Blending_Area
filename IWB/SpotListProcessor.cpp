@@ -519,6 +519,11 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
             //<<debug
             spot.dwCameraId = dwCameraId;
             //debug>>
+            static bool s_bDebug = 0;
+            if (dwCameraId == 1)
+            {
+                s_bDebug  = true;
+            }
 
             spot.aux.uMergeAreaIndex = UINT(-1);
             //spot.aux.bBeyondMergeArea = false;

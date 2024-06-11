@@ -1071,11 +1071,12 @@ void CScreenLayoutDesigner::OnDisplayChange(int nScreenWidth, int nScreenHeight)
         absMergeArea.bottom = relMergeArea.bottom * nScreenHeight;
     }
     */
+    m_DisplaySize.cx = nScreenWidth;
+    m_DisplaySize.cy = nScreenHeight;
 
     this->SetScreenLayout(this->m_screenLayout);
 
-    m_DisplaySize.cx = nScreenWidth;
-    m_DisplaySize.cy = nScreenHeight;
+
 
     //调整窗体大小
     MoveWindow(m_hWnd, 0, 0, m_DisplaySize.cx, m_DisplaySize.cy, FALSE);

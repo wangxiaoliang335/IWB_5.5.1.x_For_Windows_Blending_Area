@@ -543,13 +543,16 @@ HRESULT CInterceptFilter::Transform(IMediaSample * pIn, IMediaSample *pOut)
 
 #if 1
     static bool bSimulateObj = false;
-    if (bSimulateObj)
+    if (bSimulateObj && m_pSensor->GetID() == 1)
     {
+        int x = 546;
+        int y = 230;
         BYTE* pData = m_GraySrcFrame.GetData();
         int nSize = 6;
-        int nStartRow = m_nRawImageHeight / 2 - nSize / 2;
+        
+        int nStartRow = y - nSize / 2;
         int nEndRow = nStartRow + nSize;
-        int nStartCol = m_nRawImageWidth / 2 - nSize / 2;
+        int nStartCol = x- nSize / 2;
         int nEndCol = nStartCol + nSize;
         BYTE* pRowStartData = pData + m_nRawImageWidth*nStartRow + nStartCol;
 
