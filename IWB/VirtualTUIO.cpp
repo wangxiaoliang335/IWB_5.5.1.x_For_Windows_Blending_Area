@@ -80,7 +80,7 @@ void CVirtualTUIO::CloseTUIOServer()
 	}
 }
 
-BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
+BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount, DWORD dwCameraId)
 {
 	CComCritSecLock<CComAutoCriticalSection> lock(m_csForTUIO);
 
@@ -93,8 +93,8 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 	{
 		TuioCursor* match = NULL;
 
-		float X = (float)pPenInfos[i].pt.x / m_nCxScreen;
-		float Y = (float)pPenInfos[i].pt.y / m_nCyScreen;
+		float X = ((float)pPenInfos[i].pt.x /*+ g_tSysCfgData.globalSettings.nXCoordOffset*5*/) / m_nCxScreen;
+		float Y = ((float)pPenInfos[i].pt.y /*+ g_tSysCfgData.globalSettings.nYCoordOffset*5*/) / m_nCyScreen;
 
 		if (!ActiveCursorList.empty())
 		{
@@ -124,7 +124,7 @@ BOOL CVirtualTUIO::InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount)
 		if (match ==NULL)
 		{
 			VecTuioCursor vecCursor;
-			vecCursor.tuiocursor = tuioServer->addTuioCursor(X, Y);
+			vecCursor.tuiocursor = tuioServer->addTuioCursor(X, Y, dwCameraId);
 			vecCursor.nId = pPenInfos[i].uId;
 			vecCursor.bInvalid = false;
 			ActiveCursorList.push_back(vecCursor);

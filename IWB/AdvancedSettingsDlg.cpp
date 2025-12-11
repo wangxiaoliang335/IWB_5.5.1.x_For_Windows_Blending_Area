@@ -36,8 +36,19 @@ void CAdvancedSettingsDlg::DoDataExchange(CDataExchange* pDX)
 
 	TLensConfig& lensCfg = pSensorModeConfig->lensConfigs[m_pSensor->GetCameraType()][m_tSensorConfig.eSelectedLensType];
 
+    char szBUf[1024] = { 0 };
+    sprintf(szBUf, " CAdvancedSettingsDlg DoDataExchange this:%p, m_pSensor:%p, m_pSensor ID:%d, &this->m_tSensorConfig:%p, eProjectionMode:%d, CameraType:%d, eSelectedLensType:%d\n", this, m_pSensor, m_pSensor->GetID(), &m_tSensorConfig,
+        m_tGlobalSettings.eProjectionMode, m_pSensor->GetCameraType(), m_tSensorConfig.eSelectedLensType);
+    OutputDebugStringA(szBUf);
+
 	DDX_Text(pDX, IDC_EDIT_SPOTPROPORTION, pSensorModeConfig->advanceSettings.nSpotProportion);
 	DDX_Control(pDX, IDC_SPIN_SPOTPROPORTION, m_ctlSpotProportion);
+
+    //DDX_Text(pDX, IDC_EDIT_X_COORD_OFFSET, m_tSensorConfig.nXCoordOffset);
+    //DDX_Text(pDX, IDC_EDIT_Y_COORD_OFFSET, m_tSensorConfig.nYCoordOffset);
+
+    //DDX_Control(pDX, IDC_SPIN_X_CROOD_OFFSET, m_ctlXCoordOffset);
+    //DDX_Control(pDX, IDC_SPIN_Y_CROOD_OFFSET, m_ctlYCoordOffset);
 
 	DDX_Control(pDX, IDC_SPIN_SET_AUTOCALIBRATION_BRIGHTNESS, m_ctlNormalUserBrightness);
 	DDX_Text(pDX, IDC_EDIT_SET_AUTOCALIBRATE_AVERAGE_BRIGHTNESS, lensCfg.autoCalibrateSettingsList[0].calibrateImageParams.autoCalibrateExpectedBrightness);
@@ -114,6 +125,9 @@ BEGIN_MESSAGE_MAP(CAdvancedSettingsDlg, CScrollablePropertyPage)
 	ON_BN_CLICKED(IDC_BUTTON_DEFAULT_SETTINGS, &CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings)
 
 	ON_EN_CHANGE(IDC_EDIT_SPOTPROPORTION, &CAdvancedSettingsDlg::OnEnChangeEditSpotProportion)
+    //ON_EN_CHANGE(IDC_EDIT_X_COORD_OFFSET, &CAdvancedSettingsDlg::OnEnChangeEditXCoordOffset)
+    //ON_EN_CHANGE(IDC_EDIT_Y_COORD_OFFSET, &CAdvancedSettingsDlg::OnEnChangeEditYCoordOffset)
+
 	ON_EN_CHANGE(IDC_EDIT_MULT_ERASER, &CAdvancedSettingsDlg::OnEnChangeEditMultEraser)
 	ON_EN_CHANGE(IDC_EDIT_FIXED_BLOB_SET_TIME_VALUE, &CAdvancedSettingsDlg::OnEnChangeEditFixedBlobSetTimeValue)
 
@@ -172,6 +186,8 @@ BOOL CAdvancedSettingsDlg::OnInitDialog()
 	// TODO:  Add extra initialization here
 	m_ctlSpotProportion.SetRange(20, 80);
 
+    //m_ctlXCoordOffset.SetRange32(-3000, 3000);  //wxl modify
+    //m_ctlYCoordOffset.SetRange32(-3000, 3000);  //wxl modify
 
 	m_ctlAutoCalibrationAveBrightness.SetRange(0,255) ;
 	m_ctlAutoCalibrateHiLightGray.SetRange(0,255);
@@ -329,6 +345,9 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
 
 	pSensorModeConfig->advanceSettings.nSpotProportion = SPOT_DEFAULT_POS;
 
+    m_tSensorConfig.nXCoordOffset = SPOT_DEFAULT_CROOD_OFFSET;
+    m_tSensorConfig.nYCoordOffset = SPOT_DEFAULT_CROOD_OFFSET;
+
     //根据手触和笔触动态更改
 	switch(pSensorModeConfig->advanceSettings.m_eTouchType)
 	{
@@ -411,6 +430,78 @@ void CAdvancedSettingsDlg::OnBnClickedButtonDefaultSettings()     //缺省值设置
     //更新数据到控件中去
 	UpdateData(FALSE);
 
+    SetModified(TRUE);
+}
+
+void CAdvancedSettingsDlg::OnEnChangeEditXCoordOffset()
+{
+    if (!m_bInitDone)
+    {
+        return;
+    }
+    //CString strText;
+    //GetDlgItem(IDC_EDIT_X_COORD_OFFSET)->GetWindowText(strText);
+    //int npos = _ttoi(strText);
+    //int bForceValidate = FALSE;
+
+    //if (npos < SPOT_X_CROOD_OFFSET_MIN)
+    //{
+    //    npos = SPOT_X_CROOD_OFFSET_MIN;
+    //    bForceValidate = TRUE;
+    //}
+
+    //if (npos > SPOT_X_CROOD_OFFSET_MAX)
+    //{
+    //    npos = SPOT_X_CROOD_OFFSET_MAX;
+    //    bForceValidate = TRUE;
+    //}
+
+    //if (bForceValidate)
+    //{
+    //    m_tSensorConfig.nXCoordOffset = npos;
+    //    strText.Format(_T("%d"), npos);
+    //    GetDlgItem(IDC_EDIT_X_COORD_OFFSET)->SetWindowText(strText);
+    //}
+    //else
+    //{
+    //    //::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_SPOTPROPORTION, (WPARAM)0, (LPARAM)npos);
+    //}
+    SetModified(TRUE);
+}
+
+void CAdvancedSettingsDlg::OnEnChangeEditYCoordOffset()
+{
+    if (!m_bInitDone)
+    {
+        return;
+    }
+    //CString strText;
+    //GetDlgItem(IDC_EDIT_Y_COORD_OFFSET)->GetWindowText(strText);
+    //int npos = _ttoi(strText);
+    //int bForceValidate = FALSE;
+
+    //if (npos < SPOT_Y_CROOD_OFFSET_MIN)
+    //{
+    //    npos = SPOT_Y_CROOD_OFFSET_MIN;
+    //    bForceValidate = TRUE;
+    //}
+
+    //if (npos > SPOT_Y_CROOD_OFFSET_MAX)
+    //{
+    //    npos = SPOT_Y_CROOD_OFFSET_MAX;
+    //    bForceValidate = TRUE;
+    //}
+
+    //if (bForceValidate)
+    //{
+    //    m_tSensorConfig.nYCoordOffset = npos;
+    //    strText.Format(_T("%d"), npos);
+    //    GetDlgItem(IDC_EDIT_Y_COORD_OFFSET)->SetWindowText(strText);
+    //}
+    //else
+    //{
+    //    //::PostMessage(AfxGetMainWnd()->GetSafeHwnd(), WM_CHANGE_SPOTPROPORTION, (WPARAM)0, (LPARAM)npos);
+    //}
     SetModified(TRUE);
 }
 

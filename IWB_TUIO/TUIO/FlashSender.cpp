@@ -640,6 +640,11 @@ bool FlashSender::isConnected() {
 }
 
 bool FlashSender::sendOscPacket (osc::OutboundPacketStream *bundle) {
+
+    char szBuf[1024] = { 0 };
+    sprintf(szBuf, "111 33 FlashSender Entry sendOscPacket\n");
+    OutputDebugStringA(szBuf);
+
 	if (!TFLCSConnectionHasConnectedClient(lcConnection))return false; 
 	if ( bundle->Size() > buffer_size ) return false;
 	if ( bundle->Size() == 0 ) return false;

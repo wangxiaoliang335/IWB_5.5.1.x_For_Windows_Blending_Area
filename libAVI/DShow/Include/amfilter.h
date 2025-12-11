@@ -840,7 +840,6 @@ protected:
 
     // Sample properties - initalized in Receive
     AM_SAMPLE2_PROPERTIES m_SampleProps;
-
 public:
 
     CBaseInputPin(

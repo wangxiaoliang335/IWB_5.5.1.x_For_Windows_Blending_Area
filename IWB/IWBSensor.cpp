@@ -1044,7 +1044,9 @@ void  CIWBSensor::StartAutoCalibrate(E_AutoCalibratePattern ePattern, HWND hNoti
 
     bRecordVideoTemp = g_tSysCfgData.globalSettings.bRecordVideo;
 
-
+    wchar_t szTmp[1024] = { 0 };
+    wsprintf(szTmp, L" xxxx bRecordVideoTemp:%d, VideoFilePath:%s\n", bRecordVideoTemp, m_oAutoCalibrator.GetDebugVideoFilePath());
+    OutputDebugString(szTmp);
     if (bRecordVideoTemp)
     {
         this->m_pInterceptFilter->StartRecording(m_oAutoCalibrator.GetDebugVideoFilePath());

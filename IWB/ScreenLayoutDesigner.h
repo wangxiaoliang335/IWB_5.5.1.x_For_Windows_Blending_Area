@@ -16,7 +16,8 @@ public:
 
     //@功能:布局初始化
    // void Init(int nScreenCount, int nDisplayWidth, int  nDisplayHeight);
-    void Init(SplitMode splitMode , int nDisplayWidth, int  nDisplayHeight);
+    //void Init(SplitMode splitMode, int nLeft, int nTop, int nDisplayWidth, int  nDisplayHeight);
+    void Init(SplitMode splitMode, EScreenTargetType screenTargetType);
 
     //@功能:反初始化
     void Uninit();
@@ -81,11 +82,10 @@ public:
 
 	//@功能:设置屏幕划分布局
 	//void SetScreenLayout(ESplitScreeMode eSplitMode,  const TScreenLayout* pScreenLayout);
+    void SetScreenTargetType(EScreenTargetType eScreenTargetType);
     void SetScreenLayout(const TScreenLayout& pScreenLayout);
 
-
-
-
+    EScreenTargetType GetScreenTargetType()const;
 	//@功能:返回屏幕划分布局
 	const TScreenLayout& GetScreenLayout()const;
 protected:
@@ -110,6 +110,8 @@ protected:
     
     //@功能:绘制屏幕标号
     void DrawScreenLabel(HDC hDC);
+
+    void RefreshScreenSize();
 
     HINSTANCE m_hInst;
     HWND m_hWnd;
@@ -147,7 +149,10 @@ protected:
 	TScreenLayout m_screenLayout;
 
 	//屏幕尺寸
-    SIZE m_DisplaySize;
+    SIZE m_ScreenSize;
+
+	//屏幕区域
+	RECT m_rcScreenArea;
 
     enum EAreaType
     {
@@ -180,14 +185,14 @@ protected:
     };
 
     //屏幕分割条宽度
-    static const int SPLITTER_WIDTH    = 8;
+    static const int SPLITTER_WIDTH    = 8<<1;
     
     //融合区拖拽宽度
-    static const int BORDER_DRAG_WIDTH = 8;
+    static const int BORDER_DRAG_WIDTH = 8<<1;
 
 
 	//融合区拖拽高度
-	static const int BORDER_DRAG_HEIGHT = 8;
+	static const int BORDER_DRAG_HEIGHT = 8<<1;
 
     std::vector < TActiveArea> m_vecActiveAreas;//活动区域
 
@@ -232,6 +237,12 @@ protected:
     TActiveArea * m_pDragArea;//当前正在拖拽的活动区域
 
     static const COLORREF TRANSPARENT_COLOR = RGB(0, 0, 0);
+
+
+    EScreenTargetType m_eScreenTargetType;
+
+
+
 };
 
 

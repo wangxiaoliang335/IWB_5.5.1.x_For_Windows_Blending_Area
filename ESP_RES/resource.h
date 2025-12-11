@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by IWB.rc
+// Microsoft Visual C++ 生成的包含文件。
+// 供 ESP_RES.rc 使用
 //
 #define IDOK2                           2
 #define IDM_ABOUTBOX                    0x0010
@@ -140,6 +140,7 @@
 #define IDS_STRING496                   496
 #define IDS_STRING497                   497
 #define IDS_STRING498                   498
+#define IDS_STRING499                   499
 #define IDR_MENU_MANUAL_CORRECT_CTXMENU 999
 #define IDR_MAINFRAME                   1000
 #define IDC_RADIO_GENERAL               1000
@@ -251,6 +252,8 @@
 #define IDC_SPIN_SMOOTH_COEF            1156
 #define IDC_EDIT_ROWS                   1157
 #define IDC_EDIT_COLS                   1158
+#define IDC_RADIO_SCREENTYPE_PRIMARY    1159
+#define IDC_RADIO_SCREENTYPE_FULL_VIRTUAL_DESKTOP 1160
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
@@ -461,17 +464,17 @@
 #define ID_MENU_DRAWMASKFRAME_START     33101
 #define ID_MENU_DRAWMASKFRAME_CLEAR     33102
 #define ID_MENU_DRAWMASKFRAME_DISABLE   33103
-
 #define ID_SET_SENSOR_SCREEN_AREA_NO    33200
 #define ID_SET_SENSOR_SCREEN_AREA_1     33201
 #define ID_SET_SENSOR_SCREEN_AREA_36    33236
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        173
 #define _APS_NEXT_COMMAND_VALUE         32912
-#define _APS_NEXT_CONTROL_VALUE         1159
+#define _APS_NEXT_CONTROL_VALUE         1161
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

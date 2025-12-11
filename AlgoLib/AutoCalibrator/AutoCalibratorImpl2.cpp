@@ -284,7 +284,7 @@ static BOOL GenMaskFrame(const CWordFrame& refBkgndFrame, const CWordFrame& refS
 BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
 {
     m_oWaitTimer.Trigger();
-
+    wchar_t szTmp[1024] = { 0 };
     switch (m_eRunStage)
     {
 
@@ -446,6 +446,8 @@ BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
             const BYTE* pPixel = m_SubAreaMask[i].GetData();
             int nWidth = m_SubAreaMask[i].Width();
             int nHeight = m_SubAreaMask[i].Height();
+            wsprintf(szTmp, L" xxxxxx i:%d, nWidth:%d, nHeight:%d\n", i, nWidth, nHeight);
+            OutputDebugString(szTmp);
 
             long nMx = 0, nMy = 0, nMass = 0;
             for (int y = 0; y < nHeight; y++)
@@ -475,7 +477,8 @@ BOOL CMonitorAreaLocator::Process(const CImageFrame& srcFrame, BOOL bSimulate)
                 m_SubAreaCentroids[i].x = -1;
                 m_SubAreaCentroids[i].y = -1;
             }
-
+            wsprintf(szTmp, L" xxxxxx i:%d, m_SubAreaCentroids x:%d, m_SubAreaCentroids y:%d\n", i, m_SubAreaCentroids[i].x, m_SubAreaCentroids[i].y);
+            OutputDebugString(szTmp);
         }
 
         //补洞
@@ -971,6 +974,8 @@ BOOL CMonitorBoundaryFinder::Process(const CImageFrame& grayImage, BOOL bSimulat
     //if(WAIT_STEADY_SAMPLE_COUNT < m_nRunTimes && m_nRunTimes  <= WAIT_SAMPLE_END_STAGE_COUNT)
     if (m_oWaitTimer.IsWaitTimeout(WAIT_STEDAY_SAMPLE_TIME) && !m_oWaitTimer.IsWaitTimeout(WAIT_SAMPLE_END_TIME))
     {//采样阶段
+
+        OutputDebugString(L" xxxxxx CMonitorBoundaryFinder WAIT_STEDAY_SAMPLE_TIME\n");
         if (m_bShowMarker)
         {//前景累加
             AccumulateImageFrame(grayImage, m_oInitialScreenMask, m_frameForeground);
@@ -984,12 +989,17 @@ BOOL CMonitorBoundaryFinder::Process(const CImageFrame& grayImage, BOOL bSimulat
     else if (m_oWaitTimer.IsWaitTimeout(WAIT_SAMPLE_END_TIME))
     { //采样完毕阶段
 
+        OutputDebugString(L" xxxxxx CMonitorBoundaryFinder WAIT_SAMPLE_END_TIME\n");
         //m_nRunTimes  = 0;
         m_oWaitTimer.Reset();
 
         if (m_bShowMarker)
         {
+            OutputDebugString(L" xxxxxx CMonitorBoundaryFinder m_bShowMarker true\n");
             m_nFlashTimes++;
+            wsprintf(szTmp, L" xxxxxx CMonitorBoundaryFinder m_nFlashTimes:%d\n", m_nFlashTimes);
+            OutputDebugString(szTmp);
+
             if (m_nFlashTimes >= MAX_FLASH_TIMES)
             {
                 //闪烁达到最大次数, 处理收集到的图像数据
@@ -1011,9 +1021,11 @@ BOOL CMonitorBoundaryFinder::Process(const CImageFrame& grayImage, BOOL bSimulat
 
                 if (!bRet)
                 {
+                    OutputDebugString(L" xxxxxx CMonitorBoundaryFinder ProcessDiffImage bRet false\n");
                     return FALSE;
                 }
 
+                OutputDebugString(L" xxxxxx CMonitorBoundaryFinder ProcessDiffImage m_bDone true\n");
                 m_bDone = TRUE;
                 return TRUE;
             }
@@ -1036,9 +1048,10 @@ BOOL CMonitorBoundaryFinder::Process(const CImageFrame& grayImage, BOOL bSimulat
         {
             if (!bSimulate)
             {
+                OutputDebugString(L" xxxxxx CMonitorBoundaryFinder bSimulate false\n");
                 DrawCircleMarkers(m_hDispWnd, &m_vecBorderMarkerPositions[0], m_vecBorderMarkerPositions.size(), &this->m_vecDisplayIntensity[0], FOREGROUND_COLOR);
             }
-
+            OutputDebugString(L" xxxxxx CMonitorBoundaryFinder m_bShowMarker true\n");
             m_bShowMarker = TRUE;
         }
     }
@@ -1265,6 +1278,8 @@ BOOL CMonitorBoundaryFinder::SearchCircleCentroids(const CWordFrame&  srcImage, 
             }
         }
 
+        wsprintf(szTmp, L" xxxxxx SearchCircleCentroids nObjCountAfterMerge:%d, nExpectedNumber:%d\n", nObjCountAfterMerge, nExpectedNumber);
+        OutputDebugString(szTmp);
         if (nObjCountAfterMerge >= nExpectedNumber)
         {
             const TBlobObject* pBlobObj = blobDetect.GetObjs();
@@ -1284,6 +1299,8 @@ BOOL CMonitorBoundaryFinder::SearchCircleCentroids(const CWordFrame&  srcImage, 
         }
     }
 
+    wsprintf(szTmp, L" xxxxxx SearchCircleCentroids nObjFound:%d, nExpectedNumber:%d\n", nObjFound, nExpectedNumber);
+    OutputDebugString(szTmp);
     if (nObjFound < nExpectedNumber)
     {
         return FALSE;
@@ -2163,6 +2180,8 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
 
     m_ptRoationCenter = m_oMonitorBoundaryFinder.GetScreenCentroid();
 
+    OutputDebugString(L" xxxxxx Entry OnPostSearchScreenBoundary\n");
+
     //旋转矢量
     POINT Vx, Vy;
 
@@ -2393,6 +2412,8 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
 
     std::vector<POINT> vecBorderExpandedPts = vecBorderPts;
 
+    OutputDebugString(L" xxxxxx Entry ExpandPolygon\n");
+
     //多边形各边沿其重心与各边的垂线向外膨胀。
     BOOL bExpandSuccess = ExpandPolygon(
         &vecBorderPts[0],
@@ -2488,6 +2509,7 @@ BOOL CAutoCalibratorImpl2::OnPostSearchScreenBoundary(int nImageWidth, int nImag
     //debug>>
 
 
+    OutputDebugString(L" xxxxxx m_oLowerHalfMaskFrame m_oUpperHalfMaskFrame\n");
     //初始化校正图案
     double dbRatio = 0.5;
     //计算上下部分面积之比的倒数，对校正图案第一行高度和最后一行的高度进行比例补偿。
@@ -3087,6 +3109,7 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
 
         if (!bRet)
         {
+            OutputDebugString(L" xxxxxx m_oMonitorBoundaryFinder Process bRet false\n");
             //精确查找屏幕影像轮廓失败
             m_oScreenMaskFrame = this->m_oInitialScreenMask;
 
@@ -3119,8 +3142,10 @@ BOOL CAutoCalibratorImpl2::FeedImage_AutoCalibrate(const CImageFrame* pGrayFrame
         }
         else
         {
+            OutputDebugString(L" xxxxxx m_oMonitorBoundaryFinder Process bRet true\n");
             if (!this->m_oMonitorBoundaryFinder.IsDone()) break;
 
+            OutputDebugString(L" xxxxxx OnPostSearchScreenBoundary\n");
             //屏幕边界搜索后续处理
             BOOL bRet = OnPostSearchScreenBoundary(monoFrame.Width(), monoFrame.Height());
 

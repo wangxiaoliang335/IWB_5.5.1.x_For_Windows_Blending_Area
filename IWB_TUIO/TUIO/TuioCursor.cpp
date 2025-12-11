@@ -21,12 +21,14 @@
 using namespace TUIO;
 
 
-TuioCursor::TuioCursor (TuioTime ttime, long si, int ci, float xp, float yp):TuioContainer(ttime,si,xp,yp) {
+TuioCursor::TuioCursor (TuioTime ttime, long si, int ci, float xp, float yp, int dwCameraId):TuioContainer(ttime,si,xp,yp) {
 	cursor_id = ci;
+    dwCamera_id = dwCameraId;
 }
 
-TuioCursor::TuioCursor (long si, int ci, float xp, float yp):TuioContainer(si,xp,yp) {
+TuioCursor::TuioCursor (long si, int ci, float xp, float yp, int dwCameraId):TuioContainer(si,xp,yp) {
 	cursor_id = ci;
+    dwCamera_id = dwCameraId;
 }
 
 TuioCursor::TuioCursor (TuioCursor *tcur):TuioContainer(tcur) {
@@ -37,4 +39,8 @@ TuioCursor::TuioCursor (TuioCursor *tcur):TuioContainer(tcur) {
 int TuioCursor::getCursorID() const{
 	return cursor_id;
 };
+
+int TuioCursor::getCameraId() const {
+    return dwCamera_id;
+}
 

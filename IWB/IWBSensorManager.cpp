@@ -56,15 +56,23 @@ void CIWBSensorManager::Init(int nSensorCount)
 
     int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
     int nCyScreen = GetSystemMetrics(SM_CYSCREEN);
-
-
-    //<<xuke,2023/12/21
-    //SplitMode splitMode(1, nSensorCount);
-    // 
-    //SplitMode splitMode(nSensorCount, 1);
+	int nLeft     = 0;
+	int nTop      = 0;
+	
     SplitMode splitMode(1, nSensorCount);
-    //m_oScreenLayoutDesigner.Init(nSensorCount, nCxScreen, nCyScreen);
-    m_oScreenLayoutDesigner.Init(splitMode, nCxScreen, nCyScreen);
+
+    /*
+	if (g_tSysCfgData.globalSettings.bSupportExtendScreen)
+	{
+		nCxScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		nCyScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		nLeft     = GetSystemMetrics(SM_XVIRTUALSCREEN);
+		nTop      = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	}
+    */
+    
+
+    m_oScreenLayoutDesigner.Init(splitMode, g_tSysCfgData.screenLayoutManger.GetScreenTargetType());
 
     //>>
     ApplyScreenLayout();
@@ -625,17 +633,12 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
     g_oWGRConfig.SetHIDMode(E_DEV_MODE_TOUCHSCREEN == sysCfgData.globalSettings.eHIDDeviceMode);
     g_oGLBoardGR.SetIsTouchPadMode(E_DEV_MODE_TOUCHSCREEN == sysCfgData.globalSettings.eHIDDeviceMode);
 
-    //Added by Jiqw 201412041914>    
 
-    if (theApp.GetScreenMode() >= EScreenModeDouble)
+    //if (theApp.GetScreenMode() >= EScreenModeDouble)
+    if(1)
     {
         //如果保存的屏幕划分信息和多屏屏接的数目一致，则载入屏幕划分信息
         //选择配置文件中屏幕数等于当前实际屏幕数的布局,
-
-		//const ESplitScreeMode& eSelectedSplitScreenMode = sysCfgData.screenLayoutManger.GetSelectedSplitScreenMode();
-		
-		//const TScreenLayout* pScreenLayout = sysCfgData.screenLayoutManger.GetScreenLayout(eSelectedSplitScreenMode, m_vecSensors.size());
-
         int nSensorCount = m_vecSensors.size();
 
         SplitMode splitMode;
@@ -647,17 +650,10 @@ void CIWBSensorManager::SetCfgData( TSysConfigData& sysCfgData)
             const TScreenLayout* pScreenLayout = sysCfgData.screenLayoutManger.GetScreenLayout(splitMode);
             if (pScreenLayout)
             {
-                //this->m_oScreenLayoutDesigner.SetScreenRelativeLayouts(&pScreenLayout->vecScreens[0], pScreenLayout->vecScreens.size());
-                //this->m_oScreenLayoutDesigner.SetRelativeMergeAreas(&pScreenLayout->vecMergeAreas[0], pScreenLayout->vecMergeAreas.size());
-                //this->m_oScreenLayoutDesigner.SetScreenLayout(eSelectedSplitScreenMode, pScreenLayout);
                 this->m_oScreenLayoutDesigner.SetScreenLayout(*pScreenLayout);
                 this->ApplyScreenLayout();
             }
         }
-
-
-	
-
     }
 }
 
@@ -689,14 +685,11 @@ BOOL CIWBSensorManager::GetCfgData(TSysConfigData& sysCfgData)
     //全局工作模式和第一个相机的相机的工作模式保持一致。
     sysCfgData.globalSettings.eLensMode = m_vecSensors[0]->GetLensMode();
     
-    if (theApp.GetScreenMode() >= EScreenModeDouble)
+    //if (theApp.GetScreenMode() >= EScreenModeDouble)
+    //Modifed by xuke, 2024/06/28
+    if(1)
     {
-
 		const TScreenLayout& screenLayout    = m_oScreenLayoutDesigner.GetScreenLayout();
-		//ESplitScreeMode     eSplitScreenMode = m_oScreenLayoutDesigner.GetSplitScreenMode();
-
-		//sysCfgData.screenLayoutManger.SetScreenLayout(eSplitScreenMode, screenLayout);
-        //sysCfgData.screenLayoutManger.SetSelectedSplitScreenMode(screenLayout.GetSplitMode());
         sysCfgData.screenLayoutManger.SetSplitMode(nSensorCount, screenLayout.GetSplitMode());
         sysCfgData.screenLayoutManger.SetScreenLayout(screenLayout);
     }
@@ -1510,9 +1503,7 @@ void CIWBSensorManager::ApplyScreenLayout()
             m_vecSensors[i]->SetScreenAreaNo(nScreenAreaCount - 1);
 
         }
-
-
-        
+                
         //pScreenAreas++;
     }
 
@@ -1538,10 +1529,6 @@ void CIWBSensorManager::ApplyScreenLayout()
         bAutoMerge = TRUE;
     }
 
-
-    //
-
-
     UINT nMergeAreaCount;
     const RECT* pMergeAreas = m_oScreenLayoutDesigner.GetAbsoluteMergeAreas(&nMergeAreaCount);
     if (pMergeAreas && nMergeAreaCount)
@@ -1550,8 +1537,12 @@ void CIWBSensorManager::ApplyScreenLayout()
         this->m_pSpotListProcessor->GetSpotMerger().SetMergeAreas(pMergeAreas, nMergeAreaCount);
     }
 
-    bAutoMerge = FALSE;
+    //bAutoMerge = FALSE;   //wxl modify
     this->m_pSpotListProcessor->EnableAutoMerge(bAutoMerge);
+
+    //更新屏幕布局数据
+    g_tSysCfgData.screenLayoutManger.SetScreenLayout(m_oScreenLayoutDesigner.GetScreenLayout());
+    g_tSysCfgData.screenLayoutManger.SetScreenTargetType(m_oScreenLayoutDesigner.GetScreenTargetType());
 }
 
 //@功能:屏幕分辨率变化事件响应函数

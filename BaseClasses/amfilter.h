@@ -836,6 +836,7 @@ protected:
     // Sample properties - initalized in Receive
     AM_SAMPLE2_PROPERTIES m_SampleProps;
 
+    wchar_t m_szTmp[1024] = { 0 };
 public:
 
     CBaseInputPin(

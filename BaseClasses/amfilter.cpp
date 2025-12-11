@@ -2964,6 +2964,9 @@ CBaseInputPin::ReceiveMultiple (
     CheckPointer(pSamples,E_POINTER);
     ValidateReadPtr(pSamples,nSamples * sizeof(IMediaSample *));
 
+    //wsprintf(m_szTmp, L" xxxx ReceiveMultiple nSamples:%d\n", nSamples);
+    //OutputDebugString(m_szTmp);
+
     HRESULT hr = S_OK;
     *nSamplesProcessed = 0;
     while (nSamples-- > 0) {

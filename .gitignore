@@ -1,0 +1,70 @@
+# 临时文件和中间文件
+Intermediate/
+Intermidate/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.tlog
+*.log
+*.iobj
+*.ipdb
+*.pch
+*.map
+
+# 构建输出目录
+Debug/
+Release/
+Release_old/
+Release_Neutral/
+RemoteDebug/
+RemoteRelease/
+Win32/
+x64/
+
+# bin 目录中的构建产物（但保留源代码）
+bin/Debug/
+bin/Release/
+bin/Release_old/
+bin/Release_Neutral/
+bin/RemoteDebug/
+bin/RemoteRelease/
+bin/Win32/
+bin/x64/
+
+# Visual Studio 临时文件
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+
+# 其他临时文件
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+*.del
+.vs/
+
+# 临时调试文件
+RemoteDebug-xk/
+SampleData_*.txt
+
+# 排除大于 50M 的文件（Git LFS 或手动处理）
+# 注意：Git 本身不支持在 .gitignore 中按大小过滤
+# 需要手动检查文件大小
+

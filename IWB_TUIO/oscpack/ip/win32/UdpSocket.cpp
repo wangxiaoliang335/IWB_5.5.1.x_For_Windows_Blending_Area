@@ -66,6 +66,8 @@ static void SockaddrFromIpEndpointName( struct sockaddr_in& sockAddr, const IpEn
     std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
     sockAddr.sin_family = AF_INET;
 
+    //sockAddr.sin_addr.S_un.S_addr = inet_addr("192.168.1.8");
+
 	sockAddr.sin_addr.s_addr = 
 		(endpoint.address == IpEndpointName::ANY_ADDRESS)
 		? INADDR_ANY
@@ -184,8 +186,12 @@ public:
 	void Connect( const IpEndpointName& remoteEndpoint )
 	{
 		SockaddrFromIpEndpointName( connectedAddr_, remoteEndpoint );
-       
-        if (connect(socket_, (struct sockaddr *)&connectedAddr_, sizeof(connectedAddr_)) < 0) {
+
+        char szBuf[1024] = { 0 };
+        sprintf(szBuf, "111 99 UdpSocket Entry Connect sockAddr.sin_addr.S_un.S_addr:%u, sockAddr.sin_port:%u, socket_:%u\n", connectedAddr_.sin_addr.S_un.S_addr, connectedAddr_.sin_port, socket_);
+        OutputDebugStringA(szBuf);
+        int server_len = sizeof(SOCKADDR);
+        if (connect(socket_, (struct sockaddr *)&connectedAddr_, server_len /*, sizeof(connectedAddr_)*/) < 0) {
             throw std::runtime_error("unable to connect udp socket\n");
         }
 
@@ -195,8 +201,12 @@ public:
 	void Send( const char *data, std::size_t size )
 	{
 		assert( isConnected_ );
+        char szBuf[1024] = { 0 };
+        
+        int ret = send( socket_, data, (int)size, 0 );
 
-        send( socket_, data, (int)size, 0 );
+        sprintf(szBuf, "111 99 UdpSocket Entry Send:%d, isConnected_:%d, ret:%d, socket_:%u\n", size, isConnected_, ret, socket_);
+        OutputDebugStringA(szBuf);
 	}
 
     void SendTo( const IpEndpointName& remoteEndpoint, const char *data, std::size_t size )

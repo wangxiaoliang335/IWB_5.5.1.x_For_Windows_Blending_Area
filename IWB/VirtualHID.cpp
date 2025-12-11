@@ -388,8 +388,13 @@ void CVirtualHID::Reset()
 //@功能:模拟HID输入
 //@参数:pPenInfos, 指向光笔数组的指针
 //      nPenCount, 光笔支数
-BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
+BOOL CVirtualHID::InputPoints(TContactInfo* pPenInfos, int nPenCount, DWORD dwCameraId, int nMonitorId)
 {
+    TSensorModeConfig* pSensorModeConfig = NULL;
+
+    //g_tSysCfgData.vecSensorConfig[nMonitorId].nXCoordOffset;
+    //pSensorModeConfig = &m_tSensorConfig.vecSensorModeConfig[m_tGlobalSettings.eProjectionMode];
+
     BOOL bRet = FALSE;
     //设备未打开，并且自动打开线程未开启
     if (m_hDev == INVALID_HANDLE_VALUE && this->m_hAutoOpenThread == NULL)
@@ -400,6 +405,19 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
         }
     }
 
+    //char szBuf[1024] = { 0 };
+    //sprintf(szBuf, "aaaa InputPoints pLightSpots nMonitorId:%d\n", nMonitorId);
+    //OutputDebugStringA(szBuf);
+
+    //if (nMonitorId >= 0)   //wxl modify 2024_12_3
+    //{
+    //    for (int ii = 0; ii < nPenCount; ii++)
+    //    {
+    //        pPenInfos[ii].pt.x += g_tSysCfgData.vecSensorConfig[nMonitorId].nXCoordOffset /** 5*/;
+    //        pPenInfos[ii].pt.y += g_tSysCfgData.vecSensorConfig[nMonitorId].nYCoordOffset /** 5*/;
+    //    }
+    //}
+
 	if (m_bStartTest30Point)
 	{
 		if (nPenCount>0)
@@ -409,7 +427,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
 
 		    int nCount = m_oTouchTester.GetContactCount();
 
-		    bRet = InputTouchPoints(pAllContactInfo, nCount);
+		    bRet = InputTouchPoints(pAllContactInfo, nCount, dwCameraId);
 		}
 
 		/////说明已经弹起了，做Reset处理
@@ -443,7 +461,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                    {
                       if (pPenInfos[i].uId == 0 )
                       {
-                          m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt);
+                          m_oVirtualMouse.Input(pPenInfos[i].ePenState == E_PEN_STATE_DOWN, &pPenInfos[i].pt, TRUE);
                           break;
                       }
                    }
@@ -459,14 +477,14 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
                      {
                          if (pPenInfos[i].uId == 0)
                          {
-                             InputTouchPoints(&pPenInfos[i], 1);
+                             InputTouchPoints(&pPenInfos[i], 1, dwCameraId);
                              break;
                          }
 					 }
                   }
                   else
                   {
-                      bRet = InputTouchPoints(pPenInfos, nPenCount);
+                      bRet = InputTouchPoints(pPenInfos, nPenCount, dwCameraId);
                   }
                   break;
             } //switch  
@@ -475,7 +493,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
         if (m_bTouchTUIOMode)
         {
             //模拟虚拟的TUIO
-             m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount);
+             m_oVirtualTUIOTouch.InputTUIOPoints(pPenInfos, nPenCount, dwCameraId);
         }
 	}
     return bRet;
@@ -485,7 +503,7 @@ BOOL CVirtualHID::InputPoints(const TContactInfo* pPenInfos, int nPenCount)
 //@功能:模拟触屏输入
 //@参数:pPenInfos, 指向光笔数组的指针
 //      nPenCount, 光笔支数
-BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
+BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount, int dwCameraId)
 {
     //static int temp_debug = 0;
     //if (temp_debug < 10)
@@ -503,7 +521,6 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
     if (m_hDev == INVALID_HANDLE_VALUE)
     {
         return FALSE;
-
     }
 
     TContactInfo aryContactInfos[MAX_TOUCH_POINT_COUNT];
@@ -513,6 +530,10 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         nPenCount = _countof(aryContactInfos);
     }
     memcpy(&aryContactInfos[0], pPenInfos, nPenCount * sizeof(TContactInfo));
+
+    //位于扩展屏中的触控点
+    TContactInfo aryExtendScreenContactInfos[MAX_TOUCH_POINT_COUNT];
+    size_t PtCountInExtendScreen = 0;
 
     //双击检测
     //<<2018/08/03
@@ -526,16 +547,32 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
     int nScreenLeft = 0;
     int nScreenTop = 0;
 
+    int nPrimaryContactCount = 0;
     for (int i = 0; i < nPenCount; i++)
     {
-        m_TouchPoints[i].ContactId = aryContactInfos[i].uId;
-        m_TouchPoints[i].bStatus = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN ? TIP_DOWN : TIP_UP;
-
         const POINT& ptContact = aryContactInfos[i].pt;
 
         const DisplayDevInfo* pDisplayDevInfo = theApp.GetMonitorFinder().GetDisplayDevInfo(ptContact.x, ptContact.y);
         //POINTER_DEVICE_INFO* pPointerDeviceInfo = GetPointerDevice();
         if (NULL == pDisplayDevInfo) return FALSE;
+
+        if (!pDisplayDevInfo->bIsPrimary)
+        {//扩展屏
+            aryExtendScreenContactInfos[PtCountInExtendScreen] = aryContactInfos[i];
+            PtCountInExtendScreen++;
+            continue;
+        }
+
+        EASI_TouchPoint& touchPoint = m_TouchPoints[nPrimaryContactCount];
+        nPrimaryContactCount++;
+
+        touchPoint.ContactId = aryContactInfos[i].uId;
+        touchPoint.bStatus   = aryContactInfos[i].ePenState == E_PEN_STATE_DOWN ? TIP_DOWN : TIP_UP;
+
+
+ 
+
+
         //if (NULL == pPointerDeviceInfo) return FALSE;
 
         LONG nMonitorPixelLeft = pDisplayDevInfo->rcMonitor.left;
@@ -639,12 +676,6 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
         BOOL bDone = FALSE;
 
 
-
-        //if (temp_debug < 10)
-        //{
-        //    LOG_INF("targetInfo.scaling=%d\r\n", pDisplayDevInfo->targetInfo.scaling);
-        //}
-
         if (DISPLAYCONFIG_SCALING_ASPECTRATIOCENTEREDMAX == pDisplayDevInfo->targetInfo.scaling
             ||
             DISPLAYCONFIG_SCALING_IDENTITY == pDisplayDevInfo->targetInfo.scaling
@@ -693,12 +724,7 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
             {
                 m_eTouchDataAdjustModel = E_TOUCH_DATA_AJUST_WITH_ASPECT_RATIO;
             }
-            
-            //if (temp_debug < 10)
-            //{
-            //    LOG_INF("m_eTouchDataAdjustModel=%d, pDisplayDevInfo->targetInfo.scaling=%d\r\n", m_eTouchDataAdjustModel, pDisplayDevInfo->targetInfo.scaling);
-            //   
-            //}
+
 
             switch (m_eTouchDataAdjustModel)
             {
@@ -720,15 +746,15 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
                 wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nMonitorVirtualPixelWidth - nMonitorPixelWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nMonitorVirtualPixelWidth);
                 wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nMonitorVirtualPixelHeight - nMonitorPixelHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nMonitorVirtualPixelHeight);
-           
+
                 LOG_INF("aspectRatioNominator=%d,aspectRatioDenominator=%d, nMonitorVirtualPixelWidth=%d,nMonitorVirtualPixelHeight=%d\r\n",
                     aspectRatioNominator,
                     aspectRatioDenominator,
                     nMonitorVirtualPixelWidth,
                     nMonitorVirtualPixelHeight);
 
-            
-            
+
+
             }
             break;
 
@@ -741,37 +767,47 @@ BOOL CVirtualHID::InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount)
 
                 wXData = USHORT((contactPos.x - nMonitorPixelLeft + ((nTargetWidth - nSourceWidth) >> 1)) * EASI_TOUCH_MAXIMUM_X / nTargetWidth);
                 wYData = USHORT((contactPos.y - nMonitorPixelTop + ((nTargetHeight - nSourceHeight) >> 1)) * EASI_TOUCH_MAXIMUM_Y / nTargetHeight);
-           
+
                 //if (temp_debug < 10)
                 //{
                 //    LOG_INF("nSourceWidth=%d,nSourceHeight=%d, nTargetWidth=%d,nTargetHeight=%d\r\n",
                 //        nSourceWidth, nSourceHeight, nTargetWidth, nTargetHeight);
 
                 //}
-            
-            
+
             }
             break;
             }//switch(m_eTouchDataAdjustModel)
 
-            m_TouchPoints[i].wXData = wXData;
-            m_TouchPoints[i].wYData = wYData;
+            touchPoint.wXData = wXData /*+ g_tSysCfgData.globalSettings.nXCoordOffset * 5*/;
+            touchPoint.wYData = wYData /*+ g_tSysCfgData.globalSettings.nYCoordOffset * 5*/;
+
+            //touchPoint.wXData = wXData + 150;
+            //char szBuf[1024] = { 0 };
+            //sprintf(szBuf, "333 touchPoint.wXData:%d, touchPoint.wYData:%d, touchPoint.ContactId:%d, nXCoordOffset:%d, nYCoordOffset:%d\n", touchPoint.wXData, touchPoint.wYData, touchPoint.ContactId, g_tSysCfgData.globalSettings.nXCoordOffset, g_tSysCfgData.globalSettings.nYCoordOffset);
+            //OutputDebugStringA(szBuf);
             bDone = TRUE;
         }
 
         if (!bDone)
         {
-            m_TouchPoints[i].wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen);
-            m_TouchPoints[i].wYData = USHORT((contactPos.y - nMonitorPixelTop ) * EASI_TOUCH_MAXIMUM_Y / nCyScreen);
-          
+            touchPoint.wXData = USHORT((contactPos.x - nMonitorPixelLeft) * EASI_TOUCH_MAXIMUM_X / nCxScreen) /*+ g_tSysCfgData.globalSettings.nXCoordOffset * 5*/;
+            touchPoint.wYData = USHORT((contactPos.y - nMonitorPixelTop) * EASI_TOUCH_MAXIMUM_Y / nCyScreen) /*+ g_tSysCfgData.globalSettings.nYCoordOffset * 5*/;
+            //char szBuf[1024] = { 0 };
+            //sprintf(szBuf, "111 touchPoint.wXData:%d, touchPoint.wYData:%d, touchPoint.ContactId:%d, nXCoordOffset:%d, nYCoordOffset:%d\n", touchPoint.wXData, touchPoint.wYData, touchPoint.ContactId, g_tSysCfgData.globalSettings.nXCoordOffset, g_tSysCfgData.globalSettings.nYCoordOffset);
+            //OutputDebugStringA(szBuf);
         }
 
-       
+
         
     }//for
 
-    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPenCount);
+    BOOL bRet = EASI_WriteVirtualTouchScreen(m_hDev, &m_TouchPoints[0], nPrimaryContactCount);
 
+    if (PtCountInExtendScreen > 0)
+    {//扩展屏注入模拟
+        m_oTouchInjector.Input(aryExtendScreenContactInfos, PtCountInExtendScreen);
+    }
 
     return bRet;
 }

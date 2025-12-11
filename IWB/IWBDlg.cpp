@@ -2511,7 +2511,7 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
     else
     {
         CString strShortcutPath = GetStarupDirPath(theApp.IsForAllUsers());
-        LOG_INF("startup menu path:%s", CT2CA(strShortcutPath));
+        //LOG_INF("startup menu path:%s", CT2CA(strShortcutPath));
         TCHAR szModuleFileName[MAX_PATH];
 
         DWORD dwRet = GetModuleFileName(theApp.m_hInstance, szModuleFileName, _countof(szModuleFileName));
@@ -2562,7 +2562,7 @@ void CIWBDlg::OnCtxmenuAutorunAtSystemStartup()
 
         if(FAILED(hr))
         {
-            LOG_ERR("Create Shortcut %s failed!Error Code:0x%x", CT2CA(strShortcutPath), hr);
+            //LOG_ERR("Create Shortcut %s failed!Error Code:0x%x", CT2CA(strShortcutPath), hr);
 
             CString appFullPath;
            appFullPath.Format(_T("%s\\%s"), szWorkingDirectory, _T("IWBCreateShortcut.exe"));
@@ -3001,8 +3001,10 @@ void CIWBDlg::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 
 
     //如果是多屏屏接, 添加"触屏布局设计工具"菜单项
-    if (theApp.GetScreenMode() >= EScreenModeDouble)
-    {
+    //modified by xuke, 2024/06/07, 单屏也可能需要编辑屏幕区域
+    //if (theApp.GetScreenMode() >= EScreenModeDouble)
+    if(1)
+     {
         CMenu* pInstallMenu = m_oMenu.GetSubMenu(1);
         MENUITEMINFO menuItemInfo;
         memset(&menuItemInfo, 0, sizeof(MENUITEMINFO));
@@ -3300,7 +3302,10 @@ void CIWBDlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
         }
 
 
-        if (theApp.GetScreenMode() >= EScreenModeDouble)
+        //
+        //if (theApp.GetScreenMode() >= EScreenModeDouble)
+        //Commented out by xuke, 2024/06/28
+        if(1)
         {//多屏模式下，添加区域绑定菜单项
 
             MENUITEMINFO mnuiteminfo;
@@ -4907,6 +4912,9 @@ void CIWBDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
         }
         else
         {
+            char szBUf[128] = { 0 };
+            sprintf(szBUf, " CIWBDlg OnLButtonDblClk pSensor:%p\n", pSensor);
+            OutputDebugStringA(szBUf);
              OnAdvancedSettings(pSensor);
         }
 
@@ -5114,8 +5122,8 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
 
          TSensorModeConfig = &g_tSysCfgData.vecSensorConfig[pSensor->GetID()].vecSensorModeConfig[eProjectionMode];
 
-         //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。
-         if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
+         //如果选择0.15，那么在手指和白板触控的时候插值是需要打开的。   //wxl modify
+         /*if (  g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_15
              || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_19
              || g_tSysCfgData.vecSensorConfig[pSensor->GetID()].eSelectedLensType == E_LENS_TR_0_DOT_21
             )
@@ -5125,7 +5133,7 @@ void CIWBDlg::OnAdvancedSettings(CIWBSensor* pSensor)
                  TSensorModeConfig->advanceSettings.bEnableStrokeInterpolate = TRUE;
                  pSensor->SetStrokeInterpolate(TRUE);
              }
-         }
+         }*/
 
          /////设置是否开启自动屏蔽功能
          if (TSensorModeConfig->advanceSettings.bIsDynamicMaskFrame)
@@ -5802,11 +5810,16 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
         case BUTTON_ID_CONFIG:
         {
             const TScreenLayout& screenLayout = this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetScreenLayout();
-            CDlgScreenLayoutSettings dlg(screenLayout.GetSplitMode());
+            CDlgScreenLayoutSettings dlg(screenLayout.GetSplitMode(), this->m_oIWBSensorManager.GetScreenLayoutDesigner().GetScreenTargetType());
             if (IDOK == dlg.DoModal())
             {
-                const SplitMode& splitMode = dlg.GetSplitMode();
 
+                EScreenTargetType eScreenTargetType = dlg.GetScreenTargetType();
+
+                this->m_oIWBSensorManager.GetScreenLayoutDesigner().SetScreenTargetType(eScreenTargetType);
+
+
+                const SplitMode& splitMode = dlg.GetSplitMode();
                 const TScreenLayout* pScreenLayout = g_tSysCfgData.screenLayoutManger.GetScreenLayout(splitMode);
                 if (pScreenLayout)
                 {
@@ -5820,6 +5833,7 @@ HRESULT CIWBDlg::OnScreenLayoutDesignBtnEvent(WPARAM wParam, LPARAM lParam)
                 }
 
             }
+
         }
     }
     return 0L;

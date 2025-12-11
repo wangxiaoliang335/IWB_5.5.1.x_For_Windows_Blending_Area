@@ -327,6 +327,9 @@ HRESULT CVideoPlayer::FindCaptureDevice(IBaseFilter **ppSrcFilter)
 
         if(!this->m_strCaptureDevicePath.IsEmpty())
         {
+            wchar_t szTmp[1024] = { 0 };
+            wsprintf(szTmp, L" xxxx m_strCaptureDevicePath:%s\n", this->m_strCaptureDevicePath.GetBuffer());
+            OutputDebugString(szTmp);
 
             if(m_strCaptureDevicePath != OLE2CT(varDevPath.bstrVal))
             {

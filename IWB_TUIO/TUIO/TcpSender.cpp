@@ -278,6 +278,11 @@ TcpSender::~TcpSender() {
 
 
 bool TcpSender::sendOscPacket (osc::OutboundPacketStream *bundle) {
+    char szBuf[1024] = { 0 };
+
+    sprintf(szBuf, "111 44 TcpSender Entry sendOscPacket connected:%d\n", connected);
+    OutputDebugStringA(szBuf);
+
 	if (!connected) return false; 
 	if ( bundle->Size() > buffer_size ) return false;
 	if ( bundle->Size() == 0 ) return false;
@@ -296,6 +301,9 @@ bool TcpSender::sendOscPacket (osc::OutboundPacketStream *bundle) {
 #else
 	std::list<int>::iterator client;
 #endif
+
+    sprintf(szBuf, "111 44 TcpSender Entry sendOscPacket tcp_client_list size:%d\n", tcp_client_list.size());
+    OutputDebugStringA(szBuf);
 	
 	for (client = tcp_client_list.begin(); client!=tcp_client_list.end(); client++) {
 		//send((*client), data_size, 4,0);

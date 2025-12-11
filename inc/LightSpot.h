@@ -12,6 +12,8 @@ struct TLightSpot
 	LONG lStdSpotAreaInVideo   ;//光斑所处位置的标准面积(视频坐标)
     POINT ptPosInScreen        ;//重心坐标(屏幕坐标)
 
+    int  nMonitorId;
+
     //辅助数据结构
     struct  TAux
     {

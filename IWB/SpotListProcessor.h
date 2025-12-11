@@ -244,6 +244,8 @@ protected:
 	double  m_dbSmoothCoefficient;
 
     BOOL m_bAutoMerge;//使能触控自动融合
+    char m_szTmp[1024] = { 0 };
+    //bool m_isHaveMergeUp = false;
 };
 
 ///////////////////////////////////////////////////////////////////////////

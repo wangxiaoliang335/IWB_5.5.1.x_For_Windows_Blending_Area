@@ -16,7 +16,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -434,12 +434,12 @@ BEGIN
     IDS_STRING499           "Change Screen Area"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English resources
+// 英语 resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_NEUTRAL
@@ -659,9 +659,8 @@ BEGIN
     IDD_DIALOG_ADVANCED_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 348
         TOPMARGIN, 7
-        BOTTOMMARGIN, 450
+        BOTTOMMARGIN, 390
     END
 
     IDD_ABOUTBOX, DIALOG
@@ -961,12 +960,16 @@ BEGIN
     PUSHBUTTON      "Default",IDC_BUTTON_DEFAULT,146,65,41,14
 END
 
-IDD_DIALOG_ADVANCED_SETTINGS DIALOGEX 0, 0, 349, 455
+IDD_DIALOG_ADVANCED_SETTINGS DIALOGEX 0, 0, 279, 464
 STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Image Sensor Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    EDITTEXT        IDC_EDIT_X_COORD_OFFSET,96,430,46,14,ES_AUTOHSCROLL | NOT WS_VISIBLE
+    CONTROL         "",IDC_SPIN_X_CROOD_OFFSET,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | NOT WS_VISIBLE,149,430,12,14
+    EDITTEXT        IDC_EDIT_Y_COORD_OFFSET,96,448,46,14,ES_AUTOHSCROLL | NOT WS_VISIBLE
+    CONTROL         "",IDC_SPIN_Y_CROOD_OFFSET,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | NOT WS_VISIBLE,150,449,10,14
     LTEXT           "Set the proportion of the spot(20%~80%)",IDC_STATIC,12,20,138,8
     EDITTEXT        IDC_EDIT_SPOTPROPORTION,259,18,65,14,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_SPOTPROPORTION,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,325,17,11,15
@@ -998,7 +1001,7 @@ BEGIN
     CONTROL         "Throw Ratio 1.36",IDC_RADIO_THROW_RATIO_136,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,189,349,71,10
     CONTROL         "Rear Projector",IDC_CHECK_REAR_PROJECTOR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,393,64,12
     CONTROL         "Double Screen",IDC_CHECK_DOUBLE_SCREEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,362,62,12
-    PUSHBUTTON      "Default Settings",IDC_BUTTON_DEFAULT_SETTINGS,284,428,59,15
+    PUSHBUTTON      "Default Settings",IDC_BUTTON_DEFAULT_SETTINGS,284,446,59,15
     PUSHBUTTON      "Select an monitor to see...",IDC_BUTTON_ATTACH_TO_A_SCREEN,181,364,107,14
     CONTROL         "Desktop Projection",IDC_DESKTOPMODE,"Button",BS_AUTORADIOBUTTON | BS_NOTIFY | WS_GROUP,14,409,76,10
     CONTROL         "Wall Projection",IDC_WALLMODE,"Button",BS_AUTORADIOBUTTON | BS_NOTIFY,198,410,63,10
@@ -1029,6 +1032,8 @@ BEGIN
     LTEXT           "Smoothing coefficient(0~10)",IDC_STATIC,11,60,105,8
     EDITTEXT        IDC_EDIT_SMOOTH_COEF,259,55,65,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN_SMOOTH_COEF,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,326,52,11,16
+    LTEXT           "X Coordinate offset:",IDC_STATIC,15,431,76,12,NOT WS_VISIBLE
+    LTEXT           "Y Coordinate offset:",IDC_STATIC,14,451,73,10,NOT WS_VISIBLE
 END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 235, 102
@@ -1071,6 +1076,9 @@ BEGIN
     EDITTEXT        IDC_EDIT_ROWS,65,32,40,14,ES_AUTOHSCROLL
     LTEXT           "Columns",IDC_STATIC,27,51,15,8
     EDITTEXT        IDC_EDIT_COLS,66,49,40,14,ES_AUTOHSCROLL
+    CONTROL         "Primary Screen",IDC_RADIO_SCREENTYPE_PRIMARY,"Button",BS_AUTORADIOBUTTON | WS_GROUP,171,36,66,10
+    CONTROL         "Full Virtual Desktop",IDC_RADIO_SCREENTYPE_FULL_VIRTUAL_DESKTOP,
+                    "Button",BS_AUTORADIOBUTTON,171,49,79,10
 END
 
 
@@ -1102,7 +1110,7 @@ BEGIN
     0
 END
 
-#endif    // English resources
+#endif    // 英语 resources
 /////////////////////////////////////////////////////////////////////////////
 
 

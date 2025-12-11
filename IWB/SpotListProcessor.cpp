@@ -206,6 +206,10 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
     if (m_uCameraCount == 1) return FALSE;
     if (CameraIndex >= m_uCameraCount) return FALSE;
 
+    AtlTrace(
+        _T("AppearInMergeArea CameraIndex:%d\n"),
+        CameraIndex);
+
     RECT mergeAreas[2];
     UINT mergeAreaIndex[2];
     int  areaCount = 0;
@@ -269,6 +273,15 @@ BOOL CSpotListProcessor::AppearInMergeArea(const TLightSpot& lightSpot, UINT Cam
         const RECT& area = mergeAreas[i];
 		const POINT& ptPosInScreen = lightSpot.ptPosInScreen;
 	
+        AtlTrace(
+            _T("area left:%d, right:%d,top:%d, bottom:%d,  ptPosInScreen x:%d, y:%d\n"),
+            area.left,
+            area.right,
+            area.top,
+            area.bottom,
+            ptPosInScreen.x, 
+            ptPosInScreen.y);
+
         if (area.left < ptPosInScreen.x && ptPosInScreen.x < area.right
 			 &&
 			area.top < ptPosInScreen.y && ptPosInScreen.y < area.bottom
@@ -337,7 +350,7 @@ BOOL CSpotListProcessor::SeenByBuddyCamera(const TLightSpot& spotTarget, UINT Ca
             const TLightSpot& buddySpot = pBuddyCameraSpotList[i];
 
             //if (AppearInMergeArea(buddySpot, dwBuddyCameraId))
-            //
+            
             {//buddySpot也位于融合区, 判断目标点与buddy点之间的距离是否小于融合距离门限
                 int dx = spotTarget.ptPosInScreen.x - buddySpot.ptPosInScreen.x;
                 int dy = spotTarget.ptPosInScreen.y - buddySpot.ptPosInScreen.y;
@@ -544,11 +557,11 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
                 //if(SeenInMergeAreaByBuddyCamera(spot, dwCameraId))
                 if (SeenByBuddyCamera(spot, dwCameraId))
                 {
-                    //AtlTrace(
-                    //    _T("Buddy Camera also see the spot(%d,%d) saw by camera %d\n"),
-                    //    spot.ptPosInScreen.x,
-                    //    spot.ptPosInScreen.y,
-                    //    dwCameraId);
+                    AtlTrace(
+                        _T("Buddy Camera also see the spot(%d,%d) saw by camera %d\n"),
+                        spot.ptPosInScreen.x,
+                        spot.ptPosInScreen.y,
+                        dwCameraId);
 
                 }
                 else
@@ -561,6 +574,13 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
                         pLightSpots[0].ptPosInScreen.x,
                         pLightSpots[0].ptPosInScreen.y,
                         dwCameraId);
+
+                    /*char szBuf[1024] = { 0 };
+                    sprintf(szBuf, "BatchNo=%d,Spot(%d,%d) from camera %d delayed process case B\n", s_BatchNo,
+                        pLightSpots[0].ptPosInScreen.x,
+                        pLightSpots[0].ptPosInScreen.y,
+                        dwCameraId);
+                    OutputDebugStringA(szBuf);*/
 #endif
                     break;
                 }
@@ -583,6 +603,13 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
                     pLightSpots[0].ptPosInScreen.x,
                     pLightSpots[0].ptPosInScreen.y,
                     dwCameraId);
+
+                /*char szBuf[1024] = { 0 };
+                sprintf(szBuf, "BatchNo=%d,Spot(%d,%d) from camera %d delayed process case B\n", s_BatchNo,
+                    pLightSpots[0].ptPosInScreen.x,
+                    pLightSpots[0].ptPosInScreen.y,
+                    dwCameraId);
+                OutputDebugStringA(szBuf);*/
 #endif
 
                 bDelayProcess = TRUE;
@@ -595,11 +622,21 @@ BOOL CSpotListProcessor::WriteSpotList(TLightSpot* pLightSpots, int nLightSpotCo
     memcpy(&m_InputSpotListGroup.aryLightSpots[dwCameraId], pLightSpots, nLightSpotCount*sizeof(TLightSpot));
     m_InputSpotListGroup.aryLightSpotsCount[dwCameraId] = nLightSpotCount;
 
-
+    //char szBuf[1024] = { 0 };
+    //sprintf(szBuf, "66 CSpotListProcessor dwCameraId:%d, nLightSpotCount:%d\n", dwCameraId, nLightSpotCount);
+    //OutputDebugStringA(szBuf);
 
     if(bDelayProcess)
     {//需要延后处理,
+        char szBuf[1024] = { 0 };
+        sprintf(szBuf, "66 CSpotListProcessor bDelayProcess:%d\n", bDelayProcess);
+        OutputDebugStringA(szBuf);
         return FALSE;
+    }
+    else {
+        //char szBuf[1024] = { 0 };
+        //sprintf(szBuf, "66 0 CSpotListProcessor bDelayProcess:%d\n", bDelayProcess);
+        //OutputDebugStringA(szBuf);
     }
     
     //光斑组写入FIFO中去
@@ -620,6 +657,11 @@ void CSpotListProcessor::ProcessLightSpots()
 
     while(!m_SpotListGroupFIFO.IsEmpty())
     {//处理FIFO中已写入的所有数据
+
+        //char szBuf[1024] = { 0 };
+        //sprintf(szBuf, "77 CSpotListProcessor ProcessLightSpots m_nID:%d\n", m_nID);
+        //OutputDebugStringA(szBuf);
+
         const TSpotListGroup* pSpotListGroup = m_SpotListGroupFIFO.Read();
         if(pSpotListGroup == NULL) break;
         //所有摄像头的光斑数组
@@ -630,36 +672,43 @@ void CSpotListProcessor::ProcessLightSpots()
 
         BOOL bDoubleScreenTouchMergeTemp = g_tSysCfgData.globalSettings.bDoubleScreenTouchMerge;
              
-        /*
+        
 
-        //#0号传感器(位于拼接屏的左边)的光斑
-        for(int i=0; i<  pSpotListGroup->aryLightSpotsCount[0]; i++)
-        {
-            const TLightSpot& spot = pSpotListGroup->aryLightSpots[0][i];
+        ////#0号传感器(位于拼接屏的左边)的光斑
+        //for(int i=0; i<  pSpotListGroup->aryLightSpotsCount[0]; i++)
+        //{
+        //    const TLightSpot& spot = pSpotListGroup->aryLightSpots[0][i];
 
-            //bDoubleScreenTouchMergeTemp = g_tSysCfgData.globalSettings.bDoubleScreenTouchMerge;
+        //    //bDoubleScreenTouchMergeTemp = g_tSysCfgData.globalSettings.bDoubleScreenTouchMerge;
+        //    //char szBuf[1024] = { 0 };
+        //    sprintf(m_szTmp, "771 CSpotListProcessor ptPosInScreen:%d, GetMergeAreaRightBorder:%d, GetMergeAreaLeftBorder:%d\n", spot.ptPosInScreen.x, 
+        //        this->GetSpotMerger().GetMergeAreaRightBorder(), this->GetSpotMerger().GetMergeAreaLeftBorder());
+        //    OutputDebugStringA(m_szTmp);
+        //    if(theApp.GetScreenMode() == EScreenModeDouble && bDoubleScreenTouchMergeTemp  && spot.ptPosInScreen.x > this->GetSpotMerger().GetMergeAreaRightBorder())
+        //    {//光斑位于融合区右边界以外, 则略过。
+        //        continue;
+        //    }
 
-            if(theApp.GetScreenMode() == EScreenModeDouble && bDoubleScreenTouchMergeTemp  && spot.ptPosInScreen.x > this->GetSpotMerger().GetMergeAreaRightBorder())
-            {//光斑位于融合区右边界以外, 则略过。
-                continue;
-            }
+        //    allLightSpots[nAllLightSpotCount] = spot;
+        //    nAllLightSpotCount ++;
+        //}
 
-            allLightSpots[nAllLightSpotCount] = spot;
-            nAllLightSpotCount ++;
-        }
+        ////#1号传感器(位于拼接屏的右边)的光斑
+        //for(int i=0; i<  pSpotListGroup->aryLightSpotsCount[1]; i++)
+        //{
+        //    const TLightSpot& spot = pSpotListGroup->aryLightSpots[1][i];
 
-        //#1号传感器(位于拼接屏的右边)的光斑
-        for(int i=0; i<  pSpotListGroup->aryLightSpotsCount[1]; i++)
-        {
-            const TLightSpot& spot = pSpotListGroup->aryLightSpots[1][i];
-            if(theApp.GetScreenMode() == EScreenModeDouble && bDoubleScreenTouchMergeTemp && spot.ptPosInScreen.x < this->GetSpotMerger().GetMergeAreaLeftBorder())
-            {//光斑位于融合区左边界以外, 则略过。
-                continue;
-            }
-            allLightSpots[nAllLightSpotCount] = spot;
-            nAllLightSpotCount ++;
-        }
-        */
+        //    sprintf(m_szTmp, "772 CSpotListProcessor ptPosInScreen:%d, GetMergeAreaRightBorder:%d, GetMergeAreaLeftBorder:%d\n", spot.ptPosInScreen.x,
+        //        this->GetSpotMerger().GetMergeAreaRightBorder(), this->GetSpotMerger().GetMergeAreaLeftBorder());
+        //    OutputDebugStringA(m_szTmp);
+        //    if(theApp.GetScreenMode() == EScreenModeDouble && bDoubleScreenTouchMergeTemp && spot.ptPosInScreen.x < this->GetSpotMerger().GetMergeAreaLeftBorder())
+        //    {//光斑位于融合区左边界以外, 则略过。
+        //        continue;
+        //    }
+        //    allLightSpots[nAllLightSpotCount] = spot;
+        //    nAllLightSpotCount ++;
+        //}
+        
               
         for (int nCameraIndex = 0; nCameraIndex < MAX_CAMERA_NUMBER; nCameraIndex++)
         {
@@ -672,9 +721,26 @@ void CSpotListProcessor::ProcessLightSpots()
                 //光斑在所属相机管辖的屏幕区域以外,则略过。
                 if (spot.aux.bOutsideOwnedArea) continue;
 
+                char szBuf[1024] = { 0 };
+                sprintf(szBuf, "777 OnPostProcess ProcessLightSpots spot nCameraIndex:%d, nAllLightSpotCount:%d, dwCameraId:%d\n", nCameraIndex, nAllLightSpotCount, spot.dwCameraId);
+                OutputDebugStringA(szBuf);
+
                 allLightSpots[nAllLightSpotCount] = spot;
                 nAllLightSpotCount++;
             }
+        }
+
+        if (nAllLightSpotCount > 0)
+        {
+            char szBuf[1024] = { 0 };
+            sprintf(szBuf, "999 OnPostProcess ProcessLightSpots nAllLightSpotCount:%d\n", nAllLightSpotCount);
+            OutputDebugStringA(szBuf);
+        }
+        else
+        {
+            //char szBuf[1024] = { 0 };
+            //sprintf(szBuf, "999 11 OnPostProcess ProcessLightSpots nAllLightSpotCount:%d\n", nAllLightSpotCount);
+            //OutputDebugStringA(szBuf);
         }
 
         //所有光斑的后续处理
@@ -732,6 +798,61 @@ void DebugContactInfo(const TContactInfo* contactInfos, int nCount)
     }//for-each(i)
 
 }
+
+// 转换屏幕坐标到鼠标输入坐标系统(0-65535范围)
+void ConvertScreenToInputCoord(int screenX, int screenY, int& inputX, int& inputY)
+{
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    inputX = (screenX * 65535) / screenWidth;
+    inputY = (screenY * 65535) / screenHeight;
+}
+
+// 发送鼠标输入事件
+void SendMouseInput(DWORD flags, int x, int y)
+{
+    INPUT input = { 0 };
+    input.type = INPUT_MOUSE;
+    input.mi.dx = x;
+    input.mi.dy = y;
+    input.mi.dwFlags = flags;
+    input.mi.time = 0;
+    input.mi.dwExtraInfo = 0;
+
+    SendInput(1, &input, sizeof(INPUT));
+}
+
+// 模拟鼠标按下(左键)
+void MouseDown(int x, int y)
+{
+    int inputX, inputY;
+    ConvertScreenToInputCoord(x, y, inputX, inputY);
+
+    // 移动到指定位置并按下
+    SendMouseInput(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, inputX, inputY);
+    Sleep(50); // 短暂延迟确保移动完成
+    SendMouseInput(MOUSEEVENTF_LEFTDOWN, 0, 0);
+    Sleep(50);
+}
+
+// 模拟鼠标移动(保持按下状态)
+void MouseMove(int x, int y)
+{
+    int inputX, inputY;
+    ConvertScreenToInputCoord(x, y, inputX, inputY);
+
+    // 移动鼠标(保持按下状态)
+    SendMouseInput(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE, inputX, inputY);
+}
+
+// 模拟鼠标弹起(左键)
+void MouseUp()
+{
+    SendMouseInput(MOUSEEVENTF_LEFTUP, 0, 0);
+    Sleep(50);
+}
+
 //@功能:所有光斑的后续处理程序
 //@参数:pLightSpots, 指向光斑列表的指针
 //      nLightSpotCount, 光斑个数
@@ -801,7 +922,12 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 			     penInfo[i].uId = refMInfo.uId;
 			     penInfo[i].pt = refMInfo.ptPos;
 		     }
-		     m_oVirtualHID.InputPoints(penInfo, penCount);
+
+             char szBuf[1024] = { 0 };
+             sprintf(szBuf, "777 OnPostProcess InputPoints pLightSpots dwCameraId:%d\n", pLightSpots->dwCameraId);
+             OutputDebugStringA(szBuf);
+
+		     m_oVirtualHID.InputPoints(penInfo, penCount, pLightSpots->dwCameraId, pLightSpots->nMonitorId);
 		    return;
 		}//if
 	}
@@ -857,9 +983,15 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
 
             if (FALSE == bEnableStrokeInterpolateTemp)
             { 
+                if (penCount > 0)
+                {
+                    char szBuf[1024] = { 0 };
+                    sprintf(szBuf, "888 OnPostProcess InputPoints pLightSpots dwCameraId:%d, penCount:%d\n", pLightSpots->dwCameraId, penCount);
+                    OutputDebugStringA(szBuf);
+                }
 
      			//不插值
-                m_oVirtualHID.InputPoints(penInfo, penCount);
+                m_oVirtualHID.InputPoints(penInfo, penCount, pLightSpots->dwCameraId, pLightSpots->nMonitorId);
 #ifdef _DEBUG
              //  DebugContactInfo(penInfo, penCount);
 #endif
@@ -888,7 +1020,52 @@ void CSpotListProcessor::OnPostProcess(TLightSpot* pLightSpots, int nLightSpotCo
                         int allPenCount;
                         const TContactInfo* pAllContactInfo = m_oInterpolateDispatcher.GetAllContactData(&allPenCount);
 
-                        m_oVirtualHID.InputPoints(pAllContactInfo, allPenCount);
+                        //for (int i = 0; i < allPenCount; i++)
+                        //{
+                        //    char szBuf[1024] = { 0 };
+                        //    sprintf(szBuf, "m_oVirtualHID i:%d, pAllContactInfo x:%d, y:%d, ePenState:%d, uId:%d\n", i, pAllContactInfo[i].pt.x, pAllContactInfo[i].pt.y, pAllContactInfo[i].ePenState, pAllContactInfo[i].uId);
+                        //    OutputDebugStringA(szBuf);
+                        //}
+
+                        //bool bfind = false;
+                        //for (int k = 0; k < 3; k++)
+                        //{
+                        //    char szBuf[1024] = { 0 };
+                        //    const RECT* pRT = m_oSpotMerger.GetMergeArea(k);
+                        //    sprintf(szBuf, "m_oVirtualHID MergeArea left:%d, right:%d, top:%d, bottom:%d\n", pRT->left, pRT->right, pRT->top, pRT->bottom);   
+                        //    OutputDebugStringA(szBuf);
+
+                        //    if (allPenCount == 2)
+                        //    {
+                        //        if ((TRUE == PtInRect(pRT, pAllContactInfo[0].pt) || TRUE == PtInRect(pRT, pAllContactInfo[1].pt)) && m_isHaveMergeUp == false)
+                        //        {
+                        //            m_isHaveMergeUp = true;
+
+                        //            //MouseUp();
+
+                        //            sprintf(szBuf, "m_oVirtualHID MergeArea set E_PEN_STATE_UP\n");
+                        //            OutputDebugStringA(szBuf);
+
+                        //            //allPenCount = 0;
+
+                        //            //((TContactInfo*)pAllContactInfo)[0].ePenState = E_PEN_STATE_UP;
+                        //           // ((TContactInfo*)pAllContactInfo)[1].ePenState = E_PEN_STATE_UP;
+                        //            break;
+                        //        }
+                        //    }
+
+                        //    if ((TRUE == PtInRect(pRT, pAllContactInfo[0].pt)) || (TRUE == PtInRect(pRT, pAllContactInfo[1].pt)))
+                        //    {
+                        //        bfind = true;
+                        //    }
+                        //}
+
+                        //if (bfind == false)
+                        //{
+                        //    m_isHaveMergeUp = false;
+                        //}
+
+                        m_oVirtualHID.InputPoints((TContactInfo *)pAllContactInfo, allPenCount, pLightSpots->dwCameraId, pLightSpots->nMonitorId);
 
                         m_oInterpolateDispatcher.PostProcess();
 
@@ -1207,6 +1384,11 @@ void CSpotListProcessor::SimulateProcess()
                 if(nSpotCount != 0)
                 {
                     nGroupId ++;
+
+                    char szBuf[1024] = { 0 };
+                    sprintf(szBuf, "999 SimulateProcess OnPostProcess\n");
+                    OutputDebugStringA(szBuf);
+
                     OnPostProcess(&allLightSpots[0], nSpotCount);
                     Sleep(1);
                 }
@@ -1279,7 +1461,7 @@ BOOL CSpotListProcessor::IsTriggeringGuesture()const
 RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& monitorArea) const
 {
     RECT rcVisibleArea = monitorArea;
-    
+#if 0    
     if (theApp.ScreenMode() >= EScreenModeDouble)
     {
         int nMergeAreaIndex = 0;
@@ -1309,7 +1491,7 @@ RECT CSpotListProcessor::GetVisibleScreenArea(UINT uCameraIndex, const RECT& mon
             if(pRightMergeArea) rcVisibleArea.right = pRightMergeArea->right;
         }
     }
-
+#endif
     return rcVisibleArea;
 }
 

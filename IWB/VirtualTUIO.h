@@ -33,7 +33,7 @@ public:
 	void   OpenTUIOServer(bool bStart);
 	void   CloseTUIOServer();
 	void   InitTuio();
-	BOOL   InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount);
+	BOOL   InputTUIOPoints(const TContactInfo* pPenInfos, int nPenCount, DWORD dwCameraId = -1);
 	bool   LoadTUIOConfig();
 	bool   SaveTUIOConfig();
 	void   Reset();

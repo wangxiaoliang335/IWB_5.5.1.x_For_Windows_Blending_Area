@@ -57,7 +57,7 @@ NetworkInitializer::NetworkInitializer()
 
         // initialize winsock
 	    WSAData wsaData;
-	    int nCode = WSAStartup(MAKEWORD(1, 1), &wsaData);
+	    int nCode = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	    if( nCode != 0 ){
 	        //std::cout << "WSAStartup() failed with error code " << nCode << "\n";
         }else{

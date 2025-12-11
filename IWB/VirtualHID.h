@@ -5,7 +5,7 @@
 #include "TouchScreenDblChecker.h"
 #include "VirtualTUIO.h"
 #include "TouchTester.h"
-
+#include "TouchInjector.h"
 
 //参考:"Processing a Request to Remove a Device"实时检测设备驱动的状态。
 //http://msdn.microsoft.com/en-us/library/windows/desktop/aa363215(v=vs.85).aspx
@@ -32,7 +32,7 @@ public:
 	//@功能:模拟HID输入
 	//@参数:penInfos, 指向光笔数组的指针
 	//      nPenCount, 光笔支数
-	BOOL InputPoints(const TContactInfo* pPenInfos, int nPenCount);
+	BOOL InputPoints(TContactInfo* pPenInfos, int nPenCount, DWORD dwCameraId = -1, int nMonitorId = -1);
 
 	//@功能:设置鼠标/触屏模式
 	void SetHIDMode(EHIDDeviceMode eMode) 
@@ -83,7 +83,7 @@ protected:
 	//@功能:模拟触屏输入
 	//@参数:penInfos, 指向光笔数组的指针
 	//      nPenCount, 光笔支数
-	BOOL InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount);
+	BOOL InputTouchPoints(const TContactInfo* pPenInfos, int nPenCount, int dwCameraId);
 
 	BOOL InputTouchPoints_AirOperate(const TContactInfo* pPenInfos, int nPenCount, EAIROPERATE_CLICKMODE  eClickMode);
 
@@ -102,6 +102,8 @@ protected:
 
 	//////////////add by zhaown 2019.09.26
 	CVirtualTUIO  m_oVirtualTUIOTouch;
+	TouchInjector m_oTouchInjector;//Windows API注入触控事件。
+
 	bool     m_bTouchHIDMode  ;
 	bool     m_bTouchTUIOMode ;
 

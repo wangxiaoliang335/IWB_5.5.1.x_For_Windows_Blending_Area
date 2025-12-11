@@ -252,6 +252,12 @@
 #define IDC_SPIN_SMOOTH_COEF            1156
 #define IDC_EDIT_ROWS                   1157
 #define IDC_EDIT_COLS                   1158
+#define IDC_RADIO_SCREENTYPE_PRIMARY    1159
+#define IDC_RADIO_SCREENTYPE_FULL_VIRTUAL_DESKTOP 1160
+#define IDC_SPIN_X_CROOD_OFFSET         1162
+#define IDC_SPIN_Y_CROOD_OFFSET         1163
+#define IDC_EDIT_X_COORD_OFFSET         1164
+#define IDC_EDIT_Y_COORD_OFFSET         1165
 #define IDC_RADIO_THROW_RATIO_015       1201
 #define IDC_RADIO_THROW_RATIO_019       1202
 #define IDC_RADIO_THROW_RATIO_021       1203
@@ -472,7 +478,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        173
 #define _APS_NEXT_COMMAND_VALUE         32912
-#define _APS_NEXT_CONTROL_VALUE         1159
+#define _APS_NEXT_CONTROL_VALUE         1166
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

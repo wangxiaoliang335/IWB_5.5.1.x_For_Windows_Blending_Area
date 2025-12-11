@@ -242,14 +242,14 @@ BOOL LoadConfig(TiXmlNode *pNode, TVideoProcAmpProperty& cameraParams,TVideoProc
                 cameraParams.Prop_VideoProcMap_Gain = atoi(paramValue);
                 if(paramDefault) defaultParams.Prop_VideoProcMap_Gain = atoi(paramDefault);
             }
-			else if (paramName && paramValue && _stricmp(paramName, "Exposure") == 0)
-			{//曝光时间
-				cameraParams.Prop_CameraControl_Exposure = atoi(paramValue);
-				if(paramDefault) defaultParams.Prop_CameraControl_Exposure  = atoi(paramDefault);
-			}
-			else {
+            else if (paramName && paramValue && _stricmp(paramName, "Exposure") == 0)
+            {//曝光时间
+                cameraParams.Prop_CameraControl_Exposure = atoi(paramValue);
+                if(paramDefault) defaultParams.Prop_CameraControl_Exposure  = atoi(paramDefault);
+            }
+            else {
 
-			}
+            }
         }
 
     }while(pChild);
@@ -352,15 +352,15 @@ BOOL SaveConfig(TiXmlNode *pNode, const TVideoProcAmpProperty& cameraParams)
     pElement->SetAttribute("value", cameraParams.Prop_VideoProcMap_Gain);
     pNode->LinkEndChild(pElement);
 
-	//曝光时间
-	pXmlComment = new TiXmlComment("曝光时间");
-	pNode->LinkEndChild(pXmlComment);
+    //曝光时间
+    pXmlComment = new TiXmlComment("曝光时间");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "Exposure");
-	pElement->SetAttribute("value", cameraParams.Prop_CameraControl_Exposure);
-	pNode->LinkEndChild(pElement);
-	
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "Exposure");
+    pElement->SetAttribute("value", cameraParams.Prop_CameraControl_Exposure);
+    pNode->LinkEndChild(pElement);
+    
 
     return TRUE;
 }
@@ -472,15 +472,15 @@ BOOL SaveConfig(TiXmlNode *pNode, const TVideoProcAmpProperty& cameraParams, con
     pElement->SetAttribute("default", defaultParams.Prop_VideoProcMap_Gain);
     pNode->LinkEndChild(pElement);
 
-	//曝光时间
-	pXmlComment = new TiXmlComment("曝光时间");
-	pNode->LinkEndChild(pXmlComment);
+    //曝光时间
+    pXmlComment = new TiXmlComment("曝光时间");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "Exposure");
-	pElement->SetAttribute("value", cameraParams.Prop_CameraControl_Exposure);
-	pElement->SetAttribute("default", defaultParams.Prop_CameraControl_Exposure);
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "Exposure");
+    pElement->SetAttribute("value", cameraParams.Prop_CameraControl_Exposure);
+    pElement->SetAttribute("default", defaultParams.Prop_CameraControl_Exposure);
+    pNode->LinkEndChild(pElement);
 
     return TRUE;
 }
@@ -608,16 +608,16 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
             {//语言
                 globalSettings.langCode = paramValue;
             }
-			else if (paramName && paramValue && _stricmp(paramName, "ProjectionMode") == 0)
-			{  //投影模式
-				if (_stricmp(paramValue, "Desktop") == 0)
-				{
-					globalSettings.eProjectionMode = E_PROJECTION_DESKTOP;
-				}
-				else {
-					globalSettings.eProjectionMode = E_PROJECTION_WALL;
-				}
-			}
+            else if (paramName && paramValue && _stricmp(paramName, "ProjectionMode") == 0)
+            {  //投影模式
+                if (_stricmp(paramValue, "Desktop") == 0)
+                {
+                    globalSettings.eProjectionMode = E_PROJECTION_DESKTOP;
+                }
+                else {
+                    globalSettings.eProjectionMode = E_PROJECTION_WALL;
+                }
+            }
             else if(paramName && paramValue && _stricmp(paramName, "DebugMode") == 0)
             {//调试模式
                 if(_stricmp(paramValue, "Yes") == 0)
@@ -645,32 +645,32 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                     globalSettings.bSaveIntermediateFile = FALSE;
                 }
             }
-			else if (paramName && paramValue && _stricmp(paramName, "LensMode") == 0)
+            else if (paramName && paramValue && _stricmp(paramName, "LensMode") == 0)
             { //启动时的工作模式
                 globalSettings.eLensMode = (ESensorLensMode)atoi(paramValue);
             }
-			else if (paramName && paramValue && _stricmp(paramName, "TouchTUIOMode") == 0)
-			{
-				if (_stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bTouchTUIOMode = TRUE;
-				}
-				else
-				{
-					globalSettings.bTouchTUIOMode = FALSE;
-				}
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "TouchHIDMode") == 0)
-			{
-				if (_stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bTouchHIDMode = TRUE;
-				}
-				else
-				{
-					globalSettings.bTouchHIDMode = FALSE;
-				}
-			}
+            else if (paramName && paramValue && _stricmp(paramName, "TouchTUIOMode") == 0)
+            {
+                if (_stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bTouchTUIOMode = TRUE;
+                }
+                else
+                {
+                    globalSettings.bTouchTUIOMode = FALSE;
+                }
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "TouchHIDMode") == 0)
+            {
+                if (_stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bTouchHIDMode = TRUE;
+                }
+                else
+                {
+                    globalSettings.bTouchHIDMode = FALSE;
+                }
+            }
             else if(paramName && paramValue && _stricmp(paramName, "HID Mode") == 0)
             {
 
@@ -683,38 +683,38 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                     globalSettings.eHIDDeviceMode = E_DEV_MODE_MOUSE;
                 }
             }
-			else if(paramName && paramValue && _stricmp(paramName, "EnableOnlineRegister") == 0)
-			{
-				if(_stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bEnableOnlineRegister = TRUE;
-				}
-				else
-				{
-					globalSettings.bEnableOnlineRegister = FALSE;
-				}
+            else if(paramName && paramValue && _stricmp(paramName, "EnableOnlineRegister") == 0)
+            {
+                if(_stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bEnableOnlineRegister = TRUE;
+                }
+                else
+                {
+                    globalSettings.bEnableOnlineRegister = FALSE;
+                }
 
-			}
-			else if(paramName && paramValue && _stricmp(paramName, "TouchScreenAspectRatio") == 0)
-			{
+            }
+            else if(paramName && paramValue && _stricmp(paramName, "TouchScreenAspectRatio") == 0)
+            {
 
-				if(_stricmp(paramValue, "16:9") == 0)
-				{
-					globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_16_9;
-				}
-				else if(_stricmp(paramValue, "16:10") == 0)
-				{
-					globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_16_10;
-				}
-				else if(_stricmp(paramValue, "4:3") == 0)
-				{
-					globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_4_3;
-				}
-				else
-				{
-					globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_AUTO;
-				}
-			}
+                if(_stricmp(paramValue, "16:9") == 0)
+                {
+                    globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_16_9;
+                }
+                else if(_stricmp(paramValue, "16:10") == 0)
+                {
+                    globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_16_10;
+                }
+                else if(_stricmp(paramValue, "4:3") == 0)
+                {
+                    globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_4_3;
+                }
+                else
+                {
+                    globalSettings.eTouchScreenAspectRatio = E_TOUCH_SCREEN_ASPECT_RATIO_AUTO;
+                }
+            }
             else if(paramName && paramValue && _stricmp(paramName, "RecordVideo") == 0)
             {
                 if(_stricmp(paramValue, "Yes") == 0)
@@ -727,27 +727,27 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                 }
             }
 
-			else if (paramName && paramValue && _stricmp(paramName, "DoubleScreenTouchMerge") == 0)
-			{
-				if (_stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bDoubleScreenTouchMerge = TRUE;
-				}
-				else
-				{
-					globalSettings.bDoubleScreenTouchMerge = FALSE;
-				}
-			}
+            else if (paramName && paramValue && _stricmp(paramName, "DoubleScreenTouchMerge") == 0)
+            {
+                if (_stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bDoubleScreenTouchMerge = TRUE;
+                }
+                else
+                {
+                    globalSettings.bDoubleScreenTouchMerge = FALSE;
+                }
+            }
             else if(paramName && paramValue && _stricmp(paramName, "ScreenDiagonalLength") == 0)
             {
                 double fInches = atof(paramValue);
                 globalSettings.fScreenDiagonalPhysicalLength = (float)(fInches * 25.4);//1 inches = 25.4 mm
 
             }
-			else if (paramName && paramValue && _stricmp(paramName, "MaxTimeInSearchDevice") == 0)
-			{
-				globalSettings.nMaxTimeInSearchDevice = atoi(paramValue);
-			}
+            else if (paramName && paramValue && _stricmp(paramName, "MaxTimeInSearchDevice") == 0)
+            {
+                globalSettings.nMaxTimeInSearchDevice = atoi(paramValue);
+            }
             else if (paramName && paramValue && _stricmp(paramName, "ScreenCount") == 0)
             {
                 int nScreenCount = atoi(paramValue);
@@ -759,17 +759,17 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                     globalSettings.eScreenMode = (EScreenMode)(nScreenCount-1);
                 }
             }
-			else if (_stricmp(paramName, "SinglePointMode") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bSinglePointMode = TRUE;
-				}
-				else
-				{
-					globalSettings.bSinglePointMode = FALSE;
-				}
-			}
+            else if (_stricmp(paramName, "SinglePointMode") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bSinglePointMode = TRUE;
+                }
+                else
+                {
+                    globalSettings.bSinglePointMode = FALSE;
+                }
+            }
             else if (_stricmp(paramName, "Enable4PointCalibrate") == 0)
             {
                 if (paramValue && _stricmp(paramValue, "Yes") == 0)
@@ -782,44 +782,44 @@ BOOL LoadConfig(TiXmlNode *pNode, GlobalSettings& globalSettings)
                 }
 
             }
-			else if (_stricmp(paramName, "ModifyResolution") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bModifyResolution = TRUE;
-				}
-				else
-				{
-					globalSettings.bModifyResolution = FALSE;
-				}
+            else if (_stricmp(paramName, "ModifyResolution") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bModifyResolution = TRUE;
+                }
+                else
+                {
+                    globalSettings.bModifyResolution = FALSE;
+                }
 
-			}
-			else if(_stricmp(paramName, "AirOperatePermission") == 0)
-			{
-				if(paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					globalSettings.bAirOperatePermission = TRUE;
-				}
-				else
-				{
-					globalSettings.bAirOperatePermission = FALSE;
-				}
-			}
-			else if(_stricmp(paramName, "AirOperateMode") == 0)
-			{
-				if (paramValue && _stricmp(paramValue, "Double_Click") == 0)
-				{
-					globalSettings.eClickMode = E_MODE_DOUBLE_CLICK;
-				}
-				else
-				{
-					globalSettings.eClickMode = E_MODE_CLICK;
-				}
-			}
-			else
-			{
+            }
+            else if(_stricmp(paramName, "AirOperatePermission") == 0)
+            {
+                if(paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    globalSettings.bAirOperatePermission = TRUE;
+                }
+                else
+                {
+                    globalSettings.bAirOperatePermission = FALSE;
+                }
+            }
+            else if(_stricmp(paramName, "AirOperateMode") == 0)
+            {
+                if (paramValue && _stricmp(paramValue, "Double_Click") == 0)
+                {
+                    globalSettings.eClickMode = E_MODE_DOUBLE_CLICK;
+                }
+                else
+                {
+                    globalSettings.eClickMode = E_MODE_CLICK;
+                }
+            }
+            else
+            {
 
-			}
+            }
 
         }//if
         else if(_stricmp(lpszElementName, "CMOS_CHIP") == 0)
@@ -849,21 +849,21 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pElement->SetAttribute("value",CT2A(globalSettings.langCode));
     pNode->LinkEndChild(pElement);
 
-	//投影模式
-	pXmlComment = new TiXmlComment("投影模式");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "ProjectionMode");
-	switch (globalSettings.eProjectionMode)
-	{
-	    case E_PROJECTION_DESKTOP:
-			pElement->SetAttribute("value", "Desktop");
-			break;
-		case E_PROJECTION_WALL:
-			pElement->SetAttribute("value", "Wall");
-			break;
-	}
-	pNode->LinkEndChild(pElement);
+    //投影模式
+    pXmlComment = new TiXmlComment("投影模式");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ProjectionMode");
+    switch (globalSettings.eProjectionMode)
+    {
+        case E_PROJECTION_DESKTOP:
+            pElement->SetAttribute("value", "Desktop");
+            break;
+        case E_PROJECTION_WALL:
+            pElement->SetAttribute("value", "Wall");
+            break;
+    }
+    pNode->LinkEndChild(pElement);
 
     //调试模式
     pXmlComment = new TiXmlComment("调试模式(Yes/No)");
@@ -903,23 +903,23 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pElement->SetAttribute("value", int(globalSettings.eLensMode));
     pNode->LinkEndChild(pElement);
 
-	//TUIO触控的方式
-	pXmlComment = new TiXmlComment("是否打开TUIO触控方式");
-	pNode->LinkEndChild(pXmlComment);
+    //TUIO触控的方式
+    pXmlComment = new TiXmlComment("是否打开TUIO触控方式");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "TouchTUIOMode");
-	pElement->SetAttribute("value", globalSettings.bTouchTUIOMode? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "TouchTUIOMode");
+    pElement->SetAttribute("value", globalSettings.bTouchTUIOMode? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	//HID触控的方式
-	pXmlComment = new TiXmlComment("是否打开HID触控方式");
-	pNode->LinkEndChild(pXmlComment);
+    //HID触控的方式
+    pXmlComment = new TiXmlComment("是否打开HID触控方式");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "TouchHIDMode");
-	pElement->SetAttribute("value", globalSettings.bTouchHIDMode ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "TouchHIDMode");
+    pElement->SetAttribute("value", globalSettings.bTouchHIDMode ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
 
     //HID工作模式
@@ -932,17 +932,17 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pNode->LinkEndChild(pElement);
 
 
-	//在线注册使能标志
+    //在线注册使能标志
     pXmlComment = new TiXmlComment("使能在线注册功能(Yes/No)");
     pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
+    pElement = new TiXmlElement("Param");
     pElement->SetAttribute("name", "EnableOnlineRegister");
-	pElement->SetAttribute("value", globalSettings.bEnableOnlineRegister?"Yes":"No");
+    pElement->SetAttribute("value", globalSettings.bEnableOnlineRegister?"Yes":"No");
     pNode->LinkEndChild(pElement);
 
-	//触屏宽高比
-	pXmlComment = new TiXmlComment("触屏宽高比:Auto, 16:9, 16:10, 4:3");
+    //触屏宽高比
+    pXmlComment = new TiXmlComment("触屏宽高比:Auto, 16:9, 16:10, 4:3");
     pNode->LinkEndChild(pXmlComment);
 
     pElement = new TiXmlElement("Param");
@@ -954,16 +954,16 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
         break;
 
     case E_TOUCH_SCREEN_ASPECT_RATIO_16_9:
-		pElement->SetAttribute("value", "16:9");
+        pElement->SetAttribute("value", "16:9");
         break;
 
-	case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
-		pElement->SetAttribute("value", "16:10");
-		break;
+    case E_TOUCH_SCREEN_ASPECT_RATIO_16_10:
+        pElement->SetAttribute("value", "16:10");
+        break;
 
-	case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
-		pElement->SetAttribute("value", "4:3");
-		break;
+    case E_TOUCH_SCREEN_ASPECT_RATIO_4_3:
+        pElement->SetAttribute("value", "4:3");
+        break;
 
     }//switch
 
@@ -979,14 +979,14 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pNode->LinkEndChild(pElement);
 
 
-	//是否双屏融合
-	pXmlComment = new TiXmlComment("是否双屏融合");
-	pNode->LinkEndChild(pXmlComment);
+    //是否双屏融合
+    pXmlComment = new TiXmlComment("是否双屏融合");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "DoubleScreenTouchMerge");
-	pElement->SetAttribute("value", globalSettings.bDoubleScreenTouchMerge ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "DoubleScreenTouchMerge");
+    pElement->SetAttribute("value", globalSettings.bDoubleScreenTouchMerge ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
     //触摸屏的物理尺寸
     pXmlComment = new TiXmlComment("触摸屏对角线的物理尺寸,单位:英寸");
@@ -1000,23 +1000,23 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pElement->SetAttribute("value",szValue);
     pNode->LinkEndChild(pElement);
 
-	//程序启动时,搜索设备时最大允许花费的时间
-	pXmlComment = new TiXmlComment("程序启动时,搜索设备时最大允许花费的时间, 单位:毫秒");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "MaxTimeInSearchDevice");
-	pElement->SetAttribute("value",globalSettings.nMaxTimeInSearchDevice);
-	pNode->LinkEndChild(pElement);
+    //程序启动时,搜索设备时最大允许花费的时间
+    pXmlComment = new TiXmlComment("程序启动时,搜索设备时最大允许花费的时间, 单位:毫秒");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "MaxTimeInSearchDevice");
+    pElement->SetAttribute("value",globalSettings.nMaxTimeInSearchDevice);
+    pNode->LinkEndChild(pElement);
 
 
-	//是否开启单点响应功能
-	pXmlComment = new TiXmlComment("是否开启单点模式");
-	pNode->LinkEndChild(pXmlComment);
+    //是否开启单点响应功能
+    pXmlComment = new TiXmlComment("是否开启单点模式");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "SinglePointMode");
-	pElement->SetAttribute("value", globalSettings.bSinglePointMode ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "SinglePointMode");
+    pElement->SetAttribute("value", globalSettings.bSinglePointMode ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
     //CMOS芯片信息
     pXmlComment = new TiXmlComment("CMOS芯片信息");
@@ -1055,32 +1055,32 @@ BOOL SaveConfig(TiXmlNode *pNode, const GlobalSettings& globalSettings)
     pElement->SetAttribute("value", globalSettings.bEnable4PointsCalibrate ? "Yes" : "No");
     pNode->LinkEndChild(pElement);
 
-	//是否能修改分辨率
-	pXmlComment = new TiXmlComment("是否可以修改分辨率");
-	pNode->LinkEndChild(pXmlComment);
+    //是否能修改分辨率
+    pXmlComment = new TiXmlComment("是否可以修改分辨率");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "ModifyResolution");
-	pElement->SetAttribute("value", globalSettings.bModifyResolution ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "ModifyResolution");
+    pElement->SetAttribute("value", globalSettings.bModifyResolution ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	///是否启用隔空操作设置
-	pXmlComment = new TiXmlComment("是否启用隔空操作设置");
-	pNode->LinkEndChild(pXmlComment);
+    ///是否启用隔空操作设置
+    pXmlComment = new TiXmlComment("是否启用隔空操作设置");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "AirOperatePermission");
-	pElement->SetAttribute("value", globalSettings.bAirOperatePermission? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "AirOperatePermission");
+    pElement->SetAttribute("value", globalSettings.bAirOperatePermission? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	//如果选择隔空操作的话，那么光斑消失后选择时单击还是双击
-	pXmlComment = new TiXmlComment("启用隔空操作后选择的点击方式");
-	pNode->LinkEndChild(pXmlComment);
+    //如果选择隔空操作的话，那么光斑消失后选择时单击还是双击
+    pXmlComment = new TiXmlComment("启用隔空操作后选择的点击方式");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "AirOperateMode");
-	pElement->SetAttribute("value", globalSettings.eClickMode == E_MODE_CLICK ? "Click" : "Double_Click");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "AirOperateMode");
+    pElement->SetAttribute("value", globalSettings.eClickMode == E_MODE_CLICK ? "Click" : "Double_Click");
+    pNode->LinkEndChild(pElement);
 
     //圆形校正，x坐标缩放百分比例50~100
     pXmlComment = new TiXmlComment("圆形校正时，x坐标缩小到的百分比例50~100, 100为保持原尺寸");
@@ -1129,11 +1129,11 @@ BOOL LoadConfig(TiXmlNode *pNode, NormalUsageSettings& normalUsageSettings)
 
                 if(paramDefault) normalUsageSettings.cYThresholdDefault = atoi(paramDefault);
             }
-			else if (paramName && paramValue && _stricmp(paramName, "DynmicMaskThresholdPercentage") == 0)
-			{//自动屏蔽门限占光斑触发门限的百分比
-				normalUsageSettings.nDynamicMaskThresholdPercentage = atoi(paramValue);
-				if(paramDefault) normalUsageSettings.nDynamicMaskThresholdPercentageDefault = atoi(paramDefault);
-			}
+            else if (paramName && paramValue && _stricmp(paramName, "DynmicMaskThresholdPercentage") == 0)
+            {//自动屏蔽门限占光斑触发门限的百分比
+                normalUsageSettings.nDynamicMaskThresholdPercentage = atoi(paramValue);
+                if(paramDefault) normalUsageSettings.nDynamicMaskThresholdPercentageDefault = atoi(paramDefault);
+            }
             else if(paramName && paramValue && _stricmp(paramName, "LightSpotMinimumWidth") == 0)
             {//最小光斑的宽度
                 normalUsageSettings.nLightSpotMinimumWidth = atoi(paramValue);
@@ -1174,15 +1174,15 @@ BOOL SaveConfig(TiXmlNode *pNode, const NormalUsageSettings& normalUsageSettings
     pNode->LinkEndChild(pElement);
 
 
-	//自动屏蔽门限占光斑触发门限的百分比
-	pXmlComment = new TiXmlComment("自动屏蔽门限占光斑触发门限的百分比(50~100)");
-	pNode->LinkEndChild(pXmlComment);
+    //自动屏蔽门限占光斑触发门限的百分比
+    pXmlComment = new TiXmlComment("自动屏蔽门限占光斑触发门限的百分比(50~100)");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "DynmicMaskThresholdPercentage");
-	pElement->SetAttribute("value", normalUsageSettings.nDynamicMaskThresholdPercentage);
-	pElement->SetAttribute("default", normalUsageSettings.nDynamicMaskThresholdPercentageDefault);
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "DynmicMaskThresholdPercentage");
+    pElement->SetAttribute("value", normalUsageSettings.nDynamicMaskThresholdPercentage);
+    pElement->SetAttribute("default", normalUsageSettings.nDynamicMaskThresholdPercentageDefault);
+    pNode->LinkEndChild(pElement);
 
     //最小光斑的宽度
     pXmlComment = new TiXmlComment("最小光斑的宽度");
@@ -1361,7 +1361,7 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateImageParams& imageParams, AutoCa
             }
             else if (paramName && paramValue && _stricmp(paramName, "VideoDisplayDelay") == 0)
             {
-				//视频显示延迟, 范围(0~200ms)
+                //视频显示延迟, 范围(0~200ms)
                 int nVideoDisplayDelay = atoi(paramValue);
                 if (nVideoDisplayDelay < 0 ) nVideoDisplayDelay = 0;
                 if (nVideoDisplayDelay > 200) nVideoDisplayDelay = 200;
@@ -1496,13 +1496,13 @@ BOOL LoadConfig(TiXmlNode * pNode, AutoCalibrateSettings& autoCalibrateSettings)
 
         if(_stricmp(lpszElementName, "ImageParams") == 0)
         {
-			//载入自动校正时的画面参数
-			LoadConfig(pChild, autoCalibrateSettings.calibrateImageParams, autoCalibrateSettings.defaultCalibrateImageParams);
+            //载入自动校正时的画面参数
+            LoadConfig(pChild, autoCalibrateSettings.calibrateImageParams, autoCalibrateSettings.defaultCalibrateImageParams);
         }
-		else if(_stricmp(lpszElementName, "CameraParams") == 0)
-		{
-			LoadConfig(pChild, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
-		}
+        else if(_stricmp(lpszElementName, "CameraParams") == 0)
+        {
+            LoadConfig(pChild, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
+        }
 
     }while(pChild);
 
@@ -1526,13 +1526,13 @@ BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateSettings& autoCalibrateSett
       SaveConfig(pElement, autoCalibrateSettings.calibrateImageParams, autoCalibrateSettings.defaultCalibrateImageParams);
       pNode->LinkEndChild(pElement);
 
-	  sprintf_s(text, _countof(text), "第(%d)组自动校正参数", nIndex);
-	  pXmlComment = new TiXmlComment(text);
-	  pNode->LinkEndChild(pXmlComment);
+      sprintf_s(text, _countof(text), "第(%d)组自动校正参数", nIndex);
+      pXmlComment = new TiXmlComment(text);
+      pNode->LinkEndChild(pXmlComment);
 
-	  pElement = new TiXmlElement("CameraParams");
-	  SaveConfig(pElement, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
-	  pNode->LinkEndChild(pElement);
+      pElement = new TiXmlElement("CameraParams");
+      SaveConfig(pElement, autoCalibrateSettings.cameraParams, autoCalibrateSettings.defaultParams);
+      pNode->LinkEndChild(pElement);
 
     return TRUE;
 }
@@ -1545,8 +1545,8 @@ BOOL LoadConfig(TiXmlNode *pNode, AutoCalibrateSettingsList& autoCalibrateSettin
     if(pNode == NULL) return FALSE;
     TiXmlNode* pChild = NULL;
 
-	AutoCalibrateSettings autocalibrateSettings;
-	autoCalibrateSettingslist.clear();
+    AutoCalibrateSettings autocalibrateSettings;
+    autoCalibrateSettingslist.clear();
     do
     {
         pChild = pNode->IterateChildren(pChild);
@@ -1555,12 +1555,12 @@ BOOL LoadConfig(TiXmlNode *pNode, AutoCalibrateSettingsList& autoCalibrateSettin
 
         if(_stricmp(lpszElementName, "AutoCalibrateParams") == 0)
         {  
-			//载入自动校正时的画面参数
+            //载入自动校正时的画面参数
 
-			if (LoadConfig(pChild, autocalibrateSettings))
-			{
-				autoCalibrateSettingslist.push_back(autocalibrateSettings);
-			}
+            if (LoadConfig(pChild, autocalibrateSettings))
+            {
+                autoCalibrateSettingslist.push_back(autocalibrateSettings);
+            }
         }
       
     }while(pChild);
@@ -1575,19 +1575,19 @@ BOOL LoadConfig(TiXmlNode *pNode, AutoCalibrateSettingsList& autoCalibrateSettin
 //      autoCalibrateSettings, 输入参数, 自动校正配置信息
 BOOL SaveConfig(TiXmlNode *pNode, const AutoCalibrateSettingsList& autoCalibrateSettingslist)
 {
-	int nCount = autoCalibrateSettingslist.size();
+    int nCount = autoCalibrateSettingslist.size();
 
-	for(int i = 0 ;i < nCount ; i++ )
-	{
-		char text[1024];
-		sprintf_s(text, _countof(text), "第(%d)组自动校正参数", i + 1);
-		TiXmlComment* pXmlComment = new TiXmlComment(text);
-		pNode->LinkEndChild(pXmlComment);
+    for(int i = 0 ;i < nCount ; i++ )
+    {
+        char text[1024];
+        sprintf_s(text, _countof(text), "第(%d)组自动校正参数", i + 1);
+        TiXmlComment* pXmlComment = new TiXmlComment(text);
+        pNode->LinkEndChild(pXmlComment);
 
-		TiXmlElement* pElement = new TiXmlElement("AutoCalibrateParams");
-		SaveConfig(pElement, autoCalibrateSettingslist[i],i+1);
-		pNode->LinkEndChild(pElement);
-	}
+        TiXmlElement* pElement = new TiXmlElement("AutoCalibrateParams");
+        SaveConfig(pElement, autoCalibrateSettingslist[i],i+1);
+        pNode->LinkEndChild(pElement);
+    }
     return TRUE;
 }
 
@@ -1918,42 +1918,42 @@ BOOL LoadConfig(TiXmlNode *pNode, TAdvancedSettings& advanceSettings)
 BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
 {
 
-	//设备触控类型
-	TiXmlComment* pXmlComment = new TiXmlComment("设备触控类型(\"Finger_Touch_WhiteBoard\":手触控电子白板; \"Pen_Touch_WhiteBoard\":笔触控电子白板; \"Finger_Touch_Control\":手指触控;\"Palm_Touch_Control\":手掌互动;");
-	pNode->LinkEndChild(pXmlComment);
+    //设备触控类型
+    TiXmlComment* pXmlComment = new TiXmlComment("设备触控类型(\"Finger_Touch_WhiteBoard\":手触控电子白板; \"Pen_Touch_WhiteBoard\":笔触控电子白板; \"Finger_Touch_Control\":手指触控;\"Palm_Touch_Control\":手掌互动;");
+    pNode->LinkEndChild(pXmlComment);
 
-	TiXmlElement * pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "DeviceTouchType");
-	switch (advanceSettings.m_eTouchType)
-	{
-	   case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
-		    pElement->SetAttribute("value", "Finger_Touch_WhiteBoard");
-		    break;
+    TiXmlElement * pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "DeviceTouchType");
+    switch (advanceSettings.m_eTouchType)
+    {
+       case E_DEVICE_FINGER_TOUCH_WHITEBOARD:
+            pElement->SetAttribute("value", "Finger_Touch_WhiteBoard");
+            break;
 
-	   case E_DEVICE_PEN_TOUCH_WHITEBOARD:
-		   pElement->SetAttribute("value", "Pen_Touch_WhiteBoard");
-		   break;
-	   case E_DEVICE_FINGER_TOUCH_CONTROL:
-		   pElement->SetAttribute("value", "Finger_Touch_Control");
-		   break;
-	   case E_DEVICE_PALM_TOUCH_CONTROL:
-		   pElement->SetAttribute("value", "Palm_Touch_Control");
-		   break;
-	   default:
-		   break;
+       case E_DEVICE_PEN_TOUCH_WHITEBOARD:
+           pElement->SetAttribute("value", "Pen_Touch_WhiteBoard");
+           break;
+       case E_DEVICE_FINGER_TOUCH_CONTROL:
+           pElement->SetAttribute("value", "Finger_Touch_Control");
+           break;
+       case E_DEVICE_PALM_TOUCH_CONTROL:
+           pElement->SetAttribute("value", "Palm_Touch_Control");
+           break;
+       default:
+           break;
 
-	}//switch
+    }//switch
 
-	pNode->LinkEndChild(pElement);
+    pNode->LinkEndChild(pElement);
 
-	//是否是背投设备
-	pXmlComment = new TiXmlComment("是否是背投设备");
-	pNode->LinkEndChild(pXmlComment);
+    //是否是背投设备
+    pXmlComment = new TiXmlComment("是否是背投设备");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "RearProjectionDevice");
-	pElement->SetAttribute("value", advanceSettings.bIsRearProjection ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "RearProjectionDevice");
+    pElement->SetAttribute("value", advanceSettings.bIsRearProjection ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
     //干扰光斑屏蔽区膨胀半径
     pXmlComment = new TiXmlComment("干扰光斑屏蔽区膨胀半径");
@@ -1991,58 +1991,58 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAdvancedSettings& advanceSettings)
     pElement->SetAttribute("value", advanceSettings.nFixedBlobSetTime);
     pNode->LinkEndChild(pElement);
 
-	//使能笔迹插值
-	pXmlComment = new TiXmlComment("使能笔迹插值(Yes/No)");
-	pNode->LinkEndChild(pXmlComment);
+    //使能笔迹插值
+    pXmlComment = new TiXmlComment("使能笔迹插值(Yes/No)");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "EnableStrokeInterpolate");
-	pElement->SetAttribute("value", advanceSettings.bEnableStrokeInterpolate ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "EnableStrokeInterpolate");
+    pElement->SetAttribute("value", advanceSettings.bEnableStrokeInterpolate ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	//是否打开动态屏蔽功能
-	pXmlComment = new TiXmlComment("是否打开动态屏蔽功能");
-	pNode->LinkEndChild(pXmlComment);
+    //是否打开动态屏蔽功能
+    pXmlComment = new TiXmlComment("是否打开动态屏蔽功能");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "DynamicMaskFrame");
-	pElement->SetAttribute("value", advanceSettings.bIsDynamicMaskFrame ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "DynamicMaskFrame");
+    pElement->SetAttribute("value", advanceSettings.bIsDynamicMaskFrame ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	//是否打开抗干扰功能
-	pXmlComment = new TiXmlComment("是否打开抗干扰功能");
-	pNode->LinkEndChild(pXmlComment);
+    //是否打开抗干扰功能
+    pXmlComment = new TiXmlComment("是否打开抗干扰功能");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "AntiJamming");
-	pElement->SetAttribute("value", advanceSettings.bIsAntiJamming ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "AntiJamming");
+    pElement->SetAttribute("value", advanceSettings.bIsAntiJamming ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	///是否启用手动绘制的静态屏蔽图
-	pXmlComment = new TiXmlComment("是否启用手动绘制屏幕区域");
-	pNode->LinkEndChild(pXmlComment);
+    ///是否启用手动绘制的静态屏蔽图
+    pXmlComment = new TiXmlComment("是否启用手动绘制屏幕区域");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "OnLineScreenArea");
-	pElement->SetAttribute("value", advanceSettings.bIsOnLineScreenArea ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "OnLineScreenArea");
+    pElement->SetAttribute("value", advanceSettings.bIsOnLineScreenArea ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	//是否去掉反射点响应功能
-	pXmlComment = new TiXmlComment("是否去掉反射点响应功能");
-	pNode->LinkEndChild(pXmlComment);
+    //是否去掉反射点响应功能
+    pXmlComment = new TiXmlComment("是否去掉反射点响应功能");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "DisableReflectionSpot");
-	pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "DisableReflectionSpot");
+    pElement->SetAttribute("value", advanceSettings.bDisableReflectionSpot ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
-	pXmlComment = new TiXmlComment("设置平滑系数");
-	pNode->LinkEndChild(pXmlComment);
+    pXmlComment = new TiXmlComment("设置平滑系数");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "SetSmoothCoefficient");
-	pElement->SetAttribute("value", advanceSettings.nSmoothCoefficient);
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "SetSmoothCoefficient");
+    pElement->SetAttribute("value", advanceSettings.nSmoothCoefficient);
+    pNode->LinkEndChild(pElement);
 
 
     //使能屏幕物理尺寸标志，在屏幕内容拉伸严重时使用
@@ -2317,27 +2317,27 @@ BOOL LoadConfig(TiXmlNode *pNode, TCalibParams& calibParams )
 
                 }
             
-				else if (_stricmp(paramName, "UsingScreenPhysicalDimensions") == 0)
-				{
-					if (paramValue && _stricmp(paramValue, "Yes") == 0)
-					{
-						calibParams.bUsingScreenPhysicalDimensions = TRUE;
-					}
-					else
-					{
-						calibParams.bUsingScreenPhysicalDimensions = FALSE;
-					}
+                else if (_stricmp(paramName, "UsingScreenPhysicalDimensions") == 0)
+                {
+                    if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                    {
+                        calibParams.bUsingScreenPhysicalDimensions = TRUE;
+                    }
+                    else
+                    {
+                        calibParams.bUsingScreenPhysicalDimensions = FALSE;
+                    }
 
-				}
-				else if (_stricmp(paramName, "ScreenPhysicalWidth") == 0)
-				{
-					calibParams.nScreenWidthInmm = atoi(paramValue);
-				}
-				else if (_stricmp(paramName, "ScreenPhysicalHeight") == 0)
-				{
-					calibParams.nScreenHeightInmm = atoi(paramValue);
-				}
-			}
+                }
+                else if (_stricmp(paramName, "ScreenPhysicalWidth") == 0)
+                {
+                    calibParams.nScreenWidthInmm = atoi(paramValue);
+                }
+                else if (_stricmp(paramName, "ScreenPhysicalHeight") == 0)
+                {
+                    calibParams.nScreenHeightInmm = atoi(paramValue);
+                }
+            }
         }
         else if(_stricmp(lpszElementName, "AllMonitorCalibCoefficients") == 0)
         {
@@ -2583,11 +2583,11 @@ BOOL LoadConfig(TiXmlNode *pNode, TAutoCalibCompCoefs &autoCalibCompCoefs)
             const char* paramValue   = ((TiXmlElement*)pChild)->Attribute("value");
            if(_stricmp(paramName, "CompensateCoefficient") == 0)
            {
-			   if(nCoefficientCount < _countof(autoCalibCompCoefs.k))
-			   {
-				 autoCalibCompCoefs.k[nCoefficientCount] = atof(paramValue);
-				 nCoefficientCount ++;
-			   }
+               if(nCoefficientCount < _countof(autoCalibCompCoefs.k))
+               {
+                 autoCalibCompCoefs.k[nCoefficientCount] = atof(paramValue);
+                 nCoefficientCount ++;
+               }
 
            }
            else if( _stricmp(paramName, "u0") == 0 )
@@ -2659,65 +2659,65 @@ BOOL SaveConfig(TiXmlNode *pNode, const TAutoCalibCompCoefs &autoCalibCompCoefs)
 //      autoCalibCompCoefs, 相机镜头的内部参数和对称畸变参数
 BOOL LoadConfig(TiXmlNode *pNode, TInternalAndSymmetricDistortParams& internalAndSymmetricDistortParams)
 {
-	TiXmlNode* pChild = NULL;
+    TiXmlNode* pChild = NULL;
 
-	int nCoefficientCount = 0;
-	do
-	{
-		pChild = pNode->IterateChildren(pChild);
+    int nCoefficientCount = 0;
+    do
+    {
+        pChild = pNode->IterateChildren(pChild);
 
-		if (NULL == pChild) break;
+        if (NULL == pChild) break;
 
-		const char* lpszElementName = pChild->Value();
+        const char* lpszElementName = pChild->Value();
 
 
-		if (_stricmp(lpszElementName, "Param") == 0)
-		{
-			const char* paramName = ((TiXmlElement*)pChild)->Attribute("name");
-			const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
-			if (paramName && paramValue && _stricmp(paramName, "mu") == 0)
-			{
-				internalAndSymmetricDistortParams.mu = atof(paramValue);
+        if (_stricmp(lpszElementName, "Param") == 0)
+        {
+            const char* paramName = ((TiXmlElement*)pChild)->Attribute("name");
+            const char* paramValue = ((TiXmlElement*)pChild)->Attribute("value");
+            if (paramName && paramValue && _stricmp(paramName, "mu") == 0)
+            {
+                internalAndSymmetricDistortParams.mu = atof(paramValue);
 
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "mv") == 0)
-			{
-				internalAndSymmetricDistortParams.mv = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "u0") == 0)
-			{
-				internalAndSymmetricDistortParams.u0 = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "v0") == 0)
-			{
-				internalAndSymmetricDistortParams.v0 = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "k1") == 0)
-			{
-				internalAndSymmetricDistortParams.radialDistrt[0] = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "k2") == 0)
-			{
-				internalAndSymmetricDistortParams.radialDistrt[1] = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "k3") == 0)
-			{
-				internalAndSymmetricDistortParams.radialDistrt[2] = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "k4") == 0)
-			{
-				internalAndSymmetricDistortParams.radialDistrt[3] = atof(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "k5") == 0)
-			{
-				internalAndSymmetricDistortParams.radialDistrt[4] = atof(paramValue);
-			}
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "mv") == 0)
+            {
+                internalAndSymmetricDistortParams.mv = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "u0") == 0)
+            {
+                internalAndSymmetricDistortParams.u0 = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "v0") == 0)
+            {
+                internalAndSymmetricDistortParams.v0 = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "k1") == 0)
+            {
+                internalAndSymmetricDistortParams.radialDistrt[0] = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "k2") == 0)
+            {
+                internalAndSymmetricDistortParams.radialDistrt[1] = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "k3") == 0)
+            {
+                internalAndSymmetricDistortParams.radialDistrt[2] = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "k4") == 0)
+            {
+                internalAndSymmetricDistortParams.radialDistrt[3] = atof(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "k5") == 0)
+            {
+                internalAndSymmetricDistortParams.radialDistrt[4] = atof(paramValue);
+            }
 
-		}
+        }
 
-	} while (pChild);
+    } while (pChild);
 
-	return TRUE;
+    return TRUE;
 }
 
 
@@ -2727,94 +2727,94 @@ BOOL LoadConfig(TiXmlNode *pNode, TInternalAndSymmetricDistortParams& internalAn
 //      internalAndSymmetricDistortParams, 相机镜头的内部参数和对称畸变参数
 BOOL SaveConfig(TiXmlNode *pNode, const TInternalAndSymmetricDistortParams &internalAndSymmetricDistortParams)
 {
-	TiXmlElement * pElement = NULL;
-	TiXmlComment* pXmlComment = NULL;
-	char szText[1024];
-	//mu
-	pXmlComment = new TiXmlComment("相机内部参数mu");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "mu");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.mu);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
+    TiXmlElement * pElement = NULL;
+    TiXmlComment* pXmlComment = NULL;
+    char szText[1024];
+    //mu
+    pXmlComment = new TiXmlComment("相机内部参数mu");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "mu");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.mu);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
 
-	
-	//mv
-	pXmlComment = new TiXmlComment("相机内部参数mv");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "mv");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.mv);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-
-	//u0
-	pXmlComment = new TiXmlComment("相机内部参数u0");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "u0");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.u0);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-	//v0
-	pXmlComment = new TiXmlComment("相机内部参数v0");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "v0");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.v0);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-	//k1
-	pXmlComment = new TiXmlComment("镜头对称畸变参数k1");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "k1");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[0]);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-	//k2
-	pXmlComment = new TiXmlComment("镜头对称畸变参数k2");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "k2");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[1]);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-	//k3
-	pXmlComment = new TiXmlComment("镜头对称畸变参数k3");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "k3");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[2]);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-	//k4
-	pXmlComment = new TiXmlComment("镜头对称畸变参数k4");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "k4");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[3]);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
-
-	//k5
-	pXmlComment = new TiXmlComment("镜头对称畸变参数k5");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "k5");
-	sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[4]);
-	pElement->SetAttribute("value", szText);
-	pNode->LinkEndChild(pElement);
+    
+    //mv
+    pXmlComment = new TiXmlComment("相机内部参数mv");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "mv");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.mv);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
 
 
-	return TRUE;
+    //u0
+    pXmlComment = new TiXmlComment("相机内部参数u0");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "u0");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.u0);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+    //v0
+    pXmlComment = new TiXmlComment("相机内部参数v0");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "v0");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.v0);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+    //k1
+    pXmlComment = new TiXmlComment("镜头对称畸变参数k1");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "k1");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[0]);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+    //k2
+    pXmlComment = new TiXmlComment("镜头对称畸变参数k2");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "k2");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[1]);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+    //k3
+    pXmlComment = new TiXmlComment("镜头对称畸变参数k3");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "k3");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[2]);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+    //k4
+    pXmlComment = new TiXmlComment("镜头对称畸变参数k4");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "k4");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[3]);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+    //k5
+    pXmlComment = new TiXmlComment("镜头对称畸变参数k5");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "k5");
+    sprintf_s(szText, _countof(szText), "%.20e", internalAndSymmetricDistortParams.radialDistrt[4]);
+    pElement->SetAttribute("value", szText);
+    pNode->LinkEndChild(pElement);
+
+
+    return TRUE;
 }
 
 
@@ -2827,7 +2827,7 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
     if(pNode == NULL) return FALSE;
     TiXmlNode* pChild=NULL;
 
-	//lensConfig.bInternalAndSymmetricDistortParamsIsValid = FALSE;
+    //lensConfig.bInternalAndSymmetricDistortParamsIsValid = FALSE;
     do
     {
         pChild = pNode->IterateChildren(pChild);
@@ -2845,14 +2845,14 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
         {//笔触正常使用模式参数
             LoadConfig(pChild, lensConfig.normalUsageSettings_PenTouchWhiteBoard);
         }
-		else if (_stricmp(lpszElementName, "NormalUsage-FingerTouchControl") == 0)
-		{
-			LoadConfig(pChild,lensConfig.normalUsageSettings_FingerTouchControl);
-		}
-		else if (_stricmp(lpszElementName, "NormalUsage-PalmTouchControl") == 0)
-		{
-			LoadConfig(pChild, lensConfig.normalUsageSettings_PalmTouchControl);
-		}
+        else if (_stricmp(lpszElementName, "NormalUsage-FingerTouchControl") == 0)
+        {
+            LoadConfig(pChild,lensConfig.normalUsageSettings_FingerTouchControl);
+        }
+        else if (_stricmp(lpszElementName, "NormalUsage-PalmTouchControl") == 0)
+        {
+            LoadConfig(pChild, lensConfig.normalUsageSettings_PalmTouchControl);
+        }
         else if(_stricmp(lpszElementName, "InstallTunning") == 0)
         {//安装调试时的参数
             LoadConfig(pChild, lensConfig.installTunningSettings);
@@ -2861,14 +2861,14 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
         {  //电子白板激光器调试模式参数
             LoadConfig(pChild, lensConfig.laserTunningSettings_WhiteBoard);
         }
-		else if(_stricmp(lpszElementName, "LaserTunning-FingerTouchControl") == 0)
-		{  //手指触控激光器调试模式参数
-			LoadConfig(pChild, lensConfig.laserTunningSettings_FingerTouchControl);
-		}
-		else if(_stricmp(lpszElementName, "LaserTunning-PalmTouchControl") == 0)
-		{	//手掌互动激光器调试模式参数
-			LoadConfig(pChild, lensConfig.laserTunningSettings_PalmTouchControl);
-		}
+        else if(_stricmp(lpszElementName, "LaserTunning-FingerTouchControl") == 0)
+        {  //手指触控激光器调试模式参数
+            LoadConfig(pChild, lensConfig.laserTunningSettings_FingerTouchControl);
+        }
+        else if(_stricmp(lpszElementName, "LaserTunning-PalmTouchControl") == 0)
+        {	//手掌互动激光器调试模式参数
+            LoadConfig(pChild, lensConfig.laserTunningSettings_PalmTouchControl);
+        }
         else if(_stricmp(lpszElementName, "AutoCalibrateParamsList") == 0)
         {//自动校正参数
             LoadConfig(pChild, lensConfig.autoCalibrateSettingsList);
@@ -2885,72 +2885,72 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
         {//自动校正补偿参数
             LoadConfig(pChild, lensConfig.autoCalibCompCoefs);
         }
-		else if(_stricmp(lpszElementName, "LensInternalAndSymmetricDistortionParams") == 0)
-		{	//相机镜头的内部参数和对称畸变参数
-			LoadConfig(pChild, lensConfig.lensInternalAndSymmetricDistortParams);
-			lensConfig.bInternalAndSymmetricDistortParamsIsValid = TRUE;
-		}
-		else if (_stricmp(lpszElementName, "Param") == 0)
-		{
-			const char* paramName = ((TiXmlElement*)pChild)->Attribute("name");
+        else if(_stricmp(lpszElementName, "LensInternalAndSymmetricDistortionParams") == 0)
+        {	//相机镜头的内部参数和对称畸变参数
+            LoadConfig(pChild, lensConfig.lensInternalAndSymmetricDistortParams);
+            lensConfig.bInternalAndSymmetricDistortParamsIsValid = TRUE;
+        }
+        else if (_stricmp(lpszElementName, "Param") == 0)
+        {
+            const char* paramName = ((TiXmlElement*)pChild)->Attribute("name");
 
-			if (_stricmp(paramName, "GuideBox") == 0)
-			{
-				const char* paramValue = ((TiXmlElement*)pChild)->Attribute("width");
-				if (paramValue)
-				{
-					lensConfig.Referwidth = atof(paramValue);
-				}
+            if (_stricmp(paramName, "GuideBox") == 0)
+            {
+                const char* paramValue = ((TiXmlElement*)pChild)->Attribute("width");
+                if (paramValue)
+                {
+                    lensConfig.Referwidth = atof(paramValue);
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("height");
-				if (paramValue)
-				{
-					lensConfig.ReferHeight = atof(paramValue);
-				}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("height");
+                if (paramValue)
+                {
+                    lensConfig.ReferHeight = atof(paramValue);
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("left");
-				if (paramValue)
-				{
-					lensConfig.rcGuideRectangle.left = atof(paramValue);
-				}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("left");
+                if (paramValue)
+                {
+                    lensConfig.rcGuideRectangle.left = atof(paramValue);
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("top");
-				if (paramValue)
-				{
-					lensConfig.rcGuideRectangle.top = atof(paramValue);
-				}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("top");
+                if (paramValue)
+                {
+                    lensConfig.rcGuideRectangle.top = atof(paramValue);
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("right");
-				if (paramValue)
-				{
-					lensConfig.rcGuideRectangle.right = atof(paramValue);
-				}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("right");
+                if (paramValue)
+                {
+                    lensConfig.rcGuideRectangle.right = atof(paramValue);
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("bottom");
-				if (paramValue)
-				{
-					lensConfig.rcGuideRectangle.bottom = atof(paramValue);
-				}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("bottom");
+                if (paramValue)
+                {
+                    lensConfig.rcGuideRectangle.bottom = atof(paramValue);
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("color");
-				if (paramValue)
-				{
-					DWORD dwColor = 0xFF0000;
-					sscanf_s(paramValue, "%x", &dwColor);
-					lensConfig.dwGuideRectangleColor = dwColor;
-				}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("color");
+                if (paramValue)
+                {
+                    DWORD dwColor = 0xFF0000;
+                    sscanf_s(paramValue, "%x", &dwColor);
+                    lensConfig.dwGuideRectangleColor = dwColor;
+                }
 
-				paramValue = ((TiXmlElement*)pChild)->Attribute("visible");
-				if (paramValue && _stricmp(paramValue, "Yes") == 0)
-				{
-					lensConfig.bRectangleVisible = TRUE;
-				}
-				else
-				{
-					lensConfig.bRectangleVisible = FALSE;
-				}
-			}
-		}
+                paramValue = ((TiXmlElement*)pChild)->Attribute("visible");
+                if (paramValue && _stricmp(paramValue, "Yes") == 0)
+                {
+                    lensConfig.bRectangleVisible = TRUE;
+                }
+                else
+                {
+                    lensConfig.bRectangleVisible = FALSE;
+                }
+            }
+        }
     }while(pChild); 
 
     return TRUE;
@@ -2959,27 +2959,27 @@ BOOL LoadConfig(TiXmlNode *pNode, TLensConfig& lensConfig)
 
 BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
 {
-	
-	//安装引导框位置
-	TiXmlComment* pXmlComment = new TiXmlComment("引导框的位置和颜色, value range: left=[0-1]; top=[0-1]; width=[0-1]; height=[0-1]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue");
-	pNode->LinkEndChild(pXmlComment);
+    
+    //安装引导框位置
+    TiXmlComment* pXmlComment = new TiXmlComment("引导框的位置和颜色, value range: left=[0-1]; top=[0-1]; width=[0-1]; height=[0-1]; color=[RRGGBB] RGB color value is defined in hexadecimal format, e.g: FF0000 is red,  00FF00 is green, 0000FF is blue");
+    pNode->LinkEndChild(pXmlComment);
 
-	TiXmlElement* pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "GuideBox");
-	pElement->SetDoubleAttribute("width", lensConfig.Referwidth);
-	pElement->SetDoubleAttribute("height", lensConfig.ReferHeight);
+    TiXmlElement* pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "GuideBox");
+    pElement->SetDoubleAttribute("width", lensConfig.Referwidth);
+    pElement->SetDoubleAttribute("height", lensConfig.ReferHeight);
 
-	pElement->SetDoubleAttribute("left", lensConfig.rcGuideRectangle.left);
-	pElement->SetDoubleAttribute("top", lensConfig.rcGuideRectangle.top);
-	pElement->SetDoubleAttribute("right",lensConfig.rcGuideRectangle.right);
-	pElement->SetDoubleAttribute("bottom", lensConfig.rcGuideRectangle.bottom);
+    pElement->SetDoubleAttribute("left", lensConfig.rcGuideRectangle.left);
+    pElement->SetDoubleAttribute("top", lensConfig.rcGuideRectangle.top);
+    pElement->SetDoubleAttribute("right",lensConfig.rcGuideRectangle.right);
+    pElement->SetDoubleAttribute("bottom", lensConfig.rcGuideRectangle.bottom);
 
-	char data[32];
-	sprintf_s(data, _countof(data), "%x", lensConfig.dwGuideRectangleColor);
-	pElement->SetAttribute("color", data);
+    char data[32];
+    sprintf_s(data, _countof(data), "%x", lensConfig.dwGuideRectangleColor);
+    pElement->SetAttribute("color", data);
 
-	pElement->SetAttribute("visible", lensConfig.bRectangleVisible ? "Yes" : "No");
-	pNode->LinkEndChild(pElement);
+    pElement->SetAttribute("visible", lensConfig.bRectangleVisible ? "Yes" : "No");
+    pNode->LinkEndChild(pElement);
 
 
     //手指触控电子白板模式下的正常使用参数
@@ -2999,19 +2999,19 @@ BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
     pNode->LinkEndChild(pElement);
     SaveConfig(pElement, lensConfig.normalUsageSettings_PenTouchWhiteBoard);
 
-	//手指触控模式下的正常使用参数
-	pXmlComment = new TiXmlComment("手指触控模式下的正常使用参数");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("NormalUsage-FingerTouchControl");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement,lensConfig.normalUsageSettings_FingerTouchControl);
+    //手指触控模式下的正常使用参数
+    pXmlComment = new TiXmlComment("手指触控模式下的正常使用参数");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("NormalUsage-FingerTouchControl");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement,lensConfig.normalUsageSettings_FingerTouchControl);
 
-	//手掌触控模式下的正常使用参数
-	pXmlComment = new TiXmlComment("手掌触控模式下的正常使用参数");
-	pNode->LinkEndChild(pXmlComment);
-	pElement = new TiXmlElement("NormalUsage-PalmTouchControl");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, lensConfig.normalUsageSettings_PalmTouchControl);
+    //手掌触控模式下的正常使用参数
+    pXmlComment = new TiXmlComment("手掌触控模式下的正常使用参数");
+    pNode->LinkEndChild(pXmlComment);
+    pElement = new TiXmlElement("NormalUsage-PalmTouchControl");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, lensConfig.normalUsageSettings_PalmTouchControl);
 
     //安装调试时的模式参数
     pXmlComment = new TiXmlComment("安装调试模式参数");
@@ -3030,21 +3030,21 @@ BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
     pNode->LinkEndChild(pElement);
     SaveConfig(pElement, lensConfig.laserTunningSettings_WhiteBoard);
 
-	//激光器调试模式参数
-	pXmlComment = new TiXmlComment("手指触控激光器调试模式参数");
-	pNode->LinkEndChild(pXmlComment);
+    //激光器调试模式参数
+    pXmlComment = new TiXmlComment("手指触控激光器调试模式参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("LaserTunning-FingerTouchControl");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, lensConfig.laserTunningSettings_FingerTouchControl);
+    pElement = new TiXmlElement("LaserTunning-FingerTouchControl");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, lensConfig.laserTunningSettings_FingerTouchControl);
 
-	//激光器调试模式参数
-	pXmlComment = new TiXmlComment("手掌触控激光器调试模式参数");
-	pNode->LinkEndChild(pXmlComment);
+    //激光器调试模式参数
+    pXmlComment = new TiXmlComment("手掌触控激光器调试模式参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("LaserTunning-PalmTouchControl");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, lensConfig.laserTunningSettings_PalmTouchControl);
+    pElement = new TiXmlElement("LaserTunning-PalmTouchControl");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, lensConfig.laserTunningSettings_PalmTouchControl);
 
 
     //自动校正参数
@@ -3081,16 +3081,16 @@ BOOL SaveConfig(TiXmlNode *pNode, const TLensConfig& lensConfig)
     SaveConfig(pElement, lensConfig.autoCalibCompCoefs);
 
 
-	//相机内部和对称畸变参数
-	if (lensConfig.bInternalAndSymmetricDistortParamsIsValid)
-	{
-		pXmlComment = new TiXmlComment("相机内部和对称畸变参数");
-		pNode->LinkEndChild(pXmlComment);
+    //相机内部和对称畸变参数
+    if (lensConfig.bInternalAndSymmetricDistortParamsIsValid)
+    {
+        pXmlComment = new TiXmlComment("相机内部和对称畸变参数");
+        pNode->LinkEndChild(pXmlComment);
 
-		pElement = new TiXmlElement("LensInternalAndSymmetricDistortionParams");
-		pNode->LinkEndChild(pElement);
-		SaveConfig(pElement, lensConfig.lensInternalAndSymmetricDistortParams);
-	}
+        pElement = new TiXmlElement("LensInternalAndSymmetricDistortionParams");
+        pNode->LinkEndChild(pElement);
+        SaveConfig(pElement, lensConfig.lensInternalAndSymmetricDistortParams);
+    }
     return TRUE;
 }
 
@@ -3185,16 +3185,16 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TLensConfig& lensConfig)
         int length = strlen(printer.CStr());
 
         char* utf_8_buf = (char*)malloc(length*4);
-		memset(utf_8_buf, 0, length*4);
+        memset(utf_8_buf, 0, length*4);
 
         //Unicode转为UTF8编码
         WideCharToMultiByte(
             CP_UTF8,
             0,
             CA2W(
-				printer.CStr(), 
-				936 //gb2312
-			),
+                printer.CStr(), 
+                936 //gb2312
+            ),
             length,
             utf_8_buf,
             length*4,
@@ -3220,21 +3220,21 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TLensConfig& lensConfig)
 
 BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId, ECameraType eCameraType, ELensType Lentype)
 {
-	//高级设置参数
-	TiXmlComment* pXmlComment = new TiXmlComment("高级设置参数");
-	pNode->LinkEndChild(pXmlComment);
+    //高级设置参数
+    TiXmlComment* pXmlComment = new TiXmlComment("高级设置参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	TiXmlElement * pElement = new TiXmlElement("AdvanceSettings");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, sensorModeCfg.advanceSettings);
+    TiXmlElement * pElement = new TiXmlElement("AdvanceSettings");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, sensorModeCfg.advanceSettings);
 
-	//手动校正参数
-	pXmlComment = new TiXmlComment("手动校正参数");
-	pNode->LinkEndChild(pXmlComment);
+    //手动校正参数
+    pXmlComment = new TiXmlComment("手动校正参数");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("ManualCalibrate");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, sensorModeCfg.manualCalibrateSetting);
+    pElement = new TiXmlElement("ManualCalibrate");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, sensorModeCfg.manualCalibrateSetting);
 
     //自动校正参数
     pXmlComment = new TiXmlComment("自动校正参数");
@@ -3249,31 +3249,31 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
     pXmlComment = new TiXmlComment("校正方程参数");
     pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("CalibateEquationParams");
-	pNode->LinkEndChild(pElement);
-	SaveConfig(pElement, sensorModeCfg.calibParam);
+    pElement = new TiXmlElement("CalibateEquationParams");
+    pNode->LinkEndChild(pElement);
+    SaveConfig(pElement, sensorModeCfg.calibParam);
 
-	//		//保存各种镜头的配置参数
-	TCHAR szPath[MAX_PATH];
-	_stprintf_s(
-		szPath,
-		_countof(szPath),
-		_T("%s\\Sensor%02d\\%s\\%s"),
-		(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-		nSensorId,
-		GetProjectModeString(EProjectionMode(nModeIndex)),
-		GetCameraTypeString(eCameraType));
+    //		//保存各种镜头的配置参数
+    TCHAR szPath[MAX_PATH];
+    _stprintf_s(
+        szPath,
+        _countof(szPath),
+        _T("%s\\Sensor%02d\\%s\\%s"),
+        (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+        nSensorId,
+        GetProjectModeString(EProjectionMode(nModeIndex)),
+        GetCameraTypeString(eCameraType));
 
-	//递归创建子目录
-	//CreateFullDirectory(CA2CT(szPath));
-	CreateFullDirectory(szPath);
+    //递归创建子目录
+    //CreateFullDirectory(CA2CT(szPath));
+    CreateFullDirectory(szPath);
 
-	//保存各种镜头的配置参数
-	TCHAR szPathRatio[MAX_PATH];
-	memset(szPathRatio, 0, sizeof(szPathRatio));
-	_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
+    //保存各种镜头的配置参数
+    TCHAR szPathRatio[MAX_PATH];
+    memset(szPathRatio, 0, sizeof(szPathRatio));
+    _stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[Lentype]);
 
-	SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
+    SaveConfig((szPathRatio), sensorModeCfg.lensConfigs[eCameraType][Lentype]);
 
     //调试信息
     //<<debug
@@ -3310,37 +3310,37 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorModeConfig & sensorModeCfg, int n
         }
     }
     //debug>>
-	return TRUE;
+    return TRUE;
 }
 
 
 BOOL LoadConfig(TiXmlNode *pNode, TSensorModeConfig & sensorModeCfg, int nModeIndex, int nSensorId)
 {
-	if (pNode == NULL) return FALSE;
-	TiXmlNode* pChild = NULL;
-	do
-	{
-		pChild = pNode->IterateChildren(pChild);
-		if (NULL == pChild)
-		{
-			break;
-		}
-		const char* lpszElementName = pChild->Value();
-		if (_stricmp(lpszElementName, "AdvanceSettings") == 0)
-		{	//高级设置参数
-			LoadConfig(pChild, sensorModeCfg.advanceSettings);
-		}
-		else if (_stricmp(lpszElementName, "ManualCalibrate") == 0)
-		{   //手动校正参数
-			LoadConfig(pChild, sensorModeCfg.manualCalibrateSetting);
-		}
-		else if (_stricmp(lpszElementName, "CalibateEquationParams") == 0)
-		{  //校正方程参数
-			LoadConfig(pChild, sensorModeCfg.calibParam);
-		}
-	} while(pChild);
+    if (pNode == NULL) return FALSE;
+    TiXmlNode* pChild = NULL;
+    do
+    {
+        pChild = pNode->IterateChildren(pChild);
+        if (NULL == pChild)
+        {
+            break;
+        }
+        const char* lpszElementName = pChild->Value();
+        if (_stricmp(lpszElementName, "AdvanceSettings") == 0)
+        {	//高级设置参数
+            LoadConfig(pChild, sensorModeCfg.advanceSettings);
+        }
+        else if (_stricmp(lpszElementName, "ManualCalibrate") == 0)
+        {   //手动校正参数
+            LoadConfig(pChild, sensorModeCfg.manualCalibrateSetting);
+        }
+        else if (_stricmp(lpszElementName, "CalibateEquationParams") == 0)
+        {  //校正方程参数
+            LoadConfig(pChild, sensorModeCfg.calibParam);
+        }
+    } while(pChild);
 
-	return TRUE;
+    return TRUE;
 }
 
 //@功能:载入一个图像传感器的信息
@@ -3399,50 +3399,50 @@ BOOL LoadConfig(TiXmlNode *pNode, TSensorConfig & sensorCfg, int nSensorId)
                     }
                 }
             }
-			else if (paramName && paramValue && _stricmp(paramName, "AutoAttachMonitor") == 0)
-			{
-				sensorCfg.bAutoAttachMonitor = (_stricmp(paramValue, "Auto") == 0) ? TRUE : FALSE;
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "AttachedMonitorId") == 0)
-			{
-				sensorCfg.nAttachedMonitorId = atoi(paramValue);
-			}
-			else if (paramName && paramValue && _stricmp(paramName, "AttachedMonitorAreaType") == 0)
-			{
-				if(_stricmp(paramValue, "Left Half") == 0)
-				{
-					sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_LEFT_HALF;
-				}
-				else if (_stricmp(paramValue, "Right Half") == 0)
-				{
-					sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_RIGHT_HALF;
-				}
-				else
-				{
-					sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_FULLSCREEN;
-				}
-			}
+            else if (paramName && paramValue && _stricmp(paramName, "AutoAttachMonitor") == 0)
+            {
+                sensorCfg.bAutoAttachMonitor = (_stricmp(paramValue, "Auto") == 0) ? TRUE : FALSE;
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "AttachedMonitorId") == 0)
+            {
+                sensorCfg.nAttachedMonitorId = atoi(paramValue);
+            }
+            else if (paramName && paramValue && _stricmp(paramName, "AttachedMonitorAreaType") == 0)
+            {
+                if(_stricmp(paramValue, "Left Half") == 0)
+                {
+                    sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_LEFT_HALF;
+                }
+                else if (_stricmp(paramValue, "Right Half") == 0)
+                {
+                    sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_RIGHT_HALF;
+                }
+                else
+                {
+                    sensorCfg.eMonitorAreaType = E_MONITOR_AREA_TYPE_FULLSCREEN;
+                }
+            }
             else if (paramName && paramValue && _stricmp(paramName, "ScreenAreaNo") == 0)
             {
                 sensorCfg.nScreenAreaNo = atoi(paramValue);
             }
         }
-		else if (_stricmp(lpszElementName, "IWBProjectionMode") == 0)
-		{
-			const char* szCoefMode = ((TiXmlElement*)pChild)->Attribute("Mode");
-			int nModeIndex = 0;
-			if (_stricmp(szCoefMode, "Desktop") == 0)
-			{
-				//载入桌面的设置参数	
-				nModeIndex = 0;
-			}
-			else if (_stricmp(szCoefMode, "Wall") == 0)
-			{
-				//载入墙面的设置参数
-				nModeIndex = 1;
-			}
-			LoadConfig(pChild, sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex,nSensorId);
-		}
+        else if (_stricmp(lpszElementName, "IWBProjectionMode") == 0)
+        {
+            const char* szCoefMode = ((TiXmlElement*)pChild)->Attribute("Mode");
+            int nModeIndex = 0;
+            if (_stricmp(szCoefMode, "Desktop") == 0)
+            {
+                //载入桌面的设置参数	
+                nModeIndex = 0;
+            }
+            else if (_stricmp(szCoefMode, "Wall") == 0)
+            {
+                //载入墙面的设置参数
+                nModeIndex = 1;
+            }
+            LoadConfig(pChild, sensorCfg.vecSensorModeConfig[nModeIndex], nModeIndex,nSensorId);
+        }
 
 
     }while(pChild);
@@ -3497,45 +3497,45 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
     pElement->SetAttribute("value", szValue);
     pNode->LinkEndChild(pElement);
 
-	//传感器与屏幕关联方式
-	pXmlComment = new TiXmlComment("传感器与屏幕关联方法(Auto/Manual)");
-	pNode->LinkEndChild(pXmlComment);
+    //传感器与屏幕关联方式
+    pXmlComment = new TiXmlComment("传感器与屏幕关联方法(Auto/Manual)");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "AutoAttachMonitor");
-	pElement->SetAttribute("value", sensorCfg.bAutoAttachMonitor ? "Auto" : "Manual");
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "AutoAttachMonitor");
+    pElement->SetAttribute("value", sensorCfg.bAutoAttachMonitor ? "Auto" : "Manual");
+    pNode->LinkEndChild(pElement);
 
-	//传感器关联的屏幕id
-	pXmlComment = new TiXmlComment("传感器关联的屏幕id");
-	pNode->LinkEndChild(pXmlComment);
+    //传感器关联的屏幕id
+    pXmlComment = new TiXmlComment("传感器关联的屏幕id");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "AttachedMonitorId");
-	pElement->SetAttribute("value", sensorCfg.nAttachedMonitorId);
-	pNode->LinkEndChild(pElement);
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "AttachedMonitorId");
+    pElement->SetAttribute("value", sensorCfg.nAttachedMonitorId);
+    pNode->LinkEndChild(pElement);
 
-	//关联的屏幕区域类型
-	pXmlComment = new TiXmlComment("关联的屏幕区域类型(Full Screen|Left Half|Right Half");
-	pNode->LinkEndChild(pXmlComment);
+    //关联的屏幕区域类型
+    pXmlComment = new TiXmlComment("关联的屏幕区域类型(Full Screen|Left Half|Right Half");
+    pNode->LinkEndChild(pXmlComment);
 
-	pElement = new TiXmlElement("Param");
-	pElement->SetAttribute("name", "AttachedMonitorAreaType");
-	switch (sensorCfg.eMonitorAreaType)
-	{
-		case E_MONITOR_AREA_TYPE_LEFT_HALF:
-			pElement->SetAttribute("value", "Left Half");
-			break;
+    pElement = new TiXmlElement("Param");
+    pElement->SetAttribute("name", "AttachedMonitorAreaType");
+    switch (sensorCfg.eMonitorAreaType)
+    {
+        case E_MONITOR_AREA_TYPE_LEFT_HALF:
+            pElement->SetAttribute("value", "Left Half");
+            break;
 
-		case E_MONITOR_AREA_TYPE_RIGHT_HALF:
-			pElement->SetAttribute("value", "Right Half");
-			break;
+        case E_MONITOR_AREA_TYPE_RIGHT_HALF:
+            pElement->SetAttribute("value", "Right Half");
+            break;
 
-		default:
-			pElement->SetAttribute("value", "Full Screen");
-			break;
-	}
-	pNode->LinkEndChild(pElement);
+        default:
+            pElement->SetAttribute("value", "Full Screen");
+            break;
+    }
+    pNode->LinkEndChild(pElement);
 
 
 
@@ -3549,31 +3549,31 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
     pNode->LinkEndChild(pElement);
 
 
-	pXmlComment = new TiXmlComment("投影机放置方式(\"Desktop\":桌面模式; \"Wall\":墙面模式");
-	pNode->LinkEndChild(pXmlComment);
+    pXmlComment = new TiXmlComment("投影机放置方式(\"Desktop\":桌面模式; \"Wall\":墙面模式");
+    pNode->LinkEndChild(pXmlComment);
 
-	int nVID = 0;
-	int nPID = 0;
-	int ret = _stscanf_s(sensorCfg.strFavoriteDevicePath, _T("\\\\?\\usb#vid_%04x&pid_%04x"), &nVID, &nPID);
-	ECameraType eCameraType = GetCameraType(nPID,nVID);
+    int nVID = 0;
+    int nPID = 0;
+    int ret = _stscanf_s(sensorCfg.strFavoriteDevicePath, _T("\\\\?\\usb#vid_%04x&pid_%04x"), &nVID, &nPID);
+    ECameraType eCameraType = GetCameraType(nPID,nVID);
 
-	for (size_t i = 0; i< sensorCfg.vecSensorModeConfig.size() ;i++)
-	{
-		pElement = new TiXmlElement("IWBProjectionMode");
-		if (i == 0 )
-		{
-			pElement->SetAttribute("Mode", "Desktop");
-		}
-		else if (i ==1 )
-		{
-			pElement->SetAttribute("Mode", "Wall");
-		}
-		pNode->LinkEndChild(pElement);
+    for (size_t i = 0; i< sensorCfg.vecSensorModeConfig.size() ;i++)
+    {
+        pElement = new TiXmlElement("IWBProjectionMode");
+        if (i == 0 )
+        {
+            pElement->SetAttribute("Mode", "Desktop");
+        }
+        else if (i ==1 )
+        {
+            pElement->SetAttribute("Mode", "Wall");
+        }
+        pNode->LinkEndChild(pElement);
         
 
 
-		SaveConfig(pElement, sensorCfg.vecSensorModeConfig[i], i,nSensorId, eCameraType, sensorCfg.eSelectedLensType);
-	}
+        SaveConfig(pElement, sensorCfg.vecSensorModeConfig[i], i,nSensorId, eCameraType, sensorCfg.eSelectedLensType);
+    }
     return TRUE;
 }
 
@@ -3584,20 +3584,20 @@ BOOL SaveConfig(TiXmlNode *pNode, const TSensorConfig& sensorCfg, int nSensorId)
 
 BOOL SaveConfig(TiXmlNode *pNode, const std::vector<TSensorConfig>& allSensorCfg,int nSersorCount)
 {
-	//for (size_t i = 0; i< allSensorCfg.size(); i++)
-	for (size_t i = 0; i < (size_t)nSersorCount; i++)
-	{
-		TiXmlComment* pXmlComment = new TiXmlComment("摄像头传感器的配置参数");
-		pNode->LinkEndChild(pXmlComment);
+    //for (size_t i = 0; i< allSensorCfg.size(); i++)
+    for (size_t i = 0; i < (size_t)nSersorCount; i++)
+    {
+        TiXmlComment* pXmlComment = new TiXmlComment("摄像头传感器的配置参数");
+        pNode->LinkEndChild(pXmlComment);
 
-		TiXmlElement * pIWBSensor = new TiXmlElement("IWBSensor");
-		pIWBSensor->SetAttribute("id", i);
-		pNode->LinkEndChild(pIWBSensor);
+        TiXmlElement * pIWBSensor = new TiXmlElement("IWBSensor");
+        pIWBSensor->SetAttribute("id", i);
+        pNode->LinkEndChild(pIWBSensor);
 
-		SaveConfig(pIWBSensor, allSensorCfg[i], i);
-	}//for
+        SaveConfig(pIWBSensor, allSensorCfg[i], i);
+    }//for
 
-	return TRUE;
+    return TRUE;
 }
 
 //@功能:载入所有图像传感器的配置信息
@@ -3605,51 +3605,51 @@ BOOL SaveConfig(TiXmlNode *pNode, const std::vector<TSensorConfig>& allSensorCfg
 //      allSensorCfg, 配置信息数组
 BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
 {
-	if (pNode == NULL) return FALSE;
-	const char* szSensorCount = ((TiXmlElement*)pNode)->Attribute("count");
-	//if (szSensorCount == 0) return FALSE;
+    if (pNode == NULL) return FALSE;
+    const char* szSensorCount = ((TiXmlElement*)pNode)->Attribute("count");
+    //if (szSensorCount == 0) return FALSE;
 
-	//暂时不用"count"属性
-	//int nSensorCount = atoi(szSensorCount);
-	//
-	allSensorCfg.resize(SENSOR_NUMBER);
+    //暂时不用"count"属性
+    //int nSensorCount = atoi(szSensorCount);
+    //
+    allSensorCfg.resize(SENSOR_NUMBER);
 
-	for (int nSensorId = 0; nSensorId < SENSOR_NUMBER; nSensorId++)
-	{
-		TSensorConfig& sensorConfig = allSensorCfg[nSensorId];
-		for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
-		{
-			TSensorModeConfig& sensorModeCfg = sensorConfig.vecSensorModeConfig[eProjectionMode];
+    for (int nSensorId = 0; nSensorId < SENSOR_NUMBER; nSensorId++)
+    {
+        TSensorConfig& sensorConfig = allSensorCfg[nSensorId];
+        for (EProjectionMode eProjectionMode = E_PROJECTION_DESKTOP; eProjectionMode < E_PROJECTION_COUNT; eProjectionMode = EProjectionMode(eProjectionMode + 1))
+        {
+            TSensorModeConfig& sensorModeCfg = sensorConfig.vecSensorModeConfig[eProjectionMode];
 
-			for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
-			{
-				TCHAR szPath[MAX_PATH];
-				_stprintf_s(
-					szPath,
-					_countof(szPath),
-					_T("%s\\Sensor%02d\\%s\\%s"),
-					(LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
-					nSensorId,
-					GetProjectModeString(eProjectionMode),
-					GetCameraTypeString(eCameraType));
+            for (ECameraType eCameraType = E_CAMERA_MODEL_0; eCameraType < E_CAMERA_MODEL_COUNT; eCameraType = ECameraType(eCameraType + 1))
+            {
+                TCHAR szPath[MAX_PATH];
+                _stprintf_s(
+                    szPath,
+                    _countof(szPath),
+                    _T("%s\\Sensor%02d\\%s\\%s"),
+                    (LPCTSTR)PROFILE::SETTINGS_BASE_DIRECTORY,
+                    nSensorId,
+                    GetProjectModeString(eProjectionMode),
+                    GetCameraTypeString(eCameraType));
 
 
-				//CreateFullDirectory(CA2CT(szPath));
-				CreateFullDirectory(szPath);
-				for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
-				{
-					//载入各种镜头的配置参数
-					//char szPathRatio[MAX_PATH];
-					TCHAR szPathRatio[MAX_PATH];
-					memset(szPathRatio, 0, sizeof(szPathRatio));
-					//sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
-					_stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
+                //CreateFullDirectory(CA2CT(szPath));
+                CreateFullDirectory(szPath);
+                for (int i = 0; i < int(E_LENS_TYPE_COUNT); i++)
+                {
+                    //载入各种镜头的配置参数
+                    //char szPathRatio[MAX_PATH];
+                    TCHAR szPathRatio[MAX_PATH];
+                    memset(szPathRatio, 0, sizeof(szPathRatio));
+                    //sprintf_s(szPathRatio, _countof(szPathRatio), "%s\\throw_ratio(%.2f).dll", szPath, TRHOW_RATIO_LIST[i]);
+                    _stprintf_s(szPathRatio, _countof(szPathRatio), _T("%s\\throw_ratio(%.2f).dll"), szPath, TRHOW_RATIO_LIST[i]);
 
-					//if (PathFileExists(CA2CT(szPathRatio)))
-					if (PathFileExists(szPathRatio))
-					{
-						LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[eCameraType][i]);
-					}
+                    //if (PathFileExists(CA2CT(szPathRatio)))
+                    if (PathFileExists(szPathRatio))
+                    {
+                        LoadConfig(szPathRatio, sensorModeCfg.lensConfigs[eCameraType][i]);
+                    }
                     else
                     {
                          CT2CA ct2aDebugPath(szPathRatio);
@@ -3692,35 +3692,35 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
                     }
                     //调试代码>>
 
-				}//for(i)
+                }//for(i)
 
-			}//for(eCameraType)
+            }//for(eCameraType)
 
-		}//for(SensorMode)
-	}
+        }//for(SensorMode)
+    }
 
-	TiXmlNode * pChild = NULL;
+    TiXmlNode * pChild = NULL;
 
-	int nSensorIndex = 0;
-	do
-	{
-		pChild = pNode->IterateChildren(pChild);
-		if (NULL == pChild)
-		{
-			break;
-		}
-		const char* lpszElementName = pChild->Value();
-		if (_stricmp(lpszElementName, "IWBSensor") == 0)
-		{
-			LoadConfig(pChild, allSensorCfg[nSensorIndex], nSensorIndex);
-			nSensorIndex++;
-			if (nSensorIndex == allSensorCfg.size())
-			{
-				break;
-			}
-		}
+    int nSensorIndex = 0;
+    do
+    {
+        pChild = pNode->IterateChildren(pChild);
+        if (NULL == pChild)
+        {
+            break;
+        }
+        const char* lpszElementName = pChild->Value();
+        if (_stricmp(lpszElementName, "IWBSensor") == 0)
+        {
+            LoadConfig(pChild, allSensorCfg[nSensorIndex], nSensorIndex);
+            nSensorIndex++;
+            if (nSensorIndex == allSensorCfg.size())
+            {
+                break;
+            }
+        }
 
-	} while (pChild);
+    } while (pChild);
 
     //如果从配置文件载入配置的SensorCfg数目少于SENSRO_NUMBER,
     //则未载入配置的SensorCfg拷贝第一个Sensor的配置数据。
@@ -3732,7 +3732,7 @@ BOOL LoadConfig(TiXmlNode *pNode, std::vector<TSensorConfig> & allSensorCfg)
     }
 
 
-	return TRUE;
+    return TRUE;
 }
 
 //@功能:载入配置文件
@@ -3780,15 +3780,15 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, TSysConfigData& sysCfgData)
         }
         const char* lpszElementName = pNode->Value();
 
-		if (_stricmp(lpszElementName, "Global") == 0)
-		{   //载入全局设置
-			LoadConfig(pNode, sysCfgData.globalSettings);
-	    }
-		else if (_stricmp(lpszElementName, "IWBSensors") == 0)
-		{
-			//所有传感器的配置信息
-			LoadConfig(pNode, sysCfgData.vecSensorConfig);
-		}
+        if (_stricmp(lpszElementName, "Global") == 0)
+        {   //载入全局设置
+            LoadConfig(pNode, sysCfgData.globalSettings);
+        }
+        else if (_stricmp(lpszElementName, "IWBSensors") == 0)
+        {
+            //所有传感器的配置信息
+            LoadConfig(pNode, sysCfgData.vecSensorConfig);
+        }
     }while(pNode);
 
 
@@ -3816,24 +3816,24 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
     oXMLDoc.LinkEndChild(pSettings);
 
 
-	pXmlComment = new TiXmlComment("全局配置参数");
-	pSettings->LinkEndChild(pXmlComment);
+    pXmlComment = new TiXmlComment("全局配置参数");
+    pSettings->LinkEndChild(pXmlComment);
 
-	TiXmlElement * pGlobalSettings = new TiXmlElement("Global");
-	pSettings->LinkEndChild(pGlobalSettings);
+    TiXmlElement * pGlobalSettings = new TiXmlElement("Global");
+    pSettings->LinkEndChild(pGlobalSettings);
 
-	SaveConfig(pGlobalSettings, sysCfgData.globalSettings);
+    SaveConfig(pGlobalSettings, sysCfgData.globalSettings);
 
-	pXmlComment = new TiXmlComment("全部摄像头传感器的配置参数");
-	pSettings->LinkEndChild(pXmlComment);
+    pXmlComment = new TiXmlComment("全部摄像头传感器的配置参数");
+    pSettings->LinkEndChild(pXmlComment);
 
-	TiXmlElement * pIWBSensors = new TiXmlElement("IWBSensors");
-	//传感器个数
-	pIWBSensors->SetAttribute("count", sysCfgData.vecSensorConfig.size());
+    TiXmlElement * pIWBSensors = new TiXmlElement("IWBSensors");
+    //传感器个数
+    pIWBSensors->SetAttribute("count", sysCfgData.vecSensorConfig.size());
 
-	pSettings->LinkEndChild(pIWBSensors);
+    pSettings->LinkEndChild(pIWBSensors);
 
-	SaveConfig(pIWBSensors, sysCfgData.vecSensorConfig, nSensorCount);
+    SaveConfig(pIWBSensors, sysCfgData.vecSensorConfig, nSensorCount);
     
 
     //多屏幕模式下的屏幕布局信息，单独保存在ScreenLayout.xml中
@@ -3907,49 +3907,46 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const TSysConfigData& sysCfgData,int
 /*
 const char* GetSplitModeDesc(ESplitScreeMode eSplitMode)
 {
-	const char* desc = "";
+    const char* desc = "";
 
-	switch (eSplitMode)
-	{
-	case E_SPLIT_SCREEN_VERT:
-		desc = "vert";
-		break;
+    switch (eSplitMode)
+    {
+    case E_SPLIT_SCREEN_VERT:
+        desc = "vert";
+        break;
 
-	case E_SPLIT_SCREEN_HORZ:
-		desc = "horz";
-		break;
+    case E_SPLIT_SCREEN_HORZ:
+        desc = "horz";
+        break;
 
-	}
+    }
 
-	return desc;
+    return desc;
 }
 */
 const char* GetSplitModeDesc(const SplitMode& splitMode)
 {
-    static char desc[32];
-    
+    static char desc[32];    
     sprintf_s<_countof(desc)>(desc, "%dx%d", splitMode.rows, splitMode.cols);
-
-
-
+    
     return desc;
 }
 
 /*
 ESplitScreeMode GetSplitMode(const char* szSplitMode)
 {
-	ESplitScreeMode  eSplitMode = E_SPLIT_SCREEN_VERT;
+    ESplitScreeMode  eSplitMode = E_SPLIT_SCREEN_VERT;
 
-	if (stricmp(szSplitMode, "vert") == 0)
-	{
-		eSplitMode =  E_SPLIT_SCREEN_VERT;
-	}
-	else if (stricmp(szSplitMode, "horz") == 0)
-	{
-		eSplitMode = E_SPLIT_SCREEN_HORZ;
-	}
+    if (stricmp(szSplitMode, "vert") == 0)
+    {
+        eSplitMode =  E_SPLIT_SCREEN_VERT;
+    }
+    else if (stricmp(szSplitMode, "horz") == 0)
+    {
+        eSplitMode = E_SPLIT_SCREEN_HORZ;
+    }
 
-	return eSplitMode;
+    return eSplitMode;
 }
 */
 
@@ -3974,16 +3971,27 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
     TiXmlDeclaration Declaration("1.0", "UTF-8", "no");
     oXMLDoc.InsertEndChild(Declaration);
 
+
+
+
+
     TiXmlComment*  pXmlComment = new TiXmlComment("所有布局");
     oXMLDoc.LinkEndChild(pXmlComment);
 
     TiXmlElement * pRoot = new TiXmlElement("Root");
-	
-	//pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.eSelectedSplitScreenMode));
+    
+    //pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.eSelectedSplitScreenMode));
     //pAllLayouts->SetAttribute("SelectedScreenSplitMode", GetSplitModeDesc(screenLayoutManager.selectedSplitScreenMode));
 
     oXMLDoc.LinkEndChild(pRoot);
 
+
+
+    pXmlComment = new TiXmlComment("屏幕类型");
+    pRoot->LinkEndChild(pXmlComment);
+    TiXmlElement* pScreenLayoutElem = new TiXmlElement("ScreeenTargetType");
+    pScreenLayoutElem->SetAttribute("value", GetScreenTargetTypeDesc(screenLayoutManager.GetScreenTargetType()));
+    pRoot->LinkEndChild(pScreenLayoutElem);
 
     const auto& allScreenLayout = screenLayoutManager.allScreenLayout;
     for (auto it = allScreenLayout.begin(); it != allScreenLayout.end(); it++)
@@ -4007,8 +4015,6 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
             }
 
             pRoot->LinkEndChild(pScreenLayoutElem);
-
-
     }
 
 
@@ -4031,65 +4037,65 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
 
 
     /*
-	const auto& layoutCollection = screenLayoutManager.allLayoutCollection;
+    const auto& layoutCollection = screenLayoutManager.allLayoutCollection;
 
-	for (auto it = layoutCollection.begin(); it != layoutCollection.end(); it++)
-	{
-		LayoutCollection* pLayoutCollection = it->second;
+    for (auto it = layoutCollection.begin(); it != layoutCollection.end(); it++)
+    {
+        LayoutCollection* pLayoutCollection = it->second;
 
-		TiXmlElement * pLayoutCollectionElem = new TiXmlElement("LayoutCollection");
-		
+        TiXmlElement * pLayoutCollectionElem = new TiXmlElement("LayoutCollection");
+        
         //pLayoutCollectionElem->SetAttribute("SplitMode", GetSplitModeDesc(pLayoutCollection->eSplitScreenModel));
 
-		const auto& allScreenLayout = pLayoutCollection->allScreenLayout;
+        const auto& allScreenLayout = pLayoutCollection->allScreenLayout;
 
-		for (UINT uLayoutIndex = 0; uLayoutIndex < allScreenLayout.size(); uLayoutIndex++)
-		{
-			TiXmlElement * pScreenLayoutElem = new TiXmlElement("ScreenLayout");
+        for (UINT uLayoutIndex = 0; uLayoutIndex < allScreenLayout.size(); uLayoutIndex++)
+        {
+            TiXmlElement * pScreenLayoutElem = new TiXmlElement("ScreenLayout");
 
-			const TScreenLayout& layout = allScreenLayout[uLayoutIndex];
+            const TScreenLayout& layout = allScreenLayout[uLayoutIndex];
 
-			const std::vector<RectF>& screens = layout.vecScreens;
-			const std::vector<RectF>& mergeAreas = layout.vecMergeAreas;
+            const std::vector<RectF>& screens = layout.vecScreens;
+            const std::vector<RectF>& mergeAreas = layout.vecMergeAreas;
 
-			//设置屏幕尺寸
-			pScreenLayoutElem->SetAttribute("ScreenCount", screens.size());
+            //设置屏幕尺寸
+            pScreenLayoutElem->SetAttribute("ScreenCount", screens.size());
 
-			for (UINT uScreenIndex = 0; uScreenIndex < screens.size(); uScreenIndex++)
-			{
-				char szText[32];
+            for (UINT uScreenIndex = 0; uScreenIndex < screens.size(); uScreenIndex++)
+            {
+                char szText[32];
 
-				sprintf_s(szText, _countof(szText), "%d#屏幕", uScreenIndex + 1);
-				TiXmlComment*  pXmlComment = new TiXmlComment(szText);
-				pScreenLayoutElem->LinkEndChild(pXmlComment);
+                sprintf_s(szText, _countof(szText), "%d#屏幕", uScreenIndex + 1);
+                TiXmlComment*  pXmlComment = new TiXmlComment(szText);
+                pScreenLayoutElem->LinkEndChild(pXmlComment);
 
-				TiXmlElement * pScreen = new TiXmlElement("Screen");
-				pScreen->SetDoubleAttribute("left", (double)screens[uScreenIndex].left);
-				pScreen->SetDoubleAttribute("top", (double)screens[uScreenIndex].top);
-				pScreen->SetDoubleAttribute("right", (double)screens[uScreenIndex].right);
-				pScreen->SetDoubleAttribute("bottom", (double)screens[uScreenIndex].bottom);
-				pScreenLayoutElem->LinkEndChild(pScreen);
+                TiXmlElement * pScreen = new TiXmlElement("Screen");
+                pScreen->SetDoubleAttribute("left", (double)screens[uScreenIndex].left);
+                pScreen->SetDoubleAttribute("top", (double)screens[uScreenIndex].top);
+                pScreen->SetDoubleAttribute("right", (double)screens[uScreenIndex].right);
+                pScreen->SetDoubleAttribute("bottom", (double)screens[uScreenIndex].bottom);
+                pScreenLayoutElem->LinkEndChild(pScreen);
 
-				if (uScreenIndex < mergeAreas.size())
-				{
-					TiXmlComment*  pXmlComment = new TiXmlComment("融合区");
-					pScreenLayoutElem->LinkEndChild(pXmlComment);
+                if (uScreenIndex < mergeAreas.size())
+                {
+                    TiXmlComment*  pXmlComment = new TiXmlComment("融合区");
+                    pScreenLayoutElem->LinkEndChild(pXmlComment);
 
-					TiXmlElement * pMergeAreaElem = new TiXmlElement("MergeArea");
+                    TiXmlElement * pMergeAreaElem = new TiXmlElement("MergeArea");
 
-					pMergeAreaElem->SetDoubleAttribute("left", (double)mergeAreas[uScreenIndex].left);
-					pMergeAreaElem->SetDoubleAttribute("top", (double)mergeAreas[uScreenIndex].top);
-					pMergeAreaElem->SetDoubleAttribute("right", (double)mergeAreas[uScreenIndex].right);
-					pMergeAreaElem->SetDoubleAttribute("bottom", (double)mergeAreas[uScreenIndex].bottom);
+                    pMergeAreaElem->SetDoubleAttribute("left", (double)mergeAreas[uScreenIndex].left);
+                    pMergeAreaElem->SetDoubleAttribute("top", (double)mergeAreas[uScreenIndex].top);
+                    pMergeAreaElem->SetDoubleAttribute("right", (double)mergeAreas[uScreenIndex].right);
+                    pMergeAreaElem->SetDoubleAttribute("bottom", (double)mergeAreas[uScreenIndex].bottom);
 
-					pScreenLayoutElem->LinkEndChild(pMergeAreaElem);
-				}
+                    pScreenLayoutElem->LinkEndChild(pMergeAreaElem);
+                }
 
-			}//for(uScreenIndex)
+            }//for(uScreenIndex)
 
-			pLayoutCollectionElem->LinkEndChild(pScreenLayoutElem);
+            pLayoutCollectionElem->LinkEndChild(pScreenLayoutElem);
 
-		}//for(uSplitMode)
+        }//for(uSplitMode)
 
         pAllLayouts->LinkEndChild(pLayoutCollectionElem);
 
@@ -4166,10 +4172,9 @@ BOOL SaveConfig(LPCTSTR lpszConfigFilePath, const ScreenLayoutManager& screenLay
 //BOOL LoadConfig(LPCTSTR lpszConfigFilePath,  std::vector<TScreenLayout>& allScreenLayouts)
 BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutManager)
 {
-
-	TiXmlDocument oXMLDoc;
-	if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
-	{
+    TiXmlDocument oXMLDoc;
+    if (!oXMLDoc.LoadFile(CT2A(lpszConfigFilePath), TIXML_ENCODING_UTF8))
+    {
         //从备份文件中读取配置
         TCHAR szBackupFilePath[MAX_PATH];
         _tcscpy_s(szBackupFilePath, _countof(szBackupFilePath), lpszConfigFilePath);
@@ -4192,54 +4197,63 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
         BOOL bFailIfExists = FALSE;
         CopyFile(szBackupFilePath, lpszConfigFilePath, FALSE);
 
-	}
-	TiXmlElement *pRootElement = oXMLDoc.RootElement();
-	if (pRootElement == NULL)
-	{
-		return FALSE;
-	}
+    }
+    TiXmlElement *pRootElement = oXMLDoc.RootElement();
+    if (pRootElement == NULL)
+    {
+        return FALSE;
+    }
 
+        //screenLayoutManager.allLayoutCollection.clear();
+    screenLayoutManager.Reset();
 
+    
+    //const char*	szSelectedScreenSplitMode = ((TiXmlElement*)pRootElement)->Attribute("SelectedScreenSplitMode");
 
-	//screenLayoutManager.allLayoutCollection.clear();
-	screenLayoutManager.Reset();
+    //if (szSelectedScreenSplitMode)
+    //{
+    //	screenLayoutManager.SetSelectedSplitScreenMode(GetSplitMode(szSelectedScreenSplitMode));
+    //}
 
-	
-	//const char*	szSelectedScreenSplitMode = ((TiXmlElement*)pRootElement)->Attribute("SelectedScreenSplitMode");
+    TiXmlNode* pChild_L1 = NULL;
+    do
+    {
+        pChild_L1 = pRootElement->IterateChildren(pChild_L1);
+        if (NULL == pChild_L1) break;
 
-	//if (szSelectedScreenSplitMode)
-	//{
-	//	screenLayoutManager.SetSelectedSplitScreenMode(GetSplitMode(szSelectedScreenSplitMode));
-	//}
+        const char* lpszElementName = pChild_L1->Value();
 
-	TiXmlNode* pChild_L1 = NULL;
-	do
-	{
-		pChild_L1 = pRootElement->IterateChildren(pChild_L1);
-		if (NULL == pChild_L1) break;
+        if (lpszElementName && _strcmpi(lpszElementName, "ScreeenTargetType") == 0)
+        {
+            const char* attrValue = ((TiXmlElement*)pChild_L1)->Attribute("value");
 
-		const char* lpszElementName = pChild_L1->Value();
+            if (attrValue)
+            {
+                EScreenTargetType eScreenTargetType = GetScreenTargetType(attrValue);
+                screenLayoutManager.SetScreenTargetType(eScreenTargetType);
+            }
 
-		if (lpszElementName && _strcmpi(lpszElementName, "ScreenLayout") == 0)
-		{
-			const char* attrValue = ((TiXmlElement*)pChild_L1)->Attribute("split_mode");
+        }
+        else if (lpszElementName && _strcmpi(lpszElementName, "ScreenLayout") == 0)
+        {
+            const char* attrValue = ((TiXmlElement*)pChild_L1)->Attribute("split_mode");
 
             SplitMode  splitMode;
-			
-			if (attrValue)
-			{
+            
+            if (attrValue)
+            {
                 splitMode = GetSplitMode(attrValue);
-			}
-                       			
+            }
+
             std::vector<SplitEdge> splitEdges;
 
-			TiXmlNode* pChild_L2 = NULL;
-			do
-			{
-				pChild_L2 = pChild_L1->IterateChildren(pChild_L2);
-				if (NULL == pChild_L2) break;
+            TiXmlNode* pChild_L2 = NULL;
+            do
+            {
+                pChild_L2 = pChild_L1->IterateChildren(pChild_L2);
+                if (NULL == pChild_L2) break;
 
-				lpszElementName = pChild_L2->Value();
+                lpszElementName = pChild_L2->Value();
                 if (lpszElementName && _stricmp(lpszElementName, "SplitEdge") == 0)
                 {
                     SplitEdge edge;
@@ -4264,19 +4278,18 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
 
                     splitEdges.push_back(edge);
                 }
-				
+                
 
-			} while (pChild_L2);
+            } while (pChild_L2);
 
             TScreenLayout layout;
             layout.UpdateLayout(splitMode, splitEdges);
 
-			screenLayoutManager.SetScreenLayout(layout);
-			
-		}
+            screenLayoutManager.SetScreenLayout(layout);
+            
+        }
         else if (lpszElementName && _strcmpi(lpszElementName, "split_mode_map") == 0)
         {
-
 
             std::map<int, SplitMode> splitModeMap;
 
@@ -4311,14 +4324,12 @@ BOOL LoadConfig(LPCTSTR lpszConfigFilePath, ScreenLayoutManager& screenLayoutMan
 
             } while (pChild_L2);
 
-
-
             screenLayoutManager.mapSplitMode = splitModeMap;
         }
 
-	} while (pChild_L1);
+    } while (pChild_L1);
 
 
 
-	return TRUE;
+    return TRUE;
 }

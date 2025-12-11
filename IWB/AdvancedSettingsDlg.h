@@ -41,6 +41,9 @@ public:
 	//int m_nSpotProportion;
 	CSpinButtonCtrl m_ctlSpotProportion;
 
+    //CSpinButtonCtrl m_ctlXCoordOffset;
+    //CSpinButtonCtrl m_ctlYCoordOffset;
+
 	//int m_nMultEraser;
 	CSpinButtonCtrl m_cltMultEraser;
 
@@ -77,6 +80,10 @@ public:
 	afx_msg void OnEnChangeEditFixedBlobSetTimeValue();
 
 	afx_msg void OnEnChangeEditSpotProportion();
+
+    afx_msg void OnEnChangeEditXCoordOffset();
+    afx_msg void OnEnChangeEditYCoordOffset();
+
 	afx_msg void OnEnChangeEditMultEraser();
 	afx_msg void OnEnChangeEditSetNormalUserBrightness();
 	afx_msg void OnEnChangeEditAutomaskdetectthreshold();

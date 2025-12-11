@@ -99,6 +99,11 @@ SIZE GetActualScreenControlSize()
         szScreen.cy = ::GetSystemMetrics(SM_CYSCREEN);
     }
 
+	//<<2024/04/29
+	szScreen.cx = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	szScreen.cy = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	//2024/04/29
+
     return szScreen;
 }
 
@@ -1001,13 +1006,20 @@ BOOL CIWBApp::ReadUSBKeyData(UINT uKeyIndex)
     USBKeyInformation usbKeyInformation;
 
     //读校正数据,读数据之前初始化数组
-    char szDevPath[MAX_PATH];
+    char szDevPath[MAX_PATH] = {0};
     //SDKREG_GetUSBKeyDevPath(uKeyIndex, szDevPath, _countof(szDevPath));
 
     TAutoCalibrateCompensateData compensateData;
 
     int nCount = SDKREG_ReadE2PROMCompensateParams((double*)&compensateData, COMPENSATE_PARAM_COUNT, uKeyIndex, szDevPath, _countof(szDevPath));
-    _strlwr_s(szDevPath, MAX_PATH);
+
+    //unsigned char len = strlen(szDevPath);
+    //unsigned char value = szDevPath[0];
+    if ('\0' != szDevPath[0])
+    {
+        _strlwr_s(szDevPath, MAX_PATH);
+    }
+    
     std::string strDevPath = szDevPath;
     
 
@@ -1327,7 +1339,7 @@ EScreenMode CIWBApp::GetScreenModeFromUSBKey()const
     }
 
     //<<xuke
-    eScreenMode = EScreenModeHexa;
+    //eScreenMode = EScreenModeHexa;
     //xuke>>
     return eScreenMode;
 }

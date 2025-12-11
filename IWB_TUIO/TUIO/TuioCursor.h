@@ -36,6 +36,8 @@ namespace TUIO {
 		 * The individual cursor ID number that is assigned to each TuioCursor.
 		 */ 
 		int cursor_id;
+
+        int dwCamera_id;
 		
 	public:
 		using TuioContainer::update;
@@ -50,7 +52,7 @@ namespace TUIO {
 		 * @param	xp	the X coordinate to assign
 		 * @param	yp	the Y coordinate to assign
 		 */
-		TuioCursor (TuioTime ttime, long si, int ci, float xp, float yp);
+		TuioCursor (TuioTime ttime, long si, int ci, float xp, float yp, int dwCameraId);
 
 		/**
 		 * This constructor takes the provided Session ID, Cursor ID, X and Y coordinate 
@@ -61,7 +63,7 @@ namespace TUIO {
 		 * @param	xp	the X coordinate to assign
 		 * @param	yp	the Y coordinate to assign
 		 */
-		TuioCursor (long si, int ci, float xp, float yp);
+		TuioCursor (long si, int ci, float xp, float yp, int dwCameraId);
 		
 		/**
 		 * This constructor takes the atttibutes of the provided TuioCursor 
@@ -81,6 +83,8 @@ namespace TUIO {
 		 * @return	the Cursor ID of this TuioCursor
 		 */
 		int getCursorID() const;
+
+        int getCameraId() const;
 	};
 }
 #endif

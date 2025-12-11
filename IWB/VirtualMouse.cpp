@@ -30,12 +30,16 @@ void CVirtualMouse::Input(BOOL bPenOn, const POINT* pPos, BOOL bForceUseWinAPI)
     ptPenPos.x = ptPenPos.y =0;
     if(pPos)
     {
-        ptPenPos.x = pPos->x;
-        ptPenPos.y = pPos->y;
+        ptPenPos.x = pPos->x /*+ g_tSysCfgData.globalSettings.nXCoordOffset * 2*/;
+        ptPenPos.y = pPos->y /*+ g_tSysCfgData.globalSettings.nYCoordOffset * 2*/;
     }
 
 	m_bForceUseWinAPI = bForceUseWinAPI;
     //×´Ì¬»úÃèÊö
+
+    char szBUf[128] = { 0 };
+    sprintf(szBUf, " Input m_eVirutalMouseState:%d, bPenOn:%d\n", m_eVirutalMouseState, bPenOn);
+    OutputDebugStringA(szBUf);
     switch(m_eVirutalMouseState)
     {
     case VIRTUAL_MOUSE_STATE_IDLE:
@@ -131,12 +135,17 @@ void CVirtualMouse::Input_AirOperate(BOOL bPenOn, const POINT* pPos, EAIROPERATE
 	ptPenPos.x = ptPenPos.y = 0;
 	if (pPos)
 	{
-		ptPenPos.x = pPos->x;
-		ptPenPos.y = pPos->y;
+		ptPenPos.x = pPos->x /*+ g_tSysCfgData.globalSettings.nXCoordOffset * 2*/;
+		ptPenPos.y = pPos->y /*+ g_tSysCfgData.globalSettings.nYCoordOffset * 2*/;
 	}
 
 	m_bForceUseWinAPI = bForceUseWinAPI;
 	//×´Ì¬»úÃèÊö
+
+    char szBUf[128] = { 0 };
+    sprintf(szBUf, " Input_AirOperate m_eVirutalMouseState:%d, bPenOn:%d\n", m_eVirutalMouseState, bPenOn);
+    OutputDebugStringA(szBUf);
+
 	switch (m_eVirutalMouseState)
 	{
 	case VIRTUAL_MOUSE_STATE_IDLE:
@@ -255,6 +264,10 @@ void CVirtualMouse::Reset()
 //
 void CVirtualMouse::GenEvent(const POINT& ptMouse, EVirtualMouseEvent eEvent, int nMouseData)
 {
+    char szBUf[128] = { 0 };
+    sprintf(szBUf, " GenEvent m_hDriverDevice:%d, m_bForceUseWinAPI:%d\n", m_hDriverDevice, m_bForceUseWinAPI);
+    OutputDebugStringA(szBUf);
+
     if(m_hDriverDevice != INVALID_HANDLE_VALUE && !m_bForceUseWinAPI)
     {
         int nCxScreen = GetSystemMetrics(SM_CXSCREEN);
@@ -284,6 +297,13 @@ void CVirtualMouse::GenEvent(const POINT& ptMouse, EVirtualMouseEvent eEvent, in
             mouseInput.X = (USHORT)(EASI_MOUSE_MAXIMUM_X * (ptMouse.x - 0) / nCxScreen);
             mouseInput.Y = (USHORT)(EASI_MOUSE_MAXIMUM_Y * (ptMouse.y - 0) / nCyScreen);
         }
+
+        char szBUf[128] = { 0 };
+        sprintf(szBUf, " GenEvent mouseInput.X:%d, mouseInput.Y:%d\n", mouseInput.X, mouseInput.Y);
+        OutputDebugStringA(szBUf);
+
+        //mouseInput.X += g_tSysCfgData.globalSettings.nXCoordOffset * 5;
+        //mouseInput.Y += g_tSysCfgData.globalSettings.nYCoordOffset * 5;
 
         switch(eEvent)
         {
@@ -360,6 +380,13 @@ void CVirtualMouse::GenEvent(const POINT& ptMouse, EVirtualMouseEvent eEvent, in
         //¹éÒ»»¯µ½0~65535·¶Î§ÄÚ
         input.mi.dx   = (ptMouse.x - nVSLeft ) * 65535/nCxVirtualScreen;
         input.mi.dy   = (ptMouse.y - nVSTop) * 65535/nCyVirtualScreen;
+
+        //input.mi.dx += g_tSysCfgData.globalSettings.nXCoordOffset * 10;
+        //input.mi.dy += g_tSysCfgData.globalSettings.nYCoordOffset * 10;
+
+        char szBUf[128] = { 0 };
+        sprintf(szBUf, " GenEvent input.X:%d, input.Y:%d\n", input.mi.dx, input.mi.dy);
+        OutputDebugStringA(szBUf);
 
         switch(eEvent)
         {

@@ -266,8 +266,13 @@ void TuioClient::processOSC( const ReceivedMessage& msg ) {
 			} else if (strcmp(cmd,"set")==0) {	
 
 				int32 s_id;
-				float xpos, ypos, xspeed, yspeed, maccel;				
-				args >> s_id >> xpos >> ypos >> xspeed >> yspeed >> maccel;
+				float xpos, ypos, xspeed, yspeed, maccel;	
+                int32 iCameraId = -1;
+				args >> s_id >> xpos >> ypos >> xspeed >> yspeed >> maccel >> iCameraId;
+
+                char szBuf[1024] = { 0 };
+                sprintf(szBuf, "111 22 TuioClient s_id:%d, maccel:%d, iCameraId:%d\n", s_id, maccel, iCameraId);
+                OutputDebugStringA(szBuf);
 				
 				lockCursorList();
 				std::list<TuioCursor*>::iterator tcur;
@@ -276,12 +281,12 @@ void TuioClient::processOSC( const ReceivedMessage& msg ) {
 				
 				if (tcur==cursorList.end()) {
 									
-					TuioCursor *addCursor = new TuioCursor((long)s_id,-1,xpos,ypos);
+					TuioCursor *addCursor = new TuioCursor((long)s_id,-1,xpos,ypos, iCameraId);
 					frameCursors.push_back(addCursor);
 
 				} else if ( ((*tcur)->getX()!=xpos) || ((*tcur)->getY()!=ypos) || ((*tcur)->getXSpeed()!=xspeed) || ((*tcur)->getYSpeed()!=yspeed) || ((*tcur)->getMotionAccel()!=maccel) ) {
 
-					TuioCursor *updateCursor = new TuioCursor((long)s_id,(*tcur)->getCursorID(),xpos,ypos);
+					TuioCursor *updateCursor = new TuioCursor((long)s_id,(*tcur)->getCursorID(),xpos,ypos, iCameraId);
 					updateCursor->update(xpos,ypos,xspeed,yspeed,maccel);
 					frameCursors.push_back(updateCursor);
 
@@ -411,7 +416,7 @@ void TuioClient::processOSC( const ReceivedMessage& msg ) {
 									}
 								} else maxCursorID[source_id] = c_id;									
 								
-								frameCursor = new TuioCursor(currentTime,tcur->getSessionID(),c_id,tcur->getX(),tcur->getY());
+								frameCursor = new TuioCursor(currentTime,tcur->getSessionID(),c_id,tcur->getX(),tcur->getY(), tcur->getCameraId());
 								if (source_name) frameCursor->setTuioSource(source_id,source_name,source_addr);
 								cursorList.push_back(frameCursor);
 								

@@ -66,7 +66,7 @@ class TScreenLayout
 public:
 	TScreenLayout()
 	{
-			
+        Init(this->m_splitMode);
 	}
 
 	explicit TScreenLayout(const SplitMode& splitMode)
@@ -277,49 +277,100 @@ protected:
 //		
 //	}
 //};
+
+//屏幕目标类型
+enum class EScreenTargetType
+{
+    //主屏幕
+    E_SCREEN_TARTGE_PRIMARY = 0,
+
+
+    //由主屏幕和整个扩展屏幕组成的整个虚拟桌面
+    E_SCREEN_TARGET_VIRTUAL_DESKTOP = 1,
+
+
+    //扩展屏幕
+    E_SCREEN_TARGET_EXTEND = 3,
+
+    //
+    E_SCREEN_TARGET_COUNT = 3
+};
+
+inline const char* GetScreenTargetTypeDesc(EScreenTargetType type)
+{
+    const char* desc = "";
+    switch (type)
+    {
+    case EScreenTargetType::E_SCREEN_TARTGE_PRIMARY:
+        desc = "Primary Screen";
+        break;
+
+    case EScreenTargetType::E_SCREEN_TARGET_EXTEND:
+        desc = "Extend Screen";
+        break;
+
+    case EScreenTargetType::E_SCREEN_TARGET_VIRTUAL_DESKTOP:
+        desc = "Virtual Destkop";
+        break;
+    }
+
+    return desc;
+}
+
+inline EScreenTargetType GetScreenTargetType(const char* szDesc)
+{
+    EScreenTargetType eType = EScreenTargetType::E_SCREEN_TARTGE_PRIMARY;
+
+    if (stricmp(szDesc, "Primary Screen") == 0)
+    {
+        eType = EScreenTargetType::E_SCREEN_TARGET_EXTEND;
+    }
+    else if (stricmp(szDesc, "Extend Screen") == 0)
+    {
+        eType = EScreenTargetType::E_SCREEN_TARTGE_PRIMARY;
+    }
+    else if (stricmp(szDesc, "Virtual Destkop") == 0)
+    {
+        eType = EScreenTargetType::E_SCREEN_TARGET_VIRTUAL_DESKTOP;
+    }
+
+    return eType;
+}
+
+
 //屏幕布局管理器
 struct ScreenLayoutManager
 {
-	//std::map<SplitMode, LayoutCollection*> allLayoutCollection;
-
 	std::vector<TScreenLayout> allScreenLayout;//所有的屏幕布局
 	std::map<int, SplitMode> mapSplitMode;//sensor个数到屏幕划分的影射。
-
-	//SplitMode selectedSplitScreenMode;//当前选择的屏幕分割模式
+    EScreenTargetType m_eScreenTargettype;//屏幕类型
 
 	ScreenLayoutManager()
 	{
-		//eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
+        m_eScreenTargettype = EScreenTargetType::E_SCREEN_TARTGE_PRIMARY;
 	}
 
 	~ScreenLayoutManager()
 	{
 
 	}
+    void SetScreenTargetType(EScreenTargetType eScreenTargetType)
+    {
+        m_eScreenTargettype = eScreenTargetType;
+    }
+
+    EScreenTargetType GetScreenTargetType() const
+    {
+        return m_eScreenTargettype;
+    }
+
 
 	void Reset()
 	{
-		//eSelectedSplitScreenMode = E_SPLIT_SCREEN_VERT;
-
 		allScreenLayout.clear();
-
-		//selectedSplitScreenMode.rows = 1;
-		//selectedSplitScreenMode.cols = 1;
-
-
 	}
 
-	//ESplitScreeMode GetSelectedSplitScreenMode()const
-	//SplitMode GetSelectedSplitScreenMode() const
-	//{
-	//	return selectedSplitScreenMode;
-	//}
 
-
-	//void SetSelectedSplitScreenMode(const SplitMode& mode)
-	//{
-	//	selectedSplitScreenMode = mode;
-	//}
 
 	bool GetSplitMode(int SensorCount, SplitMode& splitMode)
 	{
@@ -347,8 +398,6 @@ struct ScreenLayoutManager
 	{
 		TScreenLayout* pScreenLayout = NULL;
 
-
-
 		for (size_t i = 0; i < allScreenLayout.size(); i++)
 		{
 			if (allScreenLayout[i].GetSplitMode() == splitMode)
@@ -357,39 +406,6 @@ struct ScreenLayoutManager
 				break;
 			}
 		}
-
-		/*
-		LayoutCollection* pLayoutCollection = NULL;
-
-		auto it = allLayoutCollection.find(splitMode);
-
-		if (it != allLayoutCollection.end())
-		{
-			pLayoutCollection = it->second;
-		}
-		else 
-		{
-			pLayoutCollection = new LayoutCollection();
-
-			pLayoutCollection->splitModel = splitMode;
-			allLayoutCollection[splitMode] = pLayoutCollection;
-		}
-				
-
-		auto& allScreenLayout = pLayoutCollection->allScreenLayout;
-
-		for (UINT i = 0; i < allScreenLayout.size(); i++)
-		{
-			TScreenLayout& screenLayout = allScreenLayout[i];
-			if (screenLayout.vecScreens.size() == nScreenCount)
-			{
-				pScreenLayout = &screenLayout;
-				break;
-			}
-		}
-
-		*/
-
 		return pScreenLayout;
 	}
 
@@ -399,46 +415,6 @@ struct ScreenLayoutManager
 	//void SetScreenLayout(ESplitScreeMode eNewSelectedScreenSplitMode, const TScreenLayout& newScreenLayout)
 	void SetScreenLayout(const TScreenLayout& newScreenLayout)
 	{
-
-		//LayoutCollection* pLayoutCollection = NULL;
-
-		//auto it = allLayoutCollection.find(eNewSelectedScreenSplitMode);
-
-		//if (it != allLayoutCollection.end())
-		//{
-		//	pLayoutCollection = it->second;
-		//}
-		//else
-		//{
-		//	pLayoutCollection = new LayoutCollection();
-
-		//	pLayoutCollection->eSplitScreenModel = eNewSelectedScreenSplitMode;
-		//	allLayoutCollection[eNewSelectedScreenSplitMode] = pLayoutCollection;
-		//}
-
-
-		//auto& allScreenLayout = pLayoutCollection->allScreenLayout;
-
-		//BOOL bUpdateDone = FALSE;
-		//for (UINT i = 0; i < allScreenLayout.size(); i++)
-		//{
-		//	TScreenLayout& screenLayoutExists = allScreenLayout[i];
-		//	if (screenLayoutExists.vecScreens.size() == newScreenLayout.vecScreens.size())
-		//	{
-		//		screenLayoutExists = newScreenLayout;
-		//		bUpdateDone = TRUE;
-		//		break;
-		//	}
-		//}
-
-		//if (!bUpdateDone)
-		//{//未发现既有布局，则作为新的布局插入
-		//	allScreenLayout.push_back(newScreenLayout);
-		//}
-
-
-		//this->eSelectedSplitScreenMode = eNewSelectedScreenSplitMode;
-
 		TScreenLayout*  pScreenLayout = GetScreenLayout(newScreenLayout.GetSplitMode());
 
 		if (pScreenLayout)
@@ -449,11 +425,7 @@ struct ScreenLayoutManager
 		{
 			allScreenLayout.push_back(newScreenLayout);
 		}
-
 	}
-
-	
-
 };
 
 //传感器镜头模式
@@ -652,9 +624,10 @@ struct GlobalSettings
 	BOOL                   bModifyResolution      ;//是否可以修改分辨率
 
 	BOOL                   bAirOperatePermission  ;
-	EAIROPERATE_CLICKMODE   eClickMode             ;
+	EAIROPERATE_CLICKMODE   eClickMode            ;
     uint32_t                circleCalibrateXScale;//圆形校准X坐标缩放尺寸(50~100)
     uint32_t                circleCalibrateYScale;//圆形校准X坐标缩放尺寸(50~100)
+	BOOL                    bSupportExtendScreen;//扩展屏支持
 
     GlobalSettings()
     {
@@ -698,6 +671,9 @@ struct GlobalSettings
 
         circleCalibrateXScale = 100;
         circleCalibrateYScale = 100;
+
+		//扩展屏支持
+		bSupportExtendScreen = TRUE;
     }
 };
 
@@ -975,6 +951,9 @@ struct TAdvancedSettings
     int nMultEraser                ;//板擦的响应倍数
     int nFixedBlobSetTime          ;//定义为固定光斑的设置时间
 
+    //int                    nXCoordOffset;
+    //int                    nYCoordOffset;
+
 	BOOL  bEnableStrokeInterpolate; //使能插值标志
 	EDeviceTouchType m_eTouchType;  //触控类型
    //BOOL bGuestureRecognition     ;//手势识别检测功能使能标志
@@ -1000,15 +979,18 @@ struct TAdvancedSettings
 		bEnableStrokeInterpolate     = FALSE         ;
 		m_eTouchType = E_DEVICE_PEN_TOUCH_WHITEBOARD ;
 		bIsRearProjection = FALSE                    ;
-		bIsDynamicMaskFrame = FALSE;
+		bIsDynamicMaskFrame = TRUE;
 		bIsAntiJamming = FALSE;
 		bIsOnLineScreenArea = FALSE;
 		bDisableReflectionSpot = FALSE;
-		nSmoothCoefficient = 0;
+		nSmoothCoefficient = 10;
 
         bUsingScreenPhysicalDimensions = false;
         nScreenWidthInmm = 1920;
         nScreenHeightInmm = 1080;
+
+        //nXCoordOffset = 0;
+        //nYCoordOffset = 0;
     }
 };
 
@@ -2580,6 +2562,8 @@ struct TSensorConfig
 
     UINT             nScreenAreaNo;//屏幕区域编号
 
+    int                    nXCoordOffset;
+    int                    nYCoordOffset;
 
     TSensorConfig()
     {
@@ -2604,6 +2588,8 @@ struct TSensorConfig
 		//////////用来存放墙面和桌面的参数Add by zhaown 2019.7.17
 		vecSensorModeConfig.resize(2);
 
+        nXCoordOffset = 0;
+        nYCoordOffset = 0;
 
         nScreenAreaNo = UNDEFEIN_AREA_NO;
     }//构造函数

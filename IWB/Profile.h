@@ -15,6 +15,14 @@
 #define  SPOT_MAX                80
 #define  SPOT_DEFAULT_POS        30
 
+#define SPOT_DEFAULT_CROOD_OFFSET 0
+
+#define SPOT_X_CROOD_OFFSET_MIN  -3000
+#define SPOT_X_CROOD_OFFSET_MAX  3000
+
+#define SPOT_Y_CROOD_OFFSET_MIN  -3000
+#define SPOT_Y_CROOD_OFFSET_MAX  3000
+
 //触发板擦时光斑大小与标准光斑尺寸的比值
 #define  MULT_ERASER_MIN          3
 #define  MULT_ERASER_MAX          7

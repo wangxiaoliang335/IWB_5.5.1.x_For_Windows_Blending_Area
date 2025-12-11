@@ -293,7 +293,12 @@ void TuioServer::sendEmptyCursorBundle() {
 	oscPacket->Clear();	
 	(*oscPacket) << osc::BeginBundleImmediate;
 	if (source_name) (*oscPacket) << osc::BeginMessage( "/tuio/2Dcur") << "source" << source_name << osc::EndMessage;
-	(*oscPacket) << osc::BeginMessage( "/tuio/2Dcur") << "alive" << osc::EndMessage;	
+	(*oscPacket) << osc::BeginMessage( "/tuio/2Dcur") << "alive" << osc::EndMessage;
+
+    char szBuf[1024] = { 0 };
+    sprintf(szBuf, "aaa 11 TuioServer Entry sendEmptyCursorBundle fseq -1\n");
+    OutputDebugStringA(szBuf);
+
 	(*oscPacket) << osc::BeginMessage( "/tuio/2Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*oscPacket) << osc::EndBundle;
 	deliverOscPacket( oscPacket );
@@ -325,13 +330,22 @@ void TuioServer::addCursorMessage(TuioCursor *tcur) {
 		yvel = -1 * yvel;
 	}
 
+    char szBuf[1024] = { 0 };
+    sprintf(szBuf, "111 11 addCursorMessage tcur sessionID:%d, xpos:%f, ypos:%f, xvel:%f, yvel:%f, MotionAccel:%f, CameraId:%d\n", (int32)(tcur->getSessionID()), xpos, ypos, xvel, yvel, tcur->getMotionAccel(), (int32)tcur->getCameraId());
+    OutputDebugStringA(szBuf);
+
 	(*oscPacket) << osc::BeginMessage( "/tuio/2Dcur") << "set";
 	(*oscPacket) << (int32)(tcur->getSessionID()) << xpos << ypos;
-	(*oscPacket) << xvel << yvel << tcur->getMotionAccel();	
+	(*oscPacket) << xvel << yvel << tcur->getMotionAccel() << (int32)tcur->getCameraId();
 	(*oscPacket) << osc::EndMessage;
 }
 
 void TuioServer::sendCursorBundle(long fseq) {
+
+    char szBuf[1024] = { 0 };
+    sprintf(szBuf, "aaa 22 TuioServer Entry sendEmptyCursorBundle fseq:%d\n", fseq);
+    OutputDebugStringA(szBuf);
+
 	(*oscPacket) << osc::BeginMessage( "/tuio/2Dcur") << "fseq" << (int32)fseq << osc::EndMessage;
 	(*oscPacket) << osc::EndBundle;
 	deliverOscPacket( oscPacket );
@@ -465,6 +479,10 @@ void TuioServer::sendFullMessages() {
 		// start a new packet if we exceed the packet capacity
 		if ((fullPacket->Capacity()-fullPacket->Size())<CUR_MESSAGE_SIZE) {
 			
+            char szBuf[1024] = { 0 };
+            sprintf(szBuf, "aaa 33 TuioServer Entry sendEmptyCursorBundle fseq -1\n");
+            OutputDebugStringA(szBuf);
+
 			// add the immediate fseq message and send the cursor packet
 			(*fullPacket) << osc::BeginMessage( "/tuio/2Dcur") << "fseq" << -1 << osc::EndMessage;
 			(*fullPacket) << osc::EndBundle;
@@ -499,9 +517,18 @@ void TuioServer::sendFullMessages() {
 		(*fullPacket) << (int32)((*tuioCursor)->getSessionID()) << xpos << ypos;
 		(*fullPacket) << xvel << yvel <<(*tuioCursor)->getMotionAccel();	
 		(*fullPacket) << osc::EndMessage;	
+
+        char szBuf[1024] = { 0 };
+        sprintf(szBuf, "333 22 sendFullMessages tcur\n");
+        OutputDebugStringA(szBuf);
 	}
 	
 	// add the immediate fseq message and send the cursor packet
+
+    char szBuf[1024] = { 0 };
+    sprintf(szBuf, "aaa 44 TuioServer Entry sendEmptyCursorBundle fseq -1\n");
+    OutputDebugStringA(szBuf);
+
 	(*fullPacket) << osc::BeginMessage( "/tuio/2Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*fullPacket) << osc::EndBundle;
 	deliverOscPacket( fullPacket );

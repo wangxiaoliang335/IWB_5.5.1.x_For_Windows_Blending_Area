@@ -481,16 +481,25 @@ BOOL CVideToScreenMap::GetPt(const TPoint2D& ptImage, TPoint2D* pPtScreen, bool*
         pPtScreen ->d[1] = nActualMonitorTop  + ((pPtScreen ->d[1] - nCalibrateMonitorTop ) * nActualMonitorHeight + (nCalibrateMonitorHeight >> 1)/*四舍五入*/)/nCalibrateMonitorHeight;
    
         //虚拟屏幕位置信息(单位:像素)
+		int nCXVScreen = GetSystemMetrics(SM_CXSCREEN);
+		int nCYVScreen = GetSystemMetrics(SM_CYSCREEN);
+		int nVSLeft    = 0;
+		int nVSTop     = 0;
+
+		if (g_tSysCfgData.globalSettings.bSupportExtendScreen)
+		{//扩展屏
+			nCXVScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+			nCYVScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+			nVSLeft    = GetSystemMetrics(SM_XVIRTUALSCREEN);
+			nVSTop     = GetSystemMetrics(SM_YVIRTUALSCREEN);
+		}
 #if 0
         int nCXVScreen    = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int nCYVScreen    = GetSystemMetrics(SM_CYVIRTUALSCREEN);
         int nVSLeft       = GetSystemMetrics(SM_XVIRTUALSCREEN);
         int nVSTop        = GetSystemMetrics(SM_YVIRTUALSCREEN);
 #else  
-        int nCXVScreen = GetSystemMetrics(SM_CXSCREEN);
-        int nCYVScreen = GetSystemMetrics(SM_CYSCREEN);
-        int nVSLeft = 0;
-        int nVSTop = 0;
+
 #endif 
         int nVSRight      = nVSLeft + nCXVScreen;
         int nVSBottom     = nVSTop  + nCYVScreen;

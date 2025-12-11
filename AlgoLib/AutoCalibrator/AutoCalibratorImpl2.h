@@ -645,6 +645,7 @@ protected:
     static const int INITIAL_MARKER_DIAMETER = 45;
     int m_MarkerDiameter;
 
+    wchar_t szTmp[1024] = { 0 };
 
     //采用实心小圆的坐标来勾勒屏幕影像在画面中的边界
     std::vector<RECT> m_vecBorderMarkerPositions       ;//全部边界圆的位置(计算机屏幕坐标)
